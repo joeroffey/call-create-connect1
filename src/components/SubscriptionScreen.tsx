@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Check, Zap, Star, Building2, ArrowRight } from 'lucide-react';
@@ -19,32 +18,30 @@ interface Plan {
 const plans: Plan[] = [
   {
     id: 'basic',
-    name: 'Eezybuild',
+    name: 'EezyBuild',
     price: '£14.99',
     period: '/month',
     description: 'Perfect for occasional queries',
     features: [
       '50 AI queries per month',
-      'Basic Building Regulations search',
-      'Email support',
-      'Mobile app access'
+      'App & Website access',
+      'Chat History'
     ],
     icon: Building2,
     gradient: 'from-gray-600 to-gray-800'
   },
   {
     id: 'pro',
-    name: 'Eezybuild Pro',
+    name: 'EezyBuild Pro',
     price: '£29.99',
     period: '/month',
     description: 'Ideal for architects & builders',
     features: [
-      '500 AI queries per month',
-      'Advanced regulation analysis',
-      'Priority support',
-      'Export to PDF/Word',
-      'Project organization',
-      'Offline access'
+      'Unlimited AI Queries',
+      'App & Website access',
+      'Chat History',
+      'Dedicated Project Folders',
+      'Building Apps (Including but not limited to, volumetric calculators, Ready Reckoner)'
     ],
     icon: Zap,
     popular: true,
@@ -52,18 +49,18 @@ const plans: Plan[] = [
   },
   {
     id: 'enterprise',
-    name: 'Eezybuild ProMax',
+    name: 'EezyBuild ProMax',
     price: '£59.99',
     period: '/month',
     description: 'For large teams & organizations',
     features: [
-      'Unlimited AI queries',
-      'Custom AI model training',
-      'Team collaboration tools',
-      'API access',
-      'Dedicated account manager',
-      'Custom integrations',
-      'Advanced analytics'
+      'Unlimited AI Queries',
+      'App & Website access',
+      'Chat History',
+      'Dedicated Project Folders',
+      'Project Management Interface',
+      'All Building Apps',
+      'Advanced AI model'
     ],
     icon: Crown,
     gradient: 'from-yellow-500 to-orange-600'
@@ -228,7 +225,7 @@ const SubscriptionScreen = ({ user }: SubscriptionScreenProps) => {
               <Crown className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-green-400">Current Plan: Eezybuild Pro</p>
+              <p className="text-sm font-medium text-green-400">Current Plan: EezyBuild Pro</p>
               <p className="text-xs text-gray-400">Next billing: March 15, 2024</p>
             </div>
           </div>
