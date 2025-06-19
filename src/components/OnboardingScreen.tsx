@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import AddressAutocomplete from './AddressAutocomplete';
 
 interface OnboardingScreenProps {
   user: any;
@@ -62,22 +63,45 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
     setLoading(true);
     
     try {
-      // Store the additional user information
+      // Store profile data in Supabase profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: user.id,
+          full_name: formData.fullName,
+          address: formData.address,
+          occupation: formData.occupation,
+          date_of_birth: formData.dateOfBirth
+        });
+
+      if (profileError) {
+        console.error('Profile creation error:', profileError);
+        throw profileError;
+      }
+
+      // Update user metadata to mark onboarding as completed
+      const { error: userError } = await supabase.auth.updateUser({
+        data: { 
+          onboarding_completed: true,
+          full_name: formData.fullName,
+          occupation: formData.occupation
+        }
+      });
+
+      if (userError) {
+        console.error('User metadata update error:', userError);
+        throw userError;
+      }
+
       const userData = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        ...user,
         fullName: formData.fullName,
         address: formData.address,
         occupation: formData.occupation,
         dateOfBirth: formData.dateOfBirth,
-        subscription: 'pro',
-        avatar: user.avatar,
         onboardingCompleted: true
       };
 
-      // You could store this in a profiles table in the future
-      // For now, we'll pass it to the parent component
       onComplete(userData);
 
       toast({
@@ -86,6 +110,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
         duration: 2000,
       });
     } catch (error: any) {
+      console.error('Onboarding error:', error);
       toast({
         title: "Error",
         description: "Failed to save your information. Please try again.",
@@ -150,10 +175,9 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             </div>
             <div className="space-y-2">
               <Label className="text-emerald-300">Address</Label>
-              <Input
-                type="text"
+              <AddressAutocomplete
                 value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
+                onChange={(value) => handleInputChange('address', value)}
                 className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
                 placeholder="Start typing your address..."
                 autoFocus
