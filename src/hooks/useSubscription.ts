@@ -34,7 +34,15 @@ export const useSubscription = (userId: string | null) => {
       }
 
       if (data) {
-        setSubscription(data);
+        // Type cast the data to ensure it matches our interface
+        const typedSubscription: Subscription = {
+          id: data.id,
+          plan_type: data.plan_type as 'basic' | 'pro' | 'enterprise',
+          status: data.status as 'active' | 'cancelled' | 'expired',
+          current_period_end: data.current_period_end
+        };
+        
+        setSubscription(typedSubscription);
         const isActive = data.status === 'active' && new Date(data.current_period_end) > new Date();
         setHasActiveSubscription(isActive);
       } else {
@@ -74,7 +82,15 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) throw error;
 
-      setSubscription(data);
+      // Type cast the returned data
+      const typedSubscription: Subscription = {
+        id: data.id,
+        plan_type: data.plan_type as 'basic' | 'pro' | 'enterprise',
+        status: data.status as 'active' | 'cancelled' | 'expired',
+        current_period_end: data.current_period_end
+      };
+
+      setSubscription(typedSubscription);
       setHasActiveSubscription(true);
       
       toast({
