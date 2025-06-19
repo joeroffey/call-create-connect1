@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Settings, Crown } from 'lucide-react';
+import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
 import ChatInterface from '../components/ChatInterface';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
 import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
 import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
+import AppsScreen from '../components/AppsScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -62,6 +63,7 @@ const Index = () => {
   const tabs = [
     { id: 'chat', icon: MessageCircle, label: 'Chat' },
     { id: 'search', icon: Search, label: 'Search' },
+    { id: 'apps', icon: Calculator, label: 'Apps' },
     { id: 'profile', icon: User, label: 'Profile' },
     { id: 'settings', icon: Settings, label: 'Settings' }
   ];
@@ -88,6 +90,8 @@ const Index = () => {
         return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
       case 'search':
         return <AdvancedSearchInterface user={user} />;
+      case 'apps':
+        return <AppsScreen user={user} />;
       case 'profile':
         return (
           <ProfileScreen 
@@ -121,7 +125,7 @@ const Index = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            <div className="w-20 h-10 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-0.5">
+            <div className="w-24 h-12 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-1">
               <img 
                 src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
                 alt="EezyBuild Logo" 

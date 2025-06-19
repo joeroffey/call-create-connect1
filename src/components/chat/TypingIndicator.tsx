@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot } from 'lucide-react';
 
 const TypingIndicator = () => {
   return (
@@ -12,8 +11,12 @@ const TypingIndicator = () => {
       className="flex justify-start"
     >
       <div className="flex items-start space-x-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center">
-          <Bot className="w-4 h-4 text-white" />
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center overflow-hidden">
+          <img 
+            src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
+            alt="EezyBuild Bot" 
+            className="w-6 h-3 object-contain"
+          />
         </div>
         <div className="bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3">
           <div className="flex space-x-1">

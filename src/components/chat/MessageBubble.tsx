@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, User } from 'lucide-react';
+import { User } from 'lucide-react';
 
 interface Message {
   id: string;
@@ -28,15 +28,19 @@ const MessageBubble = ({ message }: MessageBubbleProps) => {
         message.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
       }`}>
         {/* Avatar */}
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden ${
           message.sender === 'user' 
             ? 'bg-blue-600' 
-            : 'bg-gradient-to-br from-purple-500 to-blue-600'
+            : 'bg-gradient-to-br from-emerald-500 to-green-600'
         }`}>
           {message.sender === 'user' ? (
             <User className="w-4 h-4 text-white" />
           ) : (
-            <Bot className="w-4 h-4 text-white" />
+            <img 
+              src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
+              alt="EezyBuild Bot" 
+              className="w-6 h-3 object-contain"
+            />
           )}
         </div>
 
