@@ -14,6 +14,11 @@ interface PineconeMatch {
     text: string;
     source?: string;
     section?: string;
+    images?: Array<{
+      url: string;
+      title: string;
+      page: number;
+    }>;
   };
 }
 
@@ -81,7 +86,6 @@ serve(async (req) => {
     console.log('Created embedding for query, vector length:', embedding.length);
 
     // Step 2: Query Pinecone for relevant building regulations documents
-    // Fix URL construction - ensure no double slashes
     const pineconeUrl = `${pineconeHost.replace(/\/$/, '')}/query`;
     console.log('Querying Pinecone at:', pineconeUrl);
 
@@ -116,14 +120,28 @@ serve(async (req) => {
       scores: pineconeData.matches?.map(m => m.score) || []
     });
 
-    // Step 3: Extract relevant context from the matched documents
-    // Lower the threshold to 0.25 and include more matches
+    // Step 3: Extract relevant context and images from the matched documents
     const relevantMatches = pineconeData.matches?.filter(match => match.score > 0.25) || [];
     console.log('Filtered matches above 0.25 threshold:', relevantMatches.length);
 
+    // Collect images from relevant matches
+    const relatedImages: Array<{url: string, title: string, source: string}> = [];
+    relevantMatches.forEach(match => {
+      if (match.metadata.images && Array.isArray(match.metadata.images)) {
+        match.metadata.images.forEach(img => {
+          relatedImages.push({
+            url: img.url,
+            title: img.title || `Building Regulation Diagram - Page ${img.page}`,
+            source: match.metadata.source || 'UK Building Regulations'
+          });
+        });
+      }
+    });
+
+    console.log('Found related images:', relatedImages.length);
+
     if (relevantMatches.length === 0) {
       console.log('No matches above 0.25 threshold, using top 3 matches regardless of score');
-      // If no matches above threshold, use top 3 matches anyway
       const topMatches = pineconeData.matches?.slice(0, 3) || [];
       const relevantContext = topMatches
         .map(match => `[Score: ${match.score.toFixed(3)}] ${match.metadata.text}`)
@@ -131,7 +149,8 @@ serve(async (req) => {
       
       if (!relevantContext || relevantContext.trim() === '') {
         return new Response(JSON.stringify({
-          response: "I apologise, but I couldn't find any relevant information in the UK Building Regulations documents to answer your question. This might be because the question is outside the scope of UK Building Regulations, or the specific information hasn't been indexed yet. Could you try rephrasing your question or being more specific about which part of the Building Regulations you're asking about?"
+          response: "I apologise, but I couldn't find any relevant information in the UK Building Regulations documents to answer your question. This might be because the question is outside the scope of UK Building Regulations, or the specific information hasn't been indexed yet. Could you try rephrasing your question or being more specific about which part of the Building Regulations you're asking about?",
+          images: []
         }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
@@ -170,6 +189,7 @@ serve(async (req) => {
 8. If the context doesn't fully answer the question, provide what information is available and suggest consulting the full regulations
 9. Always maintain a professional, helpful tone appropriate for UK construction professionals
 10. Use UK units of measurement (metres, millimetres, square metres, etc.)
+11. When relevant diagrams or images are available in the Building Regulations documents, mention that visual references are available to support your answer
 
 Context from UK Building Regulations documents:
 ${relevantContext}`
@@ -196,7 +216,8 @@ ${relevantContext}`
     console.log('Generated AI response successfully');
 
     return new Response(JSON.stringify({
-      response: aiResponse
+      response: aiResponse,
+      images: relatedImages.slice(0, 5) // Limit to 5 images max
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -216,7 +237,8 @@ ${relevantContext}`
     
     return new Response(JSON.stringify({
       error: errorMessage,
-      details: error.message
+      details: error.message,
+      images: []
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

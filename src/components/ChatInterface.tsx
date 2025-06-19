@@ -16,6 +16,7 @@ interface Message {
   sender: 'user' | 'bot';
   timestamp: Date;
   isTyping?: boolean;
+  images?: string[];
 }
 
 interface ChatInterfaceProps {
@@ -153,7 +154,8 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
         id: (Date.now() + 1).toString(),
         text: data.response || "I apologise, but I couldn't process your request. Please try again.",
         sender: 'bot',
-        timestamp: new Date()
+        timestamp: new Date(),
+        images: data.images || []
       };
 
       setMessages(prev => [...prev, botMessage]);
