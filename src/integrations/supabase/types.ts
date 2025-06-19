@@ -133,7 +133,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      fetch_building_regs_updates: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          update_date: string
+          pages_crawled: number
+          chunks_processed: number
+          vectors_created: number
+          status: string
+          error_message: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
