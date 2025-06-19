@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
@@ -96,9 +96,10 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/10 to-black" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-black" />
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2316a34a" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30" />
       
       <div className="relative flex-1 flex flex-col justify-center px-6">
         {/* Logo and branding */}
@@ -107,10 +108,20 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Building2 className="w-10 h-10 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold mb-2">Welcome to Eezybuild</h1>
+          <motion.div 
+            className="w-20 h-20 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-2 glass"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400 }}
+          >
+            <img 
+              src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
+              alt="Eezybuild Logo" 
+              className="w-full h-full object-contain"
+            />
+          </motion.div>
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
+            Welcome to Eezybuild
+          </h1>
           <p className="text-gray-400 text-lg">Your AI Building Regulations Assistant</p>
         </motion.div>
 
@@ -119,25 +130,25 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-gray-900/50 backdrop-blur-xl rounded-3xl p-8 border border-gray-800"
+          className="card-professional rounded-3xl p-8 max-w-md mx-auto w-full"
         >
-          <div className="flex mb-8">
+          <div className="flex mb-8 bg-gray-800/30 rounded-2xl p-1">
             <button
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
+              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
                 isLogin 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-400 hover:text-white'
+                  ? 'gradient-emerald text-black shadow-lg' 
+                  : 'text-gray-400 hover:text-emerald-300'
               }`}
             >
               Sign In
             </button>
             <button
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all ${
+              className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
                 !isLogin 
-                  ? 'bg-blue-600 text-white' 
-                  : 'text-gray-400 hover:text-white'
+                  ? 'gradient-emerald text-black shadow-lg' 
+                  : 'text-gray-400 hover:text-emerald-300'
               }`}
             >
               Sign Up
@@ -146,28 +157,32 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-300">Full Name</label>
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="space-y-2"
+              >
+                <label className="text-sm font-medium text-emerald-300">Full Name</label>
                 <Input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 h-12"
+                  className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
                   placeholder="Enter your full name"
                   required
                 />
-              </div>
+              </motion.div>
             )}
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Email</label>
+              <label className="text-sm font-medium text-emerald-300">Email</label>
               <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-emerald-500/60" />
                 <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 h-12 pl-12"
+                  className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 pl-12 focus:border-emerald-400 focus:ring-emerald-400/20"
                   placeholder="Enter your email"
                   required
                 />
@@ -175,14 +190,14 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Password</label>
+              <label className="text-sm font-medium text-emerald-300">Password</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-emerald-500/60" />
                 <Input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 h-12 pl-12 pr-12"
+                  className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 pl-12 pr-12 focus:border-emerald-400 focus:ring-emerald-400/20"
                   placeholder="Enter your password"
                   required
                   minLength={6}
@@ -190,7 +205,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-300"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-emerald-500/60 hover:text-emerald-400 transition-colors"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -200,18 +215,26 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-200"
+              className="w-full h-12 gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20"
             >
               {loading ? (
                 <div className="flex items-center space-x-2">
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <motion.div 
+                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
                   <span>{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
+                <motion.div 
+                  className="flex items-center space-x-2"
+                  whileHover={{ x: 2 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
                   <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
                   <ArrowRight className="w-5 h-5" />
-                </div>
+                </motion.div>
               )}
             </Button>
           </form>
