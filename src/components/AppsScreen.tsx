@@ -48,7 +48,7 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
 
   return (
     <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6 min-h-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

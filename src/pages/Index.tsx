@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
@@ -111,7 +112,7 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col overflow-hidden">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
@@ -125,7 +126,7 @@ const Index = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            <div className="w-32 h-10 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-1">
+            <div className="w-40 h-12 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-2">
               <img 
                 src="/lovable-uploads/9fe22cc5-2c91-4dbf-95e3-aefc00d511c7.png" 
                 alt="EezyBuild Logo" 
@@ -146,7 +147,7 @@ const Index = () => {
       </motion.header>
 
       {/* Main Content - fills space between header and nav */}
-      <main className="flex-1 min-h-0 overflow-hidden">
+      <main className="flex-1 min-h-0 overflow-y-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -154,7 +155,7 @@ const Index = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="h-full"
+            className="h-full overflow-y-auto"
           >
             {renderContent()}
           </motion.div>
