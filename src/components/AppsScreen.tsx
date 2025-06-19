@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import VolumetricCalculator from './VolumetricCalculator';
 import TimberCalculator from './TimberCalculator';
 import ReadyReckoner from './ReadyReckoner';
-import BuildingRegsScraper from './BuildingRegsScraper';
 
 interface AppsScreenProps {
   user: any;
@@ -37,13 +36,6 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
       description: 'Quick reference tool for unit conversions, material densities, and standard calculations.',
       icon: '📋',
       category: 'Reference'
-    },
-    {
-      id: 'building-regs-scraper',
-      title: 'Building Regs Scraper',
-      description: 'Automated tool to scrape and update building regulations from gov.uk website.',
-      icon: '🔄',
-      category: 'Automation'
     }
   ];
 
@@ -73,10 +65,6 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
   
   if (activeApp === 'ready-reckoner') {
     return <ReadyReckoner onBack={() => setActiveApp(null)} />;
-  }
-  
-  if (activeApp === 'building-regs-scraper') {
-    return <BuildingRegsScraper onBack={() => setActiveApp(null)} />;
   }
 
   return (
