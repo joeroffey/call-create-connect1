@@ -6,6 +6,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import SupportDialog from './SupportDialog';
 
 interface ProfileScreenProps {
   user: any;
@@ -17,6 +18,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   const { subscription, hasActiveSubscription } = useSubscription(user?.id);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSupportDialogOpen, setIsSupportDialogOpen] = useState(false);
   const { toast } = useToast();
 
   // Load existing profile image on component mount
@@ -63,43 +65,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   };
 
   const handleContactSupport = () => {
-    try {
-      const subject = encodeURIComponent('Support Request - EezyBuild');
-      const body = encodeURIComponent(`Hello EezyBuild Support Team,
-
-I need assistance with my EezyBuild account.
-
-User Details:
-- User ID: ${user?.id || 'N/A'}
-- Email: ${user?.email || 'N/A'}
-- Name: ${user?.user_metadata?.name || 'N/A'}
-
-Please describe your issue below:
-
-
-
-Best regards,
-${user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}`);
-      
-      const mailtoLink = `mailto:info@eezybuild.com?subject=${subject}&body=${body}`;
-      console.log('Opening email client with:', mailtoLink);
-      
-      // Try to open the email client
-      window.location.href = mailtoLink;
-      
-      // Show success message
-      toast({
-        title: "Email client opened",
-        description: "Your email client should open with a pre-filled support request",
-      });
-    } catch (error) {
-      console.error('Error opening email client:', error);
-      toast({
-        title: "Error",
-        description: "Unable to open email client. Please email info@eezybuild.com directly",
-        variant: "destructive"
-      });
-    }
+    setIsSupportDialogOpen(true);
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -378,6 +344,13 @@ ${user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}`);
           </Button>
         </motion.div>
       </div>
+      <SupportDialog
+        open={isSupportDialogOpen}
+        onOpenChange={setIsSupportDialogOpen}
+        user={user}
+        subscription={subscription}
+        hasActiveSubscription={hasActiveSubscription}
+      />
     </div>
   );
 };
