@@ -139,8 +139,8 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
     <div className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
       {/* Header */}
       <ChatHeader 
-        title="UK Building Regulations Chat"
-        subtitle="Get expert guidance on building standards and compliance"
+        title=""
+        subtitle=""
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         sidebarOpen={isSidebarOpen}
       />
@@ -178,28 +178,35 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
             </motion.div>
           )}
 
-          {/* Input Area */}
-          <div className="glass border-t border-white/5 p-4">
-            <div className="flex items-center space-x-3">
-              <div className="flex-1">
-                <textarea
-                  ref={inputRef}
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  rows={1}
-                  placeholder="Ask a question about UK Building Regulations..."
-                  className="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-0 transition-colors resize-none"
-                />
+          {/* Improved Input Area */}
+          <div className="border-t border-gray-800/30 p-6 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
+            <div className="max-w-4xl mx-auto">
+              <div className="relative flex items-end space-x-4">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    rows={1}
+                    placeholder="Ask a question about UK Building Regulations..."
+                    className="w-full px-6 py-4 rounded-2xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-[15px] leading-relaxed font-medium"
+                    style={{
+                      minHeight: '56px',
+                      maxHeight: '120px'
+                    }}
+                  />
+                </div>
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.02 }}
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim() || isLoading}
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold p-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-5 h-5" />
+                </motion.button>
               </div>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSendMessage}
-                className="bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-2.5 px-5 rounded-xl focus:outline-none focus:ring-0 transition-colors"
-                disabled={isLoading}
-              >
-                {isLoading ? 'Sending...' : <Send className="w-5 h-5" />}
-              </motion.button>
             </div>
           </div>
         </div>
