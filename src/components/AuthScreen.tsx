@@ -218,31 +218,33 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
               </div>
             </div>
 
-            <Button
+            <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 active:text-black focus:text-black"
+              className="w-full h-12 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-black font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 disabled:opacity-50"
+              style={{ color: '#000000' }}
             >
               {loading ? (
-                <div className="flex items-center space-x-2 text-black">
+                <div className="flex items-center justify-center space-x-2" style={{ color: '#000000' }}>
                   <motion.div 
                     className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
-                  <span className="text-black">{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
+                  <span style={{ color: '#000000' }}>{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
                 </div>
               ) : (
                 <motion.div 
-                  className="flex items-center space-x-2 text-black"
+                  className="flex items-center justify-center space-x-2"
+                  style={{ color: '#000000' }}
                   whileHover={{ x: 2 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <span className="text-black">{isLogin ? 'Sign In' : 'Create Account'}</span>
-                  <ArrowRight className="w-5 h-5 text-black" />
+                  <span style={{ color: '#000000' }}>{isLogin ? 'Sign In' : 'Create Account'}</span>
+                  <ArrowRight className="w-5 h-5" style={{ color: '#000000' }} />
                 </motion.div>
               )}
-            </Button>
+            </button>
           </form>
         </motion.div>
 
