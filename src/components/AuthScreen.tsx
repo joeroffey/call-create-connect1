@@ -221,25 +221,25 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-12 gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20"
+              className="w-full h-12 gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 active:text-black focus:text-black"
             >
               {loading ? (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 text-black">
                   <motion.div 
                     className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
-                  <span>{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
+                  <span className="text-black">{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
                 </div>
               ) : (
                 <motion.div 
-                  className="flex items-center space-x-2"
+                  className="flex items-center space-x-2 text-black"
                   whileHover={{ x: 2 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
-                  <ArrowRight className="w-5 h-5" />
+                  <span className="text-black">{isLogin ? 'Sign In' : 'Create Account'}</span>
+                  <ArrowRight className="w-5 h-5 text-black" />
                 </motion.div>
               )}
             </Button>
