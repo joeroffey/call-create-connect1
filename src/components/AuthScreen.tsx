@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -95,12 +96,12 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col overflow-y-auto">
       {/* Background effects */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 via-green-900/10 to-black" />
       <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%2316a34a%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30" />
       
-      <div className="relative flex-1 flex flex-col justify-center px-6">
+      <div className="relative flex-1 flex flex-col justify-center px-6 py-8">
         {/* Logo and branding */}
         <motion.div
           initial={{ opacity: 0, y: -30 }}
@@ -108,12 +109,12 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           className="text-center mb-12"
         >
           <motion.div 
-            className="w-56 h-20 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-2 glass"
+            className="w-64 h-20 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-4 glass"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
             <img 
-              src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
+              src="/lovable-uploads/9fe22cc5-2c91-4dbf-95e3-aefc00d511c7.png" 
               alt="EezyBuild Logo" 
               className="w-full h-full object-contain"
             />

@@ -13,9 +13,9 @@ const TypingIndicator = () => {
       <div className="flex items-start space-x-3">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center overflow-hidden">
           <img 
-            src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
+            src="/lovable-uploads/9fe22cc5-2c91-4dbf-95e3-aefc00d511c7.png" 
             alt="EezyBuild Bot" 
-            className="w-6 h-3 object-contain"
+            className="w-6 h-4 object-contain"
           />
         </div>
         <div className="bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3">

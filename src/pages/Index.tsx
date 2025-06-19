@@ -111,7 +111,7 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
@@ -125,16 +125,13 @@ const Index = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            <div className="w-24 h-12 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-1">
+            <div className="w-32 h-10 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-1">
               <img 
-                src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
+                src="/lovable-uploads/9fe22cc5-2c91-4dbf-95e3-aefc00d511c7.png" 
                 alt="EezyBuild Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-              EezyBuild
-            </h1>
           </motion.div>
           <motion.div 
             className="flex items-center space-x-3 bg-gradient-to-r from-emerald-500/20 to-green-500/20 px-4 py-2 rounded-full border border-emerald-500/30"
@@ -149,7 +146,7 @@ const Index = () => {
       </motion.header>
 
       {/* Main Content - fills space between header and nav */}
-      <main className="flex-1 min-h-0">
+      <main className="flex-1 min-h-0 overflow-hidden">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
