@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, Ruler, HardHat, Building2, ArrowRight } from 'lucide-react';
+import { Calculator, Ruler, Building2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import VolumetricCalculator from './VolumetricCalculator';
+import TimberCalculator from './TimberCalculator';
+import ReadyReckoner from './ReadyReckoner';
 
 interface AppsScreenProps {
   user: any;
@@ -26,30 +28,19 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
       title: 'Timber Calculator',
       description: 'Calculate timber requirements for construction projects',
       icon: Ruler,
-      comingSoon: true
-    },
-    {
-      id: 'cement-calculator',
-      title: 'Cement Calculator',
-      description: 'Calculate cement and mortar quantities for various applications',
-      icon: HardHat,
-      comingSoon: true
+      comingSoon: false
     },
     {
       id: 'ready-reckoner',
       title: 'Ready Reckoner',
       description: 'Quick reference for common building calculations and conversions',
       icon: Building2,
-      comingSoon: true
+      comingSoon: false
     }
   ];
 
   const handleAppClick = (appId: string) => {
-    if (appId === 'volumetric-calculator') {
-      setActiveApp(appId);
-    } else {
-      console.log(`Opening ${appId} - Coming soon`);
-    }
+    setActiveApp(appId);
   };
 
   const handleBackToApps = () => {
@@ -59,6 +50,14 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
   // Show the specific app if one is active
   if (activeApp === 'volumetric-calculator') {
     return <VolumetricCalculator onBack={handleBackToApps} />;
+  }
+  
+  if (activeApp === 'timber-calculator') {
+    return <TimberCalculator onBack={handleBackToApps} />;
+  }
+  
+  if (activeApp === 'ready-reckoner') {
+    return <ReadyReckoner onBack={handleBackToApps} />;
   }
 
   return (
@@ -79,7 +78,7 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
         </motion.div>
 
         {/* Apps Grid */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {apps.map((app, index) => {
             const Icon = app.icon;
             
@@ -138,14 +137,14 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
         >
           <div className="text-center">
             <h3 className="text-xl font-semibold text-emerald-300 mb-2">
-              More Apps Coming Soon
+              Professional Construction Tools
             </h3>
             <p className="text-gray-400 mb-4">
-              We're continuously developing new tools to help construction professionals with their daily calculations and project planning.
+              All the essential calculators and references you need for accurate construction planning and material estimation.
             </p>
             <div className="flex items-center justify-center space-x-2 text-sm text-emerald-400">
               <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span>In Development</span>
+              <span>Always Updated</span>
             </div>
           </div>
         </motion.div>
