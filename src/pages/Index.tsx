@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
+import { MessageCircle, Search, User, Settings, Crown, Calculator, Monitor } from 'lucide-react';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -9,6 +9,7 @@ import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
 import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import AppsScreen from '../components/AppsScreen';
+import BuildingRegsMonitor from '../components/BuildingRegsMonitor';
 import OnboardingScreen from '../components/OnboardingScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
@@ -98,6 +99,7 @@ const Index = () => {
     { id: 'chat', icon: MessageCircle, label: 'Chat' },
     { id: 'search', icon: Search, label: 'Search' },
     { id: 'apps', icon: Calculator, label: 'Apps' },
+    { id: 'monitor', icon: Monitor, label: 'Monitor' },
     { id: 'profile', icon: User, label: 'Profile' },
     { id: 'settings', icon: Settings, label: 'Settings' }
   ];
@@ -130,6 +132,8 @@ const Index = () => {
         return <AdvancedSearchInterface user={user} />;
       case 'apps':
         return <AppsScreen user={user} />;
+      case 'monitor':
+        return <BuildingRegsMonitor />;
       case 'profile':
         return (
           <ProfileScreen 
