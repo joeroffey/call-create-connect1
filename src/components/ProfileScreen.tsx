@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Crown, Mail, Calendar, Settings, LogOut, ChevronRight, Camera, Upload } from 'lucide-react';
@@ -64,18 +63,43 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   };
 
   const handleContactSupport = () => {
-    const subject = encodeURIComponent('Support Request');
-    const body = encodeURIComponent(`Hello,
+    try {
+      const subject = encodeURIComponent('Support Request - EezyBuild');
+      const body = encodeURIComponent(`Hello EezyBuild Support Team,
 
 I need assistance with my EezyBuild account.
 
-User ID: ${user?.id || 'N/A'}
-Email: ${user?.email || 'N/A'}
+User Details:
+- User ID: ${user?.id || 'N/A'}
+- Email: ${user?.email || 'N/A'}
+- Name: ${user?.user_metadata?.name || 'N/A'}
 
 Please describe your issue below:
 
-`);
-    window.location.href = `mailto:info@eezybuild.com?subject=${subject}&body=${body}`;
+
+
+Best regards,
+${user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}`);
+      
+      const mailtoLink = `mailto:info@eezybuild.com?subject=${subject}&body=${body}`;
+      console.log('Opening email client with:', mailtoLink);
+      
+      // Try to open the email client
+      window.location.href = mailtoLink;
+      
+      // Show success message
+      toast({
+        title: "Email client opened",
+        description: "Your email client should open with a pre-filled support request",
+      });
+    } catch (error) {
+      console.error('Error opening email client:', error);
+      toast({
+        title: "Error",
+        description: "Unable to open email client. Please email info@eezybuild.com directly",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
