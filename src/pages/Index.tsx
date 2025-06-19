@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
-import ChatInterface from '../components/ChatInterface';
+import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
 import AccountSettingsScreen from '../components/AccountSettingsScreen';
@@ -149,7 +150,7 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter">
-      {/* Header */}
+      {/* Header with safe area top padding */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -196,7 +197,7 @@ const Index = () => {
         </motion.div>
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation with safe area bottom padding */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
