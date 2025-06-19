@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator, Ruler, Building2, ArrowRight } from 'lucide-react';
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import VolumetricCalculator from './VolumetricCalculator';
 import TimberCalculator from './TimberCalculator';
 import ReadyReckoner from './ReadyReckoner';
+import BuildingRegsScraper from './BuildingRegsScraper';
 
 interface AppsScreenProps {
   user: any;
@@ -17,27 +17,41 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
 
   const apps = [
     {
-      id: 'volumetric-calculator',
-      title: 'Volumetric Calculator',
-      description: 'Calculate volumes for concrete, excavation, and material quantities',
-      icon: Calculator,
-      comingSoon: false
-    },
-    {
       id: 'timber-calculator',
       title: 'Timber Calculator',
-      description: 'Calculate timber requirements for construction projects',
-      icon: Ruler,
-      comingSoon: false
+      description: 'Calculate timber requirements for flooring, framing, and roofing projects with cost estimates.',
+      icon: '🪵',
+      category: 'Calculators'
+    },
+    {
+      id: 'volumetric-calculator',
+      title: 'Volumetric Calculator',
+      description: 'Calculate volumes and material quantities for concrete, aggregates, and other building materials.',
+      icon: '📐',
+      category: 'Calculators'
     },
     {
       id: 'ready-reckoner',
       title: 'Ready Reckoner',
-      description: 'Quick reference for common building calculations and conversions',
-      icon: Building2,
-      comingSoon: false
+      description: 'Quick reference tool for unit conversions, material densities, and standard calculations.',
+      icon: '📋',
+      category: 'Reference'
+    },
+    {
+      id: 'building-regs-scraper',
+      title: 'Building Regs Scraper',
+      description: 'Automated tool to scrape and update building regulations from gov.uk website.',
+      icon: '🔄',
+      category: 'Automation'
     }
   ];
+
+  const categories = ['All', ...Array.from(new Set(apps.map(app => app.category)))];
+  const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const filteredApps = selectedCategory === 'All' 
+    ? apps 
+    : apps.filter(app => app.category === selectedCategory);
 
   const handleAppClick = (appId: string) => {
     setActiveApp(appId);
@@ -48,16 +62,20 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
   };
 
   // Show the specific app if one is active
-  if (activeApp === 'volumetric-calculator') {
-    return <VolumetricCalculator onBack={handleBackToApps} />;
+  if (activeApp === 'timber-calculator') {
+    return <TimberCalculator onBack={() => setActiveApp(null)} />;
   }
   
-  if (activeApp === 'timber-calculator') {
-    return <TimberCalculator onBack={handleBackToApps} />;
+  if (activeApp === 'volumetric-calculator') {
+    return <VolumetricCalculator onBack={() => setActiveApp(null)} />;
   }
   
   if (activeApp === 'ready-reckoner') {
-    return <ReadyReckoner onBack={handleBackToApps} />;
+    return <ReadyReckoner onBack={() => setActiveApp(null)} />;
+  }
+  
+  if (activeApp === 'building-regs-scraper') {
+    return <BuildingRegsScraper onBack={() => setActiveApp(null)} />;
   }
 
   return (
@@ -79,7 +97,7 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
 
         {/* Apps Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {apps.map((app, index) => {
+          {filteredApps.map((app, index) => {
             const Icon = app.icon;
             
             return (
