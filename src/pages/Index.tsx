@@ -8,6 +8,7 @@ import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
 import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import AppsScreen from '../components/AppsScreen';
+import OnboardingScreen from '../components/OnboardingScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -17,6 +18,7 @@ const Index = () => {
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -25,17 +27,23 @@ const Index = () => {
         console.log('Auth state changed:', event, session);
         setSession(session);
         if (session?.user) {
-          setUser({
+          const userData = {
             id: session.user.id,
             email: session.user.email,
             name: session.user.user_metadata?.name || session.user.email?.split('@')[0],
             subscription: 'pro',
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
-          });
+          };
+          setUser(userData);
           setIsAuthenticated(true);
+          
+          // Check if user needs onboarding (in real app, check from database)
+          const hasCompletedOnboarding = session.user.user_metadata?.onboarding_completed;
+          setNeedsOnboarding(!hasCompletedOnboarding);
         } else {
           setUser(null);
           setIsAuthenticated(false);
+          setNeedsOnboarding(false);
         }
         setLoading(false);
       }
@@ -45,20 +53,45 @@ const Index = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
-        setUser({
+        const userData = {
           id: session.user.id,
           email: session.user.email,
           name: session.user.user_metadata?.name || session.user.email?.split('@')[0],
           subscription: 'pro',
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
-        });
+        };
+        setUser(userData);
         setIsAuthenticated(true);
+        
+        // Check if user needs onboarding
+        const hasCompletedOnboarding = session.user.user_metadata?.onboarding_completed;
+        setNeedsOnboarding(!hasCompletedOnboarding);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleOnboardingComplete = async (userData: any) => {
+    // Update user metadata to mark onboarding as completed
+    try {
+      await supabase.auth.updateUser({
+        data: { 
+          onboarding_completed: true,
+          full_name: userData.fullName,
+          address: userData.address,
+          occupation: userData.occupation,
+          date_of_birth: userData.dateOfBirth
+        }
+      });
+      
+      setUser(userData);
+      setNeedsOnboarding(false);
+    } catch (error) {
+      console.error('Error updating user metadata:', error);
+    }
+  };
 
   const tabs = [
     { id: 'chat', icon: MessageCircle, label: 'Chat' },
@@ -82,6 +115,10 @@ const Index = () => {
 
   if (!isAuthenticated) {
     return <AuthScreen onAuth={setIsAuthenticated} setUser={setUser} />;
+  }
+
+  if (needsOnboarding) {
+    return <OnboardingScreen user={user} onComplete={handleOnboardingComplete} />;
   }
 
   const renderContent = () => {
