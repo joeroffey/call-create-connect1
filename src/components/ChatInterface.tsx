@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,7 +17,11 @@ interface Message {
   sender: 'user' | 'bot';
   timestamp: Date;
   isTyping?: boolean;
-  images?: string[];
+  images?: Array<{
+    url: string;
+    title: string;
+    source: string;
+  }>;
 }
 
 interface ChatInterfaceProps {
