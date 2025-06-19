@@ -24,14 +24,24 @@ const BuildingRegsMonitor = () => {
 
   const fetchUpdates = async () => {
     try {
+      // Use raw SQL query until the types are updated
       const { data, error } = await supabase
-        .from('building_regs_updates')
-        .select('*')
-        .order('update_date', { ascending: false })
-        .limit(10);
+        .rpc('fetch_building_regs_updates');
 
-      if (error) throw error;
-      setUpdates(data || []);
+      if (error) {
+        console.error('Error fetching updates:', error);
+        // Fallback: try direct table access
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('building_regs_updates' as any)
+          .select('*')
+          .order('update_date', { ascending: false })
+          .limit(10);
+        
+        if (fallbackError) throw fallbackError;
+        setUpdates((fallbackData || []) as UpdateRecord[]);
+      } else {
+        setUpdates((data || []) as UpdateRecord[]);
+      }
     } catch (error) {
       console.error('Error fetching updates:', error);
       toast({

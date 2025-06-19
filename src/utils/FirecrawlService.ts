@@ -69,7 +69,7 @@ export class FirecrawlService {
           onlyMainContent: true,
         },
         allowBackwardLinks: true,
-        allowExternalContentLinks: false
+        allowExternalLinks: false
       }) as CrawlResponse;
 
       if (!crawlResponse.success) {
