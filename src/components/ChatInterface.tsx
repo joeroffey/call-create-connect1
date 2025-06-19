@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -6,6 +7,7 @@ import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
 import ImageGallery from './chat/ImageGallery';
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from '@/integrations/supabase/client';
 
 interface ChatMessageData {
   id: string;
@@ -31,6 +33,7 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
   const [newMessage, setNewMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
@@ -76,6 +79,51 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
     isWelcome: true
   };
 
+  const createNewConversation = async (firstMessage: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert([
+          {
+            user_id: user.id,
+            title: firstMessage.slice(0, 50) + (firstMessage.length > 50 ? '...' : ''),
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data.id;
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      return null;
+    }
+  };
+
+  const saveMessage = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert([
+          {
+            conversation_id: conversationId,
+            content,
+            role,
+          }
+        ]);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving message:', error);
+    }
+  };
+
+  const handleNewConversation = () => {
+    setMessages([welcomeMessage]);
+    setCurrentConversationId(null);
+    setRelatedImages([]);
+  };
+
   const handleSendMessage = async () => {
     if (newMessage.trim() === '') return;
 
@@ -87,7 +135,20 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
     };
 
     setMessages(prevMessages => [...prevMessages, userMessage]);
+    const messageText = newMessage;
     setNewMessage('');
+
+    // Create new conversation if needed
+    let conversationId = currentConversationId;
+    if (!conversationId && user) {
+      conversationId = await createNewConversation(messageText);
+      setCurrentConversationId(conversationId);
+    }
+
+    // Save user message
+    if (conversationId && user) {
+      await saveMessage(conversationId, messageText, 'user');
+    }
 
     setIsLoading(true);
     try {
@@ -97,7 +158,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
           'Content-Type': 'application/json',
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyd2Jna3Nzb2F0cmh4ZHJydGZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMzE0OTcsImV4cCI6MjA2NTkwNzQ5N30.FxPPrtKlz5MZxnS_6kAHMOMJiT25DYXOKzT1V9k-KhU'
         },
-        body: JSON.stringify({ message: newMessage }),
+        body: JSON.stringify({ message: messageText }),
       });
 
       if (!response.ok) {
@@ -116,6 +177,11 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
       setRelatedImages(data.images || []);
+
+      // Save assistant message
+      if (conversationId && user) {
+        await saveMessage(conversationId, data.response, 'assistant');
+      }
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
@@ -181,6 +247,19 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
           {/* Fixed Input Area */}
           <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
             <div className="max-w-4xl mx-auto">
+              {/* New Chat Button */}
+              <div className="flex justify-center mb-3">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleNewConversation}
+                  className="flex items-center px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 transition-colors text-sm font-medium"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Chat
+                </motion.button>
+              </div>
+
               <div className="flex items-end space-x-3">
                 <div className="flex-1">
                   <textarea
