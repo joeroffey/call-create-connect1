@@ -80,7 +80,7 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'chat':
-        return <ChatInterface user={user} />;
+        return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
       case 'search':
         return (
           <div className="flex-1 flex items-center justify-center p-8">
@@ -100,7 +100,7 @@ const Index = () => {
       case 'settings':
         return <SubscriptionScreen user={user} />;
       default:
-        return <ChatInterface user={user} />;
+        return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
     }
   };
 
