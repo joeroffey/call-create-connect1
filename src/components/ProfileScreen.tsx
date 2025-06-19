@@ -3,32 +3,66 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { User, Crown, Mail, Calendar, Settings, LogOut, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProfileScreenProps {
   user: any;
+  onNavigateToSettings?: () => void;
+  onNavigateToAccountSettings?: () => void;
 }
 
-const ProfileScreen = ({ user }: ProfileScreenProps) => {
+const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings }: ProfileScreenProps) => {
+  const { subscription, hasActiveSubscription } = useSubscription(user?.id);
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  const handleContactSupport = () => {
+    window.location.href = 'mailto:info@eezybuild.com?subject=Support Request';
+  };
+
   const menuItems = [
     {
       icon: Settings,
       label: 'Account Settings',
       description: 'Manage your account preferences',
-      action: () => console.log('Settings')
+      action: () => onNavigateToAccountSettings?.()
     },
     {
       icon: Crown,
       label: 'Subscription',
       description: 'Manage your subscription plan',
-      action: () => console.log('Subscription')
+      action: () => onNavigateToSettings?.()
     },
     {
       icon: Mail,
       label: 'Contact Support',
       description: 'Get help from our team',
-      action: () => console.log('Support')
+      action: handleContactSupport
     }
   ];
+
+  // Calculate member since date
+  const memberSince = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long' 
+  }) : 'January 2024';
+
+  // Get subscription details
+  const subscriptionTier = subscription?.plan_type 
+    ? subscription.plan_type.charAt(0).toUpperCase() + subscription.plan_type.slice(1)
+    : 'Free';
+
+  const subscriptionEndDate = subscription?.current_period_end 
+    ? new Date(subscription.current_period_end).toLocaleDateString()
+    : null;
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
@@ -41,23 +75,27 @@ const ProfileScreen = ({ user }: ProfileScreenProps) => {
         >
           <div className="relative inline-block mb-4">
             <img
-              src={user?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.email}`}
+              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
               alt="Profile"
-              className="w-24 h-24 rounded-full bg-gray-800"
+              className="w-24 h-24 rounded-full object-cover bg-gray-800"
             />
-            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
-              <Crown className="w-4 h-4 text-white" />
-            </div>
+            {hasActiveSubscription && (
+              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+                <Crown className="w-4 h-4 text-white" />
+              </div>
+            )}
           </div>
           <h1 className="text-2xl font-bold mb-1">{user?.name || 'User'}</h1>
           <p className="text-gray-400 mb-2">{user?.email}</p>
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-full px-4 py-2">
-            <Crown className="w-4 h-4 text-yellow-500" />
-            <span className="text-sm font-medium text-yellow-500">Professional Plan</span>
-          </div>
+          {hasActiveSubscription && (
+            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-full px-4 py-2">
+              <Crown className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm font-medium text-yellow-500">{subscriptionTier} Plan</span>
+            </div>
+          )}
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats - placeholder for now, will be updated with real data */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -65,11 +103,13 @@ const ProfileScreen = ({ user }: ProfileScreenProps) => {
           className="grid grid-cols-2 gap-4 mb-8"
         >
           <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-4 border border-gray-800">
-            <div className="text-2xl font-bold text-blue-400 mb-1">247</div>
+            <div className="text-2xl font-bold text-blue-400 mb-1">0</div>
             <div className="text-sm text-gray-400">Queries This Month</div>
           </div>
           <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-4 border border-gray-800">
-            <div className="text-2xl font-bold text-green-400 mb-1">253</div>
+            <div className="text-2xl font-bold text-green-400 mb-1">
+              {hasActiveSubscription ? 'Unlimited' : '0'}
+            </div>
             <div className="text-sm text-gray-400">Remaining Queries</div>
           </div>
         </motion.div>
@@ -118,12 +158,22 @@ const ProfileScreen = ({ user }: ProfileScreenProps) => {
         >
           <div className="flex items-center space-x-3 mb-3">
             <Calendar className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-400">Member since January 2024</span>
+            <span className="text-sm text-gray-400">Member since {memberSince}</span>
           </div>
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 mb-3">
             <Mail className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-400">Verified account</span>
+            <span className="text-sm text-gray-400">
+              {user?.email_confirmed_at ? 'Verified account' : 'Account not verified'}
+            </span>
           </div>
+          {hasActiveSubscription && subscriptionEndDate && (
+            <div className="flex items-center space-x-3">
+              <Crown className="w-5 h-5 text-yellow-400" />
+              <span className="text-sm text-gray-400">
+                Subscription expires {subscriptionEndDate}
+              </span>
+            </div>
+          )}
         </motion.div>
 
         {/* Sign out button */}
@@ -133,6 +183,7 @@ const ProfileScreen = ({ user }: ProfileScreenProps) => {
           transition={{ delay: 0.6 }}
         >
           <Button
+            onClick={handleSignOut}
             variant="outline" 
             className="w-full h-12 border-red-600/30 text-red-400 hover:bg-red-600/10 hover:border-red-500 rounded-xl"
           >
