@@ -81,7 +81,8 @@ serve(async (req) => {
     console.log('Created embedding for query, vector length:', embedding.length);
 
     // Step 2: Query Pinecone for relevant building regulations documents
-    const pineconeUrl = `${pineconeHost}/query`;
+    // Fix URL construction - ensure no double slashes
+    const pineconeUrl = `${pineconeHost.replace(/\/$/, '')}/query`;
     console.log('Querying Pinecone at:', pineconeUrl);
 
     const pineconeResponse = await fetch(pineconeUrl, {
