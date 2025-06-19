@@ -1,7 +1,6 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,8 +38,20 @@ serve(async (req) => {
     const pineconeKey = Deno.env.get('PINECONE_KEY');
     const pineconeHost = Deno.env.get('PINECONE_HOST');
 
+    console.log('Environment check:', {
+      hasOpenAI: !!openaiKey,
+      hasPineconeKey: !!pineconeKey,
+      hasPineconeHost: !!pineconeHost,
+      pineconeHost: pineconeHost
+    });
+
     if (!openaiKey || !pineconeKey || !pineconeHost) {
-      throw new Error('Missing required API keys or configuration');
+      console.error('Missing environment variables:', {
+        openaiKey: !!openaiKey,
+        pineconeKey: !!pineconeKey,
+        pineconeHost: !!pineconeHost
+      });
+      throw new Error('Missing required API keys or configuration. Please ensure all secrets are properly configured.');
     }
 
     console.log('Processing message:', message);
@@ -59,16 +70,21 @@ serve(async (req) => {
     });
 
     if (!embeddingResponse.ok) {
-      throw new Error(`OpenAI embedding failed: ${embeddingResponse.status}`);
+      const errorText = await embeddingResponse.text();
+      console.error('OpenAI embedding error:', errorText);
+      throw new Error(`OpenAI embedding failed: ${embeddingResponse.status} - ${errorText}`);
     }
 
     const embeddingData = await embeddingResponse.json();
     const embedding = embeddingData.data[0].embedding;
 
-    console.log('Created embedding for query');
+    console.log('Created embedding for query, vector length:', embedding.length);
 
     // Step 2: Query Pinecone for relevant building regulations documents
-    const pineconeResponse = await fetch(`${pineconeHost}/query`, {
+    const pineconeUrl = `${pineconeHost}/query`;
+    console.log('Querying Pinecone at:', pineconeUrl);
+
+    const pineconeResponse = await fetch(pineconeUrl, {
       method: 'POST',
       headers: {
         'Api-Key': pineconeKey,
@@ -83,25 +99,38 @@ serve(async (req) => {
     });
 
     if (!pineconeResponse.ok) {
-      throw new Error(`Pinecone query failed: ${pineconeResponse.status}`);
+      const errorText = await pineconeResponse.text();
+      console.error('Pinecone error:', {
+        status: pineconeResponse.status,
+        statusText: pineconeResponse.statusText,
+        error: errorText,
+        url: pineconeUrl
+      });
+      throw new Error(`Pinecone query failed: ${pineconeResponse.status} - ${errorText}. Please check your Pinecone configuration.`);
     }
 
     const pineconeData: PineconeResponse = await pineconeResponse.json();
-    console.log('Retrieved documents from Pinecone:', pineconeData.matches.length);
+    console.log('Retrieved documents from Pinecone:', {
+      matchCount: pineconeData.matches?.length || 0,
+      scores: pineconeData.matches?.map(m => m.score) || []
+    });
 
     // Step 3: Extract relevant context from the matched documents
     const relevantContext = pineconeData.matches
-      .filter(match => match.score > 0.7) // Only include highly relevant matches
+      ?.filter(match => match.score > 0.7) // Only include highly relevant matches
       .map(match => match.metadata.text)
       .join('\n\n---\n\n');
 
-    if (!relevantContext) {
+    if (!relevantContext || relevantContext.trim() === '') {
+      console.log('No relevant context found with high enough scores');
       return new Response(JSON.stringify({
-        response: "I apologise, but I couldn't find relevant information in the UK Building Regulations documents to answer your question. Please ensure your question relates to UK Building Regulations, planning permissions, or construction requirements."
+        response: "I apologise, but I couldn't find sufficiently relevant information in the UK Building Regulations documents to answer your question accurately. Please ensure your question relates specifically to UK Building Regulations, planning permissions, or construction requirements. Could you try rephrasing your question or being more specific?"
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log('Found relevant context, length:', relevantContext.length);
 
     // Step 4: Generate response using OpenAI with UK Building Regulations context
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -119,11 +148,14 @@ serve(async (req) => {
 
 1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
 2. Use ONLY the provided context from official UK Building Regulations documents
-3. Use British English spelling and terminology (e.g., "colour" not "color", "metres" not "meters", "storey" not "story")
+3. Use British English spelling and terminology throughout (e.g., "colour" not "color", "metres" not "meters", "storey" not "story", "realise" not "realize", "behaviour" not "behavior")
 4. If asked about non-UK regulations or unrelated topics, politely decline and redirect to UK Building Regulations
 5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
 6. Be precise and reference specific requirements from the documents provided
-7. If you cannot find relevant information in the provided context, say so clearly
+7. Use UK construction terminology (e.g., "ground floor" not "first floor", "lift" not "elevator", "tap" not "faucet")
+8. If you cannot find relevant information in the provided context, say so clearly
+9. Always maintain a professional, helpful tone appropriate for UK construction professionals
+10. Use UK units of measurement (metres, millimetres, square metres, etc.)
 
 Context from UK Building Regulations documents:
 ${relevantContext}`
@@ -139,13 +171,15 @@ ${relevantContext}`
     });
 
     if (!chatResponse.ok) {
-      throw new Error(`OpenAI chat completion failed: ${chatResponse.status}`);
+      const errorText = await chatResponse.text();
+      console.error('OpenAI chat error:', errorText);
+      throw new Error(`OpenAI chat completion failed: ${chatResponse.status} - ${errorText}`);
     }
 
     const chatData = await chatResponse.json();
     const aiResponse = chatData.choices[0].message.content;
 
-    console.log('Generated AI response');
+    console.log('Generated AI response successfully');
 
     return new Response(JSON.stringify({
       response: aiResponse
@@ -155,8 +189,20 @@ ${relevantContext}`
 
   } catch (error) {
     console.error('Error in building-regulations-chat function:', error);
+    
+    let errorMessage = 'I apologise, but I encountered an error processing your request. Please try again.';
+    
+    if (error.message.includes('Pinecone')) {
+      errorMessage = 'I apologise, but there seems to be an issue connecting to the Building Regulations database. Please check that your Pinecone configuration is correct and try again.';
+    } else if (error.message.includes('OpenAI')) {
+      errorMessage = 'I apologise, but there seems to be an issue with the AI service. Please check your OpenAI configuration and try again.';
+    } else if (error.message.includes('Missing required API keys')) {
+      errorMessage = 'I apologise, but the system configuration is incomplete. Please ensure all required API keys are properly configured.';
+    }
+    
     return new Response(JSON.stringify({
-      error: 'I apologise, but I encountered an error processing your request. Please try again.'
+      error: errorMessage,
+      details: error.message
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Building2, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthScreenProps {
   onAuth: (isAuth: boolean) => void;
@@ -17,22 +19,80 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setUser({
-        email,
-        name: name || email.split('@')[0],
-        subscription: 'pro',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
+    try {
+      if (isLogin) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data.user) {
+          setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.user_metadata?.name || email.split('@')[0],
+            subscription: 'pro',
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
+          });
+          onAuth(true);
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully signed in.",
+          });
+        }
+      } else {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              name: name,
+            },
+            emailRedirectTo: `${window.location.origin}/`
+          }
+        });
+
+        if (error) {
+          toast({
+            title: "Registration Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data.user) {
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to confirm your account.",
+          });
+          setIsLogin(true);
+        }
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
       });
-      onAuth(true);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
 
   return (
@@ -94,6 +154,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                   onChange={(e) => setName(e.target.value)}
                   className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 h-12"
                   placeholder="Enter your full name"
+                  required
                 />
               </div>
             )}
@@ -108,6 +169,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 h-12 pl-12"
                   placeholder="Enter your email"
+                  required
                 />
               </div>
             </div>
@@ -122,6 +184,8 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 h-12 pl-12 pr-12"
                   placeholder="Enter your password"
+                  required
+                  minLength={6}
                 />
                 <button
                   type="button"
