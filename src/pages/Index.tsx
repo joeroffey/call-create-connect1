@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
@@ -149,12 +150,12 @@ const Index = () => {
 
   return (
     <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter">
-      {/* Header with safe area top padding */}
+      {/* Header - removed safe-area-top class */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="safe-area-top glass border-b border-white/5 px-6 py-4 flex-shrink-0"
+        className="glass border-b border-white/5 px-6 py-4 flex-shrink-0"
       >
         <div className="flex items-center justify-between">
           <motion.div 
@@ -196,12 +197,12 @@ const Index = () => {
         </motion.div>
       </main>
 
-      {/* Bottom Navigation with safe area bottom padding */}
+      {/* Bottom Navigation - removed safe-area-bottom class */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-        className="safe-area-bottom glass border-t border-white/5 px-4 py-3 flex-shrink-0"
+        className="glass border-t border-white/5 px-4 py-3 flex-shrink-0"
       >
         <div className="flex justify-around max-w-md mx-auto">
           {tabs.map((tab, index) => {
