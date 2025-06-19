@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
@@ -125,7 +124,7 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'chat':
-        return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
+        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('settings')} />;
       case 'search':
         return <AdvancedSearchInterface user={user} />;
       case 'apps':
@@ -144,7 +143,7 @@ const Index = () => {
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
-        return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
+        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('settings')} />;
     }
   };
 
