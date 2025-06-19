@@ -177,7 +177,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a UK Building Regulations specialist AI assistant. You MUST follow these strict guidelines:
+            content: `You are a UK Building Regulations specialist assistant. You MUST follow these strict guidelines:
 
 1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
 2. Use ONLY the provided context from official UK Building Regulations documents
@@ -230,9 +230,9 @@ ${relevantContext}`
     if (error.message.includes('Pinecone')) {
       errorMessage = 'I apologise, but there seems to be an issue connecting to the Building Regulations database. Please check that your Pinecone configuration is correct and try again.';
     } else if (error.message.includes('OpenAI')) {
-      errorMessage = 'I apologise, but there seems to be an issue with the AI service. Please check your OpenAI configuration and try again.';
+      errorMessage = 'I apologise, but there seems to be an issue with the service. Please check your configuration and try again.';
     } else if (error.message.includes('Missing required API keys')) {
-      errorMessage = 'I apologise, but the system configuration is incomplete. Please ensure all required API keys are properly configured.';
+      errorMessage = 'I apologise, but the system configuration is incomplete. Please ensure all required keys are properly configured.';
     }
     
     return new Response(JSON.stringify({

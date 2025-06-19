@@ -1,27 +1,20 @@
-
-import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
-import { useSubscription } from '@/hooks/useSubscription';
-import { useToast } from '@/hooks/use-toast';
-import ConversationSidebar from './ConversationSidebar';
-import SubscriptionPrompt from './SubscriptionPrompt';
+import React, { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { Send, Plus, Lightbulb, Book } from 'lucide-react';
 import ChatHeader from './chat/ChatHeader';
-import MessageBubble from './chat/MessageBubble';
-import ChatInput from './chat/ChatInput';
-import TypingIndicator from './chat/TypingIndicator';
+import ChatMessage from './chat/ChatMessage';
+import ChatSidebar from './chat/ChatSidebar';
+import ImageGallery from './chat/ImageGallery';
+import { useToast } from "@/components/ui/use-toast"
+import { v4 as uuidv4 } from 'uuid';
 
-interface Message {
+interface ChatMessageData {
   id: string;
   text: string;
-  sender: 'user' | 'bot';
+  sender: 'user' | 'assistant';
   timestamp: Date;
-  isTyping?: boolean;
-  images?: Array<{
-    url: string;
-    title: string;
-    source: string;
-  }>;
+  isWelcome?: boolean;
+  images?: Array<{ url: string; title: string; source: string; }>;
 }
 
 interface ChatInterfaceProps {
@@ -30,278 +23,182 @@ interface ChatInterfaceProps {
 }
 
 const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [sidebarVisible, setSidebarVisible] = useState(false);
-  const [demoLoading, setDemoLoading] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
-
-  const { subscription, loading: subscriptionLoading, hasActiveSubscription, refetch: refetchSubscription, createDemoSubscription } = useSubscription(user?.id);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [messages, setMessages] = useState<ChatMessageData[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
+  const { toast } = useToast()
 
   useEffect(() => {
-    scrollToBottom();
+    // Scroll to bottom on new messages
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
-  const loadConversation = async (conversationId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-
-      const loadedMessages: Message[] = data.map(msg => ({
-        id: msg.id,
-        text: msg.content,
-        sender: msg.role === 'user' ? 'user' : 'bot',
-        timestamp: new Date(msg.created_at)
-      }));
-
-      setMessages(loadedMessages);
-      setCurrentConversationId(conversationId);
-    } catch (error) {
-      console.error('Error loading conversation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load conversation",
-        variant: "destructive"
-      });
+  useEffect(() => {
+    // Focus on input when component mounts
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
+
+    // Add welcome message on initial load
+    if (messages.length === 0) {
+      setMessages([welcomeMessage]);
+    }
+  }, []);
+
+  const welcomeMessage = {
+    id: 'welcome',
+    text: `Welcome to EezyBuild! 👋
+
+I'm your UK Building Regulations specialist, here to help you navigate construction requirements, planning permissions, and building standards.
+
+**What I can help with:**
+• Building Regulations compliance (Parts A-P)
+• Planning permission requirements
+• Fire safety regulations
+• Accessibility standards
+• Energy efficiency requirements
+• Structural requirements
+• And much more!
+
+Feel free to ask me anything about UK Building Regulations. I'm here to make compliance simple and straightforward.`,
+    sender: 'assistant' as const,
+    timestamp: new Date(),
+    isWelcome: true
   };
 
-  const createNewConversation = async (firstMessage: string): Promise<string | null> => {
-    try {
-      const title = firstMessage.length > 50 ? firstMessage.substring(0, 50) + '...' : firstMessage;
-      
-      const { data, error } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: user.id,
-          title: title || 'New Conversation'
-        })
-        .select()
-        .single();
+  const handleSendMessage = async () => {
+    if (newMessage.trim() === '') return;
 
-      if (error) throw error;
-      return data.id;
-    } catch (error) {
-      console.error('Error creating conversation:', error);
-      return null;
-    }
-  };
-
-  const saveMessage = async (conversationId: string, content: string, role: 'user' | 'assistant') => {
-    try {
-      await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          content,
-          role
-        });
-    } catch (error) {
-      console.error('Error saving message:', error);
-    }
-  };
-
-  const handleSend = async () => {
-    if (!inputText.trim() || isTyping || !hasActiveSubscription) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputText,
+    const userMessage: ChatMessageData = {
+      id: uuidv4(),
+      text: newMessage,
       sender: 'user',
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    const messageText = inputText;
-    setInputText('');
-    setIsTyping(true);
-    setSidebarVisible(false);
+    setMessages(prevMessages => [...prevMessages, userMessage]);
+    setNewMessage('');
 
+    setIsLoading(true);
     try {
-      // Create new conversation if none exists
-      let conversationId = currentConversationId;
-      if (!conversationId) {
-        conversationId = await createNewConversation(messageText);
-        if (conversationId) {
-          setCurrentConversationId(conversationId);
-        }
-      }
-
-      // Save user message
-      if (conversationId) {
-        await saveMessage(conversationId, messageText, 'user');
-      }
-
-      console.log('Sending message to building regulations AI:', messageText);
-      
-      const { data, error } = await supabase.functions.invoke('building-regulations-chat', {
-        body: { message: messageText }
+      const response = await fetch('/api/building-regulations-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: newMessage }),
       });
 
-      if (error) {
-        console.error('Supabase function error:', error);
-        throw error;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data.response || "I apologise, but I couldn't process your request. Please try again.",
-        sender: 'bot',
+      const data = await response.json();
+
+      const assistantMessage: ChatMessageData = {
+        id: uuidv4(),
+        text: data.response,
+        sender: 'assistant',
         timestamp: new Date(),
-        images: data.images || []
+        images: data.images
       };
 
-      setMessages(prev => [...prev, botMessage]);
-
-      // Save bot message
-      if (conversationId) {
-        await saveMessage(conversationId, botMessage.text, 'assistant');
-      }
-    } catch (error) {
-      console.error('Error calling building regulations AI:', error);
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "I apologise, but I'm having trouble connecting to the Building Regulations database at the moment. Please try again shortly.",
-        sender: 'bot',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-    }
-
-    setIsTyping(false);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+      setRelatedImages(data.images || []);
+    } catch (error: any) {
+      console.error('Error sending message:', error);
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with the server. Please try again later.",
+      })
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleNewConversation = () => {
-    setCurrentConversationId(null);
-    setMessages([
-      {
-        id: '1',
-        text: "Hello! I'm your UK Building Regulations AI assistant. I can help you with questions about UK Building Regulations, planning permissions, and construction requirements. All my responses are based on the latest official UK Building Regulations documents.",
-        sender: 'bot',
-        timestamp: new Date()
-      }
-    ]);
-    setSidebarVisible(false);
-  };
-
-  const handleCreateDemo = async () => {
-    setDemoLoading(true);
-    const success = await createDemoSubscription();
-    if (success) {
-      await refetchSubscription();
-      handleNewConversation();
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
     }
-    setDemoLoading(false);
   };
-
-  // Show loading state
-  if (subscriptionLoading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Show subscription prompt if no active subscription
-  if (!hasActiveSubscription) {
-    return (
-      <SubscriptionPrompt
-        onCreateDemo={handleCreateDemo}
-        onViewPlans={onViewPlans}
-        loading={demoLoading}
-      />
-    );
-  }
-
-  // Initialize with welcome message if no current conversation
-  if (messages.length === 0 && !currentConversationId) {
-    handleNewConversation();
-  }
 
   return (
-    <div className="h-full flex bg-black relative">
-      {/* Conversation Sidebar */}
-      <AnimatePresence>
-        {sidebarVisible && (
-          <ConversationSidebar
-            user={user}
-            currentConversationId={currentConversationId}
-            onConversationSelect={loadConversation}
-            onNewConversation={handleNewConversation}
-            isVisible={sidebarVisible}
-            onToggle={() => setSidebarVisible(false)}
-          />
-        )}
-      </AnimatePresence>
+    <div className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
+      {/* Header */}
+      <ChatHeader 
+        title="UK Building Regulations Chat"
+        subtitle="Get expert guidance on building standards and compliance"
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        sidebarOpen={isSidebarOpen}
+      />
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full">
-        {/* Chat Header */}
-        <ChatHeader
-          currentConversationId={currentConversationId}
-          onToggleSidebar={() => setSidebarVisible(true)}
-          onNewConversation={handleNewConversation}
-        />
+      <div className="flex-1 flex min-h-0">
+        <ChatSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onViewPlans={onViewPlans} />
 
-        {/* Chat messages container - fills remaining space */}
-        <div className="flex-1 flex flex-col min-h-0">
-          {/* Messages area - scrollable */}
-          <div className="flex-1 overflow-y-auto px-4 py-6">
-            <div className="space-y-4">
-              <AnimatePresence>
-                {messages.map((message) => (
-                  <MessageBubble key={message.id} message={message} />
-                ))}
-              </AnimatePresence>
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Chat Messages */}
+          <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
+            {messages.map((message) => (
+              <ChatMessage key={message.id} message={message} />
+            ))}
+            {isLoading && (
+              <ChatMessage
+                message={{
+                  id: 'loading',
+                  text: 'Thinking...',
+                  sender: 'assistant',
+                  timestamp: new Date(),
+                }}
+              />
+            )}
+          </div>
 
-              {/* Typing indicator */}
-              <AnimatePresence>
-                {isTyping && <TypingIndicator />}
-              </AnimatePresence>
+          {/* Image Gallery */}
+          {relatedImages.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="px-4 pb-4"
+            >
+              <ImageGallery images={relatedImages} />
+            </motion.div>
+          )}
+
+          {/* Input Area */}
+          <div className="glass border-t border-white/5 p-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex-1">
+                <textarea
+                  ref={inputRef}
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={1}
+                  placeholder="Ask a question about UK Building Regulations..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-black/50 border border-white/10 text-white placeholder-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-0 transition-colors resize-none"
+                />
+              </div>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSendMessage}
+                className="bg-emerald-500 hover:bg-emerald-400 text-white font-semibold py-2.5 px-5 rounded-xl focus:outline-none focus:ring-0 transition-colors"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Sending...' : <Send className="w-5 h-5" />}
+              </motion.button>
             </div>
-            <div ref={messagesEndRef} />
           </div>
         </div>
-
-        {/* Input area - always at bottom */}
-        <ChatInput
-          inputText={inputText}
-          isTyping={isTyping}
-          onInputChange={setInputText}
-          onSend={handleSend}
-          onKeyPress={handleKeyPress}
-        />
       </div>
-
-      {/* Overlay for sidebar */}
-      {sidebarVisible && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-30"
-          onClick={() => setSidebarVisible(false)}
-        />
-      )}
     </div>
   );
 };

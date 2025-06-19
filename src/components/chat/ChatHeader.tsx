@@ -1,44 +1,44 @@
-
 import React from 'react';
-import { Menu, MessageCircle, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
+import { MessageCircle } from 'lucide-react';
 
 interface ChatHeaderProps {
-  currentConversationId: string | null;
+  title: string;
+  subtitle: string;
   onToggleSidebar: () => void;
-  onNewConversation: () => void;
+  sidebarOpen: boolean;
 }
 
-const ChatHeader = ({ currentConversationId, onToggleSidebar, onNewConversation }: ChatHeaderProps) => {
+const ChatHeader = ({ title, subtitle, onToggleSidebar, sidebarOpen }: ChatHeaderProps) => {
   return (
-    <div className="border-b border-gray-800 p-4 flex items-center justify-between flex-shrink-0">
-      <div className="flex items-center space-x-3">
-        <Button
+    <motion.div 
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass border-b border-white/5 px-6 py-4 flex items-center justify-between"
+    >
+      <div className="flex items-center space-x-4">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={onToggleSidebar}
-          variant="ghost"
-          size="icon"
-          className="text-gray-400 hover:text-white hover:bg-gray-800"
+          className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 hover:bg-emerald-500/20 transition-colors"
         >
-          <Menu className="w-5 h-5" />
-        </Button>
-        <div className="flex items-center space-x-2">
-          <MessageCircle className="w-5 h-5 text-blue-400" />
-          <span className="text-white font-medium">
-            {currentConversationId ? 'Building Regulations Chat' : 'New Chat'}
-          </span>
+          <MessageCircle className="w-4 h-4" />
+        </motion.button>
+        
+        <div>
+          <h1 className="text-lg font-semibold text-white">{title}</h1>
+          <p className="text-sm text-gray-400">{subtitle}</p>
         </div>
       </div>
-      
-      <Button
-        onClick={onNewConversation}
-        variant="outline"
-        size="sm"
-        className="border-gray-600 text-white hover:bg-gray-800"
-      >
-        <Plus className="w-4 h-4 mr-2" />
-        New Chat
-      </Button>
-    </div>
+
+      <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 bg-emerald-500/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-500/20">
+          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+          <span className="text-xs text-emerald-300 font-medium">Online</span>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
