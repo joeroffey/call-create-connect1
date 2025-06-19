@@ -6,6 +6,7 @@ import SearchResults from './search/SearchResults';
 import QuickReferenceTools from './search/QuickReferenceTools';
 import SearchHistory from './search/SearchHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 
 interface SearchQuery {
   text: string;
@@ -101,17 +102,21 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
             </TabsList>
 
             <TabsContent value="search" className="flex-1 m-0">
-              <div className="h-full flex">
+              <ResizablePanelGroup direction="horizontal" className="h-full">
                 {/* Search Filters Sidebar */}
-                <div className="w-80 border-r border-gray-800 bg-gray-900/50">
-                  <SearchFilters 
-                    onSearch={handleSearch}
-                    isSearching={isSearching}
-                  />
-                </div>
+                <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
+                  <div className="h-full border-r border-gray-800 bg-gray-900/50">
+                    <SearchFilters 
+                      onSearch={handleSearch}
+                      isSearching={isSearching}
+                    />
+                  </div>
+                </ResizablePanel>
+
+                <ResizableHandle withHandle />
 
                 {/* Search Results */}
-                <div className="flex-1">
+                <ResizablePanel defaultSize={50} minSize={30}>
                   <SearchResults
                     results={searchResults}
                     isSearching={isSearching}
@@ -119,8 +124,8 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
                     favorites={favorites}
                     onToggleFavorite={toggleFavorite}
                   />
-                </div>
-              </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
             </TabsContent>
 
             <TabsContent value="tools" className="flex-1 m-0">
