@@ -122,15 +122,15 @@ const Index = () => {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-1">
+            <div className="w-12 h-10 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-1">
               <img 
                 src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
-                alt="Eezybuild Logo" 
+                alt="EezyBuild Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-              Eezybuild
+              EezyBuild
             </h1>
           </motion.div>
           <motion.div 

@@ -109,18 +109,18 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           className="text-center mb-12"
         >
           <motion.div 
-            className="w-20 h-20 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-2 glass"
+            className="w-32 h-20 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-3 glass"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
             <img 
               src="/lovable-uploads/73ddab81-0c66-4a56-8ab4-99cff6d608a5.png" 
-              alt="Eezybuild Logo" 
+              alt="EezyBuild Logo" 
               className="w-full h-full object-contain"
             />
           </motion.div>
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-            Welcome to Eezybuild
+            Welcome to EezyBuild
           </h1>
           <p className="text-gray-400 text-lg">Your AI Building Regulations Assistant</p>
         </motion.div>
