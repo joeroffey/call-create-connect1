@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Mic, Plus, Bot, User, Menu, MessageCircle } from 'lucide-react';
@@ -234,7 +233,7 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
   }
 
   return (
-    <div className="flex-1 flex bg-black relative">
+    <div className="flex-1 flex bg-black relative h-full">
       {/* Conversation Sidebar */}
       <AnimatePresence>
         {sidebarVisible && (
@@ -250,9 +249,9 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
       </AnimatePresence>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col h-full">
         {/* Chat Header */}
-        <div className="border-b border-gray-800 p-4 flex items-center justify-between">
+        <div className="border-b border-gray-800 p-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3">
             <Button
               onClick={() => setSidebarVisible(true)}
@@ -281,8 +280,8 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
           </Button>
         </div>
 
-        {/* Chat messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+        {/* Chat messages - takes up remaining space */}
+        <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 min-h-0">
           <AnimatePresence>
             {messages.map((message) => (
               <motion.div
@@ -352,8 +351,8 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area */}
-        <div className="border-t border-gray-800 p-4">
+        {/* Input area - fixed at bottom */}
+        <div className="border-t border-gray-800 p-4 flex-shrink-0">
           <div className="flex items-end space-x-3">
             <div className="flex-1 relative">
               <Textarea
