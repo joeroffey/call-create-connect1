@@ -68,6 +68,27 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
     setQuery({ text: '' });
   };
 
+  const handlePartChange = (value: string) => {
+    setQuery(prev => ({ 
+      ...prev, 
+      part: value === 'all-parts' ? undefined : value 
+    }));
+  };
+
+  const handleBuildingTypeChange = (value: string) => {
+    setQuery(prev => ({ 
+      ...prev, 
+      buildingType: value === 'all-types' ? undefined : value 
+    }));
+  };
+
+  const handleTopicChange = (value: string) => {
+    setQuery(prev => ({ 
+      ...prev, 
+      topic: value === 'all-topics' ? undefined : value 
+    }));
+  };
+
   return (
     <div className="p-6 h-full overflow-y-auto">
       <div className="flex items-center space-x-2 mb-6">
@@ -92,12 +113,14 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
         {/* Regulation Part */}
         <div className="space-y-2">
           <Label className="text-white">Regulation Part</Label>
-          <Select value={query.part || ''} onValueChange={(value) => setQuery(prev => ({ ...prev, part: value || undefined }))}>
+          <Select value={query.part || 'all-parts'} onValueChange={handlePartChange}>
             <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder="Select regulation part" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="">All Parts</SelectItem>
+              <SelectItem value="all-parts" className="text-white hover:bg-gray-700">
+                All Parts
+              </SelectItem>
               {buildingRegulationParts.map(part => (
                 <SelectItem key={part.value} value={part.value} className="text-white hover:bg-gray-700">
                   {part.label}
@@ -110,12 +133,14 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
         {/* Building Type */}
         <div className="space-y-2">
           <Label className="text-white">Building Type</Label>
-          <Select value={query.buildingType || ''} onValueChange={(value) => setQuery(prev => ({ ...prev, buildingType: value || undefined }))}>
+          <Select value={query.buildingType || 'all-types'} onValueChange={handleBuildingTypeChange}>
             <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder="Select building type" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="">All Types</SelectItem>
+              <SelectItem value="all-types" className="text-white hover:bg-gray-700">
+                All Types
+              </SelectItem>
               {buildingTypes.map(type => (
                 <SelectItem key={type.value} value={type.value} className="text-white hover:bg-gray-700">
                   {type.label}
@@ -128,12 +153,14 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
         {/* Topic */}
         <div className="space-y-2">
           <Label className="text-white">Topic</Label>
-          <Select value={query.topic || ''} onValueChange={(value) => setQuery(prev => ({ ...prev, topic: value || undefined }))}>
+          <Select value={query.topic || 'all-topics'} onValueChange={handleTopicChange}>
             <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
               <SelectValue placeholder="Select topic" />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="">All Topics</SelectItem>
+              <SelectItem value="all-topics" className="text-white hover:bg-gray-700">
+                All Topics
+              </SelectItem>
               {topics.map(topic => (
                 <SelectItem key={topic.value} value={topic.value} className="text-white hover:bg-gray-700">
                   {topic.label}
