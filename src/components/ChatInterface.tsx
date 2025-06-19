@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -6,7 +7,6 @@ import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
 import ImageGallery from './chat/ImageGallery';
 import { useToast } from "@/components/ui/use-toast"
-import { v4 as uuidv4 } from 'uuid';
 
 interface ChatMessageData {
   id: string;
@@ -21,6 +21,11 @@ interface ChatInterfaceProps {
   user: any;
   onViewPlans: () => void;
 }
+
+// Simple ID generator to replace uuid
+const generateId = () => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
 
 const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
@@ -76,7 +81,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
     if (newMessage.trim() === '') return;
 
     const userMessage: ChatMessageData = {
-      id: uuidv4(),
+      id: generateId(),
       text: newMessage,
       sender: 'user',
       timestamp: new Date(),
@@ -102,7 +107,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
       const data = await response.json();
 
       const assistantMessage: ChatMessageData = {
-        id: uuidv4(),
+        id: generateId(),
         text: data.response,
         sender: 'assistant',
         timestamp: new Date(),
