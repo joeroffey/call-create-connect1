@@ -149,8 +149,8 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter">
-      {/* Header - removed safe-area-top class */}
+    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter safe-area-top safe-area-bottom">
+      {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -197,7 +197,7 @@ const Index = () => {
         </motion.div>
       </main>
 
-      {/* Bottom Navigation - removed safe-area-bottom class */}
+      {/* Bottom Navigation */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
