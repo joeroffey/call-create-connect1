@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -182,7 +181,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
           {/* Fixed Input Area */}
           <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-end space-x-3">
                 <div className="flex-1">
                   <textarea
                     ref={inputRef}
@@ -191,11 +190,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
                     onKeyDown={handleKeyDown}
                     rows={1}
                     placeholder="Ask a question about UK Building Regulations..."
-                    className="w-full px-4 py-3 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium"
-                    style={{
-                      minHeight: '48px',
-                      maxHeight: '120px'
-                    }}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
                   />
                 </div>
                 <motion.button
@@ -203,8 +198,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
                   whileHover={{ scale: 1.02 }}
                   onClick={handleSendMessage}
                   disabled={!newMessage.trim() || isLoading}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  style={{ minHeight: '48px', minWidth: '48px' }}
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold p-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[48px] min-w-[48px] flex-shrink-0"
                 >
                   <Send className="w-5 h-5" />
                 </motion.button>
