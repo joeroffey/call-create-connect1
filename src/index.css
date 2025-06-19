@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Inter font from Google Fonts for a more professional look */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
@@ -31,11 +34,11 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 142 69% 58% / 0.2;
+    --border: 142 69% 58% / 0.1;
     --input: 217.2 32.6% 17.5%;
     --ring: 142 69% 58%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -43,7 +46,7 @@
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 142 69% 58% / 0.2;
+    --sidebar-border: 142 69% 58% / 0.1;
     --sidebar-ring: 142 69% 58%;
   }
 
@@ -51,10 +54,10 @@
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
 
-    --card: 0 0% 8%;
+    --card: 0 0% 6%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 0 0% 8%;
+    --popover: 0 0% 6%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 142 69% 58%;
@@ -72,7 +75,7 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 142 69% 58% / 0.2;
+    --border: 142 69% 58% / 0.1;
     --input: 217.2 32.6% 17.5%;
     --ring: 142 69% 58%;
     --sidebar-background: 0 0% 4%;
@@ -81,7 +84,7 @@
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 142 69% 58% / 0.2;
+    --sidebar-border: 142 69% 58% / 0.1;
     --sidebar-ring: 142 69% 58%;
   }
 }
@@ -92,90 +95,210 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-gray-900 via-black to-gray-900 text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    @apply bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-optical-sizing: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Enhanced scrollbar styling */
+  /* Professional scrollbar styling */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, rgb(16 185 129), rgb(5 150 105));
-    border-radius: 4px;
-    transition: all 0.3s ease;
+    background: rgba(16, 185, 129, 0.3);
+    border-radius: 3px;
+    transition: all 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, rgb(5 150 105), rgb(4 120 87));
+    background: rgba(16, 185, 129, 0.5);
   }
 
-  /* Professional focus styles */
+  /* Refined focus styles */
   button:focus-visible,
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    outline: 2px solid rgb(16 185 129);
+    outline: 2px solid rgb(16 185 129 / 0.8);
     outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
   }
 
   /* Smooth transitions for all interactive elements */
-  button, input, textarea, select {
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  button, input, textarea, select, a {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Better text selection */
+  ::selection {
+    background: rgba(16, 185, 129, 0.2);
+    color: inherit;
   }
 }
 
-/* Professional animations */
+/* Professional animations with easing curves similar to ChatGPT */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% { 
+    background-position: -200px 0; 
+  }
+  100% { 
+    background-position: calc(200px + 100%) 0; 
+  }
 }
 
-@keyframes pulse-emerald {
+@keyframes pulse-soft {
   0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    opacity: 1;
   }
-  70% { 
-    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  50% { 
+    opacity: 0.6;
   }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+/* Utility classes for professional animations */
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Custom gradient backgrounds */
-.gradient-emerald {
-  background: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(5 150 105) 50%, rgb(4 120 87) 100%);
+.animate-slide-in {
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.gradient-emerald-subtle {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Glass morphism effect */
-.glass {
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(16, 185, 129, 0.1);
-}
-
-/* Professional card styles */
+/* Professional card styles with subtle shadows */
 .card-professional {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 100%);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(16, 185, 129, 0.05);
+    0 1px 3px rgba(0, 0, 0, 0.12),
+    0 1px 2px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Glass morphism effect - more refined */
+.glass {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Button hover effects */
+.btn-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.btn-hover:hover::before {
+  left: 100%;
+}
+
+/* Professional typography */
+.heading-1 {
+  @apply text-3xl font-semibold tracking-tight;
+  font-variation-settings: 'wght' 600;
+}
+
+.heading-2 {
+  @apply text-xl font-medium tracking-tight;
+  font-variation-settings: 'wght' 500;
+}
+
+.body-text {
+  @apply text-sm leading-relaxed;
+  font-variation-settings: 'wght' 400;
+}
+
+.caption-text {
+  @apply text-xs text-gray-400;
+  font-variation-settings: 'wght' 400;
+}
+
+/* Message bubble improvements */
+.message-bubble {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-bubble-user {
+  background: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(5 150 105) 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
 }

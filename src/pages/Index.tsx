@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
@@ -71,7 +70,7 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex items-center justify-center">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -112,21 +111,21 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="safe-area-top bg-black/60 backdrop-blur-xl border-b border-emerald-500/20 px-6 py-4 flex-shrink-0"
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+        className="safe-area-top glass border-b border-white/5 px-6 py-4 flex-shrink-0"
       >
         <div className="flex items-center justify-between">
           <motion.div 
             className="flex items-center space-x-4"
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 400 }}
+            whileHover={{ scale: 1.01 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-500/10 flex items-center justify-center p-2">
+            <div className="w-12 h-12 rounded-xl overflow-hidden bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center p-2 backdrop-blur-sm">
               <img 
                 src="/lovable-uploads/9fe22cc5-2c91-4dbf-95e3-aefc00d511c7.png" 
                 alt="EezyBuild Logo" 
@@ -135,39 +134,37 @@ const Index = () => {
             </div>
           </motion.div>
           <motion.div 
-            className="flex items-center space-x-3 bg-gradient-to-r from-emerald-500/20 to-green-500/20 px-4 py-2 rounded-full border border-emerald-500/30"
+            className="flex items-center space-x-3 bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-emerald-500/20"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
           >
-            <Crown className="w-5 h-5 text-emerald-400" />
-            <span className="text-sm text-emerald-300 font-semibold">Pro</span>
+            <Crown className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm text-emerald-300 font-medium">Pro</span>
           </motion.div>
         </div>
       </motion.header>
 
       {/* Main Content - fills space between header and nav */}
       <main className="flex-1 min-h-0 overflow-y-auto">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="h-full overflow-y-auto"
-          >
-            {renderContent()}
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+          className="h-full overflow-y-auto"
+        >
+          {renderContent()}
+        </motion.div>
       </main>
 
       {/* Bottom Navigation */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
-        className="safe-area-bottom bg-black/60 backdrop-blur-xl border-t border-emerald-500/20 px-4 py-3 flex-shrink-0"
+        transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+        className="safe-area-bottom glass border-t border-white/5 px-4 py-3 flex-shrink-0"
       >
         <div className="flex justify-around max-w-md mx-auto">
           {tabs.map((tab, index) => {
@@ -177,27 +174,27 @@ const Index = () => {
             return (
               <motion.button
                 key={tab.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                whileTap={{ scale: 0.95 }}
-                whileHover={{ scale: 1.05 }}
+                transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.02 }}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative flex flex-col items-center py-3 px-4 rounded-2xl transition-all duration-300 ${
+                className={`relative flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 ${
                   isActive 
-                    ? 'bg-gradient-to-b from-emerald-500/30 to-green-600/20 text-emerald-300 shadow-lg shadow-emerald-500/20' 
-                    : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                    ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
+                    : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
                 }`}
               >
-                <Icon className={`w-6 h-6 transition-all duration-300 ${
-                  isActive ? 'text-emerald-300 drop-shadow-lg' : ''
+                <Icon className={`w-5 h-5 transition-all duration-200 ${
+                  isActive ? 'text-emerald-300' : ''
                 }`} />
                 <span className="text-xs mt-1 font-medium">{tab.label}</span>
                 {isActive && (
                   <motion.div
                     layoutId="activeTab"
-                    className="absolute -bottom-1 w-2 h-2 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full shadow-lg"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-sm"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
               </motion.button>
