@@ -23,7 +23,14 @@ export const useConversationMessages = (conversationId: string | null) => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      // Type cast the role field to ensure it matches our interface
+      const typedMessages: Message[] = (data || []).map(msg => ({
+        ...msg,
+        role: msg.role as 'user' | 'assistant'
+      }));
+      
+      setMessages(typedMessages);
     } catch (error) {
       console.error('Error loading messages:', error);
       setMessages([]);
