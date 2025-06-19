@@ -24,39 +24,16 @@ const BuildingRegsMonitor = () => {
 
   const fetchUpdates = async () => {
     try {
-      // Try to fetch using RPC function first
-      const { data: rpcData, error: rpcError } = await supabase.rpc('fetch_building_regs_updates');
+      console.log('Fetching building regulations updates...');
+      const { data, error } = await supabase.rpc('fetch_building_regs_updates');
 
-      if (rpcError) {
-        console.error('RPC Error:', rpcError);
-        
-        // Fallback to direct query with proper casting
-        const { data: directData, error: directError } = await supabase
-          .from('building_regs_updates')
-          .select('id, update_date, pages_crawled, chunks_processed, vectors_created, status, error_message')
-          .order('update_date', { ascending: false })
-          .limit(10);
-
-        if (directError) {
-          throw directError;
-        }
-
-        // Transform the data to match our interface
-        const transformedData: UpdateRecord[] = (directData || []).map(item => ({
-          id: item.id,
-          update_date: item.update_date,
-          pages_crawled: item.pages_crawled,
-          chunks_processed: item.chunks_processed,
-          vectors_created: item.vectors_created,
-          status: item.status,
-          error_message: item.error_message
-        }));
-
-        setUpdates(transformedData);
-      } else {
-        // Use RPC data if successful
-        setUpdates(rpcData || []);
+      if (error) {
+        console.error('RPC Error:', error);
+        throw error;
       }
+
+      console.log('Successfully fetched updates:', data);
+      setUpdates(data || []);
     } catch (error) {
       console.error('Error fetching updates:', error);
       toast({
