@@ -1,22 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator, Ruler, HardHat, Building2, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import VolumetricCalculator from './VolumetricCalculator';
 
 interface AppsScreenProps {
   user: any;
 }
 
 const AppsScreen = ({ user }: AppsScreenProps) => {
+  const [activeApp, setActiveApp] = useState<string | null>(null);
+
   const apps = [
     {
       id: 'volumetric-calculator',
       title: 'Volumetric Calculator',
       description: 'Calculate volumes for concrete, excavation, and material quantities',
       icon: Calculator,
-      comingSoon: true
+      comingSoon: false
     },
     {
       id: 'timber-calculator',
@@ -42,9 +45,21 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
   ];
 
   const handleAppClick = (appId: string) => {
-    // For now, just show that it's coming soon
-    console.log(`Opening ${appId}`);
+    if (appId === 'volumetric-calculator') {
+      setActiveApp(appId);
+    } else {
+      console.log(`Opening ${appId} - Coming soon`);
+    }
   };
+
+  const handleBackToApps = () => {
+    setActiveApp(null);
+  };
+
+  // Show the specific app if one is active
+  if (activeApp === 'volumetric-calculator') {
+    return <VolumetricCalculator onBack={handleBackToApps} />;
+  }
 
   return (
     <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
