@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Mic, Plus, Bot, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
@@ -21,7 +22,7 @@ const ChatInterface = ({ user }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm your Building Regulations AI assistant. Ask me anything about UK Building Regulations, planning permissions, or construction requirements.",
+      text: "Hello! I'm your UK Building Regulations AI assistant. I can help you with questions about UK Building Regulations, planning permissions, and construction requirements. All my responses are based on the latest official UK Building Regulations documents.",
       sender: 'bot',
       timestamp: new Date()
     }
@@ -39,7 +40,7 @@ const ChatInterface = ({ user }: ChatInterfaceProps) => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || isTyping) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -52,17 +53,40 @@ const ChatInterface = ({ user }: ChatInterfaceProps) => {
     setInputText('');
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      console.log('Sending message to building regulations AI:', inputText);
+      
+      const { data, error } = await supabase.functions.invoke('building-regulations-chat', {
+        body: { message: inputText }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Based on the UK Building Regulations, I can help you with that. For specific requirements regarding Part A (Structure), Part B (Fire Safety), or Part L (Conservation of fuel and power), you'll need to ensure compliance with the latest 2010 Building Regulations as amended. Would you like me to provide more specific guidance on any particular aspect?",
+        text: data.response || "I apologise, but I couldn't process your request. Please try again.",
         sender: 'bot',
         timestamp: new Date()
       };
+
       setMessages(prev => [...prev, botMessage]);
-      setIsTyping(false);
-    }, 2000);
+    } catch (error) {
+      console.error('Error calling building regulations AI:', error);
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I apologise, but I'm having trouble connecting to the Building Regulations database at the moment. Please try again shortly.",
+        sender: 'bot',
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    }
+
+    setIsTyping(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -107,7 +131,7 @@ const ChatInterface = ({ user }: ChatInterfaceProps) => {
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-800 text-white border border-gray-700'
                 }`}>
-                  <p className="text-sm leading-relaxed">{message.text}</p>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.text}</p>
                   <p className="text-xs opacity-70 mt-2">
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
@@ -161,7 +185,7 @@ const ChatInterface = ({ user }: ChatInterfaceProps) => {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ask about Building Regulations..."
+              placeholder="Ask about UK Building Regulations..."
               className="bg-gray-800/50 border-gray-700 text-white placeholder-gray-500 resize-none pr-12 min-h-[44px] max-h-32"
               rows={1}
             />
