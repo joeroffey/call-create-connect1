@@ -24,23 +24,38 @@ const BuildingRegsMonitor = () => {
 
   const fetchUpdates = async () => {
     try {
-      // Use raw SQL query until the types are updated
-      const { data, error } = await supabase
-        .rpc('fetch_building_regs_updates');
+      // Try to fetch using RPC function first
+      const { data: rpcData, error: rpcError } = await supabase.rpc('fetch_building_regs_updates');
 
-      if (error) {
-        console.error('Error fetching updates:', error);
-        // Fallback: try direct table access
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from('building_regs_updates' as any)
-          .select('*')
+      if (rpcError) {
+        console.error('RPC Error:', rpcError);
+        
+        // Fallback to direct query with proper casting
+        const { data: directData, error: directError } = await supabase
+          .from('building_regs_updates')
+          .select('id, update_date, pages_crawled, chunks_processed, vectors_created, status, error_message')
           .order('update_date', { ascending: false })
           .limit(10);
-        
-        if (fallbackError) throw fallbackError;
-        setUpdates((fallbackData || []) as UpdateRecord[]);
+
+        if (directError) {
+          throw directError;
+        }
+
+        // Transform the data to match our interface
+        const transformedData: UpdateRecord[] = (directData || []).map(item => ({
+          id: item.id,
+          update_date: item.update_date,
+          pages_crawled: item.pages_crawled,
+          chunks_processed: item.chunks_processed,
+          vectors_created: item.vectors_created,
+          status: item.status,
+          error_message: item.error_message
+        }));
+
+        setUpdates(transformedData);
       } else {
-        setUpdates((data || []) as UpdateRecord[]);
+        // Use RPC data if successful
+        setUpdates(rpcData || []);
       }
     } catch (error) {
       console.error('Error fetching updates:', error);
