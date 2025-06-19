@@ -5,6 +5,7 @@ import { MessageCircle, Search, User, Settings, Crown, Building2 } from 'lucide-
 import ChatInterface from '../components/ChatInterface';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
+import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
@@ -96,9 +97,18 @@ const Index = () => {
           </div>
         );
       case 'profile':
-        return <ProfileScreen user={user} />;
+        return (
+          <ProfileScreen 
+            user={user} 
+            onNavigateToSettings={() => setActiveTab('subscription')}
+            onNavigateToAccountSettings={() => setActiveTab('account-settings')}
+          />
+        );
       case 'settings':
-        return <SubscriptionScreen user={user} />;
+      case 'subscription':
+        return <SubscriptionScreen user={user} onBack={() => setActiveTab('profile')} />;
+      case 'account-settings':
+        return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
         return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
     }

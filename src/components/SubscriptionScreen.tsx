@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Check, Zap, Star, Building2, ArrowRight } from 'lucide-react';
+import { Crown, Check, Zap, Star, Building2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface Plan {
   id: string;
@@ -69,25 +71,90 @@ const plans: Plan[] = [
 
 interface SubscriptionScreenProps {
   user: any;
+  onBack?: () => void;
 }
 
-const SubscriptionScreen = ({ user }: SubscriptionScreenProps) => {
+const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const [selectedPlan, setSelectedPlan] = useState('pro');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+  const { subscription, hasActiveSubscription } = useSubscription(user?.id);
+
+  // Get current subscription details
+  const currentPlan = subscription?.plan_type 
+    ? subscription.plan_type.charAt(0).toUpperCase() + subscription.plan_type.slice(1)
+    : 'Free';
+
+  const subscriptionEndDate = subscription?.current_period_end 
+    ? new Date(subscription.current_period_end).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
+    : null;
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
       <div className="px-6 py-8">
+        {/* Header with back button */}
+        {onBack && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center mb-6"
+          >
+            <Button
+              onClick={onBack}
+              variant="ghost"
+              className="p-2 hover:bg-gray-800 rounded-xl mr-4"
+            >
+              <ArrowLeft className="w-6 h-6 text-white" />
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Subscription</h1>
+              <p className="text-gray-400">Manage your subscription plan</p>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Current subscription status */}
+        {hasActiveSubscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-green-600/10 border border-green-600/20 rounded-xl p-4 mb-6"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                <Crown className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-green-400">
+                  Current Plan: EezyBuild {currentPlan}
+                </p>
+                {subscriptionEndDate && (
+                  <p className="text-xs text-gray-400">
+                    Next billing: {subscriptionEndDate}
+                  </p>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: hasActiveSubscription ? 0.2 : 0.1 }}
           className="text-center mb-8"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Crown className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Choose Your Plan</h1>
+          <h1 className="text-2xl font-bold mb-2">
+            {hasActiveSubscription ? 'Upgrade Your Plan' : 'Choose Your Plan'}
+          </h1>
           <p className="text-gray-400">Unlock the full power of AI-driven Building Regulations assistance</p>
         </motion.div>
 

@@ -150,8 +150,9 @@ Please describe your issue below:
           onNavigateToAccountSettings();
         } else {
           toast({
-            title: "Coming Soon",
-            description: "Account settings will be available soon",
+            title: "Navigation Error",
+            description: "Account settings navigation not configured",
+            variant: "destructive"
           });
         }
       }
@@ -166,8 +167,9 @@ Please describe your issue below:
           onNavigateToSettings();
         } else {
           toast({
-            title: "Coming Soon",
-            description: "Subscription management will be available soon",
+            title: "Navigation Error",
+            description: "Subscription navigation not configured",
+            variant: "destructive"
           });
         }
       }
