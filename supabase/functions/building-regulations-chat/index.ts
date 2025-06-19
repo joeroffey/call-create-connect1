@@ -93,7 +93,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         vector: embedding,
-        topK: 5,
+        topK: 8,
         includeMetadata: true,
         includeValues: false,
       }),
@@ -117,19 +117,32 @@ serve(async (req) => {
     });
 
     // Step 3: Extract relevant context from the matched documents
-    const relevantContext = pineconeData.matches
-      ?.filter(match => match.score > 0.7) // Only include highly relevant matches
+    // Lower the threshold to 0.25 and include more matches
+    const relevantMatches = pineconeData.matches?.filter(match => match.score > 0.25) || [];
+    console.log('Filtered matches above 0.25 threshold:', relevantMatches.length);
+
+    if (relevantMatches.length === 0) {
+      console.log('No matches above 0.25 threshold, using top 3 matches regardless of score');
+      // If no matches above threshold, use top 3 matches anyway
+      const topMatches = pineconeData.matches?.slice(0, 3) || [];
+      const relevantContext = topMatches
+        .map(match => `[Score: ${match.score.toFixed(3)}] ${match.metadata.text}`)
+        .join('\n\n---\n\n');
+      
+      if (!relevantContext || relevantContext.trim() === '') {
+        return new Response(JSON.stringify({
+          response: "I apologise, but I couldn't find any relevant information in the UK Building Regulations documents to answer your question. This might be because the question is outside the scope of UK Building Regulations, or the specific information hasn't been indexed yet. Could you try rephrasing your question or being more specific about which part of the Building Regulations you're asking about?"
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log('Using top matches with context length:', relevantContext.length);
+    }
+
+    const relevantContext = relevantMatches
       .map(match => match.metadata.text)
       .join('\n\n---\n\n');
-
-    if (!relevantContext || relevantContext.trim() === '') {
-      console.log('No relevant context found with high enough scores');
-      return new Response(JSON.stringify({
-        response: "I apologise, but I couldn't find sufficiently relevant information in the UK Building Regulations documents to answer your question accurately. Please ensure your question relates specifically to UK Building Regulations, planning permissions, or construction requirements. Could you try rephrasing your question or being more specific?"
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
 
     console.log('Found relevant context, length:', relevantContext.length);
 
@@ -154,7 +167,7 @@ serve(async (req) => {
 5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
 6. Be precise and reference specific requirements from the documents provided
 7. Use UK construction terminology (e.g., "ground floor" not "first floor", "lift" not "elevator", "tap" not "faucet")
-8. If you cannot find relevant information in the provided context, say so clearly
+8. If the context doesn't fully answer the question, provide what information is available and suggest consulting the full regulations
 9. Always maintain a professional, helpful tone appropriate for UK construction professionals
 10. Use UK units of measurement (metres, millimetres, square metres, etc.)
 
