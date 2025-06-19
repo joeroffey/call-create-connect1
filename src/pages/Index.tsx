@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown } from 'lucide-react';
@@ -107,13 +108,13 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col">
+    <div className="h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white flex flex-col overflow-hidden">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="safe-area-top bg-black/60 backdrop-blur-xl border-b border-emerald-500/20 px-6 py-4"
+        className="safe-area-top bg-black/60 backdrop-blur-xl border-b border-emerald-500/20 px-6 py-4 flex-shrink-0"
       >
         <div className="flex items-center justify-between">
           <motion.div 
@@ -144,8 +145,8 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
+      {/* Main Content - fills space between header and nav */}
+      <main className="flex-1 min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -165,7 +166,7 @@ const Index = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="safe-area-bottom bg-black/60 backdrop-blur-xl border-t border-emerald-500/20 px-4 py-3"
+        className="safe-area-bottom bg-black/60 backdrop-blur-xl border-t border-emerald-500/20 px-4 py-3 flex-shrink-0"
       >
         <div className="flex justify-around max-w-md mx-auto">
           {tabs.map((tab, index) => {
