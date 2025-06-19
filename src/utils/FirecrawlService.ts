@@ -68,7 +68,7 @@ export class FirecrawlService {
           formats: ['markdown', 'html'],
           onlyMainContent: true,
         },
-        allowBackwardCrawling: true,
+        allowBackwardLinks: true,
         allowExternalContentLinks: false
       }) as CrawlResponse;
 

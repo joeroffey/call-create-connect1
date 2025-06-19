@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calculator, Ruler, Building2, ArrowRight } from 'lucide-react';
@@ -98,8 +99,6 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
         {/* Apps Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredApps.map((app, index) => {
-            const Icon = app.icon;
-            
             return (
               <motion.div
                 key={app.id}
@@ -112,17 +111,12 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center border border-emerald-500/20">
-                          <Icon className="w-6 h-6 text-emerald-400" />
+                          <span className="text-2xl">{app.icon}</span>
                         </div>
                         <div>
                           <CardTitle className="text-lg text-white group-hover:text-emerald-300 transition-colors">
                             {app.title}
                           </CardTitle>
-                          {app.comingSoon && (
-                            <span className="text-xs text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
-                              Coming Soon
-                            </span>
-                          )}
                         </div>
                       </div>
                       <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-200" />
@@ -134,10 +128,9 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
                     </CardDescription>
                     <Button
                       onClick={() => handleAppClick(app.id)}
-                      disabled={app.comingSoon}
-                      className="w-full gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
                     >
-                      {app.comingSoon ? 'Coming Soon' : 'Open App'}
+                      Open App
                     </Button>
                   </CardContent>
                 </Card>
