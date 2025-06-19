@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Ruler, ArrowLeft, Info } from 'lucide-react';
@@ -50,7 +49,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
       roomArea: roomArea.toFixed(2),
       boardsNeeded,
       totalArea: totalArea.toFixed(2),
-      costEstimate: (boardsNeeded * 25).toFixed(2) // Rough estimate at $25 per board
+      costEstimate: (boardsNeeded * 25).toFixed(2) // Rough estimate at £25 per board
     };
   };
 
@@ -231,7 +230,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Est. Cost:</span>
-                          <span className="text-white font-medium">${flooringResults.costEstimate}</span>
+                          <span className="text-white font-medium">£{flooringResults.costEstimate}</span>
                         </div>
                       </div>
                     </>
