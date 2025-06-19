@@ -50,10 +50,15 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
           });
           onAuth(true);
-          toast({
-            title: "Welcome back!",
-            description: "You've successfully signed in.",
-          });
+          
+          // Custom toast with reduced duration and better positioning
+          setTimeout(() => {
+            toast({
+              title: "Welcome back!",
+              description: "You've successfully signed in.",
+              duration: 2000, // Reduced from default 5000ms to 2000ms
+            });
+          }, 500); // Small delay to ensure it appears after the transition
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -80,6 +85,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           toast({
             title: "Account Created!",
             description: "Please check your email to confirm your account.",
+            duration: 3000, // Slightly reduced duration
           });
           setIsLogin(true);
         }
