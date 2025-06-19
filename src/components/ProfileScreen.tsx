@@ -1,10 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Crown, Mail, Calendar, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { User, Crown, Mail, Calendar, Settings, LogOut, ChevronRight, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ProfileScreenProps {
   user: any;
@@ -14,6 +16,9 @@ interface ProfileScreenProps {
 
 const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings }: ProfileScreenProps) => {
   const { subscription, hasActiveSubscription } = useSubscription(user?.id);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
     try {
@@ -25,7 +30,79 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   };
 
   const handleContactSupport = () => {
-    window.location.href = 'mailto:info@eezybuild.com?subject=Support Request';
+    const subject = encodeURIComponent('Support Request');
+    const body = encodeURIComponent(`Hello,
+
+I need assistance with my EezyBuild account.
+
+User ID: ${user?.id || 'N/A'}
+Email: ${user?.email || 'N/A'}
+
+Please describe your issue below:
+
+`);
+    window.location.href = `mailto:info@eezybuild.com?subject=${subject}&body=${body}`;
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to Supabase storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setProfileImage(data.publicUrl);
+      
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully"
+      });
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload image",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const menuItems = [
@@ -33,13 +110,19 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
       icon: Settings,
       label: 'Account Settings',
       description: 'Manage your account preferences',
-      action: () => onNavigateToAccountSettings?.()
+      action: () => {
+        console.log('Navigating to account settings');
+        onNavigateToAccountSettings?.();
+      }
     },
     {
       icon: Crown,
       label: 'Subscription',
       description: 'Manage your subscription plan',
-      action: () => onNavigateToSettings?.()
+      action: () => {
+        console.log('Navigating to subscription settings');
+        onNavigateToSettings?.();
+      }
     },
     {
       icon: Mail,
@@ -64,6 +147,11 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
     ? new Date(subscription.current_period_end).toLocaleDateString()
     : null;
 
+  // Get user initials for fallback
+  const userInitials = user?.name 
+    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+    : user?.email?.charAt(0).toUpperCase() || 'U';
+
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
       <div className="px-6 py-8">
@@ -74,13 +162,34 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           className="text-center mb-8"
         >
           <div className="relative inline-block mb-4">
-            <img
-              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"
-              alt="Profile"
-              className="w-24 h-24 rounded-full object-cover bg-gray-800"
-            />
+            <Avatar className="w-24 h-24">
+              <AvatarImage 
+                src={profileImage || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"} 
+                alt="Profile" 
+              />
+              <AvatarFallback className="bg-gray-800 text-white text-xl">
+                {userInitials}
+              </AvatarFallback>
+            </Avatar>
+            
+            {/* Upload button */}
+            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center cursor-pointer transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={isUploading}
+              />
+              {isUploading ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4 text-white" />
+              )}
+            </label>
+            
             {hasActiveSubscription && (
-              <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+              <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
                 <Crown className="w-4 h-4 text-white" />
               </div>
             )}
