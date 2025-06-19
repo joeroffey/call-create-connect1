@@ -40,7 +40,6 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: '',
     address: '',
     occupation: '',
     dateOfBirth: ''
@@ -52,7 +51,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
   };
 
   const handleNext = () => {
-    if (step < 4) {
+    if (step < 3) {
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -63,28 +62,33 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
     setLoading(true);
     
     try {
+      console.log('Starting onboarding submission for user:', user.id);
+      console.log('Form data:', formData);
+
       // Store profile data in Supabase profiles table
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
+        .upsert({
           user_id: user.id,
-          full_name: formData.fullName,
+          full_name: user.name, // Use the name from auth signup
           address: formData.address,
           occupation: formData.occupation,
           date_of_birth: formData.dateOfBirth
+        }, {
+          onConflict: 'user_id'
         });
 
       if (profileError) {
-        console.error('Profile creation error:', profileError);
+        console.error('Profile creation/update error:', profileError);
         throw profileError;
       }
+
+      console.log('Profile data saved successfully');
 
       // Update user metadata to mark onboarding as completed
       const { error: userError } = await supabase.auth.updateUser({
         data: { 
-          onboarding_completed: true,
-          full_name: formData.fullName,
-          occupation: formData.occupation
+          onboarding_completed: true
         }
       });
 
@@ -93,9 +97,10 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
         throw userError;
       }
 
+      console.log('User metadata updated successfully');
+
       const userData = {
         ...user,
-        fullName: formData.fullName,
         address: formData.address,
         occupation: formData.occupation,
         dateOfBirth: formData.dateOfBirth,
@@ -113,7 +118,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
       console.error('Onboarding error:', error);
       toast({
         title: "Error",
-        description: "Failed to save your information. Please try again.",
+        description: error.message || "Failed to save your information. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -123,10 +128,9 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
 
   const isStepValid = () => {
     switch (step) {
-      case 1: return formData.fullName.trim() !== '';
-      case 2: return formData.address.trim() !== '';
-      case 3: return formData.occupation !== '';
-      case 4: return formData.dateOfBirth !== '';
+      case 1: return formData.address.trim() !== '';
+      case 2: return formData.occupation !== '';
+      case 3: return formData.dateOfBirth !== '';
       default: return false;
     }
   };
@@ -137,33 +141,6 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
         return (
           <motion.div
             key="step1"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
-          >
-            <div className="text-center mb-8">
-              <User className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">What's your full name?</h2>
-              <p className="text-gray-400">Help us personalize your experience</p>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-emerald-300">Full Name</Label>
-              <Input
-                type="text"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange('fullName', e.target.value)}
-                className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
-                placeholder="Enter your full name"
-                autoFocus
-              />
-            </div>
-          </motion.div>
-        );
-
-      case 2:
-        return (
-          <motion.div
-            key="step2"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
@@ -186,10 +163,10 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
           </motion.div>
         );
 
-      case 3:
+      case 2:
         return (
           <motion.div
-            key="step3"
+            key="step2"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
@@ -218,10 +195,10 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
           </motion.div>
         );
 
-      case 4:
+      case 3:
         return (
           <motion.div
-            key="step4"
+            key="step3"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             className="space-y-4"
@@ -259,7 +236,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
         {/* Progress indicator */}
         <div className="max-w-md mx-auto w-full mb-8">
           <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3, 4].map((num) => (
+            {[1, 2, 3].map((num) => (
               <div key={num} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                   num <= step 
@@ -268,7 +245,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
                 }`}>
                   {num < step ? <Check className="w-4 h-4" /> : num}
                 </div>
-                {num < 4 && (
+                {num < 3 && (
                   <div className={`w-12 h-0.5 transition-colors ${
                     num < step ? 'bg-emerald-500' : 'bg-gray-700'
                   }`} />
@@ -277,7 +254,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             ))}
           </div>
           <p className="text-center text-gray-400 text-sm">
-            Step {step} of 4
+            Step {step} of 3
           </p>
         </div>
 
@@ -320,7 +297,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
                   whileHover={{ x: 2 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <span>{step === 4 ? 'Complete Setup' : 'Next'}</span>
+                  <span>{step === 3 ? 'Complete Setup' : 'Next'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </motion.div>
               )}
