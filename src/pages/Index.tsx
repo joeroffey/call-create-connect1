@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Building2 } from 'lucide-react';
@@ -7,6 +6,7 @@ import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
 import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
+import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
@@ -83,19 +83,7 @@ const Index = () => {
       case 'chat':
         return <ChatInterface user={user} onViewPlans={() => setActiveTab('settings')} />;
       case 'search':
-        return (
-          <div className="flex-1 flex items-center justify-center p-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center"
-            >
-              <Search className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <h2 className="text-xl font-semibold text-white mb-2">Advanced Search</h2>
-              <p className="text-gray-400">Coming soon - Search through Building Regulations</p>
-            </motion.div>
-          </div>
-        );
+        return <AdvancedSearchInterface user={user} />;
       case 'profile':
         return (
           <ProfileScreen 
