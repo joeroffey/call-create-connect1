@@ -19,14 +19,29 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSupportDialogOpen, setIsSupportDialogOpen] = useState(false);
+  const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load existing profile image on component mount
+  // Load user creation date and profile image on component mount
   useEffect(() => {
     if (user?.id) {
       loadProfileImage();
+      loadUserCreatedAt();
     }
   }, [user?.id]);
+
+  const loadUserCreatedAt = async () => {
+    try {
+      const { data: { user: authUser }, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      
+      if (authUser?.created_at) {
+        setUserCreatedAt(authUser.created_at);
+      }
+    } catch (error) {
+      console.error('Error loading user creation date:', error);
+    }
+  };
 
   const loadProfileImage = async () => {
     if (!user?.id) return;
@@ -172,11 +187,11 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
     }
   ];
 
-  // Calculate member since date - using created_at from auth.users
-  const memberSince = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { 
+  // Calculate member since date - using userCreatedAt from auth.users
+  const memberSince = userCreatedAt ? new Date(userCreatedAt).toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long' 
-  }) : 'Unknown';
+  }) : 'Loading...';
 
   // Get subscription details
   const subscriptionTier = subscription?.plan_type 
