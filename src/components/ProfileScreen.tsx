@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { User, Crown, Mail, Calendar, Settings, LogOut, ChevronRight, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,40 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+
+  // Load existing profile image on component mount
+  useEffect(() => {
+    if (user?.id) {
+      loadProfileImage();
+    }
+  }, [user?.id]);
+
+  const loadProfileImage = async () => {
+    if (!user?.id) return;
+
+    try {
+      // List files in the user's folder
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .list(user.id, {
+          limit: 1,
+          sortBy: { column: 'created_at', order: 'desc' }
+        });
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Get the public URL for the most recent avatar
+        const { data: urlData } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(`${user.id}/${data[0].name}`);
+        
+        setProfileImage(urlData.publicUrl);
+      }
+    } catch (error) {
+      console.error('Error loading profile image:', error);
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -73,7 +107,7 @@ Please describe your issue below:
     try {
       // Create a unique filename
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
+      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
 
       // Upload to Supabase storage
       const { error: uploadError } = await supabase.storage
@@ -112,7 +146,14 @@ Please describe your issue below:
       description: 'Manage your account preferences',
       action: () => {
         console.log('Navigating to account settings');
-        onNavigateToAccountSettings?.();
+        if (onNavigateToAccountSettings) {
+          onNavigateToAccountSettings();
+        } else {
+          toast({
+            title: "Coming Soon",
+            description: "Account settings will be available soon",
+          });
+        }
       }
     },
     {
@@ -121,7 +162,14 @@ Please describe your issue below:
       description: 'Manage your subscription plan',
       action: () => {
         console.log('Navigating to subscription settings');
-        onNavigateToSettings?.();
+        if (onNavigateToSettings) {
+          onNavigateToSettings();
+        } else {
+          toast({
+            title: "Coming Soon",
+            description: "Subscription management will be available soon",
+          });
+        }
       }
     },
     {
@@ -132,11 +180,11 @@ Please describe your issue below:
     }
   ];
 
-  // Calculate member since date
+  // Calculate member since date - using created_at from auth.users
   const memberSince = user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long' 
-  }) : 'January 2024';
+  }) : 'Unknown';
 
   // Get subscription details
   const subscriptionTier = subscription?.plan_type 
@@ -152,6 +200,9 @@ Please describe your issue below:
     ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
     : user?.email?.charAt(0).toUpperCase() || 'U';
 
+  // Check if email is verified
+  const isEmailVerified = user?.email_confirmed_at !== null;
+
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
       <div className="px-6 py-8">
@@ -164,7 +215,7 @@ Please describe your issue below:
           <div className="relative inline-block mb-4">
             <Avatar className="w-24 h-24">
               <AvatarImage 
-                src={profileImage || "https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80"} 
+                src={profileImage || undefined} 
                 alt="Profile" 
               />
               <AvatarFallback className="bg-gray-800 text-white text-xl">
@@ -194,7 +245,7 @@ Please describe your issue below:
               </div>
             )}
           </div>
-          <h1 className="text-2xl font-bold mb-1">{user?.name || 'User'}</h1>
+          <h1 className="text-2xl font-bold mb-1">{user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}</h1>
           <p className="text-gray-400 mb-2">{user?.email}</p>
           {hasActiveSubscription && (
             <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-full px-4 py-2">
@@ -272,7 +323,7 @@ Please describe your issue below:
           <div className="flex items-center space-x-3 mb-3">
             <Mail className="w-5 h-5 text-gray-400" />
             <span className="text-sm text-gray-400">
-              {user?.email_confirmed_at ? 'Verified account' : 'Account not verified'}
+              {isEmailVerified ? 'Verified account' : 'Account not verified'}
             </span>
           </div>
           {hasActiveSubscription && subscriptionEndDate && (
