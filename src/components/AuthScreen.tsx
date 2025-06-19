@@ -109,7 +109,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           className="text-center mb-12"
         >
           <motion.div 
-            className="w-24 h-24 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-4 glass"
+            className="w-24 h-24 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-2 glass"
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
