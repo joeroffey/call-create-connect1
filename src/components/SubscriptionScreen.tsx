@@ -19,8 +19,8 @@ interface Plan {
 const plans: Plan[] = [
   {
     id: 'basic',
-    name: 'Basic',
-    price: '£9.99',
+    name: 'Eezybuild',
+    price: '£14.99',
     period: '/month',
     description: 'Perfect for occasional queries',
     features: [
@@ -34,8 +34,8 @@ const plans: Plan[] = [
   },
   {
     id: 'pro',
-    name: 'Professional',
-    price: '£24.99',
+    name: 'Eezybuild Pro',
+    price: '£29.99',
     period: '/month',
     description: 'Ideal for architects & builders',
     features: [
@@ -52,8 +52,8 @@ const plans: Plan[] = [
   },
   {
     id: 'enterprise',
-    name: 'Enterprise',
-    price: '£99.99',
+    name: 'Eezybuild ProMax',
+    price: '£59.99',
     period: '/month',
     description: 'For large teams & organizations',
     features: [
@@ -228,7 +228,7 @@ const SubscriptionScreen = ({ user }: SubscriptionScreenProps) => {
               <Crown className="w-4 h-4 text-white" />
             </div>
             <div>
-              <p className="text-sm font-medium text-green-400">Current Plan: Professional</p>
+              <p className="text-sm font-medium text-green-400">Current Plan: Eezybuild Pro</p>
               <p className="text-xs text-gray-400">Next billing: March 15, 2024</p>
             </div>
           </div>
