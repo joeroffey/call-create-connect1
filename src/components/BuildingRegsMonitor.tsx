@@ -25,7 +25,8 @@ const BuildingRegsMonitor = () => {
   const fetchUpdates = async () => {
     try {
       console.log('Fetching building regulations updates...');
-      const { data, error } = await supabase.rpc('fetch_building_regs_updates');
+      // Use type assertion to bypass TypeScript error for the RPC function
+      const { data, error } = await (supabase as any).rpc('fetch_building_regs_updates');
 
       if (error) {
         console.error('RPC Error:', error);
