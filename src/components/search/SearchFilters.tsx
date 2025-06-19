@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter } from 'lucide-react';
@@ -90,95 +89,138 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
   };
 
   return (
-    <div className="p-6 h-full overflow-y-auto">
-      <div className="flex items-center space-x-2 mb-6">
-        <Filter className="w-5 h-5 text-blue-400" />
-        <h2 className="text-lg font-semibold text-white">Search Filters</h2>
-      </div>
+    <motion.div 
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5 }}
+      className="p-6 h-full overflow-y-auto glass"
+    >
+      <motion.div 
+        className="flex items-center space-x-3 mb-6"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
+          <Filter className="w-4 h-4 text-white" />
+        </div>
+        <h2 className="text-lg font-semibold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
+          Search Filters
+        </h2>
+      </motion.div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Search Text */}
-        <div className="space-y-2">
-          <Label htmlFor="search-text" className="text-white">Search Query</Label>
+        <motion.div 
+          className="space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Label htmlFor="search-text" className="text-emerald-100 font-medium">Search Query</Label>
           <Input
             id="search-text"
             type="text"
             placeholder="Enter keywords, regulation numbers, or requirements..."
             value={query.text}
             onChange={(e) => setQuery(prev => ({ ...prev, text: e.target.value }))}
-            className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
+            className="bg-black/30 border-emerald-500/30 text-white placeholder:text-gray-400 focus:border-emerald-400 focus:ring-emerald-400/20 backdrop-blur-sm"
           />
-        </div>
+        </motion.div>
 
         {/* Regulation Part */}
-        <div className="space-y-2">
-          <Label className="text-white">Regulation Part</Label>
+        <motion.div 
+          className="space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Label className="text-emerald-100 font-medium">Regulation Part</Label>
           <Select value={query.part || 'all-parts'} onValueChange={handlePartChange}>
-            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+            <SelectTrigger className="bg-black/30 border-emerald-500/30 text-white backdrop-blur-sm focus:border-emerald-400">
               <SelectValue placeholder="Select regulation part" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="all-parts" className="text-white hover:bg-gray-700">
+            <SelectContent className="bg-black/90 border-emerald-500/30 backdrop-blur-xl">
+              <SelectItem value="all-parts" className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20">
                 All Parts
               </SelectItem>
               {buildingRegulationParts.map(part => (
-                <SelectItem key={part.value} value={part.value} className="text-white hover:bg-gray-700">
+                <SelectItem key={part.value} value={part.value} className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20">
                   {part.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </motion.div>
 
         {/* Building Type */}
-        <div className="space-y-2">
-          <Label className="text-white">Building Type</Label>
+        <motion.div 
+          className="space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <Label className="text-emerald-100 font-medium">Building Type</Label>
           <Select value={query.buildingType || 'all-types'} onValueChange={handleBuildingTypeChange}>
-            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+            <SelectTrigger className="bg-black/30 border-emerald-500/30 text-white backdrop-blur-sm focus:border-emerald-400">
               <SelectValue placeholder="Select building type" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="all-types" className="text-white hover:bg-gray-700">
+            <SelectContent className="bg-black/90 border-emerald-500/30 backdrop-blur-xl">
+              <SelectItem value="all-types" className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20">
                 All Types
               </SelectItem>
               {buildingTypes.map(type => (
-                <SelectItem key={type.value} value={type.value} className="text-white hover:bg-gray-700">
+                <SelectItem key={type.value} value={type.value} className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20">
                   {type.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </motion.div>
 
         {/* Topic */}
-        <div className="space-y-2">
-          <Label className="text-white">Topic</Label>
+        <motion.div 
+          className="space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+        >
+          <Label className="text-emerald-100 font-medium">Topic</Label>
           <Select value={query.topic || 'all-topics'} onValueChange={handleTopicChange}>
-            <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+            <SelectTrigger className="bg-black/30 border-emerald-500/30 text-white backdrop-blur-sm focus:border-emerald-400">
               <SelectValue placeholder="Select topic" />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
-              <SelectItem value="all-topics" className="text-white hover:bg-gray-700">
+            <SelectContent className="bg-black/90 border-emerald-500/30 backdrop-blur-xl">
+              <SelectItem value="all-topics" className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20">
                 All Topics
               </SelectItem>
               {topics.map(topic => (
-                <SelectItem key={topic.value} value={topic.value} className="text-white hover:bg-gray-700">
+                <SelectItem key={topic.value} value={topic.value} className="text-white hover:bg-emerald-500/20 focus:bg-emerald-500/20">
                   {topic.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </motion.div>
 
         {/* Action Buttons */}
-        <div className="space-y-3 pt-4">
+        <motion.div 
+          className="space-y-3 pt-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+        >
           <Button
             type="submit"
             disabled={isSearching || !query.text.trim()}
-            className="w-full bg-blue-600 hover:bg-blue-700"
+            className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-medium shadow-lg shadow-emerald-500/25 transition-all duration-300"
           >
             {isSearching ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              <motion.div 
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" 
+              />
             ) : (
               <Search className="w-4 h-4 mr-2" />
             )}
@@ -189,13 +231,13 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
             type="button"
             variant="outline"
             onClick={clearFilters}
-            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+            className="w-full border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 hover:border-emerald-400 backdrop-blur-sm"
           >
             Clear Filters
           </Button>
-        </div>
+        </motion.div>
       </form>
-    </div>
+    </motion.div>
   );
 };
 
