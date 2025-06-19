@@ -2,15 +2,35 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X, Crown, MessageSquare, History } from 'lucide-react';
+import { useConversations } from '../../hooks/useConversations';
 
 interface ChatSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   onViewPlans: () => void;
+  user?: any;
+  onSelectConversation?: (conversationId: string) => void;
+  currentConversationId?: string | null;
 }
 
-const ChatSidebar = ({ isOpen, onClose, onViewPlans }: ChatSidebarProps) => {
+const ChatSidebar = ({ 
+  isOpen, 
+  onClose, 
+  onViewPlans, 
+  user, 
+  onSelectConversation,
+  currentConversationId 
+}: ChatSidebarProps) => {
+  const { conversations, loading } = useConversations(user?.id);
+
   if (!isOpen) return null;
+
+  const handleConversationClick = (conversationId: string) => {
+    if (onSelectConversation) {
+      onSelectConversation(conversationId);
+    }
+    onClose();
+  };
 
   return (
     <>
@@ -42,11 +62,42 @@ const ChatSidebar = ({ isOpen, onClose, onViewPlans }: ChatSidebarProps) => {
         </div>
 
         {/* Chat History */}
-        <div className="flex-1 p-4 space-y-2">
-          <div className="text-center text-gray-500 text-sm py-8">
-            <History className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            No chat history yet
-          </div>
+        <div className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {loading ? (
+            <div className="text-center text-gray-500 text-sm py-8">
+              <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              Loading conversations...
+            </div>
+          ) : conversations.length > 0 ? (
+            conversations.map((conversation) => (
+              <button
+                key={conversation.id}
+                onClick={() => handleConversationClick(conversation.id)}
+                className={`w-full text-left p-3 rounded-lg transition-colors ${
+                  currentConversationId === conversation.id
+                    ? 'bg-emerald-500/20 border border-emerald-500/30'
+                    : 'hover:bg-white/5 border border-transparent'
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <MessageSquare className="w-4 h-4 text-emerald-400 mt-1 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-medium truncate">
+                      {conversation.title}
+                    </p>
+                    <p className="text-gray-400 text-xs mt-1">
+                      {new Date(conversation.updated_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="text-center text-gray-500 text-sm py-8">
+              <History className="w-8 h-8 mx-auto mb-2 opacity-50" />
+              No chat history yet
+            </div>
+          )}
         </div>
 
         {/* Upgrade Section */}

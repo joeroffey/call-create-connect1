@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -6,6 +7,7 @@ import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
 import ImageGallery from './chat/ImageGallery';
 import { useToast } from "@/hooks/use-toast"
+import { useConversationMessages } from '../hooks/useConversationMessages';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ChatMessageData {
@@ -38,6 +40,9 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
   const { toast } = useToast()
 
+  // Load messages from selected conversation
+  const { messages: conversationMessages } = useConversationMessages(currentConversationId);
+
   useEffect(() => {
     // Scroll to bottom on new messages
     if (chatContainerRef.current) {
@@ -52,10 +57,24 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
     }
 
     // Add welcome message on initial load
-    if (messages.length === 0) {
+    if (messages.length === 0 && !currentConversationId) {
       setMessages([welcomeMessage]);
     }
   }, []);
+
+  // Load conversation messages when a conversation is selected
+  useEffect(() => {
+    if (conversationMessages.length > 0) {
+      const formattedMessages: ChatMessageData[] = conversationMessages.map(msg => ({
+        id: msg.id,
+        text: msg.content,
+        sender: msg.role,
+        timestamp: new Date(msg.created_at),
+      }));
+      setMessages(formattedMessages);
+      setRelatedImages([]);
+    }
+  }, [conversationMessages]);
 
   const welcomeMessage = {
     id: 'welcome',
@@ -121,6 +140,10 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
     setMessages([welcomeMessage]);
     setCurrentConversationId(null);
     setRelatedImages([]);
+  };
+
+  const handleSelectConversation = (conversationId: string) => {
+    setCurrentConversationId(conversationId);
   };
 
   const handleSendMessage = async () => {
@@ -213,7 +236,14 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
 
       {/* Main Chat Area */}
       <div className="flex-1 flex min-h-0">
-        <ChatSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onViewPlans={onViewPlans} />
+        <ChatSidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          onViewPlans={onViewPlans}
+          user={user}
+          onSelectConversation={handleSelectConversation}
+          currentConversationId={currentConversationId}
+        />
 
         <div className="flex flex-col flex-1 min-w-0">
           {/* Chat Messages */}
