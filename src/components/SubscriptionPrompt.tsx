@@ -28,8 +28,8 @@ const SubscriptionPrompt = ({ onCreateDemo, onViewPlans, loading }: Subscription
 
         <p className="text-gray-400 mb-8 leading-relaxed">
           To access the UK Building Regulations AI assistant and save your chat history, 
-          you'll need an active subscription. Choose from our flexible plans designed 
-          for professionals and enthusiasts alike.
+          you'll need a subscription. Choose from our professional plans designed 
+          for building industry professionals.
         </p>
 
         <div className="space-y-4">
@@ -55,8 +55,9 @@ const SubscriptionPrompt = ({ onCreateDemo, onViewPlans, loading }: Subscription
         <div className="mt-8 p-4 bg-blue-600/10 border border-blue-600/20 rounded-lg">
           <h3 className="text-sm font-medium text-blue-400 mb-2">Demo Includes:</h3>
           <ul className="text-xs text-gray-300 space-y-1">
-            <li>• Unlimited AI queries for 30 days</li>
-            <li>• Full chat history</li>
+            <li>• Full Pro features for 30 days</li>
+            <li>• Unlimited AI queries</li>
+            <li>• Complete chat history</li>
             <li>• All building regulation topics</li>
             <li>• No payment required</li>
           </ul>

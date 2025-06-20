@@ -123,17 +123,17 @@ const Index = () => {
 
   // Get display name for subscription tier
   const getSubscriptionDisplayName = () => {
-    if (!hasActiveSubscription || !subscription) return 'Free';
+    if (!hasActiveSubscription || !subscription) return 'No Plan';
     
     switch (subscription.plan_type) {
       case 'basic':
-        return 'Basic';
+        return 'EezyBuild';
       case 'pro':
         return 'Pro';
       case 'enterprise':
         return 'ProMax';
       default:
-        return 'Free';
+        return 'No Plan';
     }
   };
 
@@ -235,13 +235,13 @@ const Index = () => {
         if (subscriptionTier !== 'pro' && subscriptionTier !== 'enterprise') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">
             <div>
-              <h2 className="text-xl font-bold text-white mb-4">Pro Subscription Required</h2>
-              <p className="text-gray-400 mb-6">Building Apps are only available for Pro and ProMax subscribers.</p>
+              <h2 className="text-xl font-bold text-white mb-4">Subscription Required</h2>
+              <p className="text-gray-400 mb-6">Building Apps are available for Pro and ProMax subscribers.</p>
               <button 
                 onClick={() => setActiveTab('settings')}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
-                Upgrade Now
+                Choose a Plan
               </button>
             </div>
           </div>;

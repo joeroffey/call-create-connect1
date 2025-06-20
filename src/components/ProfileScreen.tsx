@@ -154,10 +154,10 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                 <h3 className="font-semibold text-white">Subscription Status</h3>
                 <p className="text-sm text-gray-400">
                   {hasActiveSubscription 
-                    ? `Active - ${subscription?.plan_type === 'basic' ? 'Basic' : 
+                    ? `Active - ${subscription?.plan_type === 'basic' ? 'EezyBuild' : 
                                    subscription?.plan_type === 'pro' ? 'Pro' : 
                                    subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}`
-                    : 'Free Plan'
+                    : 'No Active Plan'
                   }
                 </p>
                 {hasActiveSubscription && (
@@ -173,7 +173,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
               size="sm"
               className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
             >
-              {hasActiveSubscription ? 'Manage' : 'Upgrade'}
+              {hasActiveSubscription ? 'Manage' : 'Subscribe'}
             </Button>
           </div>
           

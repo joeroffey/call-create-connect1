@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -22,59 +23,63 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
 
   const plans = [
     {
-      name: 'Free',
-      price: '£0',
-      period: 'forever',
-      description: 'Perfect for getting started',
+      name: 'EezyBuild',
+      price: '£14.99',
+      period: 'per month',
+      description: 'Essential building regulations assistant',
       features: [
-        'Basic chat functionality',
-        'Limited messages per day',
+        'AI chat assistance',
+        'Basic building regulations guidance',
         'Standard response time',
-        'Community support'
+        'Email support',
+        'Chat history'
       ],
-      buttonText: 'Current Plan',
-      disabled: true,
-      current: !hasActiveSubscription
+      buttonText: 'Choose EezyBuild',
+      planType: 'basic',
+      current: hasActiveSubscription && subscription?.plan_type === 'basic'
     },
     {
       name: 'Pro',
-      price: '£14.99',
+      price: '£29.99',
       period: 'per month',
-      description: 'Ideal for professionals',
+      description: 'Advanced features for professionals',
       features: [
-        'Unlimited messages',
+        'Everything in EezyBuild',
         'Priority response time',
-        'Advanced features',
-        'Email support',
+        'Advanced building apps',
         'Document upload',
-        'Project management'
+        'Priority support',
+        'Extended chat history'
       ],
       buttonText: 'Choose Pro',
+      planType: 'pro',
       popular: true,
       current: hasActiveSubscription && subscription?.plan_type === 'pro'
     },
     {
       name: 'ProMax',
-      price: '£29.99',
+      price: '£59.99',
       period: 'per month',
-      description: 'For teams and enterprises',
+      description: 'Complete solution for teams and enterprises',
       features: [
         'Everything in Pro',
+        'Advanced search capabilities',
+        'Project management',
         'Team collaboration',
         'Advanced analytics',
         'Custom integrations',
-        'Priority support',
-        'Advanced project features',
-        'White-label options'
+        'White-label options',
+        'Dedicated support'
       ],
       buttonText: 'Choose ProMax',
+      planType: 'enterprise',
       enterprise: true,
       current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
     }
   ];
 
-  const handlePlanSelection = async (planName: string) => {
-    if (planName === 'Pro') {
+  const handlePlanSelection = async (planType: string) => {
+    if (planType === 'pro') {
       await createDemoSubscription();
     }
     // Other plan handling would go here
@@ -98,7 +103,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Choose Your Plan</h1>
-            <p className="text-gray-400">Upgrade your experience with premium features</p>
+            <p className="text-gray-400">Professional building regulations assistance</p>
           </div>
         </motion.div>
 
@@ -117,7 +122,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
               <div>
                 <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
                 <p className="text-emerald-300">
-                  You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Pro'} plan
+                  You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 
+                                           subscription?.plan_type === 'pro' ? 'Pro' : 'EezyBuild'} plan
                 </p>
               </div>
             </div>
@@ -179,8 +185,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
               </ul>
 
               <Button
-                onClick={() => handlePlanSelection(plan.name)}
-                disabled={plan.disabled || plan.current}
+                onClick={() => handlePlanSelection(plan.planType)}
+                disabled={plan.current}
                 className={`w-full h-12 rounded-xl font-medium ${
                   plan.current
                     ? 'bg-emerald-600 text-white cursor-default'
