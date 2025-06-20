@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Plus, Lightbulb, Book } from 'lucide-react';
+import { Send, Plus, Lightbulb, Book, Milestone } from 'lucide-react';
 import ChatHeader from './chat/ChatHeader';
 import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
@@ -100,21 +100,25 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
   };
 
   const getProjectWelcomeMessage = () => {
-    if (!project) return welcomeMessage;
-    
     return {
       id: 'project-welcome',
-      text: `Welcome to your ${project.name} project chat! 🏗️
+      text: `Welcome to your project chat! 🏗️
 
-I'm ready to help you with building regulations and compliance questions specific to your ${project.label || 'project'}.
+Here I will take into account previous chats, review your images and documents, and assist with everything involving your project.
 
-**Project: ${project.name}**
-${project.description ? `**Description:** ${project.description}` : ''}
-${project.label ? `**Category:** ${project.label}` : ''}
+**Project: ${project?.name || 'Your Project'}**
+${project?.description ? `**Description:** ${project.description}` : ''}
+${project?.label ? `**Category:** ${project.label}` : ''}
 
-All my responses will take your project details into account for more targeted advice. I can help you with regulations, planning requirements, and compliance issues specific to your project type and requirements.
+I have access to:
+• Your previous conversations about this project
+• Any images and documents you've shared
+• Project-specific building regulations
+• Your project timeline and milestones
 
-What building regulations questions do you have about ${project.name}?`,
+All my responses will be tailored specifically to your project needs. Let's make your project a success!
+
+What would you like to discuss about your project?`,
       sender: 'assistant' as const,
       timestamp: new Date(),
       isWelcome: true
@@ -129,10 +133,10 @@ What building regulations questions do you have about ${project.name}?`,
 
     // Add welcome message on initial load - only if no conversation is selected and no messages exist
     if (messages.length === 0 && !currentConversationId) {
-      const welcomeMsg = projectId && project ? getProjectWelcomeMessage() : welcomeMessage;
+      const welcomeMsg = projectId ? getProjectWelcomeMessage() : welcomeMessage;
       setMessages([welcomeMsg]);
     }
-  }, [projectId, project]);
+  }, [projectId, project, currentConversationId]);
 
   // Load conversation messages when a conversation is selected
   useEffect(() => {
@@ -193,7 +197,7 @@ What building regulations questions do you have about ${project.name}?`,
   };
 
   const handleNewConversation = () => {
-    const welcomeMsg = projectId && project ? getProjectWelcomeMessage() : welcomeMessage;
+    const welcomeMsg = projectId ? getProjectWelcomeMessage() : welcomeMessage;
     setMessages([welcomeMsg]);
     setCurrentConversationId(null);
     setRelatedImages([]);
@@ -293,15 +297,21 @@ What building regulations questions do you have about ${project.name}?`,
   };
 
   const handleImageUpload = () => {
+    console.log('Image upload button clicked');
     if (fileInputRef.current) {
+      console.log('Triggering file input click');
       fileInputRef.current.click();
+    } else {
+      console.log('File input ref not found');
     }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('File select event triggered');
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
+      console.log('File selected:', file.name, file.type, file.size);
       
       // Check if it's an image
       if (!file.type.startsWith('image/')) {
@@ -324,10 +334,17 @@ What building regulations questions do you have about ${project.name}?`,
       }
 
       toast({
-        title: "Image Upload",
+        title: "Image Selected",
         description: `Selected: ${file.name}. Image analysis will be available in the next update.`,
       });
     }
+  };
+
+  const handleMilestones = () => {
+    toast({
+      title: "Milestones Feature",
+      description: "Project milestones tracking will be available in the next update.",
+    });
   };
 
   return (
@@ -393,6 +410,15 @@ What building regulations questions do you have about ${project.name}?`,
                 >
                   <Plus className="w-5 h-5" />
                 </button>
+                {projectId && (
+                  <button
+                    onClick={handleMilestones}
+                    className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
+                    title="Project milestones"
+                  >
+                    <Milestone className="w-5 h-5" />
+                  </button>
+                )}
                 <input
                   ref={fileInputRef}
                   type="file"
