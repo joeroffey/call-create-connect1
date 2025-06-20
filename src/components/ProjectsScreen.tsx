@@ -30,6 +30,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
+  const [activeTab, setActiveTab] = useState('chats');
   const { toast } = useToast();
   
   // Get conversations data with the new helper functions
@@ -223,6 +224,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
   const handleProjectStatsClick = (project: Project, section: string) => {
     setSelectedProject(project);
+    setActiveTab(section);
     setShowProjectDetails(true);
   };
 
@@ -316,7 +318,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                     </span>
                   </div>
 
-                  {/* Stats - Now clickable */}
+                  {/* Stats - Now properly routing to correct sections */}
                   <div className="grid grid-cols-3 gap-4 mb-4 py-3 border-t border-b border-gray-800/30">
                     <button
                       onClick={() => handleProjectStatsClick(project, 'chats')}
@@ -396,6 +398,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         }}
         onStartNewChat={onStartNewChat}
         user={user}
+        initialTab={activeTab}
       />
 
       {/* Create Project Modal */}

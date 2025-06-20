@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Milestone, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -12,10 +11,11 @@ interface ProjectDetailsModalProps {
   onClose: () => void;
   onStartNewChat: (projectId: string) => void;
   user: any;
+  initialTab?: string;
 }
 
-const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user }: ProjectDetailsModalProps) => {
-  const [activeTab, setActiveTab] = useState('chats');
+const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats' }: ProjectDetailsModalProps) => {
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [documents, setDocuments] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
   const [newMilestone, setNewMilestone] = useState({ title: '', description: '', due_date: '' });
@@ -27,6 +27,13 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user }:
   
   // Filter conversations for this project
   const projectConversations = conversations.filter(conv => conv.project_id === project?.id);
+
+  // Update activeTab when initialTab changes
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
 
   useEffect(() => {
     if (isOpen && project) {
