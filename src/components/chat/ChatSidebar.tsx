@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useConversations } from '../../hooks/useConversations';
+import { useSubscription } from '../../hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,6 +39,7 @@ const ChatSidebar = ({
 }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { conversations, loading, refreshConversations } = useConversations(user?.id);
+  const { hasActiveSubscription } = useSubscription(user?.id);
   const { toast } = useToast();
 
   // Filter conversations by project if projectId is provided
@@ -154,23 +156,25 @@ const ChatSidebar = ({
                 />
               </div>
 
-              {/* Upgrade Banner */}
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-3 mb-4 cursor-pointer"
-                onClick={onViewPlans}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Crown className="w-4 h-4 text-amber-400 mr-2" />
-                    <div>
-                      <p className="text-xs font-medium text-amber-300">Upgrade to Pro</p>
-                      <p className="text-xs text-amber-200">Unlimited chats & features</p>
+              {/* Upgrade Banner - Only show if no active subscription */}
+              {!hasActiveSubscription && (
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded-xl p-3 mb-4 cursor-pointer"
+                  onClick={onViewPlans}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Crown className="w-4 h-4 text-amber-400 mr-2" />
+                      <div>
+                        <p className="text-xs font-medium text-amber-300">Upgrade to Pro</p>
+                        <p className="text-xs text-amber-200">Unlimited chats & features</p>
+                      </div>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-amber-400" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-amber-400" />
-                </div>
-              </motion.div>
+                </motion.div>
+              )}
             </div>
 
             {/* Conversations List */}
