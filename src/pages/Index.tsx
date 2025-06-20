@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
@@ -112,13 +113,29 @@ const Index = () => {
     }
   };
 
-  // Get user's subscription tier
+  // Get user's subscription tier - fix the display logic
   const getSubscriptionTier = () => {
     if (!hasActiveSubscription || !subscription) return 'none';
     return subscription.plan_type;
   };
 
   const subscriptionTier = getSubscriptionTier();
+
+  // Get display name for subscription tier
+  const getSubscriptionDisplayName = () => {
+    if (!hasActiveSubscription || !subscription) return 'Free';
+    
+    switch (subscription.plan_type) {
+      case 'basic':
+        return 'Basic';
+      case 'pro':
+        return 'Pro';
+      case 'enterprise':
+        return 'ProMax';
+      default:
+        return 'Free';
+    }
+  };
 
   // Define available tabs based on subscription
   const getAvailableTabs = () => {
@@ -280,9 +297,7 @@ const Index = () => {
           >
             <Crown className="w-4 h-4 text-emerald-400" />
             <span className="text-sm text-emerald-300 font-medium">
-              {subscriptionTier === 'basic' ? 'Basic' : 
-               subscriptionTier === 'pro' ? 'Pro' : 
-               subscriptionTier === 'enterprise' ? 'ProMax' : 'Free'}
+              {getSubscriptionDisplayName()}
             </span>
           </motion.div>
         </div>

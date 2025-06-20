@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Crown, Check, Zap, Star, Building2, ArrowRight, ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react';
@@ -98,9 +99,13 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
     : null;
 
   // Get current user's tier
-  const currentTier = hasActiveSubscription 
-    ? plans.find(p => p.id === subscription?.plan_type)?.tier || 0
-    : 0;
+  const getCurrentTier = () => {
+    if (!hasActiveSubscription || !subscription) return 0;
+    const currentPlan = plans.find(p => p.id === subscription.plan_type);
+    return currentPlan?.tier || 0;
+  };
+
+  const currentTier = getCurrentTier();
 
   // Filter plans based on current subscription
   const availablePlans = hasActiveSubscription 
@@ -126,6 +131,15 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
     setIsProcessing(true);
     try {
       await openCustomerPortal();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleDowngrade = async (planId: string) => {
+    setIsProcessing(true);
+    try {
+      await createCheckoutSession(planId as 'basic' | 'pro' | 'enterprise');
     } finally {
       setIsProcessing(false);
     }
@@ -260,9 +274,19 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                             <p className="text-sm text-gray-400">{plan.description}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-lg font-bold text-white">{plan.price}</div>
-                          <div className="text-sm text-gray-400">{plan.period}</div>
+                        <div className="flex items-center space-x-4">
+                          <div className="text-right">
+                            <div className="text-lg font-bold text-white">{plan.price}</div>
+                            <div className="text-sm text-gray-400">{plan.period}</div>
+                          </div>
+                          <Button
+                            onClick={() => handleDowngrade(plan.id)}
+                            disabled={isProcessing}
+                            size="sm"
+                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                          >
+                            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Downgrade'}
+                          </Button>
                         </div>
                       </div>
                     </div>
