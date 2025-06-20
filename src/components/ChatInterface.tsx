@@ -179,6 +179,29 @@ What would you like to discuss about your project?`,
         .single();
 
       if (error) throw error;
+
+      // If this is a project chat, update the project to reflect the new conversation
+      if (projectId) {
+        try {
+          // Get current conversation count for this project
+          const { count } = await supabase
+            .from('conversations')
+            .select('*', { count: 'exact', head: true })
+            .eq('project_id', projectId);
+
+          console.log(`Project ${projectId} now has ${count} conversations`);
+          
+          // Update the project's updated_at timestamp to reflect activity
+          await supabase
+            .from('projects')
+            .update({ updated_at: new Date().toISOString() })
+            .eq('id', projectId);
+
+        } catch (updateError) {
+          console.error('Error updating project stats:', updateError);
+        }
+      }
+
       return data.id;
     } catch (error) {
       console.error('Error creating conversation:', error);
