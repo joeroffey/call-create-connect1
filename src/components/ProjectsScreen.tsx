@@ -94,9 +94,12 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
       if (error) throw error;
       
-      // Transform data to match our interface
+      // Transform data to match our interface with proper status typing
       const transformedProjects = (data || []).map(project => ({
         ...project,
+        status: project.status as 'planning' | 'in-progress' | 'completed',
+        description: project.description || '',
+        label: project.label || undefined,
         chat_count: 0,
         image_count: 0,
         milestone_count: 0

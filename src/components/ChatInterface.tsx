@@ -403,11 +403,61 @@ What would you like to discuss about your project?`,
     }
   };
 
-  const handleMilestones = () => {
-    toast({
-      title: "Milestones Feature",
-      description: "Project milestones tracking will be available in the next update.",
-    });
+  const handleMilestones = async () => {
+    if (!projectId || !user) {
+      toast({
+        title: "Error",
+        description: "Project context required for milestone management.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Check if milestones exist for this project
+      const { data: milestones, error } = await supabase
+        .from('project_milestones')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const milestoneCount = milestones?.length || 0;
+      
+      // Create a message about the project's milestones
+      const milestoneMessage = `**Project Milestones Summary**
+
+You currently have **${milestoneCount}** milestone${milestoneCount !== 1 ? 's' : ''} for this project.
+
+${milestoneCount > 0 ? 
+  `Here are your milestones:\n${milestones.map((milestone, index) => 
+    `${index + 1}. **${milestone.title}** ${milestone.completed ? '✅' : '⏳'}\n   ${milestone.description || 'No description'}\n   ${milestone.due_date ? `Due: ${new Date(milestone.due_date).toLocaleDateString()}` : 'No due date'}`
+  ).join('\n\n')}` : 
+  'No milestones have been created yet.'
+}
+
+You can manage your project milestones by going to the Projects page and clicking on this project to view details.
+
+Would you like me to help you plan any milestones or discuss project timeline management?`;
+
+      const assistantMessage: ChatMessageData = {
+        id: generateId(),
+        text: milestoneMessage,
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+
+    } catch (error) {
+      console.error('Error fetching milestones:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load project milestones. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
