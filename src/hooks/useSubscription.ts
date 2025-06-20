@@ -45,13 +45,60 @@ export const useSubscription = (userId: string | null) => {
         setSubscription(subscriptionData);
         setHasActiveSubscription(true);
       } else {
-        setSubscription(null);
-        setHasActiveSubscription(false);
+        // If Stripe check fails, check local database for demo subscriptions
+        const { data: localSub, error: localError } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .single();
+
+        if (localSub && !localError) {
+          const subscriptionData: Subscription = {
+            id: localSub.id,
+            plan_type: localSub.plan_type as 'basic' | 'pro' | 'enterprise',
+            status: localSub.status as 'active' | 'cancelled' | 'expired',
+            current_period_end: localSub.current_period_end
+          };
+          
+          setSubscription(subscriptionData);
+          setHasActiveSubscription(true);
+        } else {
+          setSubscription(null);
+          setHasActiveSubscription(false);
+        }
       }
     } catch (error) {
       console.error('Error checking subscription:', error);
-      setSubscription(null);
-      setHasActiveSubscription(false);
+      
+      // Fallback: check local database for demo subscriptions
+      try {
+        const { data: localSub, error: localError } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .single();
+
+        if (localSub && !localError) {
+          const subscriptionData: Subscription = {
+            id: localSub.id,
+            plan_type: localSub.plan_type as 'basic' | 'pro' | 'enterprise',
+            status: localSub.status as 'active' | 'cancelled' | 'expired',
+            current_period_end: localSub.current_period_end
+          };
+          
+          setSubscription(subscriptionData);
+          setHasActiveSubscription(true);
+        } else {
+          setSubscription(null);
+          setHasActiveSubscription(false);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback subscription check failed:', fallbackError);
+        setSubscription(null);
+        setHasActiveSubscription(false);
+      }
     } finally {
       setLoading(false);
     }
@@ -130,18 +177,43 @@ export const useSubscription = (userId: string | null) => {
       const endDate = new Date();
       endDate.setDate(endDate.getDate() + 30);
 
+      // First, try to upsert (update if exists, insert if not)
       const { data, error } = await supabase
         .from('subscriptions')
-        .insert({
+        .upsert({
           user_id: userId,
           plan_type: 'pro',
           status: 'active',
           current_period_end: endDate.toISOString()
+        }, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Upsert failed, trying update:', error);
+        
+        // If upsert fails, try to update existing record
+        const { data: updateData, error: updateError } = await supabase
+          .from('subscriptions')
+          .update({
+            plan_type: 'pro',
+            status: 'active',
+            current_period_end: endDate.toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+        
+        data = updateData;
+      }
 
       const typedSubscription: Subscription = {
         id: data.id,
