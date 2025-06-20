@@ -51,14 +51,13 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           });
           onAuth(true);
           
-          // Custom toast with reduced duration and better positioning
           setTimeout(() => {
             toast({
               title: "Welcome back!",
               description: "You've successfully signed in.",
-              duration: 2000, // Reduced from default 5000ms to 2000ms
+              duration: 2000,
             });
-          }, 500); // Small delay to ensure it appears after the transition
+          }, 500);
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
@@ -85,7 +84,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           toast({
             title: "Account Created!",
             description: "Please check your email to confirm your account.",
-            duration: 3000, // Slightly reduced duration
+            duration: 3000,
           });
           setIsLogin(true);
         }
@@ -126,7 +125,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             />
           </motion.div>
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-            Welcome to EezyBuild
+            EezyBuild
           </h1>
           <p className="text-gray-400 text-lg">Your AI Building Regulations Assistant</p>
         </motion.div>
@@ -143,7 +142,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
                 isLogin 
-                  ? 'gradient-emerald text-black shadow-lg' 
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg' 
                   : 'text-gray-400 hover:text-emerald-300'
               }`}
             >
@@ -153,7 +152,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-300 ${
                 !isLogin 
-                  ? 'gradient-emerald text-black shadow-lg' 
+                  ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg' 
                   : 'text-gray-400 hover:text-emerald-300'
               }`}
             >
@@ -221,27 +220,25 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-12 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-black font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 disabled:opacity-50"
-              style={{ color: '#000000' }}
+              className="w-full h-12 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-medium rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:shadow-emerald-500/20 disabled:opacity-50"
             >
               {loading ? (
-                <div className="flex items-center justify-center space-x-2" style={{ color: '#000000' }}>
+                <div className="flex items-center justify-center space-x-2 text-white">
                   <motion.div 
-                    className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full"
+                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
-                  <span style={{ color: '#000000' }}>{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
+                  <span className="text-white">{isLogin ? 'Signing In...' : 'Creating Account...'}</span>
                 </div>
               ) : (
                 <motion.div 
-                  className="flex items-center justify-center space-x-2"
-                  style={{ color: '#000000' }}
+                  className="flex items-center justify-center space-x-2 text-white"
                   whileHover={{ x: 2 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <span style={{ color: '#000000' }}>{isLogin ? 'Sign In' : 'Create Account'}</span>
-                  <ArrowRight className="w-5 h-5" style={{ color: '#000000' }} />
+                  <span className="text-white">{isLogin ? 'Sign In' : 'Create Account'}</span>
+                  <ArrowRight className="w-5 h-5 text-white" />
                 </motion.div>
               )}
             </button>
