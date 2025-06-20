@@ -19,7 +19,7 @@ interface Project {
 
 interface ProjectsScreenProps {
   user: any;
-  onStartNewChat: (projectId: string, conversationId: string) => void;
+  onStartNewChat: (projectId: string, conversationId?: string) => void;
 }
 
 const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
