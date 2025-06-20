@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Plus, Lightbulb, Book, Milestone } from 'lucide-react';
+import { Send, Upload, Lightbulb, Book, Milestone } from 'lucide-react';
 import ChatHeader from './chat/ChatHeader';
 import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
@@ -37,6 +37,7 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [project, setProject] = useState<any>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -111,7 +112,7 @@ ${project?.label ? `**Category:** ${project.label}` : ''}
 
 I have access to:
 • Your previous conversations about this project
-• Any images and documents you've shared
+• Any documents and images you've uploaded
 • Project-specific building regulations
 • Your project timeline and milestones
 
@@ -303,29 +304,84 @@ What would you like to discuss about your project?`,
     }
   };
 
-  const handleImageUpload = () => {
-    console.log('Image upload button clicked');
+  const handleDocumentUpload = () => {
     if (fileInputRef.current) {
-      console.log('Triggering file input click');
       fileInputRef.current.click();
-    } else {
-      console.log('File input ref not found');
+    }
+  };
+
+  const uploadDocument = async (file: File) => {
+    if (!projectId || !user) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: "Project ID and user authentication required for document upload.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Create file path: userId/projectId/filename
+      const filePath = `${user.id}/${projectId}/${Date.now()}-${file.name}`;
+
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('project-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Save document metadata to database
+      const { error: dbError } = await supabase
+        .from('project_documents')
+        .insert([
+          {
+            project_id: projectId,
+            user_id: user.id,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size,
+          }
+        ]);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Document uploaded successfully",
+        description: `${file.name} has been uploaded to your project. The AI can now analyze it to help answer your questions.`,
+      });
+    } catch (error: any) {
+      console.error('Error uploading document:', error);
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error.message || "Failed to upload document. Please try again.",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('File select event triggered');
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      console.log('File selected:', file.name, file.type, file.size);
       
-      // Check if it's an image
-      if (!file.type.startsWith('image/')) {
+      // Check if it's a supported file type
+      const supportedTypes = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+        'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain', 'text/csv', 'text/markdown'
+      ];
+
+      if (!supportedTypes.includes(file.type)) {
         toast({
           variant: "destructive",
           title: "Invalid file type",
-          description: "Please select an image file (PNG, JPG, etc.)",
+          description: "Please select an image, PDF, Word document, or text file.",
         });
         return;
       }
@@ -335,15 +391,12 @@ What would you like to discuss about your project?`,
         toast({
           variant: "destructive",
           title: "File too large",
-          description: "Please select an image smaller than 10MB",
+          description: "Please select a file smaller than 10MB.",
         });
         return;
       }
 
-      toast({
-        title: "Image Selected",
-        description: `Selected: ${file.name}. Image analysis will be available in the next update.`,
-      });
+      uploadDocument(file);
 
       // Reset the input so the same file can be selected again
       event.target.value = '';
@@ -413,13 +466,16 @@ What would you like to discuss about your project?`,
           <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center space-x-3">
-                <button
-                  onClick={handleImageUpload}
-                  className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
-                  title="Upload image"
-                >
-                  <Plus className="w-5 h-5" />
-                </button>
+                {projectId && (
+                  <button
+                    onClick={handleDocumentUpload}
+                    disabled={isUploading}
+                    className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Upload documents"
+                  >
+                    <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
+                  </button>
+                )}
                 {projectId && (
                   <button
                     onClick={handleMilestones}
@@ -432,7 +488,7 @@ What would you like to discuss about your project?`,
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.csv,.md"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
