@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book, Milestone } from 'lucide-react';
@@ -106,7 +105,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
 
 Here I will take into account previous chats, review your images and documents, and assist with everything involving your project.
 
-**Project: ${project?.name || 'Your Project'}**
+**Project: ${project?.name || 'Loading project...'}**
 ${project?.description ? `**Description:** ${project.description}` : ''}
 ${project?.label ? `**Category:** ${project.label}` : ''}
 
@@ -137,6 +136,14 @@ What would you like to discuss about your project?`,
       setMessages([welcomeMsg]);
     }
   }, [projectId, project, currentConversationId]);
+
+  // Update welcome message when project data loads
+  useEffect(() => {
+    if (projectId && project && messages.length === 1 && messages[0].id === 'project-welcome') {
+      const updatedWelcomeMsg = getProjectWelcomeMessage();
+      setMessages([updatedWelcomeMsg]);
+    }
+  }, [project]);
 
   // Load conversation messages when a conversation is selected
   useEffect(() => {
@@ -337,6 +344,9 @@ What would you like to discuss about your project?`,
         title: "Image Selected",
         description: `Selected: ${file.name}. Image analysis will be available in the next update.`,
       });
+
+      // Reset the input so the same file can be selected again
+      event.target.value = '';
     }
   };
 
