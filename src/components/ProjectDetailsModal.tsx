@@ -12,10 +12,9 @@ interface ProjectDetailsModalProps {
   onStartNewChat: (projectId: string) => void;
   user: any;
   initialTab?: string;
-  onOpenChat?: (projectId: string, conversationId: string) => void;
 }
 
-const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats', onOpenChat }: ProjectDetailsModalProps) => {
+const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats' }: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [documents, setDocuments] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
@@ -42,13 +41,6 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
       fetchMilestones();
     }
   }, [isOpen, project]);
-
-  const handleOpenChat = (conversationId: string) => {
-    if (onOpenChat && project?.id) {
-      onOpenChat(project.id, conversationId);
-      onClose();
-    }
-  };
 
   const fetchDocuments = async () => {
     if (!project?.id || !user?.id) return;
@@ -310,8 +302,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                     {projectConversations.map((conversation) => (
                       <div
                         key={conversation.id}
-                        onClick={() => handleOpenChat(conversation.id)}
-                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-emerald-500/30 transition-colors cursor-pointer hover:bg-gray-800/50"
+                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-emerald-500/30 transition-colors"
                       >
                         <h4 className="text-white font-medium mb-1">{conversation.title}</h4>
                         <p className="text-gray-400 text-sm">

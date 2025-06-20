@@ -19,7 +19,7 @@ interface Project {
 
 interface ProjectsScreenProps {
   user: any;
-  onStartNewChat: (projectId: string, conversationId?: string) => void;
+  onStartNewChat: (projectId: string) => void;
 }
 
 const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
@@ -228,11 +228,6 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     setShowProjectDetails(true);
   };
 
-  const handleOpenProjectChat = (projectId: string, conversationId: string) => {
-    // Start the project chat with the specific conversation
-    onStartNewChat(projectId, conversationId);
-  };
-
   if (loading || conversationsLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -404,7 +399,6 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         onStartNewChat={onStartNewChat}
         user={user}
         initialTab={activeTab}
-        onOpenChat={handleOpenProjectChat}
       />
 
       {/* Create Project Modal */}
