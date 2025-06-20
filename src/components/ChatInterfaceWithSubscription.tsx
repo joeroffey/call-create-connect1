@@ -43,6 +43,10 @@ const ChatInterfaceWithSubscription = ({
     currentConversationId
   );
 
+  console.log('ChatInterface - Current conversation ID:', currentConversationId);
+  console.log('ChatInterface - Messages:', messages);
+  console.log('ChatInterface - Project ID:', projectId);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -66,6 +70,9 @@ const ChatInterfaceWithSubscription = ({
       return;
     }
 
+    console.log('Handling send message:', message);
+    console.log('Current conversation ID before send:', currentConversationId);
+
     setIsLoading(true);
 
     try {
@@ -73,6 +80,7 @@ const ChatInterfaceWithSubscription = ({
 
       // Create new conversation if none exists
       if (!conversationId) {
+        console.log('Creating new conversation...');
         const { data: conversation, error: convError } = await supabase
           .from('conversations')
           .insert({
@@ -85,10 +93,12 @@ const ChatInterfaceWithSubscription = ({
 
         if (convError) throw convError;
         conversationId = conversation.id;
+        console.log('New conversation created:', conversationId);
         setCurrentConversationId(conversationId);
       }
 
       // Send the message
+      console.log('Sending message to conversation:', conversationId);
       await sendMessage(message, uploadedImages);
       
       setMessage('');
@@ -125,6 +135,7 @@ const ChatInterfaceWithSubscription = ({
   };
 
   const handleSelectConversation = (conversationId: string) => {
+    console.log('Selecting conversation:', conversationId);
     setCurrentConversationId(conversationId);
     setIsSidebarOpen(false);
   };
@@ -217,17 +228,19 @@ const ChatInterfaceWithSubscription = ({
               </p>
             </div>
           ) : (
-            messages.map((msg) => (
-              <MessageBubble 
-                key={msg.id} 
-                message={{
-                  id: msg.id,
-                  text: msg.content,
-                  sender: msg.role === 'user' ? 'user' : 'bot',
-                  timestamp: new Date(msg.created_at)
-                }} 
-              />
-            ))
+            <>
+              {messages.map((msg) => (
+                <MessageBubble 
+                  key={msg.id} 
+                  message={{
+                    id: msg.id,
+                    text: msg.content,
+                    sender: msg.role === 'user' ? 'user' : 'bot',
+                    timestamp: new Date(msg.created_at)
+                  }} 
+                />
+              ))}
+            </>
           )}
           
           {isLoading && <TypingIndicator />}
