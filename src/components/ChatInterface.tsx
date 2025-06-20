@@ -261,6 +261,10 @@ What would you like to discuss about your project?`,
     if (onChatComplete) {
       onChatComplete();
     }
+    // Immediately show the normal welcome message
+    setMessages([welcomeMessage]);
+    setCurrentConversationId(null);
+    setRelatedImages([]);
   };
 
   const handleSelectConversation = (conversationId: string) => {
