@@ -7,9 +7,16 @@ import SubscriptionPrompt from './SubscriptionPrompt';
 interface ChatInterfaceWithSubscriptionProps {
   user: any;
   onViewPlans: () => void;
+  projectId?: string | null;
+  onChatComplete?: () => void;
 }
 
-const ChatInterfaceWithSubscription = ({ user, onViewPlans }: ChatInterfaceWithSubscriptionProps) => {
+const ChatInterfaceWithSubscription = ({ 
+  user, 
+  onViewPlans, 
+  projectId, 
+  onChatComplete 
+}: ChatInterfaceWithSubscriptionProps) => {
   const { hasActiveSubscription, loading, createDemoSubscription } = useSubscription(user?.id);
   const [creatingDemo, setCreatingDemo] = useState(false);
 
@@ -40,7 +47,14 @@ const ChatInterfaceWithSubscription = ({ user, onViewPlans }: ChatInterfaceWithS
     );
   }
 
-  return <ChatInterface user={user} onViewPlans={onViewPlans} />;
+  return (
+    <ChatInterface 
+      user={user} 
+      onViewPlans={onViewPlans}
+      projectId={projectId}
+      onChatComplete={onChatComplete}
+    />
+  );
 };
 
 export default ChatInterfaceWithSubscription;
