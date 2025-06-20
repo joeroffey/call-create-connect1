@@ -39,6 +39,35 @@ export const useConversationMessages = (conversationId: string | null) => {
     }
   };
 
+  const sendMessage = async (content: string, images: string[] = []) => {
+    if (!conversationId) return;
+
+    try {
+      // Add user message to database
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          content,
+          role: 'user'
+        });
+
+      if (error) throw error;
+
+      // Refresh messages to show the new one
+      await loadMessages(conversationId);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  };
+
+  const refreshMessages = () => {
+    if (conversationId) {
+      loadMessages(conversationId);
+    }
+  };
+
   useEffect(() => {
     if (conversationId) {
       loadMessages(conversationId);
@@ -47,5 +76,5 @@ export const useConversationMessages = (conversationId: string | null) => {
     }
   }, [conversationId]);
 
-  return { messages, loading };
+  return { messages, loading, sendMessage, refreshMessages };
 };

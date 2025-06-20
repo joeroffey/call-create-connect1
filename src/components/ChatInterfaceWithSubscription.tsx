@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Image, Menu, X, Plus } from 'lucide-react';
@@ -6,9 +5,9 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import ChatSidebar from './chat/ChatSidebar';
-import { MessageBubble } from './chat/MessageBubble';
-import { TypingIndicator } from './chat/TypingIndicator';
-import { ImageGallery } from './chat/ImageGallery';
+import MessageBubble from './chat/MessageBubble';
+import TypingIndicator from './chat/TypingIndicator';
+import ImageGallery from './chat/ImageGallery';
 import { useConversationMessages } from '../hooks/useConversationMessages';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -40,8 +39,7 @@ const ChatInterfaceWithSubscription = ({
   const { hasActiveSubscription } = useSubscription(user?.id);
 
   const { messages, loading: messagesLoading, sendMessage, refreshMessages } = useConversationMessages(
-    currentConversationId,
-    user?.id
+    currentConversationId
   );
 
   const scrollToBottom = () => {
