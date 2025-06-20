@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
@@ -197,7 +198,14 @@ const Index = () => {
   }
 
   if (!isAuthenticated) {
-    return <AuthScreen onAuth={setIsAuthenticated} setUser={setUser} />;
+    return (
+      <AuthScreen 
+        onAuth={(authenticated) => {
+          setIsAuthenticated(authenticated);
+        }}
+        setUser={setUser}
+      />
+    );
   }
 
   if (needsOnboarding) {
@@ -325,16 +333,18 @@ const Index = () => {
 
       {/* Main Content - fills space between header and nav */}
       <main className="flex-1 min-h-0 overflow-y-auto">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-          className="h-full overflow-y-auto"
-        >
-          {renderContent()}
-        </motion.div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="h-full overflow-y-auto"
+          >
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
