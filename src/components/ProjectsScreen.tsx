@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, FolderOpen, Calendar, MessageCircle, FileText, Milestone, MoreVertical, Edit, Trash2 } from 'lucide-react';
@@ -20,9 +21,10 @@ interface Project {
 interface ProjectsScreenProps {
   user: any;
   onStartNewChat: (projectId: string) => void;
+  onSelectConversation?: (conversationId: string) => void;
 }
 
-const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
+const ProjectsScreen = ({ user, onStartNewChat, onSelectConversation }: ProjectsScreenProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -397,6 +399,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           setSelectedProject(null);
         }}
         onStartNewChat={onStartNewChat}
+        onSelectConversation={onSelectConversation}
         user={user}
         initialTab={activeTab}
       />
