@@ -10,12 +10,16 @@ interface Conversation {
   project_id?: string;
 }
 
+// Global refs to prevent multiple subscriptions across hook instances
+let globalChannel: any = null;
+let globalUserId: string | null = null;
+let subscribersCount = 0;
+
 export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
-  const channelRef = useRef<any>(null);
-  const subscriptionActiveRef = useRef(false);
+  const mountedRef = useRef(true);
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -33,11 +37,15 @@ export const useConversations = (userId: string | undefined) => {
       if (error) throw error;
       
       console.log('Fetched conversations:', data);
-      setConversations(data || []);
+      if (mountedRef.current) {
+        setConversations(data || []);
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
-      setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -74,7 +82,9 @@ export const useConversations = (userId: string | undefined) => {
         counts[milestone.project_id].milestones++;
       });
 
-      setProjectCounts(counts);
+      if (mountedRef.current) {
+        setProjectCounts(counts);
+      }
     } catch (error) {
       console.error('Error fetching project counts:', error);
     }
@@ -85,87 +95,94 @@ export const useConversations = (userId: string | undefined) => {
     fetchProjectCounts();
   }, [userId]);
 
-  // Set up real-time subscription - Improved to prevent multiple subscriptions
+  // Set up real-time subscription with global management
   useEffect(() => {
-    if (!userId || subscriptionActiveRef.current) return;
+    if (!userId) return;
 
-    // Clean up any existing subscription first
-    if (channelRef.current) {
-      console.log('Cleaning up existing channel before creating new one');
-      try {
-        supabase.removeChannel(channelRef.current);
-      } catch (error) {
-        console.log('Error removing channel:', error);
+    // Increment subscriber count
+    subscribersCount++;
+    console.log('Subscribers count:', subscribersCount);
+
+    // Only create subscription if we don't have one or user changed
+    if (!globalChannel || globalUserId !== userId) {
+      // Clean up existing subscription if user changed
+      if (globalChannel && globalUserId !== userId) {
+        console.log('User changed, cleaning up existing subscription');
+        try {
+          supabase.removeChannel(globalChannel);
+        } catch (error) {
+          console.log('Error removing old channel:', error);
+        }
+        globalChannel = null;
       }
-      channelRef.current = null;
+
+      globalUserId = userId;
+      const channelName = `user-${userId}-changes-${Date.now()}`;
+      console.log('Creating new global channel:', channelName);
+      
+      globalChannel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'conversations',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            console.log('Conversation change detected:', payload);
+            // Refetch for all subscribers
+            fetchConversations();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'project_documents',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            console.log('Document change detected:', payload);
+            fetchProjectCounts();
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'project_milestones',
+            filter: `user_id=eq.${userId}`,
+          },
+          (payload) => {
+            console.log('Milestone change detected:', payload);
+            fetchProjectCounts();
+          }
+        )
+        .subscribe((status) => {
+          console.log('Global subscription status:', status);
+        });
     }
 
-    // Mark subscription as active to prevent duplicates
-    subscriptionActiveRef.current = true;
-
-    // Create a single channel for all subscriptions with a unique timestamp
-    const channelName = `user-${userId}-changes-${Date.now()}`;
-    console.log('Creating new channel:', channelName);
-    
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'conversations',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Conversation change detected:', payload);
-          fetchConversations();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'project_documents',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Document change detected:', payload);
-          fetchProjectCounts();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'project_milestones',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Milestone change detected:', payload);
-          fetchProjectCounts();
-        }
-      )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-      });
-
-    // Store the channel reference
-    channelRef.current = channel;
-
-    // Cleanup function to remove the channel
+    // Cleanup function
     return () => {
-      console.log('Cleaning up realtime subscription');
-      subscriptionActiveRef.current = false;
-      if (channelRef.current) {
+      mountedRef.current = false;
+      subscribersCount--;
+      console.log('Subscribers count after cleanup:', subscribersCount);
+      
+      // Only cleanup global subscription when no more subscribers
+      if (subscribersCount === 0 && globalChannel) {
+        console.log('No more subscribers, cleaning up global subscription');
         try {
-          supabase.removeChannel(channelRef.current);
+          supabase.removeChannel(globalChannel);
         } catch (error) {
-          console.log('Error removing channel in cleanup:', error);
+          console.log('Error removing global channel:', error);
         }
-        channelRef.current = null;
+        globalChannel = null;
+        globalUserId = null;
       }
     };
   }, [userId]);
