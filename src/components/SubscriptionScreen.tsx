@@ -1,465 +1,227 @@
-
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Check, Zap, Star, Building2, ArrowRight, ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react';
+import { 
+  Crown, 
+  Check, 
+  Zap, 
+  Users, 
+  Building,
+  ArrowLeft,
+  Star
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 
-interface Plan {
-  id: string;
-  name: string;
-  price: string;
-  period: string;
-  description: string;
-  features: string[];
-  icon: React.ComponentType<any>;
-  popular?: boolean;
-  gradient: string;
-  tier: number;
-}
-
-const plans: Plan[] = [
-  {
-    id: 'basic',
-    name: 'EezyBuild',
-    price: '£14.99',
-    period: '/month',
-    description: 'Perfect for occasional queries',
-    features: [
-      '50 AI queries per month',
-      'App & Website access',
-      'Chat History'
-    ],
-    icon: Building2,
-    gradient: 'from-gray-600 to-gray-800',
-    tier: 1
-  },
-  {
-    id: 'pro',
-    name: 'EezyBuild Pro',
-    price: '£29.99',
-    period: '/month',
-    description: 'Ideal for architects & builders',
-    features: [
-      'Unlimited AI Queries',
-      'App & Website access',
-      'Chat History',
-      'Dedicated Project Folders',
-      'Building Apps (Including but not limited to, volumetric calculators, Ready Reckoner)'
-    ],
-    icon: Zap,
-    popular: true,
-    gradient: 'from-blue-600 to-purple-600',
-    tier: 2
-  },
-  {
-    id: 'enterprise',
-    name: 'EezyBuild ProMax',
-    price: '£59.99',
-    period: '/month',
-    description: 'For large teams & organizations',
-    features: [
-      'Unlimited AI Queries',
-      'App & Website access',
-      'Chat History',
-      'Dedicated Project Folders',
-      'Project Management Interface',
-      'All Building Apps',
-      'Advanced AI model'
-    ],
-    icon: Crown,
-    gradient: 'from-yellow-500 to-orange-600',
-    tier: 3
-  }
-];
-
 interface SubscriptionScreenProps {
   user: any;
-  onBack?: () => void;
+  onBack: () => void;
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const [selectedPlan, setSelectedPlan] = useState('pro');
-  const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
-  const [showDowngrade, setShowDowngrade] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { subscription, hasActiveSubscription, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createDemoSubscription } = useSubscription(user?.id);
 
-  // Get current subscription details
-  const currentPlan = subscription?.plan_type 
-    ? subscription.plan_type.charAt(0).toUpperCase() + subscription.plan_type.slice(1)
-    : 'Free';
-
-  const subscriptionEndDate = subscription?.current_period_end 
-    ? new Date(subscription.current_period_end).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
-      })
-    : null;
-
-  // Get current user's tier
-  const getCurrentTier = () => {
-    if (!hasActiveSubscription || !subscription) return 0;
-    const currentPlan = plans.find(p => p.id === subscription.plan_type);
-    return currentPlan?.tier || 0;
-  };
-
-  const currentTier = getCurrentTier();
-
-  // Filter plans based on current subscription
-  const availablePlans = hasActiveSubscription 
-    ? plans.filter(p => p.tier > currentTier)
-    : plans;
-
-  const downgradePlans = hasActiveSubscription 
-    ? plans.filter(p => p.tier < currentTier)
-    : [];
-
-  const handleSubscribe = async () => {
-    if (!selectedPlan) return;
-    
-    setIsProcessing(true);
-    try {
-      await createCheckoutSession(selectedPlan as 'basic' | 'pro' | 'enterprise');
-    } finally {
-      setIsProcessing(false);
+  const plans = [
+    {
+      name: 'Free',
+      price: '£0',
+      period: 'forever',
+      description: 'Perfect for getting started',
+      features: [
+        'Basic chat functionality',
+        'Limited messages per day',
+        'Standard response time',
+        'Community support'
+      ],
+      buttonText: 'Current Plan',
+      disabled: true,
+      current: !hasActiveSubscription
+    },
+    {
+      name: 'Pro',
+      price: '£14.99',
+      period: 'per month',
+      description: 'Ideal for professionals',
+      features: [
+        'Unlimited messages',
+        'Priority response time',
+        'Advanced features',
+        'Email support',
+        'Document upload',
+        'Project management'
+      ],
+      buttonText: 'Choose Pro',
+      popular: true,
+      current: hasActiveSubscription && subscription?.plan_type === 'pro'
+    },
+    {
+      name: 'ProMax',
+      price: '£29.99',
+      period: 'per month',
+      description: 'For teams and enterprises',
+      features: [
+        'Everything in Pro',
+        'Team collaboration',
+        'Advanced analytics',
+        'Custom integrations',
+        'Priority support',
+        'Advanced project features',
+        'White-label options'
+      ],
+      buttonText: 'Choose ProMax',
+      enterprise: true,
+      current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
     }
-  };
+  ];
 
-  const handleManageSubscription = async () => {
-    setIsProcessing(true);
-    try {
-      await openCustomerPortal();
-    } finally {
-      setIsProcessing(false);
+  const handlePlanSelection = async (planName: string) => {
+    if (planName === 'Pro') {
+      await createDemoSubscription();
     }
-  };
-
-  const handleDowngrade = async (planId: string) => {
-    setIsProcessing(true);
-    try {
-      await createCheckoutSession(planId as 'basic' | 'pro' | 'enterprise');
-    } finally {
-      setIsProcessing(false);
-    }
+    // Other plan handling would go here
   };
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
       <div className="px-6 py-8">
-        {/* Header with back button */}
-        {onBack && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center mb-6"
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center mb-8"
+        >
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            className="p-2 hover:bg-gray-800 rounded-xl mr-4"
           >
-            <Button
-              onClick={onBack}
-              variant="ghost"
-              className="p-2 hover:bg-gray-800 rounded-xl mr-4"
-            >
-              <ArrowLeft className="w-6 h-6 text-white" />
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">Subscription</h1>
-              <p className="text-gray-400">Manage your subscription plan</p>
-            </div>
-          </motion.div>
-        )}
+            <ArrowLeft className="w-6 h-6 text-white" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">Choose Your Plan</h1>
+            <p className="text-gray-400">Upgrade your experience with premium features</p>
+          </div>
+        </motion.div>
 
-        {/* Current subscription status */}
+        {/* Current Subscription Status */}
         {hasActiveSubscription && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-green-600/10 border border-green-600/20 rounded-xl p-4 mb-6"
+            className="bg-gradient-to-r from-emerald-500/20 to-blue-600/20 rounded-2xl p-6 mb-8 border border-emerald-500/30"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                <Crown className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
+                <p className="text-emerald-300">
+                  You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Pro'} plan
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Plans Grid */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {plans.map((plan, index) => (
+            <motion.div
+              key={plan.name}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * (index + 1) }}
+              className={`relative rounded-2xl p-6 border ${
+                plan.current
+                  ? 'border-emerald-500 bg-emerald-500/10'
+                  : plan.popular
+                  ? 'border-blue-500 bg-blue-500/10'
+                  : plan.enterprise
+                  ? 'border-purple-500 bg-purple-500/10'
+                  : 'border-gray-700 bg-gray-900/50'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                    <Star className="w-3 h-3" />
+                    <span>Most Popular</span>
+                  </div>
+                </div>
+              )}
+
+              {plan.enterprise && (
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                  <div className="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                    <Building className="w-3 h-3" />
+                    <span>Enterprise</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
+                <div className="mb-2">
+                  <span className="text-3xl font-bold text-white">{plan.price}</span>
+                  <span className="text-gray-400 ml-1">/{plan.period}</span>
+                </div>
+                <p className="text-gray-400 text-sm">{plan.description}</p>
+              </div>
+
+              <ul className="space-y-3 mb-6">
+                {plan.features.map((feature, featureIndex) => (
+                  <li key={featureIndex} className="flex items-center space-x-3">
+                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span className="text-gray-300 text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <Button
+                onClick={() => handlePlanSelection(plan.name)}
+                disabled={plan.disabled || plan.current}
+                className={`w-full h-12 rounded-xl font-medium ${
+                  plan.current
+                    ? 'bg-emerald-600 text-white cursor-default'
+                    : plan.popular
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : plan.enterprise
+                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                    : 'bg-gray-700 hover:bg-gray-600 text-white'
+                }`}
+              >
+                {plan.current ? 'Current Plan' : plan.buttonText}
+              </Button>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Developer Demo Section */}
+        {user?.email === 'josephh.roffey@gmail.com' && !hasActiveSubscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 bg-gradient-to-r from-yellow-500/20 to-orange-600/20 rounded-2xl p-6 border border-yellow-500/30"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                  <Crown className="w-4 h-4 text-white" />
+                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+                  <Zap className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-green-400">
-                    Current Plan: EezyBuild {subscription?.plan_type === 'basic' ? 'Basic' : 
-                                            subscription?.plan_type === 'pro' ? 'Pro' : 
-                                            subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}
-                  </p>
-                  {subscription?.current_period_end && (
-                    <p className="text-xs text-gray-400">
-                      Next billing: {new Date(subscription.current_period_end).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
-                  )}
+                  <h3 className="text-lg font-semibold text-white">Developer Access</h3>
+                  <p className="text-yellow-300">Get a free Pro demo for testing</p>
                 </div>
               </div>
-              <div className="flex space-x-2">
-                <Button
-                  onClick={handleManageSubscription}
-                  disabled={isProcessing}
-                  variant="outline"
-                  size="sm"
-                  className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
-                >
-                  {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Manage'}
-                </Button>
-                {downgradePlans.length > 0 && (
-                  <Button
-                    onClick={() => setShowDowngrade(!showDowngrade)}
-                    variant="outline"
-                    size="sm"
-                    className="text-orange-400 border-orange-400/30 hover:bg-orange-400/10"
-                  >
-                    {showDowngrade ? 'Hide' : 'Downgrade Options'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: hasActiveSubscription ? 0.2 : 0.1 }}
-          className="text-center mb-8"
-        >
-          <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Crown className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold mb-2">
-            {hasActiveSubscription ? 'Upgrade Your Plan' : 'Choose Your Plan'}
-          </h1>
-          <p className="text-gray-400">Unlock the full power of AI-driven Building Regulations assistance</p>
-        </motion.div>
-
-        {/* Downgrade Section */}
-        {showDowngrade && downgradePlans.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mb-8"
-          >
-            <div className="bg-orange-600/10 border border-orange-600/20 rounded-xl p-4 mb-4">
-              <div className="flex items-center space-x-2 mb-2">
-                <AlertTriangle className="w-5 h-5 text-orange-400" />
-                <h3 className="text-lg font-semibold text-orange-400">Downgrade Options</h3>
-              </div>
-              <p className="text-sm text-gray-300 mb-4">
-                Note: Downgrading will take effect at the end of your current billing period.
-              </p>
-              <div className="space-y-3">
-                {downgradePlans.map((plan) => {
-                  const Icon = plan.icon;
-                  return (
-                    <div
-                      key={plan.id}
-                      className="bg-gray-900/50 rounded-xl p-4 border border-gray-700"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-10 h-10 bg-gradient-to-br ${plan.gradient} rounded-lg flex items-center justify-center`}>
-                            <Icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-white">{plan.name}</h4>
-                            <p className="text-sm text-gray-400">{plan.description}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-white">{plan.price}</div>
-                            <div className="text-sm text-gray-400">{plan.period}</div>
-                          </div>
-                          <Button
-                            onClick={() => handleDowngrade(plan.id)}
-                            disabled={isProcessing}
-                            size="sm"
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
-                          >
-                            {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Downgrade'}
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Show message if no upgrades available */}
-        {hasActiveSubscription && availablePlans.length === 0 && !showDowngrade && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-12"
-          >
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Crown className="w-10 h-10 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">You're on the highest tier!</h2>
-            <p className="text-gray-400 mb-6">
-              You're already enjoying all the premium features of EezyBuild ProMax.
-            </p>
-            <Button
-              onClick={handleManageSubscription}
-              disabled={isProcessing}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              Manage Subscription
-            </Button>
-          </motion.div>
-        )}
-
-        {/* Billing toggle - only show if there are plans to display */}
-        {availablePlans.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="flex justify-center mb-8"
-          >
-            <div className="bg-gray-800 rounded-full p-1 flex">
-              <button
-                onClick={() => setBillingPeriod('monthly')}
-                className={`px-6 py-2 rounded-full font-medium transition-all ${
-                  billingPeriod === 'monthly'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
+              <Button
+                onClick={() => createDemoSubscription()}
+                className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
               >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingPeriod('yearly')}
-                className={`px-6 py-2 rounded-full font-medium transition-all relative ${
-                  billingPeriod === 'yearly'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                Yearly
-                <span className="absolute -top-2 -right-2 bg-green-500 text-xs px-2 py-1 rounded-full text-white">
-                  Save 20%
-                </span>
-              </button>
+                Activate Demo
+              </Button>
             </div>
-          </motion.div>
-        )}
-
-        {/* Available Plans */}
-        {availablePlans.length > 0 && (
-          <div className="space-y-4 mb-8">
-            {availablePlans.map((plan, index) => {
-              const Icon = plan.icon;
-              const isSelected = selectedPlan === plan.id;
-              
-              return (
-                <motion.div
-                  key={plan.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 + index * 0.1 }}
-                  className={`relative bg-gray-900/50 backdrop-blur-xl rounded-2xl border transition-all duration-200 ${
-                    isSelected 
-                      ? 'border-blue-500 bg-blue-600/10' 
-                      : 'border-gray-800 hover:border-gray-700'
-                  } ${plan.popular ? 'ring-2 ring-blue-500/20' : ''}`}
-                  onClick={() => setSelectedPlan(plan.id)}
-                >
-                  {plan.popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-1 rounded-full text-xs font-medium text-white flex items-center space-x-1">
-                        <Star className="w-3 h-3" />
-                        <span>Most Popular</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 bg-gradient-to-br ${plan.gradient} rounded-xl flex items-center justify-center`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-white">{plan.name}</h3>
-                          <p className="text-sm text-gray-400">{plan.description}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-white">
-                          {billingPeriod === 'yearly' ? 
-                            `£${(parseFloat(plan.price.replace('£', '')) * 12 * 0.8).toFixed(0)}` : 
-                            plan.price
-                          }
-                        </div>
-                        <div className="text-sm text-gray-400">
-                          {billingPeriod === 'yearly' ? '/year' : plan.period}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      {plan.features.map((feature, featureIndex) => (
-                        <div key={featureIndex} className="flex items-center space-x-3">
-                          <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
-                            <Check className="w-3 h-3 text-green-400" />
-                          </div>
-                          <span className="text-sm text-gray-300">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {isSelected && (
-                    <motion.div
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: 1 }}
-                      className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-b-2xl"
-                    />
-                  )}
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Subscribe button - only show if there are plans to subscribe to */}
-        {availablePlans.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Button 
-              onClick={handleSubscribe}
-              disabled={isProcessing}
-              className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl text-lg"
-            >
-              {isProcessing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <span>Subscribe to {plans.find(p => p.id === selectedPlan)?.name}</span>
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
           </motion.div>
         )}
       </div>

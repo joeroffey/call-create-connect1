@@ -1,6 +1,5 @@
 
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -29,7 +28,27 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
   const { subscription, hasActiveSubscription, createProMaxDemo, refetch } = useSubscription(user?.id);
   const [isActivatingDemo, setIsActivatingDemo] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { toast } = useToast();
+
+  // Fetch user profile data from the profiles table
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (data && !error) {
+          setUserProfile(data);
+        }
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id]);
 
   const handleActivateProMaxDemo = async () => {
     setIsActivatingDemo(true);
@@ -59,6 +78,10 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
     } finally {
       setIsSigningOut(false);
     }
+  };
+
+  const handleAccountSettings = () => {
+    onNavigateToAccountSettings();
   };
 
   // Calculate member since date (user creation date or fallback)
@@ -99,7 +122,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
             <User className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">{user?.name || 'User'}</h1>
+          <h1 className="text-2xl font-bold mb-2">{userProfile?.full_name || user?.name || 'User'}</h1>
           <p className="text-gray-400">{user?.email}</p>
           <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
         </motion.div>
@@ -184,7 +207,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
               <User className="w-5 h-5 text-emerald-400" />
               <div>
                 <p className="text-sm text-gray-400">Full Name</p>
-                <p className="text-white">{user?.name || 'Not provided'}</p>
+                <p className="text-white">{userProfile?.full_name || 'Not provided'}</p>
               </div>
             </div>
             
@@ -192,7 +215,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
               <Briefcase className="w-5 h-5 text-emerald-400" />
               <div>
                 <p className="text-sm text-gray-400">Occupation</p>
-                <p className="text-white">{user?.occupation || 'Not provided'}</p>
+                <p className="text-white">{userProfile?.occupation || 'Not provided'}</p>
               </div>
             </div>
           </div>
@@ -206,7 +229,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           className="space-y-3"
         >
           <Button
-            onClick={onNavigateToAccountSettings}
+            onClick={handleAccountSettings}
             variant="outline"
             className="w-full h-12 bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-white"
           >
@@ -230,4 +253,3 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
 };
 
 export default ProfileScreen;
-
