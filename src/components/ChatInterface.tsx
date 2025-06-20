@@ -292,7 +292,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
                     whileHover={{ scale: 1.02 }}
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || isLoading}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="absolute right-3 top-3 bottom-3 w-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <Send className="w-4 h-4" />
                   </motion.button>
