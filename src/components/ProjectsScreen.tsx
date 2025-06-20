@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   AlertCircle,
   Tag,
-  Edit
+  Edit,
+  Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,6 +45,15 @@ interface Project {
   user_id: string;
 }
 
+interface Milestone {
+  id: string;
+  title: string;
+  description: string;
+  due_date: string;
+  completed: boolean;
+  created_at: string;
+}
+
 interface ProjectsScreenProps {
   user: any;
   onStartNewChat?: (projectId: string) => void;
@@ -54,11 +64,16 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [editingStatus, setEditingStatus] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -107,6 +122,21 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         description: "Failed to load projects. Please try again.",
         variant: "destructive"
       });
+    }
+  };
+
+  const loadMilestones = async (projectId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('project_milestones')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('due_date', { ascending: true });
+
+      if (error) throw error;
+      setMilestones(data || []);
+    } catch (error) {
+      console.error('Error loading milestones:', error);
     }
   };
 
@@ -348,10 +378,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   };
 
   const handleMilestones = () => {
-    toast({
-      title: "Milestones Feature",
-      description: "Project milestones tracking will be available in the next update.",
-    });
+    if (selectedProject) {
+      loadMilestones(selectedProject.id);
+      setShowMilestoneModal(true);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -377,6 +407,118 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         return 'bg-green-500/20 text-green-300 border-green-500/30';
       default:
         return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    }
+  };
+
+  const handleCreateMilestone = async (formData: FormData) => {
+    if (!selectedProject) return;
+    
+    setIsLoading(true);
+    try {
+      const title = formData.get('title') as string;
+      const description = formData.get('description') as string;
+      const dueDate = formData.get('due_date') as string;
+      
+      if (!title || !title.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Milestone title is required.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const { error } = await supabase
+        .from('project_milestones')
+        .insert([
+          {
+            project_id: selectedProject.id,
+            user_id: user.id,
+            title: title.trim(),
+            description: description?.trim() || '',
+            due_date: dueDate || null,
+            completed: false
+          }
+        ]);
+
+      if (error) throw error;
+
+      await loadMilestones(selectedProject.id);
+      await loadProjects(); // Reload projects to update milestone count
+      setShowMilestoneModal(false);
+      toast({
+        title: "Milestone Created",
+        description: `${title} has been added to the project.`
+      });
+    } catch (error) {
+      console.error('Error creating milestone:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create milestone. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleToggleMilestone = async (milestoneId: string, completed: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('project_milestones')
+        .update({ completed: !completed })
+        .eq('id', milestoneId);
+
+      if (error) throw error;
+
+      if (selectedProject) {
+        await loadMilestones(selectedProject.id);
+        await loadProjects(); // Reload projects to update milestone count
+      }
+      
+      toast({
+        title: "Milestone Updated",
+        description: `Milestone marked as ${!completed ? 'completed' : 'incomplete'}.`
+      });
+    } catch (error) {
+      console.error('Error updating milestone:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update milestone. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    if (!projectToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectToDelete.id);
+
+      if (error) throw error;
+
+      await loadProjects(); // Reload projects
+      setShowDeleteConfirm(false);
+      setProjectToDelete(null);
+      setShowProjectDetails(false);
+      toast({
+        title: "Project Deleted",
+        description: `${projectToDelete.name} has been permanently deleted.`
+      });
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -567,6 +709,18 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                           )}
                         </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProjectToDelete(project);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                     <CardDescription className="text-gray-400 line-clamp-2">
                       {project.description}
@@ -629,12 +783,25 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                         {selectedProject.description}
                       </DialogDescription>
                     </div>
-                    {selectedProject.label && (
-                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                        <Tag className="w-3 h-3 mr-1" />
-                        {selectedProject.label}
-                      </Badge>
-                    )}
+                    <div className="flex items-center space-x-2">
+                      {selectedProject.label && (
+                        <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                          <Tag className="w-3 h-3 mr-1" />
+                          {selectedProject.label}
+                        </Badge>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setProjectToDelete(selectedProject);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </DialogHeader>
                 
@@ -696,8 +863,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                           variant="outline" 
                           className="border-gray-600 text-gray-300 hover:bg-gray-800"
                         >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Milestone
+                          <Target className="w-4 h-4 mr-2" />
+                          Milestones
                         </Button>
                         <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
                           <Download className="w-4 h-4 mr-2" />
@@ -738,22 +905,166 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                   </TabsContent>
                   
                   <TabsContent value="milestones">
-                    <div className="text-center py-8">
-                      <CheckCircle2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-white mb-2">Project Milestones</h3>
-                      <p className="text-gray-400 mb-4">Track important deadlines and achievements</p>
-                      <Button 
-                        onClick={handleMilestones}
-                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Milestone
-                      </Button>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-white">Project Milestones</h3>
+                        <Button 
+                          onClick={() => setShowMilestoneModal(true)}
+                          className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Milestone
+                        </Button>
+                      </div>
+                      
+                      {milestones.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Target className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-white mb-2">No Milestones Yet</h3>
+                          <p className="text-gray-400 mb-4">Track important deadlines and achievements for this project</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {milestones.map((milestone) => (
+                            <Card key={milestone.id} className="bg-gray-800/50 border-gray-700">
+                              <CardContent className="p-4">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-start space-x-3 flex-1">
+                                    <button
+                                      onClick={() => handleToggleMilestone(milestone.id, milestone.completed)}
+                                      className={`mt-1 p-1 rounded-full ${
+                                        milestone.completed 
+                                          ? 'text-green-400 hover:text-green-300' 
+                                          : 'text-gray-400 hover:text-gray-300'
+                                      }`}
+                                    >
+                                      <CheckCircle2 className={`w-5 h-5 ${milestone.completed ? 'fill-current' : ''}`} />
+                                    </button>
+                                    <div className="flex-1">
+                                      <h4 className={`font-medium ${milestone.completed ? 'line-through text-gray-500' : 'text-white'}`}>
+                                        {milestone.title}
+                                      </h4>
+                                      {milestone.description && (
+                                        <p className="text-sm text-gray-400 mt-1">{milestone.description}</p>
+                                      )}
+                                      {milestone.due_date && (
+                                        <p className="text-xs text-gray-500 mt-2">
+                                          Due: {new Date(milestone.due_date).toLocaleDateString()}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </TabsContent>
                 </Tabs>
               </>
             )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Milestone Creation Modal */}
+        <Dialog open={showMilestoneModal} onOpenChange={setShowMilestoneModal}>
+          <DialogContent className="bg-gray-900 border-gray-700 text-white">
+            <DialogHeader>
+              <DialogTitle>Add Milestone</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Create a new milestone to track progress on this project.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateMilestone(new FormData(e.currentTarget));
+            }} className="space-y-4">
+              <div>
+                <label htmlFor="milestone-title" className="block text-sm font-medium mb-2">
+                  Title <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  id="milestone-title"
+                  name="title"
+                  placeholder="e.g., Foundation Complete"
+                  required
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="milestone-description" className="block text-sm font-medium mb-2">
+                  Description
+                </label>
+                <Textarea
+                  id="milestone-description"
+                  name="description"
+                  placeholder="Optional description..."
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="milestone-due-date" className="block text-sm font-medium mb-2">
+                  Due Date
+                </label>
+                <Input
+                  id="milestone-due-date"
+                  name="due_date"
+                  type="date"
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowMilestoneModal(false)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                >
+                  {isLoading ? 'Creating...' : 'Create Milestone'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Modal */}
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <DialogContent className="bg-gray-900 border-gray-700 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-red-400">Delete Project</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Are you sure you want to delete "{projectToDelete?.name}"? This action cannot be undone and will permanently delete all associated chats, documents, and milestones.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setProjectToDelete(null);
+                }}
+                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleDeleteProject}
+                disabled={isDeleting}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Project'}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
