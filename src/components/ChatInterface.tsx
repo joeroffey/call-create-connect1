@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Upload, Lightbulb, Book, Milestone } from 'lucide-react';
@@ -22,6 +23,7 @@ interface ChatInterfaceProps {
   user: any;
   onViewPlans: () => void;
   projectId?: string | null;
+  conversationId?: string | null;
   onChatComplete?: () => void;
 }
 
@@ -30,12 +32,12 @@ const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInterfaceProps) => {
+const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatComplete }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
   const [project, setProject] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -50,6 +52,13 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
       loadProjectDetails();
     }
   }, [projectId]);
+
+  // Set conversation ID when passed as prop
+  useEffect(() => {
+    if (conversationId) {
+      setCurrentConversationId(conversationId);
+    }
+  }, [conversationId]);
 
   const loadProjectDetails = async () => {
     if (!projectId) return;
