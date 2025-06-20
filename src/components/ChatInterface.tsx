@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -78,7 +77,7 @@ const ChatInterface = ({ user, onViewPlans }: ChatInterfaceProps) => {
 
   const welcomeMessage = {
     id: 'welcome',
-    text: `Welcome to EezyBuild! 👋
+    text: `EezyBuild! 👋
 
 I'm your UK Building Regulations specialist, here to help you navigate construction requirements, planning permissions, and building standards.
 

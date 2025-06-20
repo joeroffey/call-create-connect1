@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Settings, Crown, Calculator } from 'lucide-react';
+import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -8,9 +9,11 @@ import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
 import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import AppsScreen from '../components/AppsScreen';
+import ProjectsScreen from '../components/ProjectsScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { useSubscription } from '../hooks/useSubscription';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -19,6 +22,9 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+
+  // Get subscription info
+  const { subscription, hasActiveSubscription } = useSubscription(user?.id);
 
   useEffect(() => {
     // Set up auth state listener
@@ -93,13 +99,49 @@ const Index = () => {
     }
   };
 
-  const tabs = [
-    { id: 'chat', icon: MessageCircle, label: 'Chat' },
-    { id: 'search', icon: Search, label: 'Search' },
-    { id: 'apps', icon: Calculator, label: 'Apps' },
-    { id: 'profile', icon: User, label: 'Profile' },
-    { id: 'settings', icon: Settings, label: 'Settings' }
-  ];
+  // Get user's subscription tier
+  const getSubscriptionTier = () => {
+    if (!hasActiveSubscription || !subscription) return 'none';
+    return subscription.plan_type;
+  };
+
+  const subscriptionTier = getSubscriptionTier();
+
+  // Define available tabs based on subscription
+  const getAvailableTabs = () => {
+    const baseTabs = [
+      { id: 'chat', icon: MessageCircle, label: 'Chat' },
+    ];
+
+    // Apps available for Pro and ProMax
+    if (subscriptionTier === 'pro' || subscriptionTier === 'enterprise') {
+      baseTabs.push({ id: 'apps', icon: Calculator, label: 'Apps' });
+    }
+
+    // Advanced Search only for ProMax
+    if (subscriptionTier === 'enterprise') {
+      baseTabs.push({ id: 'search', icon: Search, label: 'Search' });
+      baseTabs.push({ id: 'projects', icon: FolderOpen, label: 'Projects' });
+    }
+
+    // Always available
+    baseTabs.push(
+      { id: 'profile', icon: User, label: 'Profile' },
+      { id: 'settings', icon: Settings, label: 'Settings' }
+    );
+
+    return baseTabs;
+  };
+
+  const tabs = getAvailableTabs();
+
+  // Reset active tab if it's not available in current subscription
+  useEffect(() => {
+    const availableTabIds = tabs.map(tab => tab.id);
+    if (!availableTabIds.includes(activeTab)) {
+      setActiveTab('chat');
+    }
+  }, [subscriptionTier, activeTab]);
 
   if (loading) {
     return (
@@ -126,9 +168,53 @@ const Index = () => {
       case 'chat':
         return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('settings')} />;
       case 'search':
+        if (subscriptionTier !== 'enterprise') {
+          return <div className="flex-1 flex items-center justify-center p-8 text-center">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
+              <p className="text-gray-400 mb-6">Advanced Search is only available for EezyBuild ProMax subscribers.</p>
+              <button 
+                onClick={() => setActiveTab('settings')}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
+              >
+                Upgrade to ProMax
+              </button>
+            </div>
+          </div>;
+        }
         return <AdvancedSearchInterface user={user} />;
       case 'apps':
+        if (subscriptionTier !== 'pro' && subscriptionTier !== 'enterprise') {
+          return <div className="flex-1 flex items-center justify-center p-8 text-center">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Pro Subscription Required</h2>
+              <p className="text-gray-400 mb-6">Building Apps are only available for Pro and ProMax subscribers.</p>
+              <button 
+                onClick={() => setActiveTab('settings')}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
+              >
+                Upgrade Now
+              </button>
+            </div>
+          </div>;
+        }
         return <AppsScreen user={user} />;
+      case 'projects':
+        if (subscriptionTier !== 'enterprise') {
+          return <div className="flex-1 flex items-center justify-center p-8 text-center">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
+              <p className="text-gray-400 mb-6">Projects feature is only available for EezyBuild ProMax subscribers.</p>
+              <button 
+                onClick={() => setActiveTab('settings')}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
+              >
+                Upgrade to ProMax
+              </button>
+            </div>
+          </div>;
+        }
+        return <ProjectsScreen user={user} />;
       case 'profile':
         return (
           <ProfileScreen 
@@ -169,6 +255,9 @@ const Index = () => {
                 className="w-full h-full object-contain"
               />
             </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">EezyBuild</h1>
+            </div>
           </motion.div>
           <motion.div 
             className="flex items-center space-x-3 bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-emerald-500/20"
@@ -177,7 +266,11 @@ const Index = () => {
             transition={{ delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
           >
             <Crown className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-emerald-300 font-medium">Pro</span>
+            <span className="text-sm text-emerald-300 font-medium">
+              {subscriptionTier === 'basic' ? 'Basic' : 
+               subscriptionTier === 'pro' ? 'Pro' : 
+               subscriptionTier === 'enterprise' ? 'ProMax' : 'Free'}
+            </span>
           </motion.div>
         </div>
       </motion.header>
