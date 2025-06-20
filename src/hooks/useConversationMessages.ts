@@ -44,18 +44,58 @@ export const useConversationMessages = (conversationId: string | null) => {
 
     try {
       // Add user message to database
-      const { error } = await supabase
+      const { data: userMessage, error: userError } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           content,
           role: 'user'
-        });
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (userError) throw userError;
 
-      // Refresh messages to show the new one
-      await loadMessages(conversationId);
+      // Immediately add user message to UI
+      const newUserMessage: Message = {
+        id: userMessage.id,
+        content: userMessage.content,
+        role: 'user' as const,
+        created_at: userMessage.created_at
+      };
+
+      setMessages(prev => [...prev, newUserMessage]);
+
+      // Simulate AI response for now (you can replace this with actual AI API call)
+      setTimeout(async () => {
+        try {
+          const aiResponse = "Thank you for your question about building regulations. I'm here to help with construction advice, building codes, and project guidance.";
+          
+          const { data: aiMessage, error: aiError } = await supabase
+            .from('messages')
+            .insert({
+              conversation_id: conversationId,
+              content: aiResponse,
+              role: 'assistant'
+            })
+            .select()
+            .single();
+
+          if (aiError) throw aiError;
+
+          const newAiMessage: Message = {
+            id: aiMessage.id,
+            content: aiMessage.content,
+            role: 'assistant' as const,
+            created_at: aiMessage.created_at
+          };
+
+          setMessages(prev => [...prev, newAiMessage]);
+        } catch (error) {
+          console.error('Error sending AI response:', error);
+        }
+      }, 1000);
+
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;

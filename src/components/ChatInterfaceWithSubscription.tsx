@@ -106,15 +106,10 @@ const ChatInterfaceWithSubscription = ({
   };
 
   const handleNewChat = () => {
-    console.log('Starting new chat - project context:', projectId);
+    console.log('Starting new chat - clearing current conversation');
     setCurrentConversationId(null);
     setMessage('');
     setUploadedImages([]);
-    
-    // If we're in project mode and want to start a general chat, call the callback
-    if (projectId && onStartGeneralChat) {
-      onStartGeneralChat();
-    }
   };
 
   const handleStartGeneralChat = () => {
