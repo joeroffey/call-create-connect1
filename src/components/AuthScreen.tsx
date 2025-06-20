@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -119,13 +118,9 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
             transition={{ type: "spring", stiffness: 400 }}
           >
             <img 
-              src="/lovable-uploads/63fdd0cc-d653-4ee2-b40d-9b77f0a661a3.png" 
+              src="/lovable-uploads/19d9139a-985d-44a8-bf7c-29a6d7876dd0.png" 
               alt="EezyBuild Logo" 
               className="w-full h-auto object-contain"
-              style={{ 
-                filter: 'invert(1) brightness(0.9) hue-rotate(180deg)',
-                mixBlendMode: 'difference'
-              }}
             />
           </motion.div>
           <p className="text-gray-400 text-lg">Your Building Regulations Assistant</p>
