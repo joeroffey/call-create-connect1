@@ -15,6 +15,7 @@ export const useConversations = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
   const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
   const channelRef = useRef<any>(null);
+  const subscriptionActiveRef = useRef(false);
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -84,19 +85,28 @@ export const useConversations = (userId: string | undefined) => {
     fetchProjectCounts();
   }, [userId]);
 
-  // Set up real-time subscription - Fixed to prevent multiple subscriptions
+  // Set up real-time subscription - Improved to prevent multiple subscriptions
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || subscriptionActiveRef.current) return;
 
     // Clean up any existing subscription first
     if (channelRef.current) {
       console.log('Cleaning up existing channel before creating new one');
-      supabase.removeChannel(channelRef.current);
+      try {
+        supabase.removeChannel(channelRef.current);
+      } catch (error) {
+        console.log('Error removing channel:', error);
+      }
       channelRef.current = null;
     }
 
+    // Mark subscription as active to prevent duplicates
+    subscriptionActiveRef.current = true;
+
     // Create a single channel for all subscriptions with a unique timestamp
     const channelName = `user-${userId}-changes-${Date.now()}`;
+    console.log('Creating new channel:', channelName);
+    
     const channel = supabase
       .channel(channelName)
       .on(
@@ -138,7 +148,9 @@ export const useConversations = (userId: string | undefined) => {
           fetchProjectCounts();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     // Store the channel reference
     channelRef.current = channel;
@@ -146,8 +158,13 @@ export const useConversations = (userId: string | undefined) => {
     // Cleanup function to remove the channel
     return () => {
       console.log('Cleaning up realtime subscription');
+      subscriptionActiveRef.current = false;
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        try {
+          supabase.removeChannel(channelRef.current);
+        } catch (error) {
+          console.log('Error removing channel in cleanup:', error);
+        }
         channelRef.current = null;
       }
     };
