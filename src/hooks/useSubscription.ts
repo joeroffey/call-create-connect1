@@ -192,6 +192,8 @@ export const useSubscription = (userId: string | null) => {
         .select()
         .single();
 
+      let subscriptionData;
+
       if (error) {
         console.error('Upsert failed, trying update:', error);
         
@@ -212,14 +214,16 @@ export const useSubscription = (userId: string | null) => {
           throw updateError;
         }
         
-        data = updateData;
+        subscriptionData = updateData;
+      } else {
+        subscriptionData = data;
       }
 
       const typedSubscription: Subscription = {
-        id: data.id,
-        plan_type: data.plan_type as 'basic' | 'pro' | 'enterprise',
-        status: data.status as 'active' | 'cancelled' | 'expired',
-        current_period_end: data.current_period_end
+        id: subscriptionData.id,
+        plan_type: subscriptionData.plan_type as 'basic' | 'pro' | 'enterprise',
+        status: subscriptionData.status as 'active' | 'cancelled' | 'expired',
+        current_period_end: subscriptionData.current_period_end
       };
 
       setSubscription(typedSubscription);
