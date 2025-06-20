@@ -127,7 +127,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
             EezyBuild
           </h1>
-          <p className="text-gray-400 text-lg">Your AI Building Regulations Assistant</p>
+          <p className="text-gray-400 text-lg">Your Building Regulations Assistant</p>
         </motion.div>
 
         {/* Auth form */}
