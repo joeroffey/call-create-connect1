@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -25,7 +26,7 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings }: ProfileScreenProps) => {
-  const { subscription, hasActiveSubscription, createProMaxDemo } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createProMaxDemo, refetch } = useSubscription(user?.id);
   const [isActivatingDemo, setIsActivatingDemo] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const { toast } = useToast();
@@ -34,10 +35,8 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
     setIsActivatingDemo(true);
     try {
       await createProMaxDemo();
-      // Refresh the page to see the changes
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Refresh subscription status to update the UI
+      await refetch();
     } finally {
       setIsActivatingDemo(false);
     }
@@ -190,22 +189,6 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
             </div>
             
             <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
-              <Calendar className="w-5 h-5 text-emerald-400" />
-              <div>
-                <p className="text-sm text-gray-400">Date of Birth</p>
-                <p className="text-white">{user?.dateOfBirth || 'Not provided'}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
-              <MapPin className="w-5 h-5 text-emerald-400" />
-              <div>
-                <p className="text-sm text-gray-400">Address</p>
-                <p className="text-white">{user?.address || 'Not provided'}</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
               <Briefcase className="w-5 h-5 text-emerald-400" />
               <div>
                 <p className="text-sm text-gray-400">Occupation</p>
@@ -247,3 +230,4 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
 };
 
 export default ProfileScreen;
+

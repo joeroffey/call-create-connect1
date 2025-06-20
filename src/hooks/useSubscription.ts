@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -335,7 +334,7 @@ export const useSubscription = (userId: string | null) => {
     refetch: checkSubscriptionStatus,
     createDemoSubscription,
     createProMaxDemo,
-    createCheckoutSession,
-    openCustomerPortal
+    createCheckoutSession: async () => false, // Placeholder
+    openCustomerPortal: async () => false // Placeholder
   };
 };
