@@ -1,34 +1,53 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@supabase/auth-helpers-react';
 import { supabase } from '@/integrations/supabase/client';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import ConversationSidebar from '@/components/ConversationSidebar';
-import ChatScreen from '@/components/ChatScreen';
 import ProjectsScreen from '@/components/ProjectsScreen';
-import SettingsScreen from '@/components/SettingsScreen';
-import { useRouter } from 'next/router';
 
 const Index = () => {
-  const user = useUser();
-  const router = useRouter();
+  const [user, setUser] = useState(null);
   const [currentScreen, setCurrentScreen] = useState<'onboarding' | 'chat' | 'projects' | 'settings'>('onboarding');
   const [conversations, setConversations] = useState([]);
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchConversations();
+        const storedScreen = localStorage.getItem('currentScreen');
+        setCurrentScreen((storedScreen as 'onboarding' | 'chat' | 'projects' | 'settings') || 'projects');
+      } else {
+        setCurrentScreen('onboarding');
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchConversations();
+          setCurrentScreen('projects');
+        } else {
+          setCurrentScreen('onboarding');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (user) {
-      fetchConversations();
-      const storedScreen = localStorage.getItem('currentScreen');
-      setCurrentScreen((storedScreen as 'onboarding' | 'chat' | 'projects' | 'settings') || 'chat');
-    } else {
-      setCurrentScreen('onboarding');
+      localStorage.setItem('currentScreen', currentScreen);
     }
-  }, [user]);
-
-  useEffect(() => {
-    localStorage.setItem('currentScreen', currentScreen);
-  }, [currentScreen]);
+  }, [currentScreen, user]);
 
   const fetchConversations = async () => {
     if (!user?.id) return;
@@ -51,7 +70,7 @@ const Index = () => {
   };
 
   const handleOnboardingComplete = () => {
-    setCurrentScreen('chat');
+    setCurrentScreen('projects');
   };
 
   const handleStartNewChat = async (projectId: string | null = null) => {
@@ -84,7 +103,9 @@ const Index = () => {
       if (error) throw error;
 
       setConversations(prevConversations => prevConversations.filter(conv => conv.id !== conversationId));
-      setSelectedConversationId(null);
+      if (selectedConversationId === conversationId) {
+        setSelectedConversationId(null);
+      }
     } catch (error) {
       console.error('Error deleting conversation:', error);
     }
@@ -93,20 +114,33 @@ const Index = () => {
   const handleSelectConversation = (conversationId: string) => {
     setSelectedConversationId(conversationId);
     setCurrentScreen('chat');
+    setSidebarVisible(false);
   };
+
+  const handleNewConversation = () => {
+    setSelectedConversationId(null);
+    setCurrentScreen('chat');
+    setSidebarVisible(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex">
       {currentScreen !== 'onboarding' && (
         <ConversationSidebar
           user={user}
-          conversations={conversations}
-          selectedConversationId={selectedConversationId}
-          onSelectConversation={handleSelectConversation}
-          onStartNewChat={handleStartNewChat}
-          onDeleteConversation={handleDeleteConversation}
-          currentScreen={currentScreen}
-          onScreenChange={setCurrentScreen}
+          currentConversationId={selectedConversationId}
+          onConversationSelect={handleSelectConversation}
+          onNewConversation={handleNewConversation}
+          isVisible={sidebarVisible}
+          onToggle={() => setSidebarVisible(!sidebarVisible)}
         />
       )}
 
@@ -124,15 +158,20 @@ const Index = () => {
         )}
 
         {currentScreen === 'chat' && (
-          <ChatScreen
-            user={user}
-            selectedConversationId={selectedConversationId}
-            onBack={() => setCurrentScreen('projects')}
-          />
-        )}
-
-        {currentScreen === 'settings' && (
-          <SettingsScreen user={user} onBack={() => setCurrentScreen('chat')} />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-white text-center">
+              <h2 className="text-2xl font-bold mb-4">Chat Interface</h2>
+              <p className="text-gray-400">
+                {selectedConversationId ? `Conversation: ${selectedConversationId}` : 'No conversation selected'}
+              </p>
+              <button
+                onClick={() => setSidebarVisible(true)}
+                className="mt-4 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg"
+              >
+                Open Chat History
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
