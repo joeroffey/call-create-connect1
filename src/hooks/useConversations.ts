@@ -72,9 +72,15 @@ export const useConversations = (userId: string | undefined) => {
     fetchConversations();
   };
 
+  // Helper function to get conversation count by project
+  const getProjectConversationCount = (projectId: string) => {
+    return conversations.filter(conv => conv.project_id === projectId).length;
+  };
+
   return {
     conversations,
     loading,
-    refreshConversations
+    refreshConversations,
+    getProjectConversationCount
   };
 };
