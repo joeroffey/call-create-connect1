@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -17,7 +16,9 @@ import {
   Filter,
   Clock,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Tag,
+  Edit
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Project {
   id: string;
@@ -38,13 +40,16 @@ interface Project {
   chat_count: number;
   image_count: number;
   milestone_count: number;
+  ai_label?: string;
+  user_id: string;
 }
 
 interface ProjectsScreenProps {
   user: any;
+  onStartNewChat?: (projectId: string) => void;
 }
 
-const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
+const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -52,37 +57,58 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
+  const [editingStatus, setEditingStatus] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Mock data for demonstration
+  // Load projects from database
   useEffect(() => {
-    // In real implementation, this would fetch from Supabase
-    const mockProjects: Project[] = [
-      {
-        id: '1',
-        name: 'Residential Extension',
-        description: 'Two-story extension with kitchen and bedroom',
-        created_at: '2024-01-15',
-        updated_at: '2024-01-20',
-        status: 'in-progress',
-        chat_count: 12,
-        image_count: 8,
-        milestone_count: 5
-      },
-      {
-        id: '2',
-        name: 'Commercial Renovation',
-        description: 'Office space renovation with fire safety compliance',
-        created_at: '2024-01-10',
-        updated_at: '2024-01-18',
-        status: 'planning',
-        chat_count: 6,
-        image_count: 15,
-        milestone_count: 3
+    if (user?.id) {
+      loadProjects();
+    }
+  }, [user?.id]);
+
+  const loadProjects = async () => {
+    try {
+      // In a real implementation, this would fetch from Supabase projects table
+      // For now, we'll use an empty array since we removed mock data
+      setProjects([]);
+    } catch (error) {
+      console.error('Error loading projects:', error);
+    }
+  };
+
+  const generateAILabel = async (name: string, description: string): Promise<string> => {
+    try {
+      const response = await fetch('https://srwbgkssoatrhxdrrtff.supabase.co/functions/v1/building-regulations-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyd2Jna3Nzb2F0cmh4ZHJydGZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMzE0OTcsImV4cCI6MjA2NTkwNzQ5N30.FxPPrtKlz5MZxnS_6kAHMOMJiT25DYXOKzT1V9k-KhU'
+        },
+        body: JSON.stringify({
+          message: `Based on this project name "${name}" and description "${description}", provide a single, short label (2-3 words max) that categorizes this building project. Examples: "Fire Safety", "Structural Work", "Extension", "Renovation", "Planning Permission", "Energy Efficiency". Only respond with the label, nothing else.`
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.response.trim().replace(/['"]/g, '');
       }
-    ];
-    setProjects(mockProjects);
-  }, []);
+    } catch (error) {
+      console.error('Error generating AI label:', error);
+    }
+    
+    // Fallback to simple keyword matching
+    const text = `${name} ${description}`.toLowerCase();
+    if (text.includes('fire') || text.includes('safety')) return 'Fire Safety';
+    if (text.includes('structural') || text.includes('beam') || text.includes('foundation')) return 'Structural';
+    if (text.includes('extension') || text.includes('extend')) return 'Extension';
+    if (text.includes('kitchen') || text.includes('bathroom')) return 'Renovation';
+    if (text.includes('planning') || text.includes('permission')) return 'Planning';
+    if (text.includes('energy') || text.includes('insulation')) return 'Energy Efficiency';
+    
+    return 'General';
+  };
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -94,24 +120,32 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
   const handleCreateProject = async (formData: FormData) => {
     setIsLoading(true);
     try {
-      // In real implementation, save to Supabase
+      const name = formData.get('name') as string;
+      const description = formData.get('description') as string;
+      
+      // Generate AI label
+      const aiLabel = await generateAILabel(name, description);
+      
       const newProject: Project = {
         id: Date.now().toString(),
-        name: formData.get('name') as string,
-        description: formData.get('description') as string,
+        name,
+        description,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         status: 'planning',
         chat_count: 0,
         image_count: 0,
-        milestone_count: 0
+        milestone_count: 0,
+        ai_label: aiLabel,
+        user_id: user.id
       };
       
+      // In real implementation, save to Supabase
       setProjects(prev => [newProject, ...prev]);
       setShowCreateModal(false);
       toast({
         title: "Project Created",
-        description: `${newProject.name} has been created successfully.`
+        description: `${newProject.name} has been created with label "${aiLabel}".`
       });
     } catch (error) {
       toast({
@@ -121,6 +155,38 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleStatusChange = async (projectId: string, newStatus: 'planning' | 'in-progress' | 'completed') => {
+    try {
+      setProjects(prev => prev.map(project => 
+        project.id === projectId 
+          ? { ...project, status: newStatus, updated_at: new Date().toISOString() }
+          : project
+      ));
+      setEditingStatus(null);
+      toast({
+        title: "Status Updated",
+        description: `Project status changed to ${newStatus.replace('-', ' ')}.`
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update status. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleNewChat = (projectId: string) => {
+    if (onStartNewChat) {
+      onStartNewChat(projectId);
+    } else {
+      toast({
+        title: "Feature Coming Soon",
+        description: "Project-specific chat functionality will be available soon."
+      });
     }
   };
 
@@ -179,7 +245,7 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
               <DialogHeader>
                 <DialogTitle>Create New Project</DialogTitle>
                 <DialogDescription className="text-gray-400">
-                  Start a new building project to organize your chats, images, and progress
+                  Start a new building project. We'll automatically assign a relevant category label.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={(e) => {
@@ -299,11 +365,37 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
                         <CardTitle className="text-lg text-white group-hover:text-emerald-300 transition-colors mb-2">
                           {project.name}
                         </CardTitle>
-                        <div className="flex items-center space-x-2 mb-3">
-                          {getStatusIcon(project.status)}
-                          <Badge className={`text-xs ${getStatusColor(project.status)}`}>
-                            {project.status.replace('-', ' ')}
-                          </Badge>
+                        <div className="flex items-center space-x-2 mb-3 flex-wrap gap-2">
+                          {editingStatus === project.id ? (
+                            <select
+                              value={project.status}
+                              onChange={(e) => handleStatusChange(project.id, e.target.value as any)}
+                              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
+                              autoFocus
+                              onBlur={() => setEditingStatus(null)}
+                            >
+                              <option value="planning">Planning</option>
+                              <option value="in-progress">In Progress</option>
+                              <option value="completed">Completed</option>
+                            </select>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              {getStatusIcon(project.status)}
+                              <Badge 
+                                className={`text-xs cursor-pointer ${getStatusColor(project.status)}`}
+                                onClick={() => setEditingStatus(project.id)}
+                              >
+                                {project.status.replace('-', ' ')}
+                                <Edit className="w-3 h-3 ml-1" />
+                              </Badge>
+                            </div>
+                          )}
+                          {project.ai_label && (
+                            <Badge className="text-xs bg-purple-500/20 text-purple-300 border-purple-500/30">
+                              <Tag className="w-3 h-3 mr-1" />
+                              {project.ai_label}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -352,10 +444,20 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
             {selectedProject && (
               <>
                 <DialogHeader>
-                  <DialogTitle className="text-2xl">{selectedProject.name}</DialogTitle>
-                  <DialogDescription className="text-gray-400">
-                    {selectedProject.description}
-                  </DialogDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <DialogTitle className="text-2xl">{selectedProject.name}</DialogTitle>
+                      <DialogDescription className="text-gray-400">
+                        {selectedProject.description}
+                      </DialogDescription>
+                    </div>
+                    {selectedProject.ai_label && (
+                      <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {selectedProject.ai_label}
+                      </Badge>
+                    )}
+                  </div>
                 </DialogHeader>
                 
                 <Tabs defaultValue="overview" className="w-full">
@@ -394,7 +496,11 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-white">Quick Actions</h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                        <Button 
+                          onClick={() => handleNewChat(selectedProject.id)}
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        >
                           <MessageCircle className="w-4 h-4 mr-2" />
                           New Chat
                         </Button>
@@ -419,7 +525,10 @@ const ProjectsScreen = ({ user }: ProjectsScreenProps) => {
                       <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-white mb-2">Project Chats</h3>
                       <p className="text-gray-400 mb-4">All AI conversations for this project will appear here</p>
-                      <Button className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium">
+                      <Button 
+                        onClick={() => handleNewChat(selectedProject.id)}
+                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                      >
                         Start New Chat
                       </Button>
                     </div>
