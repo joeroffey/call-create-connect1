@@ -19,7 +19,7 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, createDemoSubscription } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createDemoSubscription, createCheckoutSession } = useSubscription(user?.id);
 
   const plans = [
     {
@@ -79,10 +79,16 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   ];
 
   const handlePlanSelection = async (planType: string) => {
-    if (planType === 'pro') {
-      await createDemoSubscription();
+    // For developer demo, allow creating demo subscriptions
+    if (user?.email === 'josephh.roffey@gmail.com') {
+      if (planType === 'pro') {
+        await createDemoSubscription();
+        return;
+      }
     }
-    // Other plan handling would go here
+    
+    // For all other cases, create Stripe checkout session
+    await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
   };
 
   return (
