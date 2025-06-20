@@ -471,7 +471,7 @@ What would you like to discuss about your project?`,
                     onClick={handleDocumentUpload}
                     disabled={isUploading}
                     className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Upload documents"
+                    title="Upload Document"
                   >
                     <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
                   </button>
