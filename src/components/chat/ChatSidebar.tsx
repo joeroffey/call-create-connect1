@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -243,7 +242,7 @@ const ChatSidebar = ({
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </>
       )}
     </AnimatePresence>
