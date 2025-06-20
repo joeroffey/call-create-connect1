@@ -154,6 +154,25 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       const name = formData.get('name') as string;
       const description = formData.get('description') as string;
       
+      // Validate required fields
+      if (!name || !name.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Project name is required.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (!description || !description.trim()) {
+        toast({
+          title: "Validation Error", 
+          description: "Project description is required.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       // Generate AI label
       const aiLabel = await generateAILabel(name, description);
       
@@ -162,8 +181,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         .insert([
           {
             user_id: user.id,
-            name,
-            description,
+            name: name.trim(),
+            description: description.trim(),
             label: aiLabel,
             status: 'planning'
           }
@@ -282,7 +301,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
               <DialogHeader>
                 <DialogTitle>Create New Project</DialogTitle>
                 <DialogDescription className="text-gray-400">
-                  Start a new building project. We'll automatically assign a relevant category label.
+                  Start a new building project. Both name and description are required. We'll automatically assign a relevant category label.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={(e) => {
@@ -290,7 +309,9 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                 handleCreateProject(new FormData(e.currentTarget));
               }} className="space-y-4">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">Project Name</label>
+                  <label htmlFor="name" className="block text-sm font-medium mb-2">
+                    Project Name <span className="text-red-400">*</span>
+                  </label>
                   <Input
                     id="name"
                     name="name"
@@ -300,11 +321,14 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="description" className="block text-sm font-medium mb-2">Description</label>
+                  <label htmlFor="description" className="block text-sm font-medium mb-2">
+                    Description <span className="text-red-400">*</span>
+                  </label>
                   <Textarea
                     id="description"
                     name="description"
                     placeholder="Brief description of the project..."
+                    required
                     className="bg-gray-800 border-gray-600 text-white min-h-[100px]"
                   />
                 </div>

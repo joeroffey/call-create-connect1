@@ -77,56 +77,9 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
     }
   }, [messages]);
 
-  useEffect(() => {
-    // Focus on input when component mounts
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-
-    // Add welcome message on initial load
-    if (messages.length === 0 && !currentConversationId) {
-      if (projectId && project) {
-        // Show project-specific welcome message
-        setMessages([{
-          id: 'project-welcome',
-          text: `Welcome to your ${project.name} project chat! 🏗️
-
-I'm ready to help you with building regulations and compliance questions specific to your project.
-
-**Project: ${project.name}**
-${project.description ? `**Description:** ${project.description}` : ''}
-${project.label ? `**Category:** ${project.label}` : ''}
-
-All my responses will take your project details into account for more targeted advice.
-
-What would you like to know about your project?`,
-          sender: 'assistant' as const,
-          timestamp: new Date(),
-          isWelcome: true
-        }]);
-      } else {
-        setMessages([welcomeMessage]);
-      }
-    }
-  }, [projectId, project, messages.length, currentConversationId]);
-
-  // Load conversation messages when a conversation is selected
-  useEffect(() => {
-    if (conversationMessages.length > 0) {
-      const formattedMessages: ChatMessageData[] = conversationMessages.map(msg => ({
-        id: msg.id,
-        text: msg.content,
-        sender: msg.role,
-        timestamp: new Date(msg.created_at),
-      }));
-      setMessages(formattedMessages);
-      setRelatedImages([]);
-    }
-  }, [conversationMessages]);
-
   const welcomeMessage = {
     id: 'welcome',
-    text: `EezyBuild! 👋
+    text: `Welcome to EezyBuild! 👋
 
 I'm your UK Building Regulations specialist, here to help you navigate construction requirements, planning permissions, and building standards.
 
@@ -144,6 +97,55 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
     timestamp: new Date(),
     isWelcome: true
   };
+
+  const getProjectWelcomeMessage = () => {
+    if (!project) return welcomeMessage;
+    
+    return {
+      id: 'project-welcome',
+      text: `Welcome to your ${project.name} project chat! 🏗️
+
+I'm ready to help you with building regulations and compliance questions specific to your project.
+
+**Project: ${project.name}**
+${project.description ? `**Description:** ${project.description}` : ''}
+${project.label ? `**Category:** ${project.label}` : ''}
+
+All my responses will take your project details into account for more targeted advice.
+
+What would you like to know about your project?`,
+      sender: 'assistant' as const,
+      timestamp: new Date(),
+      isWelcome: true
+    };
+  };
+
+  useEffect(() => {
+    // Focus on input when component mounts
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+
+    // Add welcome message on initial load
+    if (messages.length === 0 && !currentConversationId) {
+      const welcomeMsg = projectId && project ? getProjectWelcomeMessage() : welcomeMessage;
+      setMessages([welcomeMsg]);
+    }
+  }, [projectId, project, messages.length, currentConversationId]);
+
+  // Load conversation messages when a conversation is selected
+  useEffect(() => {
+    if (conversationMessages.length > 0) {
+      const formattedMessages: ChatMessageData[] = conversationMessages.map(msg => ({
+        id: msg.id,
+        text: msg.content,
+        sender: msg.role,
+        timestamp: new Date(msg.created_at),
+      }));
+      setMessages(formattedMessages);
+      setRelatedImages([]);
+    }
+  }, [conversationMessages]);
 
   const createNewConversation = async (firstMessage: string) => {
     try {
@@ -190,28 +192,8 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
   };
 
   const handleNewConversation = () => {
-    if (projectId && project) {
-      // For project chats, show project-specific welcome
-      setMessages([{
-        id: 'project-welcome',
-        text: `Welcome to your ${project.name} project chat! 🏗️
-
-I'm ready to help you with building regulations and compliance questions specific to your project.
-
-**Project: ${project.name}**
-${project.description ? `**Description:** ${project.description}` : ''}
-${project.label ? `**Category:** ${project.label}` : ''}
-
-All my responses will take your project details into account for more targeted advice.
-
-What would you like to know about your project?`,
-        sender: 'assistant' as const,
-        timestamp: new Date(),
-        isWelcome: true
-      }]);
-    } else {
-      setMessages([welcomeMessage]);
-    }
+    const welcomeMsg = projectId && project ? getProjectWelcomeMessage() : welcomeMessage;
+    setMessages([welcomeMsg]);
     setCurrentConversationId(null);
     setRelatedImages([]);
   };
@@ -309,6 +291,13 @@ What would you like to know about your project?`,
     }
   };
 
+  const handleImageUpload = () => {
+    toast({
+      title: "Feature Coming Soon",
+      description: "Image uploads will be available in the next update.",
+    });
+  };
+
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
       {/* Header */}
@@ -365,6 +354,13 @@ What would you like to know about your project?`,
           <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center space-x-3">
+                <button
+                  onClick={handleImageUpload}
+                  className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
+                  title="Upload image"
+                >
+                  <Plus className="w-5 h-5" />
+                </button>
                 <div className="flex-1 relative flex items-center">
                   <textarea
                     ref={inputRef}
