@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
@@ -58,6 +58,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [editingStatus, setEditingStatus] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Load projects from database
@@ -244,6 +246,112 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         description: "Project-specific chat functionality will be available soon."
       });
     }
+  };
+
+  const handleDocumentUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const uploadDocument = async (file: File) => {
+    if (!selectedProject || !user) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: "Project and user authentication required for document upload.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      // Create file path: userId/projectId/filename
+      const filePath = `${user.id}/${selectedProject.id}/${Date.now()}-${file.name}`;
+
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('project-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Save document metadata to database
+      const { error: dbError } = await supabase
+        .from('project_documents')
+        .insert([
+          {
+            project_id: selectedProject.id,
+            user_id: user.id,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size,
+          }
+        ]);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Document uploaded successfully",
+        description: `${file.name} has been uploaded to ${selectedProject.name}. The AI can now analyze it to help answer your questions.`,
+      });
+    } catch (error: any) {
+      console.error('Error uploading document:', error);
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error.message || "Failed to upload document. Please try again.",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Check if it's a supported file type
+      const supportedTypes = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+        'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain', 'text/csv', 'text/markdown'
+      ];
+
+      if (!supportedTypes.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please select an image, PDF, Word document, or text file.",
+        });
+        return;
+      }
+
+      // Check file size (limit to 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please select a file smaller than 10MB.",
+        });
+        return;
+      }
+
+      uploadDocument(file);
+
+      // Reset the input so the same file can be selected again
+      event.target.value = '';
+    }
+  };
+
+  const handleMilestones = () => {
+    toast({
+      title: "Milestones Feature",
+      description: "Project milestones tracking will be available in the next update.",
+    });
   };
 
   const getStatusIcon = (status: string) => {
@@ -499,6 +607,15 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           </div>
         )}
 
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.csv,.md"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
         {/* Project Details Modal */}
         <Dialog open={showProjectDetails} onOpenChange={setShowProjectDetails}>
           <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -565,11 +682,20 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                           <MessageCircle className="w-4 h-4 mr-2" />
                           New Chat
                         </Button>
-                        <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
-                          <Upload className="w-4 h-4 mr-2" />
-                          Upload Image
+                        <Button 
+                          onClick={handleDocumentUpload}
+                          disabled={isUploading}
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-800 disabled:opacity-50"
+                        >
+                          <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
+                          {isUploading ? 'Uploading...' : 'Upload Document'}
                         </Button>
-                        <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800">
+                        <Button 
+                          onClick={handleMilestones}
+                          variant="outline" 
+                          className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                        >
                           <Plus className="w-4 h-4 mr-2" />
                           Add Milestone
                         </Button>
@@ -598,11 +724,15 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                   <TabsContent value="images">
                     <div className="text-center py-8">
                       <Image className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-white mb-2">Project Images</h3>
-                      <p className="text-gray-400 mb-4">Floor plans, photos, and documents for this project</p>
-                      <Button className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium">
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload Images
+                      <h3 className="text-lg font-semibold text-white mb-2">Project Documents</h3>
+                      <p className="text-gray-400 mb-4">Floor plans, photos, PDFs, and documents for this project</p>
+                      <Button 
+                        onClick={handleDocumentUpload}
+                        disabled={isUploading}
+                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium disabled:opacity-50"
+                      >
+                        <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
+                        {isUploading ? 'Uploading...' : 'Upload Documents'}
                       </Button>
                     </div>
                   </TabsContent>
@@ -612,7 +742,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                       <CheckCircle2 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                       <h3 className="text-lg font-semibold text-white mb-2">Project Milestones</h3>
                       <p className="text-gray-400 mb-4">Track important deadlines and achievements</p>
-                      <Button className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium">
+                      <Button 
+                        onClick={handleMilestones}
+                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                      >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Milestone
                       </Button>
