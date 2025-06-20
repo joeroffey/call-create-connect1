@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Conversation {
@@ -14,6 +14,7 @@ export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
+  const channelRef = useRef<any>(null);
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -83,12 +84,22 @@ export const useConversations = (userId: string | undefined) => {
     fetchProjectCounts();
   }, [userId]);
 
-  // Set up real-time subscription to conversations
+  // Set up real-time subscription to conversations - with proper cleanup
   useEffect(() => {
     if (!userId) return;
 
-    const channel = supabase
-      .channel('conversations-changes')
+    // Clean up existing channel if it exists
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    // Create new channel with unique name
+    const channelName = `conversations-changes-${userId}-${Date.now()}`;
+    const channel = supabase.channel(channelName);
+
+    // Configure the channel with all event listeners
+    channel
       .on(
         'postgres_changes',
         {
@@ -127,11 +138,18 @@ export const useConversations = (userId: string | undefined) => {
           console.log('Milestone change detected:', payload);
           fetchProjectCounts();
         }
-      )
-      .subscribe();
+      );
 
+    // Subscribe to the channel
+    channel.subscribe();
+    channelRef.current = channel;
+
+    // Cleanup function
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [userId]);
 
