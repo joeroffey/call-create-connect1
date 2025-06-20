@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -12,18 +11,20 @@ import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import AccountSettingsScreen from './AccountSettingsScreen';
 
 interface ProfileScreenProps {
   user: any;
   onNavigateToSettings: () => void;
-  onNavigateToAccountSettings: () => void;
+  onNavigateToAccountSettings?: () => void;
 }
 
-const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings }: ProfileScreenProps) => {
+const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
   const { subscription, hasActiveSubscription, createProMaxDemo, refetch } = useSubscription(user?.id);
   const [isActivatingDemo, setIsActivatingDemo] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [showAccountSettings, setShowAccountSettings] = useState(false);
   const { toast } = useToast();
 
   // Fetch user profile data from the profiles table
@@ -100,6 +101,23 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
       day: 'numeric'
     });
   };
+
+  const handleAccountSettings = () => {
+    setShowAccountSettings(true);
+  };
+
+  const handleBackFromAccountSettings = () => {
+    setShowAccountSettings(false);
+  };
+
+  if (showAccountSettings) {
+    return (
+      <AccountSettingsScreen 
+        user={user} 
+        onBack={handleBackFromAccountSettings}
+      />
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
@@ -222,7 +240,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           className="space-y-3"
         >
           <Button
-            onClick={onNavigateToAccountSettings}
+            onClick={handleAccountSettings}
             variant="outline"
             className="w-full h-12 bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-white"
           >
