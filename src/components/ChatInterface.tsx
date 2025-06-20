@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Upload, Lightbulb, Book, Milestone } from 'lucide-react';
@@ -180,22 +181,22 @@ What would you like to discuss about your project?`,
 
       if (error) throw error;
 
-      // If this is a project chat, update the project to reflect the new conversation
+      // If this is a project chat, update the project's updated_at timestamp immediately
       if (projectId) {
         try {
-          // Get current conversation count for this project
-          const { count } = await supabase
-            .from('conversations')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', projectId);
-
-          console.log(`Project ${projectId} now has ${count} conversations`);
+          console.log(`Updating project ${projectId} timestamp after creating conversation`);
           
           // Update the project's updated_at timestamp to reflect activity
-          await supabase
+          const { error: updateError } = await supabase
             .from('projects')
             .update({ updated_at: new Date().toISOString() })
             .eq('id', projectId);
+
+          if (updateError) {
+            console.error('Error updating project timestamp:', updateError);
+          } else {
+            console.log(`Successfully updated project ${projectId} timestamp`);
+          }
 
         } catch (updateError) {
           console.error('Error updating project stats:', updateError);
