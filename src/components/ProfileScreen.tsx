@@ -1,371 +1,179 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Crown, Mail, Calendar, Settings, LogOut, ChevronRight, Camera, Upload } from 'lucide-react';
+import { 
+  User, 
+  Calendar, 
+  MapPin, 
+  Briefcase, 
+  Crown, 
+  Settings, 
+  ArrowLeft,
+  Zap,
+  Star
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import SupportDialog from './SupportDialog';
 
 interface ProfileScreenProps {
   user: any;
-  onNavigateToSettings?: () => void;
-  onNavigateToAccountSettings?: () => void;
+  onNavigateToSettings: () => void;
+  onNavigateToAccountSettings: () => void;
 }
 
 const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings }: ProfileScreenProps) => {
-  const { subscription, hasActiveSubscription } = useSubscription(user?.id);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isSupportDialogOpen, setIsSupportDialogOpen] = useState(false);
-  const [userCreatedAt, setUserCreatedAt] = useState<string | null>(null);
-  const { toast } = useToast();
+  const { subscription, hasActiveSubscription, createProMaxDemo } = useSubscription(user?.id);
+  const [isActivatingDemo, setIsActivatingDemo] = useState(false);
 
-  // Load user creation date and profile image on component mount
-  useEffect(() => {
-    if (user?.id) {
-      loadProfileImage();
-      loadUserCreatedAt();
-    }
-  }, [user?.id]);
-
-  const loadUserCreatedAt = async () => {
+  const handleActivateProMaxDemo = async () => {
+    setIsActivatingDemo(true);
     try {
-      const { data: { user: authUser }, error } = await supabase.auth.getUser();
-      if (error) throw error;
-      
-      if (authUser?.created_at) {
-        setUserCreatedAt(authUser.created_at);
-      }
-    } catch (error) {
-      console.error('Error loading user creation date:', error);
-    }
-  };
-
-  const loadProfileImage = async () => {
-    if (!user?.id) return;
-
-    try {
-      // List files in the user's folder
-      const { data, error } = await supabase.storage
-        .from('avatars')
-        .list(user.id, {
-          limit: 1,
-          sortBy: { column: 'created_at', order: 'desc' }
-        });
-
-      if (error) throw error;
-
-      if (data && data.length > 0) {
-        // Get the public URL for the most recent avatar
-        const { data: urlData } = supabase.storage
-          .from('avatars')
-          .getPublicUrl(`${user.id}/${data[0].name}`);
-        
-        setProfileImage(urlData.publicUrl);
-      }
-    } catch (error) {
-      console.error('Error loading profile image:', error);
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
-  const handleContactSupport = () => {
-    setIsSupportDialogOpen(true);
-  };
-
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please select an image smaller than 5MB",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      // Create a unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
-
-      // Upload to Supabase storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      setProfileImage(data.publicUrl);
-      
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully"
-      });
-    } catch (error: any) {
-      console.error('Error uploading image:', error);
-      toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload image",
-        variant: "destructive"
-      });
+      await createProMaxDemo();
+      // Refresh the page to see the changes
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } finally {
-      setIsUploading(false);
+      setIsActivatingDemo(false);
     }
   };
-
-  const menuItems = [
-    {
-      icon: Settings,
-      label: 'Account Settings',
-      description: 'Manage your account preferences',
-      action: () => {
-        console.log('Navigating to account settings');
-        if (onNavigateToAccountSettings) {
-          onNavigateToAccountSettings();
-        } else {
-          toast({
-            title: "Navigation Error",
-            description: "Account settings navigation not configured",
-            variant: "destructive"
-          });
-        }
-      }
-    },
-    {
-      icon: Crown,
-      label: 'Subscription',
-      description: 'Manage your subscription plan',
-      action: () => {
-        console.log('Navigating to subscription settings');
-        if (onNavigateToSettings) {
-          onNavigateToSettings();
-        } else {
-          toast({
-            title: "Navigation Error",
-            description: "Subscription navigation not configured",
-            variant: "destructive"
-          });
-        }
-      }
-    },
-    {
-      icon: Mail,
-      label: 'Contact Support',
-      description: 'Get help from our team',
-      action: handleContactSupport
-    }
-  ];
-
-  // Calculate member since date - using userCreatedAt from auth.users
-  const memberSince = userCreatedAt ? new Date(userCreatedAt).toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long' 
-  }) : 'Loading...';
-
-  // Get subscription details
-  const subscriptionTier = subscription?.plan_type 
-    ? subscription.plan_type.charAt(0).toUpperCase() + subscription.plan_type.slice(1)
-    : 'Free';
-
-  const subscriptionEndDate = subscription?.current_period_end 
-    ? new Date(subscription.current_period_end).toLocaleDateString()
-    : null;
-
-  // Get user initials for fallback
-  const userInitials = user?.name 
-    ? user.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
-    : user?.email?.charAt(0).toUpperCase() || 'U';
-
-  // Check if email is verified
-  const isEmailVerified = user?.email_confirmed_at !== null;
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
       <div className="px-6 py-8">
-        {/* Profile header */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-8"
         >
-          <div className="relative inline-block mb-4">
-            <Avatar className="w-24 h-24">
-              <AvatarImage 
-                src={profileImage || undefined} 
-                alt="Profile" 
-              />
-              <AvatarFallback className="bg-gray-800 text-white text-xl">
-                {userInitials}
-              </AvatarFallback>
-            </Avatar>
-            
-            {/* Upload button */}
-            <label className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center cursor-pointer transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={isUploading}
-              />
-              {isUploading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Camera className="w-4 h-4 text-white" />
-              )}
-            </label>
-            
-            {hasActiveSubscription && (
-              <div className="absolute -bottom-2 -left-2 w-8 h-8 bg-gradient-to-br from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
-                <Crown className="w-4 h-4 text-white" />
-              </div>
-            )}
+          <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold mb-1">{user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}</h1>
-          <p className="text-gray-400 mb-2">{user?.email}</p>
-          {hasActiveSubscription && (
-            <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-full px-4 py-2">
-              <Crown className="w-4 h-4 text-yellow-500" />
-              <span className="text-sm font-medium text-yellow-500">{subscriptionTier} Plan</span>
-            </div>
-          )}
+          <h1 className="text-2xl font-bold mb-2">{user?.name || 'User'}</h1>
+          <p className="text-gray-400">{user?.email}</p>
         </motion.div>
 
-        {/* Stats - placeholder for now, will be updated with real data */}
+        {/* Subscription Status */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 gap-4 mb-8"
+          className="bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 p-6 mb-6"
         >
-          <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-4 border border-gray-800">
-            <div className="text-2xl font-bold text-blue-400 mb-1">0</div>
-            <div className="text-sm text-gray-400">Queries This Month</div>
-          </div>
-          <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-4 border border-gray-800">
-            <div className="text-2xl font-bold text-green-400 mb-1">
-              {hasActiveSubscription ? 'Unlimited' : '0'}
-            </div>
-            <div className="text-sm text-gray-400">Remaining Queries</div>
-          </div>
-        </motion.div>
-
-        {/* Menu items */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="space-y-3 mb-8"
-        >
-          {menuItems.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <motion.button
-                key={item.label}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.1 }}
-                onClick={item.action}
-                className="w-full bg-gray-900/50 backdrop-blur-xl rounded-2xl p-4 border border-gray-800 hover:border-gray-700 transition-all duration-200 group"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center group-hover:bg-gray-700 transition-colors">
-                      <Icon className="w-6 h-6 text-gray-400 group-hover:text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-medium text-white">{item.label}</h3>
-                      <p className="text-sm text-gray-400">{item.description}</p>
-                    </div>
-                  </div>
-                  <ChevronRight className="w-5 h-5 text-gray-500 group-hover:text-gray-300" />
-                </div>
-              </motion.button>
-            );
-          })}
-        </motion.div>
-
-        {/* Account info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-gray-900/30 rounded-2xl p-4 border border-gray-800 mb-6"
-        >
-          <div className="flex items-center space-x-3 mb-3">
-            <Calendar className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-400">Member since {memberSince}</span>
-          </div>
-          <div className="flex items-center space-x-3 mb-3">
-            <Mail className="w-5 h-5 text-gray-400" />
-            <span className="text-sm text-gray-400">
-              {isEmailVerified ? 'Verified account' : 'Account not verified'}
-            </span>
-          </div>
-          {hasActiveSubscription && subscriptionEndDate && (
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-3">
-              <Crown className="w-5 h-5 text-yellow-400" />
-              <span className="text-sm text-gray-400">
-                Subscription expires {subscriptionEndDate}
-              </span>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                hasActiveSubscription ? 'bg-emerald-500' : 'bg-gray-600'
+              }`}>
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-white">Subscription Status</h3>
+                <p className="text-sm text-gray-400">
+                  {hasActiveSubscription 
+                    ? `Active - ${subscription?.plan_type === 'basic' ? 'Basic' : 
+                                   subscription?.plan_type === 'pro' ? 'Pro' : 
+                                   subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}`
+                    : 'Free Plan'
+                  }
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={onNavigateToSettings}
+              variant="outline"
+              size="sm"
+              className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+            >
+              {hasActiveSubscription ? 'Manage' : 'Upgrade'}
+            </Button>
+          </div>
+          
+          {/* Developer Demo Button */}
+          {user?.email === 'josephh.roffey@gmail.com' && subscription?.plan_type !== 'enterprise' && (
+            <div className="border-t border-gray-700 pt-4 mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-white">Developer Access</p>
+                    <p className="text-xs text-gray-400">Activate ProMax demo for testing</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleActivateProMaxDemo}
+                  disabled={isActivatingDemo}
+                  size="sm"
+                  className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
+                >
+                  {isActivatingDemo ? 'Activating...' : 'Activate ProMax'}
+                </Button>
+              </div>
             </div>
           )}
         </motion.div>
 
-        {/* Sign out button */}
+        {/* User Information */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.2 }}
+          className="bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 p-6 mb-6"
+        >
+          <h3 className="text-lg font-semibold text-white mb-4">Personal Information</h3>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
+              <User className="w-5 h-5 text-emerald-400" />
+              <div>
+                <p className="text-sm text-gray-400">Full Name</p>
+                <p className="text-white">{user?.name || 'Not provided'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
+              <Calendar className="w-5 h-5 text-emerald-400" />
+              <div>
+                <p className="text-sm text-gray-400">Date of Birth</p>
+                <p className="text-white">{user?.dateOfBirth || 'Not provided'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
+              <MapPin className="w-5 h-5 text-emerald-400" />
+              <div>
+                <p className="text-sm text-gray-400">Address</p>
+                <p className="text-white">{user?.address || 'Not provided'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
+              <Briefcase className="w-5 h-5 text-emerald-400" />
+              <div>
+                <p className="text-sm text-gray-400">Occupation</p>
+                <p className="text-white">{user?.occupation || 'Not provided'}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Account Settings */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
         >
           <Button
-            onClick={handleSignOut}
-            variant="outline" 
-            className="w-full h-12 border-red-600/30 text-red-400 hover:bg-red-600/10 hover:border-red-500 rounded-xl"
+            onClick={onNavigateToAccountSettings}
+            variant="outline"
+            className="w-full h-12 bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-white"
           >
-            <LogOut className="w-5 h-5 mr-2" />
-            Sign Out
+            <Settings className="w-5 h-5 mr-3" />
+            Account Settings
           </Button>
         </motion.div>
       </div>
-      <SupportDialog
-        open={isSupportDialogOpen}
-        onOpenChange={setIsSupportDialogOpen}
-        user={user}
-        subscription={subscription}
-        hasActiveSubscription={hasActiveSubscription}
-      />
     </div>
   );
 };

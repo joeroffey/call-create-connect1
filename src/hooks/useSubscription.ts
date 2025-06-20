@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -232,6 +233,97 @@ export const useSubscription = (userId: string | null) => {
     }
   };
 
+  const createProMaxDemo = async () => {
+    if (!userId) return false;
+
+    try {
+      // Get current user session to check email
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email) {
+        throw new Error('No user session found');
+      }
+
+      // Only allow josephh.roffey@gmail.com to get ProMax demo
+      if (session.user.email !== 'josephh.roffey@gmail.com') {
+        toast({
+          title: "Access Denied",
+          description: "ProMax demo is only available for the developer account",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Create a ProMax demo subscription - expires in 30 days
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: userId,
+          plan_type: 'enterprise',
+          status: 'active',
+          current_period_end: endDate.toISOString()
+        }, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
+
+      let subscriptionData;
+
+      if (error) {
+        console.error('Upsert failed, trying update:', error);
+        
+        const { data: updateData, error: updateError } = await supabase
+          .from('subscriptions')
+          .update({
+            plan_type: 'enterprise',
+            status: 'active',
+            current_period_end: endDate.toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+        
+        subscriptionData = updateData;
+      } else {
+        subscriptionData = data;
+      }
+
+      const typedSubscription: Subscription = {
+        id: subscriptionData.id,
+        plan_type: subscriptionData.plan_type as 'basic' | 'pro' | 'enterprise',
+        status: subscriptionData.status as 'active' | 'cancelled' | 'expired',
+        current_period_end: subscriptionData.current_period_end
+      };
+
+      setSubscription(typedSubscription);
+      setHasActiveSubscription(true);
+      
+      toast({
+        title: "ProMax Demo Activated!",
+        description: "You now have a 30-day ProMax demo subscription to test all features!"
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error creating ProMax demo subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create ProMax demo subscription",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     checkSubscriptionStatus();
   }, [userId]);
@@ -242,6 +334,7 @@ export const useSubscription = (userId: string | null) => {
     hasActiveSubscription,
     refetch: checkSubscriptionStatus,
     createDemoSubscription,
+    createProMaxDemo,
     createCheckoutSession,
     openCustomerPortal
   };
