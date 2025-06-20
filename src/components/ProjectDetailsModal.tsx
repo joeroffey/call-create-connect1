@@ -10,12 +10,11 @@ interface ProjectDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   onStartNewChat: (projectId: string) => void;
-  onSelectConversation?: (conversationId: string) => void;
   user: any;
   initialTab?: string;
 }
 
-const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, onSelectConversation, user, initialTab = 'chats' }: ProjectDetailsModalProps) => {
+const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats' }: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [documents, setDocuments] = useState<any[]>([]);
   const [milestones, setMilestones] = useState<any[]>([]);
@@ -213,13 +212,6 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, onSelec
     }
   };
 
-  const handleConversationClick = (conversationId: string) => {
-    if (onSelectConversation) {
-      onSelectConversation(conversationId);
-      onClose();
-    }
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -310,10 +302,9 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, onSelec
                     {projectConversations.map((conversation) => (
                       <div
                         key={conversation.id}
-                        onClick={() => handleConversationClick(conversation.id)}
-                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-emerald-500/30 transition-colors cursor-pointer group"
+                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-emerald-500/30 transition-colors"
                       >
-                        <h4 className="text-white font-medium mb-1 group-hover:text-emerald-300">{conversation.title}</h4>
+                        <h4 className="text-white font-medium mb-1">{conversation.title}</h4>
                         <p className="text-gray-400 text-sm">
                           {new Date(conversation.created_at).toLocaleDateString()}
                         </p>

@@ -20,10 +20,9 @@ interface Project {
 interface ProjectsScreenProps {
   user: any;
   onStartNewChat: (projectId: string) => void;
-  onSelectConversation?: (conversationId: string) => void;
 }
 
-const ProjectsScreen = ({ user, onStartNewChat, onSelectConversation }: ProjectsScreenProps) => {
+const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -77,7 +76,31 @@ const ProjectsScreen = ({ user, onStartNewChat, onSelectConversation }: Projects
     fetchProjects();
   }, [user?.id]);
 
-  // Removed the duplicate real-time subscription since it's now handled in useConversations hook
+  // Set up real-time subscription for projects
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('projects-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Project change detected:', payload);
+          fetchProjects();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const createProject = async () => {
     if (!user?.id || !newProject.name.trim()) return;
@@ -374,7 +397,6 @@ const ProjectsScreen = ({ user, onStartNewChat, onSelectConversation }: Projects
           setSelectedProject(null);
         }}
         onStartNewChat={onStartNewChat}
-        onSelectConversation={onSelectConversation}
         user={user}
         initialTab={activeTab}
       />

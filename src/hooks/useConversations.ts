@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Conversation {
@@ -10,16 +10,10 @@ interface Conversation {
   project_id?: string;
 }
 
-// Global refs to prevent multiple subscriptions across hook instances
-let globalChannel: any = null;
-let globalUserId: string | null = null;
-let subscribersCount = 0;
-
 export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
-  const mountedRef = useRef(true);
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -37,15 +31,11 @@ export const useConversations = (userId: string | undefined) => {
       if (error) throw error;
       
       console.log('Fetched conversations:', data);
-      if (mountedRef.current) {
-        setConversations(data || []);
-      }
+      setConversations(data || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
     } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
@@ -82,9 +72,7 @@ export const useConversations = (userId: string | undefined) => {
         counts[milestone.project_id].milestones++;
       });
 
-      if (mountedRef.current) {
-        setProjectCounts(counts);
-      }
+      setProjectCounts(counts);
     } catch (error) {
       console.error('Error fetching project counts:', error);
     }
@@ -95,95 +83,55 @@ export const useConversations = (userId: string | undefined) => {
     fetchProjectCounts();
   }, [userId]);
 
-  // Set up real-time subscription with global management
+  // Set up real-time subscription to conversations
   useEffect(() => {
     if (!userId) return;
 
-    // Increment subscriber count
-    subscribersCount++;
-    console.log('Subscribers count:', subscribersCount);
-
-    // Only create subscription if we don't have one or user changed
-    if (!globalChannel || globalUserId !== userId) {
-      // Clean up existing subscription if user changed
-      if (globalChannel && globalUserId !== userId) {
-        console.log('User changed, cleaning up existing subscription');
-        try {
-          supabase.removeChannel(globalChannel);
-        } catch (error) {
-          console.log('Error removing old channel:', error);
+    const channel = supabase
+      .channel('conversations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'conversations',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Conversation change detected:', payload);
+          fetchConversations();
         }
-        globalChannel = null;
-      }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_documents',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Document change detected:', payload);
+          fetchProjectCounts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_milestones',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Milestone change detected:', payload);
+          fetchProjectCounts();
+        }
+      )
+      .subscribe();
 
-      globalUserId = userId;
-      const channelName = `user-${userId}-changes-${Date.now()}`;
-      console.log('Creating new global channel:', channelName);
-      
-      globalChannel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'conversations',
-            filter: `user_id=eq.${userId}`,
-          },
-          (payload) => {
-            console.log('Conversation change detected:', payload);
-            // Refetch for all subscribers
-            fetchConversations();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'project_documents',
-            filter: `user_id=eq.${userId}`,
-          },
-          (payload) => {
-            console.log('Document change detected:', payload);
-            fetchProjectCounts();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'project_milestones',
-            filter: `user_id=eq.${userId}`,
-          },
-          (payload) => {
-            console.log('Milestone change detected:', payload);
-            fetchProjectCounts();
-          }
-        )
-        .subscribe((status) => {
-          console.log('Global subscription status:', status);
-        });
-    }
-
-    // Cleanup function
     return () => {
-      mountedRef.current = false;
-      subscribersCount--;
-      console.log('Subscribers count after cleanup:', subscribersCount);
-      
-      // Only cleanup global subscription when no more subscribers
-      if (subscribersCount === 0 && globalChannel) {
-        console.log('No more subscribers, cleaning up global subscription');
-        try {
-          supabase.removeChannel(globalChannel);
-        } catch (error) {
-          console.log('Error removing global channel:', error);
-        }
-        globalChannel = null;
-        globalUserId = null;
-      }
+      supabase.removeChannel(channel);
     };
   }, [userId]);
 
