@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -77,7 +78,6 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Load projects from database
   useEffect(() => {
     if (user?.id) {
       loadProjects();
@@ -86,35 +86,23 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
   const loadProjects = async () => {
     try {
-      const { data: projectsData, error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-
-      // Get conversation counts for each project
-      const projectsWithCounts = await Promise.all(
-        (projectsData || []).map(async (project) => {
-          const { count } = await supabase
-            .from('conversations')
-            .select('*', { count: 'exact', head: true })
-            .eq('project_id', project.id);
-
-          return {
-            ...project,
-            description: project.description || '',
-            label: project.label || undefined,
-            status: project.status as 'planning' | 'in-progress' | 'completed',
-            chat_count: count || 0,
-            image_count: 0, // TODO: Implement when images are added
-            milestone_count: 0 // TODO: Implement when milestones are added
-          };
-        })
-      );
-
-      setProjects(projectsWithCounts);
+      
+      // Transform data to match our interface
+      const transformedProjects = (data || []).map(project => ({
+        ...project,
+        chat_count: 0,
+        image_count: 0,
+        milestone_count: 0
+      }));
+      
+      setProjects(transformedProjects);
     } catch (error) {
       console.error('Error loading projects:', error);
       toast({
@@ -140,53 +128,12 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     }
   };
 
-  const generateAILabel = async (name: string, description: string): Promise<string> => {
-    try {
-      const response = await fetch('https://srwbgkssoatrhxdrrtff.supabase.co/functions/v1/building-regulations-chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyd2Jna3Nzb2F0cmh4ZHJydGZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzMzE0OTcsImV4cCI6MjA2NTkwNzQ5N30.FxPPrtKlz5MZxnS_6kAHMOMJiT25DYXOKzT1V9k-KhU'
-        },
-        body: JSON.stringify({
-          message: `Based on this project name "${name}" and description "${description}", provide a single, short label (2-3 words max) that categorizes this building project. Examples: "Fire Safety", "Structural Work", "Extension", "Renovation", "Planning Permission", "Energy Efficiency". Only respond with the label, nothing else.`
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return data.response.trim().replace(/['"]/g, '');
-      }
-    } catch (error) {
-      console.error('Error generating AI label:', error);
-    }
-    
-    // Fallback to simple keyword matching
-    const text = `${name} ${description}`.toLowerCase();
-    if (text.includes('fire') || text.includes('safety')) return 'Fire Safety';
-    if (text.includes('structural') || text.includes('beam') || text.includes('foundation')) return 'Structural';
-    if (text.includes('extension') || text.includes('extend')) return 'Extension';
-    if (text.includes('kitchen') || text.includes('bathroom')) return 'Renovation';
-    if (text.includes('planning') || text.includes('permission')) return 'Planning';
-    if (text.includes('energy') || text.includes('insulation')) return 'Energy Efficiency';
-    
-    return 'General';
-  };
-
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (project.description || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filterStatus === 'all' || project.status === filterStatus;
-    return matchesSearch && matchesFilter;
-  });
-
   const handleCreateProject = async (formData: FormData) => {
     setIsLoading(true);
     try {
       const name = formData.get('name') as string;
       const description = formData.get('description') as string;
       
-      // Validate required fields
       if (!name || !name.trim()) {
         toast({
           title: "Validation Error",
@@ -196,39 +143,24 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         return;
       }
       
-      if (!description || !description.trim()) {
-        toast({
-          title: "Validation Error", 
-          description: "Project description is required.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Generate AI label
-      const aiLabel = await generateAILabel(name, description);
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('projects')
         .insert([
           {
             user_id: user.id,
             name: name.trim(),
-            description: description.trim(),
-            label: aiLabel,
+            description: description?.trim() || '',
             status: 'planning'
           }
-        ])
-        .select()
-        .single();
+        ]);
 
       if (error) throw error;
 
-      await loadProjects(); // Reload projects
+      await loadProjects();
       setShowCreateModal(false);
       toast({
         title: "Project Created",
-        description: `${name} has been created with label "${aiLabel}".`
+        description: `${name} has been created successfully.`
       });
     } catch (error) {
       console.error('Error creating project:', error);
@@ -239,174 +171,6 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleStatusChange = async (projectId: string, newStatus: 'planning' | 'in-progress' | 'completed') => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ status: newStatus })
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      await loadProjects(); // Reload projects
-      setEditingStatus(null);
-      toast({
-        title: "Status Updated",
-        description: `Project status changed to ${newStatus.replace('-', ' ')}.`
-      });
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update status. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleNewChat = (projectId: string) => {
-    if (onStartNewChat) {
-      onStartNewChat(projectId);
-    } else {
-      toast({
-        title: "Feature Coming Soon",
-        description: "Project-specific chat functionality will be available soon."
-      });
-    }
-  };
-
-  const handleDocumentUpload = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const uploadDocument = async (file: File) => {
-    if (!selectedProject || !user) {
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: "Project and user authentication required for document upload.",
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      // Create file path: userId/projectId/filename
-      const filePath = `${user.id}/${selectedProject.id}/${Date.now()}-${file.name}`;
-
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('project-documents')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Save document metadata to database
-      const { error: dbError } = await supabase
-        .from('project_documents')
-        .insert([
-          {
-            project_id: selectedProject.id,
-            user_id: user.id,
-            file_name: file.name,
-            file_path: filePath,
-            file_type: file.type,
-            file_size: file.size,
-          }
-        ]);
-
-      if (dbError) throw dbError;
-
-      toast({
-        title: "Document uploaded successfully",
-        description: `${file.name} has been uploaded to ${selectedProject.name}. The AI can now analyze it to help answer your questions.`,
-      });
-    } catch (error: any) {
-      console.error('Error uploading document:', error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: error.message || "Failed to upload document. Please try again.",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      
-      // Check if it's a supported file type
-      const supportedTypes = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-        'application/pdf',
-        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain', 'text/csv', 'text/markdown'
-      ];
-
-      if (!supportedTypes.includes(file.type)) {
-        toast({
-          variant: "destructive",
-          title: "Invalid file type",
-          description: "Please select an image, PDF, Word document, or text file.",
-        });
-        return;
-      }
-
-      // Check file size (limit to 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please select a file smaller than 10MB.",
-        });
-        return;
-      }
-
-      uploadDocument(file);
-
-      // Reset the input so the same file can be selected again
-      event.target.value = '';
-    }
-  };
-
-  const handleMilestones = () => {
-    if (selectedProject) {
-      loadMilestones(selectedProject.id);
-      setShowMilestoneModal(true);
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'planning':
-        return <Clock className="w-4 h-4 text-yellow-500" />;
-      case 'in-progress':
-        return <AlertCircle className="w-4 h-4 text-blue-500" />;
-      case 'completed':
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
-      default:
-        return <Clock className="w-4 h-4 text-gray-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'planning':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'in-progress':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'completed':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
 
@@ -444,7 +208,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       if (error) throw error;
 
       await loadMilestones(selectedProject.id);
-      await loadProjects(); // Reload projects to update milestone count
+      await loadProjects();
       setShowMilestoneModal(false);
       toast({
         title: "Milestone Created",
@@ -473,7 +237,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
       if (selectedProject) {
         await loadMilestones(selectedProject.id);
-        await loadProjects(); // Reload projects to update milestone count
+        await loadProjects();
       }
       
       toast({
@@ -502,7 +266,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
       if (error) throw error;
 
-      await loadProjects(); // Reload projects
+      await loadProjects();
       setShowDeleteConfirm(false);
       setProjectToDelete(null);
       setShowProjectDetails(false);
@@ -522,144 +286,233 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     }
   };
 
+  const handleStatusChange = async (projectId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      await loadProjects();
+      setEditingStatus(null);
+      toast({
+        title: "Status Updated",
+        description: `Project status changed to ${newStatus.replace('-', ' ')}.`
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update project status.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleNewChat = (projectId: string) => {
+    if (onStartNewChat) {
+      onStartNewChat(projectId);
+    }
+  };
+
+  const handleDocumentUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedProject) return;
+
+    await uploadDocument(file, selectedProject.id);
+    
+    // Reset the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadDocument = async (file: File, projectId: string) => {
+    setIsUploading(true);
+    try {
+      // Validate file type
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+        'image/gif'
+      ];
+
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload PDF, Word, text, or image files only.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please upload files smaller than 10MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const fileName = `${Date.now()}-${file.name}`;
+      const filePath = `${user.id}/${projectId}/${fileName}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('project-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Save document metadata to database
+      const { error: dbError } = await supabase
+        .from('project_documents')
+        .insert([
+          {
+            project_id: projectId,
+            user_id: user.id,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size
+          }
+        ]);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} has been uploaded successfully.`
+      });
+
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload document. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleMilestones = () => {
+    if (selectedProject) {
+      loadMilestones(selectedProject.id);
+      setShowMilestoneModal(true);
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'planning':
+        return <Clock className="w-4 h-4 text-yellow-400" />;
+      case 'in-progress':
+        return <AlertCircle className="w-4 h-4 text-blue-400" />;
+      case 'completed':
+        return <CheckCircle2 className="w-4 h-4 text-green-400" />;
+      default:
+        return <Clock className="w-4 h-4 text-gray-400" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'planning':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'in-progress':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'completed':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    }
+  };
+
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         project.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterStatus === 'all' || project.status === filterStatus;
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-        >
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-              Projects
-            </h1>
-            <p className="text-gray-400">
-              Organize your building projects with chats, images, and milestones
-            </p>
+            <h1 className="text-3xl font-bold text-white mb-2">Projects</h1>
+            <p className="text-gray-400">Manage your building projects and track progress</p>
           </div>
-          
-          <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-            <DialogTrigger asChild>
-              <Button className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium">
-                <Plus className="w-4 h-4 mr-2" />
-                New Project
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-gray-900 border-gray-700 text-white">
-              <DialogHeader>
-                <DialogTitle>Create New Project</DialogTitle>
-                <DialogDescription className="text-gray-400">
-                  Start a new building project. Both name and description are required. We'll automatically assign a relevant category label.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                handleCreateProject(new FormData(e.currentTarget));
-              }} className="space-y-4">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium mb-2">
-                    Project Name <span className="text-red-400">*</span>
-                  </label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="e.g., Kitchen Extension"
-                    required
-                    className="bg-gray-800 border-gray-600 text-white"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="description" className="block text-sm font-medium mb-2">
-                    Description <span className="text-red-400">*</span>
-                  </label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    placeholder="Brief description of the project..."
-                    required
-                    className="bg-gray-800 border-gray-600 text-white min-h-[100px]"
-                  />
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
-                    onClick={() => setShowCreateModal(false)}
-                    className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    disabled={isLoading}
-                    className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
-                  >
-                    {isLoading ? 'Creating...' : 'Create Project'}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
-        </motion.div>
+          <Button 
+            onClick={() => setShowCreateModal(true)}
+            className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Project
+          </Button>
+        </div>
 
         {/* Search and Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="flex flex-col sm:flex-row gap-4"
-        >
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-gray-800/50 border-gray-700 text-white"
+              className="pl-10 bg-gray-800 border-gray-600 text-white"
             />
           </div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-gray-800/50 border border-gray-700 text-white"
+            className="px-4 py-2 bg-gray-800 border border-gray-600 rounded-md text-white"
           >
             <option value="all">All Status</option>
             <option value="planning">Planning</option>
             <option value="in-progress">In Progress</option>
             <option value="completed">Completed</option>
           </select>
-        </motion.div>
+        </div>
 
         {/* Projects Grid */}
         {filteredProjects.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-center py-12"
-          >
+          <div className="text-center py-12">
             <FolderOpen className="w-16 h-16 text-gray-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-white mb-2">
-              {searchQuery || filterStatus !== 'all' ? 'No Projects Found' : 'No Projects Yet'}
+              {projects.length === 0 ? 'No Projects Yet' : 'No Projects Found'}
             </h3>
             <p className="text-gray-400 mb-6">
-              {searchQuery || filterStatus !== 'all' 
-                ? 'Try adjusting your search or filter criteria'
-                : 'Create your first project to organize your building work'
+              {projects.length === 0 
+                ? 'Create your first project to get started with EezyBuild'
+                : 'Try adjusting your search or filter criteria'
               }
             </p>
-            {!searchQuery && filterStatus === 'all' && (
+            {projects.length === 0 && (
               <Button 
                 onClick={() => setShowCreateModal(true)}
                 className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Create First Project
+                Create Your First Project
               </Button>
             )}
-          </motion.div>
+          </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {filteredProjects.map((project, index) => (
@@ -726,34 +579,31 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                       {project.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="grid grid-cols-3 gap-4 mb-4 text-center">
-                      <div className="flex flex-col items-center">
-                        <MessageCircle className="w-4 h-4 text-blue-400 mb-1" />
-                        <span className="text-xs text-gray-400">{project.chat_count} chats</span>
+                  <CardContent 
+                    className="pt-0"
+                    onClick={() => {
+                      setSelectedProject(project);
+                      setShowProjectDetails(true);
+                    }}
+                  >
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-emerald-400">{project.chat_count}</div>
+                        <div className="text-xs text-gray-500">Chats</div>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <Image className="w-4 h-4 text-green-400 mb-1" />
-                        <span className="text-xs text-gray-400">{project.image_count} images</span>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-blue-400">{project.image_count}</div>
+                        <div className="text-xs text-gray-500">Images</div>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <CheckCircle2 className="w-4 h-4 text-purple-400 mb-1" />
-                        <span className="text-xs text-gray-400">{project.milestone_count} milestones</span>
+                      <div className="text-center">
+                        <div className="text-xl font-bold text-purple-400">{project.milestone_count}</div>
+                        <div className="text-xs text-gray-500">Milestones</div>
                       </div>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
+                    <div className="flex justify-between items-center text-xs text-gray-500">
                       <span>Created {new Date(project.created_at).toLocaleDateString()}</span>
                       <span>Updated {new Date(project.updated_at).toLocaleDateString()}</span>
                     </div>
-                    <Button
-                      onClick={() => {
-                        setSelectedProject(project);
-                        setShowProjectDetails(true);
-                      }}
-                      className="w-full gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
-                    >
-                      Open Project
-                    </Button>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -765,10 +615,67 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.csv,.md"
+          accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
           onChange={handleFileSelect}
           className="hidden"
         />
+
+        {/* Create Project Modal */}
+        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+          <DialogContent className="bg-gray-900 border-gray-700 text-white">
+            <DialogHeader>
+              <DialogTitle>Create New Project</DialogTitle>
+              <DialogDescription className="text-gray-400">
+                Start a new building project to organize your work and track progress.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              handleCreateProject(new FormData(e.currentTarget));
+            }} className="space-y-4">
+              <div>
+                <label htmlFor="project-name" className="block text-sm font-medium mb-2">
+                  Project Name <span className="text-red-400">*</span>
+                </label>
+                <Input
+                  id="project-name"
+                  name="name"
+                  placeholder="e.g., Kitchen Extension"
+                  required
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="project-description" className="block text-sm font-medium mb-2">
+                  Description
+                </label>
+                <Textarea
+                  id="project-description"
+                  name="description"
+                  placeholder="Describe your project..."
+                  className="bg-gray-800 border-gray-600 text-white"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowCreateModal(false)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={isLoading}
+                  className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                >
+                  {isLoading ? 'Creating...' : 'Create Project'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Project Details Modal */}
         <Dialog open={showProjectDetails} onOpenChange={setShowProjectDetails}>
@@ -807,31 +714,31 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                 
                 <Tabs defaultValue="overview" className="w-full">
                   <TabsList className="bg-gray-800 border-gray-700">
-                    <TabsTrigger value="overview">Overview</TabsTrigger>
-                    <TabsTrigger value="chats">Chats</TabsTrigger>
-                    <TabsTrigger value="images">Images</TabsTrigger>
-                    <TabsTrigger value="milestones">Milestones</TabsTrigger>
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-gray-700">Overview</TabsTrigger>
+                    <TabsTrigger value="milestones" className="data-[state=active]:bg-gray-700">Milestones</TabsTrigger>
+                    <TabsTrigger value="chats" className="data-[state=active]:bg-gray-700">Chats</TabsTrigger>
+                    <TabsTrigger value="images" className="data-[state=active]:bg-gray-700">Images</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="overview" className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <Card className="bg-gray-800/50 border-gray-700">
                         <CardContent className="p-4 text-center">
-                          <MessageCircle className="w-8 h-8 text-blue-400 mx-auto mb-2" />
+                          <MessageCircle className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-white">{selectedProject.chat_count}</div>
-                          <div className="text-sm text-gray-400">AI Conversations</div>
+                          <div className="text-sm text-gray-400">Active Chats</div>
                         </CardContent>
                       </Card>
                       <Card className="bg-gray-800/50 border-gray-700">
                         <CardContent className="p-4 text-center">
-                          <Image className="w-8 h-8 text-green-400 mx-auto mb-2" />
+                          <Image className="w-8 h-8 text-blue-400 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-white">{selectedProject.image_count}</div>
-                          <div className="text-sm text-gray-400">Images & Plans</div>
+                          <div className="text-sm text-gray-400">Images</div>
                         </CardContent>
                       </Card>
                       <Card className="bg-gray-800/50 border-gray-700">
                         <CardContent className="p-4 text-center">
-                          <CheckCircle2 className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                          <Target className="w-8 h-8 text-purple-400 mx-auto mb-2" />
                           <div className="text-2xl font-bold text-white">{selectedProject.milestone_count}</div>
                           <div className="text-sm text-gray-400">Milestones</div>
                         </CardContent>
@@ -871,36 +778,6 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                           Export Report
                         </Button>
                       </div>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="chats">
-                    <div className="text-center py-8">
-                      <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-white mb-2">Project Chats</h3>
-                      <p className="text-gray-400 mb-4">All AI conversations for this project will appear here</p>
-                      <Button 
-                        onClick={() => handleNewChat(selectedProject.id)}
-                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
-                      >
-                        Start New Chat
-                      </Button>
-                    </div>
-                  </TabsContent>
-                  
-                  <TabsContent value="images">
-                    <div className="text-center py-8">
-                      <Image className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-white mb-2">Project Documents</h3>
-                      <p className="text-gray-400 mb-4">Floor plans, photos, PDFs, and documents for this project</p>
-                      <Button 
-                        onClick={handleDocumentUpload}
-                        disabled={isUploading}
-                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium disabled:opacity-50"
-                      >
-                        <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
-                        {isUploading ? 'Uploading...' : 'Upload Documents'}
-                      </Button>
                     </div>
                   </TabsContent>
                   
@@ -960,6 +837,36 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                           ))}
                         </div>
                       )}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="chats">
+                    <div className="text-center py-8">
+                      <MessageCircle className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-white mb-2">No Chats Yet</h3>
+                      <p className="text-gray-400 mb-4">Start a conversation about this project</p>
+                      <Button 
+                        onClick={() => handleNewChat(selectedProject.id)}
+                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Start New Chat
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="images">
+                    <div className="text-center py-8">
+                      <Image className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-white mb-2">No Images Yet</h3>
+                      <p className="text-gray-400 mb-4">Upload project images and documents</p>
+                      <Button 
+                        onClick={handleDocumentUpload}
+                        className="gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        Upload Document
+                      </Button>
                     </div>
                   </TabsContent>
                 </Tabs>
