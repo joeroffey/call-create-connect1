@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, FolderOpen, Calendar, MessageCircle, FileText, Milestone, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, MessageCircle, FileText, Milestone, Edit, Trash2, Pin } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '../hooks/useConversations';
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ interface Project {
   created_at: string;
   updated_at: string;
   user_id: string;
+  pinned?: boolean;
 }
 
 interface ProjectsScreenProps {
@@ -59,7 +60,15 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       if (error) throw error;
       
       console.log('ProjectsScreen - fetched projects:', data);
-      setProjects(data || []);
+      
+      // Sort projects: pinned first, then by updated_at
+      const sortedProjects = (data || []).sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
+      
+      setProjects(sortedProjects);
     } catch (error) {
       console.error('Error fetching projects:', error);
       toast({
@@ -101,6 +110,31 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
+
+  const togglePinProject = async (projectId: string, currentPinned: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ pinned: !currentPinned })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      toast({
+        title: !currentPinned ? "Project pinned" : "Project unpinned",
+        description: !currentPinned ? "Project moved to top of list" : "Project unpinned from top",
+      });
+
+      fetchProjects();
+    } catch (error: any) {
+      console.error('Error toggling pin:', error);
+      toast({
+        variant: "destructive",
+        title: "Error updating project",
+        description: error.message || "Please try again.",
+      });
+    }
+  };
 
   const createProject = async () => {
     if (!user?.id || !newProject.name.trim()) return;
@@ -288,8 +322,19 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
-                  className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group"
+                  className={`bg-gray-900/50 backdrop-blur-sm border rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group relative ${
+                    project.pinned 
+                      ? 'border-emerald-500/50 ring-1 ring-emerald-500/20' 
+                      : 'border-gray-800/50'
+                  }`}
                 >
+                  {/* Pin indicator */}
+                  {project.pinned && (
+                    <div className="absolute -top-2 -right-2 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
+                      <Pin className="w-2 h-2 text-white" />
+                    </div>
+                  )}
+
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors">
@@ -302,8 +347,16 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                       )}
                     </div>
                     <div className="relative">
-                      <button className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white">
-                        <MoreVertical className="w-4 h-4" />
+                      <button 
+                        onClick={() => togglePinProject(project.id, project.pinned || false)}
+                        className={`p-2 hover:bg-gray-800/50 rounded-lg transition-colors ${
+                          project.pinned 
+                            ? 'text-emerald-400 hover:text-emerald-300' 
+                            : 'text-gray-400 hover:text-white'
+                        }`}
+                        title={project.pinned ? 'Unpin project' : 'Pin project to top'}
+                      >
+                        <Pin className={`w-4 h-4 ${project.pinned ? 'fill-current' : ''}`} />
                       </button>
                     </div>
                   </div>
