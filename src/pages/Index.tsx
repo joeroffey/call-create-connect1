@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
@@ -22,6 +21,7 @@ const Index = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
 
   // Get subscription info
   const { subscription, hasActiveSubscription } = useSubscription(user?.id);
@@ -173,6 +173,17 @@ const Index = () => {
     }
   }, [subscriptionTier, activeTab]);
 
+  const handleStartNewChat = (projectId: string) => {
+    console.log('Starting new chat for project:', projectId);
+    setCurrentProjectId(projectId);
+    setActiveTab('chat');
+  };
+
+  const handleChatComplete = () => {
+    // Reset project context when chat is done or user navigates away
+    setCurrentProjectId(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex items-center justify-center">
@@ -196,7 +207,14 @@ const Index = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'chat':
-        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('settings')} />;
+        return (
+          <ChatInterfaceWithSubscription 
+            user={user} 
+            onViewPlans={() => setActiveTab('settings')}
+            projectId={currentProjectId}
+            onChatComplete={handleChatComplete}
+          />
+        );
       case 'search':
         if (subscriptionTier !== 'enterprise') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">
@@ -244,7 +262,7 @@ const Index = () => {
             </div>
           </div>;
         }
-        return <ProjectsScreen user={user} />;
+        return <ProjectsScreen user={user} onStartNewChat={handleStartNewChat} />;
       case 'profile':
         return (
           <ProfileScreen 
@@ -287,6 +305,9 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">EezyBuild</h1>
+              {currentProjectId && (
+                <p className="text-sm text-emerald-400">Project Chat Mode</p>
+              )}
             </div>
           </motion.div>
           <motion.div 
