@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
@@ -185,20 +184,6 @@ const Index = () => {
     setCurrentProjectId(null);
   };
 
-  // Handle tab changes - reset project context when leaving chat
-  const handleTabChange = (tabId: string) => {
-    if (tabId !== 'chat') {
-      setCurrentProjectId(null);
-    }
-    setActiveTab(tabId);
-  };
-
-  // Handle starting a new general chat (not project-specific)
-  const handleStartGeneralChat = () => {
-    console.log('Starting new general chat');
-    setCurrentProjectId(null);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex items-center justify-center">
@@ -228,7 +213,6 @@ const Index = () => {
             onViewPlans={() => setActiveTab('settings')}
             projectId={currentProjectId}
             onChatComplete={handleChatComplete}
-            onStartGeneralChat={handleStartGeneralChat}
           />
         );
       case 'search':
@@ -373,7 +357,7 @@ const Index = () => {
                 transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
                 whileTap={{ scale: 0.96 }}
                 whileHover={{ scale: 1.02 }}
-                onClick={() => handleTabChange(tab.id)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`relative flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 ${
                   isActive 
                     ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
