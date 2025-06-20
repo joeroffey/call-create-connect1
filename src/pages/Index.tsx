@@ -267,12 +267,11 @@ const Index = () => {
         return (
           <ProfileScreen 
             user={user} 
-            onNavigateToSettings={() => setActiveTab('subscription')}
+            onNavigateToSettings={() => setActiveTab('settings')}
             onNavigateToAccountSettings={() => setActiveTab('account-settings')}
           />
         );
       case 'settings':
-      case 'subscription':
         return <SubscriptionScreen user={user} onBack={() => setActiveTab('profile')} />;
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
