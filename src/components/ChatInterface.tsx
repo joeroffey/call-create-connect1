@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -277,7 +278,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
           <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
             <div className="max-w-4xl mx-auto">
               <div className="flex items-center space-x-3">
-                <div className="flex-1 relative">
+                <div className="flex-1 relative flex items-center">
                   <textarea
                     ref={inputRef}
                     value={newMessage}
@@ -292,7 +293,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
                     whileHover={{ scale: 1.02 }}
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || isLoading}
-                    className="absolute right-3 top-3 bottom-3 w-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     <Send className="w-4 h-4" />
                   </motion.button>
