@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Image, Menu, X, Plus } from 'lucide-react';
@@ -214,7 +215,15 @@ const ChatInterfaceWithSubscription = ({
             </div>
           ) : (
             messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
+              <MessageBubble 
+                key={msg.id} 
+                message={{
+                  id: msg.id,
+                  text: msg.content,
+                  sender: msg.role === 'user' ? 'user' : 'bot',
+                  timestamp: new Date(msg.created_at)
+                }} 
+              />
             ))
           )}
           
