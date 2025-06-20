@@ -87,6 +87,9 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
           return {
             ...project,
+            description: project.description || '',
+            label: project.label || undefined,
+            status: project.status as 'planning' | 'in-progress' | 'completed',
             chat_count: count || 0,
             image_count: 0, // TODO: Implement when images are added
             milestone_count: 0 // TODO: Implement when milestones are added
