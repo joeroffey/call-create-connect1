@@ -28,6 +28,8 @@ export const useConversations = (userId: string | undefined) => {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
+      
+      console.log('Fetched conversations:', data);
       setConversations(data || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -38,6 +40,32 @@ export const useConversations = (userId: string | undefined) => {
 
   useEffect(() => {
     fetchConversations();
+  }, [userId]);
+
+  // Set up real-time subscription to conversations
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel('conversations-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'conversations',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Conversation change detected:', payload);
+          fetchConversations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const refreshConversations = () => {

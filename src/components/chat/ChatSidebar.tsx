@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageCircle, 
@@ -42,18 +42,28 @@ const ChatSidebar = ({
   const { hasActiveSubscription } = useSubscription(user?.id);
   const { toast } = useToast();
 
+  // Debug logging
+  useEffect(() => {
+    console.log('ChatSidebar - projectId:', projectId);
+    console.log('ChatSidebar - all conversations:', conversations);
+  }, [projectId, conversations]);
+
   // Filter conversations based on context
   const filteredConversations = conversations.filter(conversation => {
     const matchesSearch = conversation.title.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (projectId) {
       // For project chats, show conversations linked to this project
-      return matchesSearch && conversation.project_id === projectId;
+      const result = matchesSearch && conversation.project_id === projectId;
+      console.log(`Conversation ${conversation.id} - project_id: ${conversation.project_id}, matches project: ${result}`);
+      return result;
     } else {
       // For general chats, show all conversations (both project and non-project)
       return matchesSearch;
     }
   });
+
+  console.log('Filtered conversations:', filteredConversations);
 
   const handleDeleteConversation = async (conversationId: string, e: React.MouseEvent) => {
     e.stopPropagation();
