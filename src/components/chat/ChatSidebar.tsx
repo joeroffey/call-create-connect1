@@ -9,7 +9,8 @@ import {
   Crown,
   Clock,
   Search,
-  Trash2
+  Trash2,
+  FolderOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,16 +43,17 @@ const ChatSidebar = ({
   const { hasActiveSubscription } = useSubscription(user?.id);
   const { toast } = useToast();
 
-  // Filter conversations by project if projectId is provided
+  // Filter conversations based on context
   const filteredConversations = conversations.filter(conversation => {
     const matchesSearch = conversation.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesProject = projectId ? 
-      // For project chats, only show conversations linked to this project
-      conversation.project_id === projectId :
-      // For general chats, only show conversations not linked to any project
-      !conversation.project_id;
     
-    return matchesSearch && matchesProject;
+    if (projectId) {
+      // For project chats, show conversations linked to this project
+      return matchesSearch && conversation.project_id === projectId;
+    } else {
+      // For general chats, show all conversations (both project and non-project)
+      return matchesSearch;
+    }
   });
 
   const handleDeleteConversation = async (conversationId: string, e: React.MouseEvent) => {
@@ -213,9 +215,17 @@ const ChatSidebar = ({
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-sm font-medium text-white truncate mb-1">
-                            {conversation.title}
-                          </h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-sm font-medium text-white truncate">
+                              {conversation.title}
+                            </h3>
+                            {conversation.project_id && (
+                              <div className="flex items-center bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">
+                                <FolderOpen className="w-3 h-3 mr-1" />
+                                Project
+                              </div>
+                            )}
+                          </div>
                           <div className="flex items-center text-xs text-gray-400">
                             <Clock className="w-3 h-3 mr-1" />
                             <span>{formatDate(conversation.updated_at)}</span>
@@ -233,7 +243,7 @@ const ChatSidebar = ({
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         </>
       )}
     </AnimatePresence>
