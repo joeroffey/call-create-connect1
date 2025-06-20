@@ -40,7 +40,7 @@ interface Project {
   chat_count: number;
   image_count: number;
   milestone_count: number;
-  ai_label?: string;
+  label?: string;
   user_id: string;
 }
 
@@ -69,11 +69,39 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
   const loadProjects = async () => {
     try {
-      // In a real implementation, this would fetch from Supabase projects table
-      // For now, we'll use an empty array since we removed mock data
-      setProjects([]);
+      const { data: projectsData, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Get conversation counts for each project
+      const projectsWithCounts = await Promise.all(
+        (projectsData || []).map(async (project) => {
+          const { count } = await supabase
+            .from('conversations')
+            .select('*', { count: 'exact', head: true })
+            .eq('project_id', project.id);
+
+          return {
+            ...project,
+            chat_count: count || 0,
+            image_count: 0, // TODO: Implement when images are added
+            milestone_count: 0 // TODO: Implement when milestones are added
+          };
+        })
+      );
+
+      setProjects(projectsWithCounts);
     } catch (error) {
       console.error('Error loading projects:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load projects. Please try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -112,7 +140,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchQuery.toLowerCase());
+                         (project.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filterStatus === 'all' || project.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -126,28 +154,30 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       // Generate AI label
       const aiLabel = await generateAILabel(name, description);
       
-      const newProject: Project = {
-        id: Date.now().toString(),
-        name,
-        description,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        status: 'planning',
-        chat_count: 0,
-        image_count: 0,
-        milestone_count: 0,
-        ai_label: aiLabel,
-        user_id: user.id
-      };
-      
-      // In real implementation, save to Supabase
-      setProjects(prev => [newProject, ...prev]);
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([
+          {
+            user_id: user.id,
+            name,
+            description,
+            label: aiLabel,
+            status: 'planning'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await loadProjects(); // Reload projects
       setShowCreateModal(false);
       toast({
         title: "Project Created",
-        description: `${newProject.name} has been created with label "${aiLabel}".`
+        description: `${name} has been created with label "${aiLabel}".`
       });
     } catch (error) {
+      console.error('Error creating project:', error);
       toast({
         title: "Error",
         description: "Failed to create project. Please try again.",
@@ -160,17 +190,21 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
   const handleStatusChange = async (projectId: string, newStatus: 'planning' | 'in-progress' | 'completed') => {
     try {
-      setProjects(prev => prev.map(project => 
-        project.id === projectId 
-          ? { ...project, status: newStatus, updated_at: new Date().toISOString() }
-          : project
-      ));
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      await loadProjects(); // Reload projects
       setEditingStatus(null);
       toast({
         title: "Status Updated",
         description: `Project status changed to ${newStatus.replace('-', ' ')}.`
       });
     } catch (error) {
+      console.error('Error updating status:', error);
       toast({
         title: "Error",
         description: "Failed to update status. Please try again.",
@@ -390,10 +424,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                               </Badge>
                             </div>
                           )}
-                          {project.ai_label && (
+                          {project.label && (
                             <Badge className="text-xs bg-purple-500/20 text-purple-300 border-purple-500/30">
                               <Tag className="w-3 h-3 mr-1" />
-                              {project.ai_label}
+                              {project.label}
                             </Badge>
                           )}
                         </div>
@@ -451,10 +485,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                         {selectedProject.description}
                       </DialogDescription>
                     </div>
-                    {selectedProject.ai_label && (
+                    {selectedProject.label && (
                       <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30">
                         <Tag className="w-3 h-3 mr-1" />
-                        {selectedProject.ai_label}
+                        {selectedProject.label}
                       </Badge>
                     )}
                   </div>

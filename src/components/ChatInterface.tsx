@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Plus, Lightbulb, Book } from 'lucide-react';
@@ -36,10 +37,35 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [project, setProject] = useState<any>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
   const { toast } = useToast()
+
+  // Load project details if projectId is provided
+  useEffect(() => {
+    if (projectId) {
+      loadProjectDetails();
+    }
+  }, [projectId]);
+
+  const loadProjectDetails = async () => {
+    if (!projectId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('id', projectId)
+        .single();
+
+      if (error) throw error;
+      setProject(data);
+    } catch (error) {
+      console.error('Error loading project details:', error);
+    }
+  };
 
   // Load messages from selected conversation
   const { messages: conversationMessages } = useConversationMessages(currentConversationId);
@@ -59,15 +85,18 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
 
     // Add welcome message on initial load
     if (messages.length === 0 && !currentConversationId) {
-      if (projectId) {
+      if (projectId && project) {
         // Show project-specific welcome message
         setMessages([{
           id: 'project-welcome',
-          text: `Welcome to your project chat! 🏗️
+          text: `Welcome to your ${project.name} project chat! 🏗️
 
 I'm ready to help you with building regulations and compliance questions specific to your project.
 
-**Project Context Active**
+**Project: ${project.name}**
+${project.description ? `**Description:** ${project.description}` : ''}
+${project.label ? `**Category:** ${project.label}` : ''}
+
 All my responses will take your project details into account for more targeted advice.
 
 What would you like to know about your project?`,
@@ -79,7 +108,7 @@ What would you like to know about your project?`,
         setMessages([welcomeMessage]);
       }
     }
-  }, [projectId]);
+  }, [projectId, project, messages.length, currentConversationId]);
 
   // Load conversation messages when a conversation is selected
   useEffect(() => {
@@ -161,15 +190,18 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
   };
 
   const handleNewConversation = () => {
-    if (projectId) {
+    if (projectId && project) {
       // For project chats, show project-specific welcome
       setMessages([{
         id: 'project-welcome',
-        text: `Welcome to your project chat! 🏗️
+        text: `Welcome to your ${project.name} project chat! 🏗️
 
 I'm ready to help you with building regulations and compliance questions specific to your project.
 
-**Project Context Active**
+**Project: ${project.name}**
+${project.description ? `**Description:** ${project.description}` : ''}
+${project.label ? `**Category:** ${project.label}` : ''}
+
 All my responses will take your project details into account for more targeted advice.
 
 What would you like to know about your project?`,
@@ -218,8 +250,14 @@ What would you like to know about your project?`,
     try {
       // Include project context in the request if available
       const requestBody: any = { message: messageText };
-      if (projectId) {
-        requestBody.projectId = projectId;
+      if (projectId && project) {
+        requestBody.projectContext = {
+          id: projectId,
+          name: project.name,
+          description: project.description,
+          label: project.label,
+          status: project.status
+        };
       }
 
       const response = await fetch('https://srwbgkssoatrhxdrrtff.supabase.co/functions/v1/building-regulations-chat', {
@@ -275,8 +313,8 @@ What would you like to know about your project?`,
     <div className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
       {/* Header */}
       <ChatHeader 
-        title={projectId ? "Project Chat" : ""}
-        subtitle={projectId ? "Building regulations assistance for your project" : ""}
+        title={projectId && project ? project.name : ""}
+        subtitle={projectId && project ? `Building regulations assistance for ${project.name}` : ""}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         sidebarOpen={isSidebarOpen}
         onNewConversation={handleNewConversation}
@@ -291,6 +329,7 @@ What would you like to know about your project?`,
           user={user}
           onSelectConversation={handleSelectConversation}
           currentConversationId={currentConversationId}
+          projectId={projectId}
         />
 
         <div className="flex flex-col flex-1 min-w-0">
@@ -333,7 +372,7 @@ What would you like to know about your project?`,
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     rows={1}
-                    placeholder={projectId ? "Ask about your project..." : "Ask me a question..."}
+                    placeholder={projectId && project ? `Ask about ${project.name}...` : "Ask me a question..."}
                     className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
                   />
                   <motion.button

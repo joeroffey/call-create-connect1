@@ -7,6 +7,7 @@ interface Conversation {
   title: string;
   created_at: string;
   updated_at: string;
+  project_id?: string;
 }
 
 export const useConversations = (userId: string | undefined) => {
@@ -22,7 +23,7 @@ export const useConversations = (userId: string | undefined) => {
     try {
       const { data, error } = await supabase
         .from('conversations')
-        .select('id, title, created_at, updated_at')
+        .select('id, title, created_at, updated_at, project_id')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false });
 
