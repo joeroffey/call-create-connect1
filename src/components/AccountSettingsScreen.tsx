@@ -24,6 +24,7 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (newPassword !== confirmPassword) {
       toast({
         title: "Error",
@@ -71,10 +72,22 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
 
   const handleEmailChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!newEmail || newEmail === user?.email) {
       toast({
         title: "Error",
         description: "Please enter a new email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
         variant: "destructive"
       });
       return;
@@ -127,11 +140,25 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
           </div>
         </motion.div>
 
-        {/* Change Password Section */}
+        {/* Current Account Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
+          className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-800 mb-6"
+        >
+          <h2 className="text-lg font-semibold mb-4">Current Account</h2>
+          <div className="space-y-2">
+            <p className="text-sm text-gray-400">Email Address</p>
+            <p className="text-white">{user?.email}</p>
+          </div>
+        </motion.div>
+
+        {/* Change Password Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
           className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-800 mb-6"
         >
           <div className="flex items-center space-x-3 mb-6">
@@ -146,26 +173,6 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
 
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Current Password</label>
-              <div className="relative">
-                <input
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter current password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                >
-                  {showCurrentPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300">New Password</label>
               <div className="relative">
                 <input
@@ -174,6 +181,7 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
                   placeholder="Enter new password"
+                  required
                 />
                 <button
                   type="button"
@@ -193,12 +201,13 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
                 placeholder="Confirm new password"
+                required
               />
             </div>
 
             <Button
               type="submit"
-              disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
+              disabled={isChangingPassword || !newPassword || !confirmPassword}
               className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl"
             >
               {isChangingPassword ? 'Updating Password...' : 'Update Password'}
@@ -210,7 +219,7 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
           className="bg-gray-900/50 backdrop-blur-xl rounded-2xl p-6 border border-gray-800"
         >
           <div className="flex items-center space-x-3 mb-6">
@@ -219,7 +228,7 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
             </div>
             <div>
               <h2 className="text-lg font-semibold">Change Email</h2>
-              <p className="text-sm text-gray-400">Current: {user?.email}</p>
+              <p className="text-sm text-gray-400">Update your email address</p>
             </div>
           </div>
 
@@ -232,6 +241,7 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
                 onChange={(e) => setNewEmail(e.target.value)}
                 className="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500"
                 placeholder="Enter new email address"
+                required
               />
             </div>
 
@@ -243,6 +253,12 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
               {isChangingEmail ? 'Updating Email...' : 'Update Email'}
             </Button>
           </form>
+
+          <div className="mt-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+            <p className="text-sm text-yellow-300">
+              <strong>Note:</strong> After updating your email, you'll need to confirm the change by clicking the link sent to your new email address.
+            </p>
+          </div>
         </motion.div>
       </div>
     </div>

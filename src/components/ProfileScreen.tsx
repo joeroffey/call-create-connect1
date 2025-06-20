@@ -3,14 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
-  Calendar, 
-  MapPin, 
-  Briefcase, 
   Crown, 
   Settings, 
-  ArrowLeft,
   Zap,
-  Star,
   LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -78,10 +73,6 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
     } finally {
       setIsSigningOut(false);
     }
-  };
-
-  const handleAccountSettings = () => {
-    onNavigateToAccountSettings();
   };
 
   // Calculate member since date (user creation date or fallback)
@@ -211,13 +202,15 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
               </div>
             </div>
             
-            <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
-              <Briefcase className="w-5 h-5 text-emerald-400" />
-              <div>
-                <p className="text-sm text-gray-400">Occupation</p>
-                <p className="text-white">{userProfile?.occupation || 'Not provided'}</p>
+            {userProfile?.occupation && (
+              <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
+                <User className="w-5 h-5 text-emerald-400" />
+                <div>
+                  <p className="text-sm text-gray-400">Occupation</p>
+                  <p className="text-white">{userProfile.occupation}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </motion.div>
 
@@ -229,7 +222,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           className="space-y-3"
         >
           <Button
-            onClick={handleAccountSettings}
+            onClick={onNavigateToAccountSettings}
             variant="outline"
             className="w-full h-12 bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-white"
           >
