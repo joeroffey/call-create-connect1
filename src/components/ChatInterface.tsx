@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Upload, Lightbulb, Book, Milestone } from 'lucide-react';
@@ -163,6 +162,10 @@ What would you like to discuss about your project?`,
 
   const createNewConversation = async (firstMessage: string) => {
     try {
+      console.log('Creating new conversation with message:', firstMessage);
+      console.log('Project ID:', projectId);
+      console.log('User ID:', user?.id);
+
       const conversationData: any = {
         user_id: user.id,
         title: firstMessage.slice(0, 50) + (firstMessage.length > 50 ? '...' : ''),
@@ -171,6 +174,7 @@ What would you like to discuss about your project?`,
       // Add project_id if this is a project-specific chat
       if (projectId) {
         conversationData.project_id = projectId;
+        console.log('Adding project_id to conversation:', projectId);
       }
 
       const { data, error } = await supabase
@@ -179,7 +183,12 @@ What would you like to discuss about your project?`,
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating conversation:', error);
+        throw error;
+      }
+
+      console.log('Created conversation:', data);
 
       // If this is a project chat, update the project's updated_at timestamp immediately
       if (projectId) {
@@ -196,6 +205,18 @@ What would you like to discuss about your project?`,
             console.error('Error updating project timestamp:', updateError);
           } else {
             console.log(`Successfully updated project ${projectId} timestamp`);
+            
+            // Also log the conversation count for this project
+            const { count, error: countError } = await supabase
+              .from('conversations')
+              .select('*', { count: 'exact', head: true })
+              .eq('project_id', projectId);
+            
+            if (countError) {
+              console.error('Error getting conversation count:', countError);
+            } else {
+              console.log(`Project ${projectId} now has ${count} conversations`);
+            }
           }
 
         } catch (updateError) {
