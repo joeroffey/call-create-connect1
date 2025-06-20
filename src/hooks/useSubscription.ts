@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -23,18 +22,51 @@ export const useSubscription = (userId: string | null) => {
     }
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      console.log('Checking subscription status for user:', userId);
+      
+      // First check local database for demo subscriptions
+      const { data: localSub, error: localError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .single();
 
+      if (localSub && !localError) {
+        console.log('Found local demo subscription:', localSub);
+        const subscriptionData: Subscription = {
+          id: localSub.id,
+          plan_type: localSub.plan_type as 'basic' | 'pro' | 'enterprise',
+          status: localSub.status as 'active' | 'cancelled' | 'expired',
+          current_period_end: localSub.current_period_end
+        };
+        
+        setSubscription(subscriptionData);
+        setHasActiveSubscription(true);
+        setLoading(false);
+        return;
+      }
+
+      // If no local subscription, check Stripe
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setLoading(false);
+        return;
+      }
+
+      console.log('No local subscription found, checking Stripe...');
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (error) throw error;
-
-      if (data.subscribed && data.subscription_tier) {
+      if (error) {
+        console.error('Stripe check failed:', error);
+        setSubscription(null);
+        setHasActiveSubscription(false);
+      } else if (data.subscribed && data.subscription_tier) {
+        console.log('Found Stripe subscription:', data);
         const subscriptionData: Subscription = {
           id: 'stripe-sub',
           plan_type: data.subscription_tier,
@@ -45,60 +77,14 @@ export const useSubscription = (userId: string | null) => {
         setSubscription(subscriptionData);
         setHasActiveSubscription(true);
       } else {
-        // If Stripe check fails, check local database for demo subscriptions
-        const { data: localSub, error: localError } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single();
-
-        if (localSub && !localError) {
-          const subscriptionData: Subscription = {
-            id: localSub.id,
-            plan_type: localSub.plan_type as 'basic' | 'pro' | 'enterprise',
-            status: localSub.status as 'active' | 'cancelled' | 'expired',
-            current_period_end: localSub.current_period_end
-          };
-          
-          setSubscription(subscriptionData);
-          setHasActiveSubscription(true);
-        } else {
-          setSubscription(null);
-          setHasActiveSubscription(false);
-        }
-      }
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-      
-      // Fallback: check local database for demo subscriptions
-      try {
-        const { data: localSub, error: localError } = await supabase
-          .from('subscriptions')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('status', 'active')
-          .single();
-
-        if (localSub && !localError) {
-          const subscriptionData: Subscription = {
-            id: localSub.id,
-            plan_type: localSub.plan_type as 'basic' | 'pro' | 'enterprise',
-            status: localSub.status as 'active' | 'cancelled' | 'expired',
-            current_period_end: localSub.current_period_end
-          };
-          
-          setSubscription(subscriptionData);
-          setHasActiveSubscription(true);
-        } else {
-          setSubscription(null);
-          setHasActiveSubscription(false);
-        }
-      } catch (fallbackError) {
-        console.error('Fallback subscription check failed:', fallbackError);
+        console.log('No active subscription found');
         setSubscription(null);
         setHasActiveSubscription(false);
       }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+      setSubscription(null);
+      setHasActiveSubscription(false);
     } finally {
       setLoading(false);
     }
