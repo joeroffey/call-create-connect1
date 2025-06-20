@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -9,10 +10,13 @@ import {
   Settings, 
   ArrowLeft,
   Zap,
-  Star
+  Star,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProfileScreenProps {
   user: any;
@@ -23,6 +27,8 @@ interface ProfileScreenProps {
 const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings }: ProfileScreenProps) => {
   const { subscription, hasActiveSubscription, createProMaxDemo } = useSubscription(user?.id);
   const [isActivatingDemo, setIsActivatingDemo] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { toast } = useToast();
 
   const handleActivateProMaxDemo = async () => {
     setIsActivatingDemo(true);
@@ -35,6 +41,51 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
     } finally {
       setIsActivatingDemo(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear any cached data and redirect
+      window.location.href = '/';
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  // Calculate member since date (user creation date or fallback)
+  const getMemberSinceDate = () => {
+    if (user?.created_at) {
+      return new Date(user.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+    // Fallback - estimate based on email or use a default
+    return 'January 2024';
+  };
+
+  // Get subscription expiration date
+  const getSubscriptionExpiration = () => {
+    if (!hasActiveSubscription || !subscription?.current_period_end) {
+      return 'N/A';
+    }
+    
+    return new Date(subscription.current_period_end).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   return (
@@ -51,6 +102,7 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           </div>
           <h1 className="text-2xl font-bold mb-2">{user?.name || 'User'}</h1>
           <p className="text-gray-400">{user?.email}</p>
+          <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
         </motion.div>
 
         {/* Subscription Status */}
@@ -77,6 +129,11 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
                     : 'Free Plan'
                   }
                 </p>
+                {hasActiveSubscription && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Expires: {getSubscriptionExpiration()}
+                  </p>
+                )}
               </div>
             </div>
             <Button
@@ -158,11 +215,12 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           </div>
         </motion.div>
 
-        {/* Account Settings */}
+        {/* Action Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
+          className="space-y-3"
         >
           <Button
             onClick={onNavigateToAccountSettings}
@@ -171,6 +229,16 @@ const ProfileScreen = ({ user, onNavigateToSettings, onNavigateToAccountSettings
           >
             <Settings className="w-5 h-5 mr-3" />
             Account Settings
+          </Button>
+          
+          <Button
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            variant="outline"
+            className="w-full h-12 bg-red-900/20 border-red-700/50 hover:bg-red-800/30 text-red-400 hover:text-red-300"
+          >
+            <LogOut className="w-5 h-5 mr-3" />
+            {isSigningOut ? 'Signing Out...' : 'Sign Out'}
           </Button>
         </motion.div>
       </div>
