@@ -111,9 +111,20 @@ const ChatInterfaceWithSubscription = ({
     setMessage('');
     setUploadedImages([]);
     
-    // If we're in project mode, don't call onStartGeneralChat
-    // If we want to start a general chat from project mode, we need to explicitly call it
-    if (!projectId && onStartGeneralChat) {
+    // If we're in project mode and want to start a general chat, call the callback
+    if (projectId && onStartGeneralChat) {
+      onStartGeneralChat();
+    }
+  };
+
+  const handleStartGeneralChat = () => {
+    console.log('Starting general chat from project mode');
+    // Reset current conversation and notify parent to clear project context
+    setCurrentConversationId(null);
+    setMessage('');
+    setUploadedImages([]);
+    
+    if (onStartGeneralChat) {
       onStartGeneralChat();
     }
   };
@@ -169,13 +180,10 @@ const ChatInterfaceWithSubscription = ({
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            {/* New General Chat Button - only show when in project mode */}
-            {projectId && onStartGeneralChat && (
+            {/* General Chat Button - only show when in project mode */}
+            {projectId && (
               <button
-                onClick={() => {
-                  onStartGeneralChat();
-                  handleNewChat();
-                }}
+                onClick={handleStartGeneralChat}
                 className="flex items-center px-3 py-2 bg-gray-700/50 hover:bg-gray-600/50 rounded-lg transition-colors text-sm text-gray-300"
               >
                 <Plus className="w-4 h-4 mr-1" />
