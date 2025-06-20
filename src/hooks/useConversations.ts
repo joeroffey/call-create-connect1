@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Conversation {
@@ -14,6 +14,7 @@ export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
   const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
+  const channelRef = useRef<any>(null);
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -87,9 +88,17 @@ export const useConversations = (userId: string | undefined) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Create a single channel for all subscriptions
+    // Clean up any existing subscription first
+    if (channelRef.current) {
+      console.log('Cleaning up existing channel before creating new one');
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    // Create a single channel for all subscriptions with a unique timestamp
+    const channelName = `user-${userId}-changes-${Date.now()}`;
     const channel = supabase
-      .channel(`user-${userId}-changes`)
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -131,10 +140,16 @@ export const useConversations = (userId: string | undefined) => {
       )
       .subscribe();
 
+    // Store the channel reference
+    channelRef.current = channel;
+
     // Cleanup function to remove the channel
     return () => {
       console.log('Cleaning up realtime subscription');
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [userId]);
 
