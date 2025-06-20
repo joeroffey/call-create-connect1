@@ -40,6 +40,7 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
   const [project, setProject] = useState<any>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
   const { toast } = useToast()
 
@@ -105,15 +106,15 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
       id: 'project-welcome',
       text: `Welcome to your ${project.name} project chat! 🏗️
 
-I'm ready to help you with building regulations and compliance questions specific to your project.
+I'm ready to help you with building regulations and compliance questions specific to your ${project.label || 'project'}.
 
 **Project: ${project.name}**
 ${project.description ? `**Description:** ${project.description}` : ''}
 ${project.label ? `**Category:** ${project.label}` : ''}
 
-All my responses will take your project details into account for more targeted advice.
+All my responses will take your project details into account for more targeted advice. I can help you with regulations, planning requirements, and compliance issues specific to your project type and requirements.
 
-What would you like to know about your project?`,
+What building regulations questions do you have about ${project.name}?`,
       sender: 'assistant' as const,
       timestamp: new Date(),
       isWelcome: true
@@ -126,12 +127,12 @@ What would you like to know about your project?`,
       inputRef.current.focus();
     }
 
-    // Add welcome message on initial load
+    // Add welcome message on initial load - only if no conversation is selected and no messages exist
     if (messages.length === 0 && !currentConversationId) {
       const welcomeMsg = projectId && project ? getProjectWelcomeMessage() : welcomeMessage;
       setMessages([welcomeMsg]);
     }
-  }, [projectId, project, messages.length, currentConversationId]);
+  }, [projectId, project]);
 
   // Load conversation messages when a conversation is selected
   useEffect(() => {
@@ -292,10 +293,41 @@ What would you like to know about your project?`,
   };
 
   const handleImageUpload = () => {
-    toast({
-      title: "Feature Coming Soon",
-      description: "Image uploads will be available in the next update.",
-    });
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Check if it's an image
+      if (!file.type.startsWith('image/')) {
+        toast({
+          variant: "destructive",
+          title: "Invalid file type",
+          description: "Please select an image file (PNG, JPG, etc.)",
+        });
+        return;
+      }
+
+      // Check file size (limit to 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Please select an image smaller than 10MB",
+        });
+        return;
+      }
+
+      toast({
+        title: "Image Upload",
+        description: `Selected: ${file.name}. Image analysis will be available in the next update.`,
+      });
+    }
   };
 
   return (
@@ -361,6 +393,13 @@ What would you like to know about your project?`,
                 >
                   <Plus className="w-5 h-5" />
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
                 <div className="flex-1 relative flex items-center">
                   <textarea
                     ref={inputRef}
