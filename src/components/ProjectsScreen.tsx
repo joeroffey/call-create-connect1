@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, FolderOpen, Calendar, MessageCircle, FileText, Milestone, MoreVertical, Edit, Trash2 } from 'lucide-react';
@@ -78,31 +77,7 @@ const ProjectsScreen = ({ user, onStartNewChat, onSelectConversation }: Projects
     fetchProjects();
   }, [user?.id]);
 
-  // Set up real-time subscription for projects
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase
-      .channel('projects-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'projects',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          console.log('Project change detected:', payload);
-          fetchProjects();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id]);
+  // Removed the duplicate real-time subscription since it's now handled in useConversations hook
 
   const createProject = async () => {
     if (!user?.id || !newProject.name.trim()) return;

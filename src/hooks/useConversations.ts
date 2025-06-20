@@ -83,12 +83,13 @@ export const useConversations = (userId: string | undefined) => {
     fetchProjectCounts();
   }, [userId]);
 
-  // Set up real-time subscription to conversations
+  // Set up real-time subscription - Fixed to prevent multiple subscriptions
   useEffect(() => {
     if (!userId) return;
 
+    // Create a single channel for all subscriptions
     const channel = supabase
-      .channel('conversations-changes')
+      .channel(`user-${userId}-changes`)
       .on(
         'postgres_changes',
         {
@@ -130,7 +131,9 @@ export const useConversations = (userId: string | undefined) => {
       )
       .subscribe();
 
+    // Cleanup function to remove the channel
     return () => {
+      console.log('Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [userId]);
