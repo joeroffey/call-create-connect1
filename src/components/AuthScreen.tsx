@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -113,14 +114,14 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           className="text-center mb-12"
         >
           <motion.div 
-            className="w-80 h-24 rounded-2xl overflow-hidden bg-emerald-500/10 flex items-center justify-center mx-auto mb-6 p-4 glass"
+            className="max-w-md mx-auto mb-6"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
             <img 
               src="/lovable-uploads/63fdd0cc-d653-4ee2-b40d-9b77f0a661a3.png" 
               alt="EezyBuild Logo" 
-              className="w-full h-full object-contain"
+              className="w-full h-auto object-contain"
             />
           </motion.div>
           <p className="text-gray-400 text-lg">Your Building Regulations Assistant</p>
