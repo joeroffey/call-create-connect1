@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, FolderOpen, Calendar, MessageCircle, FileText, Target, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Plus, FolderOpen, Calendar, MessageCircle, FileText, Milestone, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '../hooks/useConversations';
 import { useToast } from "@/hooks/use-toast";
+import ProjectDetailsModal from './ProjectDetailsModal';
 
 interface Project {
   id: string;
@@ -27,6 +28,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', description: '', label: 'Residential' });
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [showProjectDetails, setShowProjectDetails] = useState(false);
   const { toast } = useToast();
   
   // Get conversations data with the new helper function
@@ -212,6 +215,11 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     }
   };
 
+  const handleProjectStatsClick = (project: Project, section: string) => {
+    setSelectedProject(project);
+    setShowProjectDetails(true);
+  };
+
   if (loading || conversationsLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -301,29 +309,38 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                     </span>
                   </div>
 
-                  {/* Stats */}
+                  {/* Stats - Now clickable */}
                   <div className="grid grid-cols-3 gap-4 mb-4 py-3 border-t border-b border-gray-800/30">
-                    <div className="text-center">
+                    <button
+                      onClick={() => handleProjectStatsClick(project, 'chats')}
+                      className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
+                    >
                       <div className="flex items-center justify-center mb-1">
-                        <MessageCircle className="w-4 h-4 text-emerald-400" />
+                        <MessageCircle className="w-4 h-4 text-emerald-400 group-hover/stat:text-emerald-300" />
                       </div>
-                      <div className="text-lg font-semibold text-white">{conversationCount}</div>
+                      <div className="text-lg font-semibold text-white group-hover/stat:text-emerald-300">{conversationCount}</div>
                       <div className="text-xs text-gray-400">Chats</div>
-                    </div>
-                    <div className="text-center">
+                    </button>
+                    <button
+                      onClick={() => handleProjectStatsClick(project, 'documents')}
+                      className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
+                    >
                       <div className="flex items-center justify-center mb-1">
-                        <FileText className="w-4 h-4 text-blue-400" />
+                        <FileText className="w-4 h-4 text-blue-400 group-hover/stat:text-blue-300" />
                       </div>
-                      <div className="text-lg font-semibold text-white">0</div>
+                      <div className="text-lg font-semibold text-white group-hover/stat:text-blue-300">0</div>
                       <div className="text-xs text-gray-400">Docs</div>
-                    </div>
-                    <div className="text-center">
+                    </button>
+                    <button
+                      onClick={() => handleProjectStatsClick(project, 'milestones')}
+                      className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
+                    >
                       <div className="flex items-center justify-center mb-1">
-                        <Target className="w-4 h-4 text-purple-400" />
+                        <Milestone className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
                       </div>
-                      <div className="text-lg font-semibold text-white">0</div>
-                      <div className="text-xs text-gray-400">Tasks</div>
-                    </div>
+                      <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">0</div>
+                      <div className="text-xs text-gray-400">Milestones</div>
+                    </button>
                   </div>
 
                   {/* Actions */}
@@ -361,6 +378,18 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           </div>
         )}
       </div>
+
+      {/* Project Details Modal */}
+      <ProjectDetailsModal
+        project={selectedProject}
+        isOpen={showProjectDetails}
+        onClose={() => {
+          setShowProjectDetails(false);
+          setSelectedProject(null);
+        }}
+        onStartNewChat={onStartNewChat}
+        user={user}
+      />
 
       {/* Create Project Modal */}
       <AnimatePresence>
