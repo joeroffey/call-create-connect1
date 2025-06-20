@@ -72,6 +72,21 @@ function App() {
     setConversationId(null)
   }
 
+  const handleAuth = (isAuth: boolean) => {
+    // This function is called when authentication state changes
+    if (isAuth) {
+      setCurrentScreen('chat')
+    }
+  }
+
+  const handleNavigateToSettings = () => {
+    setCurrentScreen('subscription')
+  }
+
+  const handleBackToProfile = () => {
+    setCurrentScreen('profile')
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -81,7 +96,7 @@ function App() {
   }
 
   if (!user) {
-    return <AuthScreen />
+    return <AuthScreen onAuth={handleAuth} setUser={setUser} />
   }
 
   if (showOnboarding) {
@@ -171,9 +186,24 @@ function App() {
               onStartNewChat={handleStartNewChat}
             />
           )}
-          {currentScreen === 'profile' && <ProfileScreen user={user} />}
-          {currentScreen === 'subscription' && <SubscriptionScreen user={user} />}
-          {currentScreen === 'settings' && <AccountSettingsScreen user={user} />}
+          {currentScreen === 'profile' && (
+            <ProfileScreen 
+              user={user} 
+              onNavigateToSettings={handleNavigateToSettings}
+            />
+          )}
+          {currentScreen === 'subscription' && (
+            <SubscriptionScreen 
+              user={user} 
+              onBack={handleBackToProfile}
+            />
+          )}
+          {currentScreen === 'settings' && (
+            <AccountSettingsScreen 
+              user={user} 
+              onBack={handleBackToProfile}
+            />
+          )}
         </div>
       </div>
       <Toaster />
