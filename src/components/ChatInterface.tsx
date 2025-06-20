@@ -256,6 +256,13 @@ What would you like to discuss about your project?`,
     setRelatedImages([]);
   };
 
+  const handleExitProjectChat = () => {
+    // Exit project chat mode and return to normal chat
+    if (onChatComplete) {
+      onChatComplete();
+    }
+  };
+
   const handleSelectConversation = (conversationId: string) => {
     setCurrentConversationId(conversationId);
   };
@@ -514,6 +521,8 @@ Would you like me to help you plan any milestones or discuss project timeline ma
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         sidebarOpen={isSidebarOpen}
         onNewConversation={handleNewConversation}
+        onExitProjectChat={handleExitProjectChat}
+        isProjectChat={!!projectId}
       />
 
       {/* Main Chat Area */}
