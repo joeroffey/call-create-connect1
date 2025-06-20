@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crown, Check, Zap, Star, Building2, ArrowRight, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { Crown, Check, Zap, Star, Building2, ArrowRight, ArrowLeft, AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
 
@@ -82,7 +81,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const [selectedPlan, setSelectedPlan] = useState('pro');
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
   const [showDowngrade, setShowDowngrade] = useState(false);
-  const { subscription, hasActiveSubscription } = useSubscription(user?.id);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { subscription, hasActiveSubscription, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
 
   // Get current subscription details
   const currentPlan = subscription?.plan_type 
@@ -110,6 +110,26 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const downgradePlans = hasActiveSubscription 
     ? plans.filter(p => p.tier < currentTier)
     : [];
+
+  const handleSubscribe = async () => {
+    if (!selectedPlan) return;
+    
+    setIsProcessing(true);
+    try {
+      await createCheckoutSession(selectedPlan as 'basic' | 'pro' | 'enterprise');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setIsProcessing(true);
+    try {
+      await openCustomerPortal();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
@@ -150,25 +170,42 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-green-400">
-                    Current Plan: EezyBuild {currentPlan}
+                    Current Plan: EezyBuild {subscription?.plan_type === 'basic' ? 'Basic' : 
+                                            subscription?.plan_type === 'pro' ? 'Pro' : 
+                                            subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}
                   </p>
-                  {subscriptionEndDate && (
+                  {subscription?.current_period_end && (
                     <p className="text-xs text-gray-400">
-                      Next billing: {subscriptionEndDate}
+                      Next billing: {new Date(subscription.current_period_end).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
                     </p>
                   )}
                 </div>
               </div>
-              {downgradePlans.length > 0 && (
+              <div className="flex space-x-2">
                 <Button
-                  onClick={() => setShowDowngrade(!showDowngrade)}
+                  onClick={handleManageSubscription}
+                  disabled={isProcessing}
                   variant="outline"
                   size="sm"
-                  className="text-orange-400 border-orange-400/30 hover:bg-orange-400/10"
+                  className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
                 >
-                  {showDowngrade ? 'Hide' : 'Downgrade Options'}
+                  {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Manage'}
                 </Button>
-              )}
+                {downgradePlans.length > 0 && (
+                  <Button
+                    onClick={() => setShowDowngrade(!showDowngrade)}
+                    variant="outline"
+                    size="sm"
+                    className="text-orange-400 border-orange-400/30 hover:bg-orange-400/10"
+                  >
+                    {showDowngrade ? 'Hide' : 'Downgrade Options'}
+                  </Button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -250,6 +287,14 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <p className="text-gray-400 mb-6">
               You're already enjoying all the premium features of EezyBuild ProMax.
             </p>
+            <Button
+              onClick={handleManageSubscription}
+              disabled={isProcessing}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              {isProcessing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Manage Subscription
+            </Button>
           </motion.div>
         )}
 
@@ -374,9 +419,22 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Button className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl text-lg">
-              <span>Subscribe to {plans.find(p => p.id === selectedPlan)?.name}</span>
-              <ArrowRight className="w-5 h-5 ml-2" />
+            <Button 
+              onClick={handleSubscribe}
+              disabled={isProcessing}
+              className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl text-lg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <span>Subscribe to {plans.find(p => p.id === selectedPlan)?.name}</span>
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
             </Button>
           </motion.div>
         )}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
@@ -25,6 +24,20 @@ const Index = () => {
 
   // Get subscription info
   const { subscription, hasActiveSubscription } = useSubscription(user?.id);
+
+  useEffect(() => {
+    // Check for successful subscription in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      // Refresh subscription status after successful payment
+      setTimeout(() => {
+        if (user?.id) {
+          // Force refresh subscription status
+          window.location.href = '/';
+        }
+      }, 2000);
+    }
+  }, []);
 
   useEffect(() => {
     // Set up auth state listener

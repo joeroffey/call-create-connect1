@@ -16,48 +16,109 @@ export const useSubscription = (userId: string | null) => {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const { toast } = useToast();
 
-  const fetchSubscription = async () => {
+  const checkSubscriptionStatus = async () => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
+      const { data, error } = await supabase.functions.invoke('check-subscription', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-      if (data) {
-        // Type cast the data to ensure it matches our interface
-        const typedSubscription: Subscription = {
-          id: data.id,
-          plan_type: data.plan_type as 'basic' | 'pro' | 'enterprise',
-          status: data.status as 'active' | 'cancelled' | 'expired',
-          current_period_end: data.current_period_end
+      if (error) throw error;
+
+      if (data.subscribed && data.subscription_tier) {
+        const subscriptionData: Subscription = {
+          id: 'stripe-sub',
+          plan_type: data.subscription_tier,
+          status: 'active',
+          current_period_end: data.subscription_end
         };
         
-        setSubscription(typedSubscription);
-        const isActive = data.status === 'active' && new Date(data.current_period_end) > new Date();
-        setHasActiveSubscription(isActive);
+        setSubscription(subscriptionData);
+        setHasActiveSubscription(true);
       } else {
         setSubscription(null);
         setHasActiveSubscription(false);
       }
     } catch (error) {
-      console.error('Error fetching subscription:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load subscription status",
-        variant: "destructive"
-      });
+      console.error('Error checking subscription:', error);
+      setSubscription(null);
+      setHasActiveSubscription(false);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const createCheckoutSession = async (planType: 'basic' | 'pro' | 'enterprise') => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { planType },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Open Stripe checkout in a new tab
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const openCustomerPortal = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Open customer portal in a new tab
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+      toast({
+        title: "Error",
+        description: "Failed to open customer portal",
+        variant: "destructive"
+      });
+      return false;
     }
   };
 
@@ -82,7 +143,6 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) throw error;
 
-      // Type cast the returned data
       const typedSubscription: Subscription = {
         id: data.id,
         plan_type: data.plan_type as 'basic' | 'pro' | 'enterprise',
@@ -111,14 +171,16 @@ export const useSubscription = (userId: string | null) => {
   };
 
   useEffect(() => {
-    fetchSubscription();
+    checkSubscriptionStatus();
   }, [userId]);
 
   return {
     subscription,
     loading,
     hasActiveSubscription,
-    refetch: fetchSubscription,
-    createDemoSubscription
+    refetch: checkSubscriptionStatus,
+    createDemoSubscription,
+    createCheckoutSession,
+    openCustomerPortal
   };
 };
