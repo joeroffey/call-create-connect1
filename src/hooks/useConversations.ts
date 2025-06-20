@@ -13,6 +13,7 @@ interface Conversation {
 export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
 
   const fetchConversations = async () => {
     if (!userId) {
@@ -38,8 +39,48 @@ export const useConversations = (userId: string | undefined) => {
     }
   };
 
+  const fetchProjectCounts = async () => {
+    if (!userId) return;
+
+    try {
+      // Fetch document counts
+      const { data: documents, error: docError } = await supabase
+        .from('project_documents')
+        .select('project_id')
+        .eq('user_id', userId);
+
+      if (docError) throw docError;
+
+      // Fetch milestone counts
+      const { data: milestones, error: milestoneError } = await supabase
+        .from('project_milestones')
+        .select('project_id')
+        .eq('user_id', userId);
+
+      if (milestoneError) throw milestoneError;
+
+      // Count by project
+      const counts: {[key: string]: {documents: number, milestones: number}} = {};
+      
+      documents?.forEach(doc => {
+        if (!counts[doc.project_id]) counts[doc.project_id] = { documents: 0, milestones: 0 };
+        counts[doc.project_id].documents++;
+      });
+
+      milestones?.forEach(milestone => {
+        if (!counts[milestone.project_id]) counts[milestone.project_id] = { documents: 0, milestones: 0 };
+        counts[milestone.project_id].milestones++;
+      });
+
+      setProjectCounts(counts);
+    } catch (error) {
+      console.error('Error fetching project counts:', error);
+    }
+  };
+
   useEffect(() => {
     fetchConversations();
+    fetchProjectCounts();
   }, [userId]);
 
   // Set up real-time subscription to conversations
@@ -61,6 +102,32 @@ export const useConversations = (userId: string | undefined) => {
           fetchConversations();
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_documents',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Document change detected:', payload);
+          fetchProjectCounts();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_milestones',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log('Milestone change detected:', payload);
+          fetchProjectCounts();
+        }
+      )
       .subscribe();
 
     return () => {
@@ -70,6 +137,7 @@ export const useConversations = (userId: string | undefined) => {
 
   const refreshConversations = () => {
     fetchConversations();
+    fetchProjectCounts();
   };
 
   // Helper function to get conversation count by project
@@ -77,10 +145,21 @@ export const useConversations = (userId: string | undefined) => {
     return conversations.filter(conv => conv.project_id === projectId).length;
   };
 
+  // Helper functions to get document and milestone counts
+  const getProjectDocumentCount = (projectId: string) => {
+    return projectCounts[projectId]?.documents || 0;
+  };
+
+  const getProjectMilestoneCount = (projectId: string) => {
+    return projectCounts[projectId]?.milestones || 0;
+  };
+
   return {
     conversations,
     loading,
     refreshConversations,
-    getProjectConversationCount
+    getProjectConversationCount,
+    getProjectDocumentCount,
+    getProjectMilestoneCount
   };
 };

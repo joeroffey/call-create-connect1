@@ -32,8 +32,14 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [showProjectDetails, setShowProjectDetails] = useState(false);
   const { toast } = useToast();
   
-  // Get conversations data with the new helper function
-  const { conversations, getProjectConversationCount, loading: conversationsLoading } = useConversations(user?.id);
+  // Get conversations data with the new helper functions
+  const { 
+    conversations, 
+    getProjectConversationCount, 
+    getProjectDocumentCount,
+    getProjectMilestoneCount,
+    loading: conversationsLoading 
+  } = useConversations(user?.id);
 
   console.log('ProjectsScreen - conversations loaded:', conversations.length);
   console.log('ProjectsScreen - conversations:', conversations);
@@ -271,7 +277,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project, index) => {
               const conversationCount = getProjectConversationCount(project.id);
-              console.log(`Project ${project.name} - conversation count:`, conversationCount);
+              const documentCount = getProjectDocumentCount(project.id);
+              const milestoneCount = getProjectMilestoneCount(project.id);
               
               return (
                 <motion.div
@@ -328,7 +335,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                       <div className="flex items-center justify-center mb-1">
                         <FileText className="w-4 h-4 text-blue-400 group-hover/stat:text-blue-300" />
                       </div>
-                      <div className="text-lg font-semibold text-white group-hover/stat:text-blue-300">0</div>
+                      <div className="text-lg font-semibold text-white group-hover/stat:text-blue-300">{documentCount}</div>
                       <div className="text-xs text-gray-400">Docs</div>
                     </button>
                     <button
@@ -338,7 +345,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                       <div className="flex items-center justify-center mb-1">
                         <Milestone className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
                       </div>
-                      <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">0</div>
+                      <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{milestoneCount}</div>
                       <div className="text-xs text-gray-400">Milestones</div>
                     </button>
                   </div>
