@@ -15,7 +15,7 @@ interface ChatInputProps {
 const ChatInput = ({ inputText, isTyping, onInputChange, onSend, onKeyPress }: ChatInputProps) => {
   return (
     <div className="border-t border-gray-800/50 p-4 flex-shrink-0 backdrop-blur-sm">
-      <div className="flex items-end space-x-3 max-w-4xl mx-auto">
+      <div className="flex items-center space-x-3 max-w-4xl mx-auto">
         <div className="flex-1 relative">
           <Textarea
             value={inputText}
@@ -28,7 +28,7 @@ const ChatInput = ({ inputText, isTyping, onInputChange, onSend, onKeyPress }: C
           <Button
             onClick={onSend}
             disabled={!inputText.trim() || isTyping}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 rounded-lg p-0 transition-all duration-200 hover:shadow-sm disabled:opacity-50"
+            className="absolute right-2 top-2 w-8 h-8 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-600 rounded-lg p-0 transition-all duration-200 hover:shadow-sm disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
           </Button>
@@ -37,7 +37,7 @@ const ChatInput = ({ inputText, isTyping, onInputChange, onSend, onKeyPress }: C
         <Button
           variant="ghost"
           size="icon"
-          className="text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 w-12 h-12"
+          className="text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition-all duration-200 w-10 h-10 flex-shrink-0"
         >
           <Mic className="w-5 h-5" />
         </Button>
