@@ -114,17 +114,17 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           className="text-center mb-12"
         >
           <motion.div 
-            className="w-72 mx-auto mb-6"
+            className="w-64 mx-auto mb-6"
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400 }}
           >
             <img 
               src="/lovable-uploads/63fdd0cc-d653-4ee2-b40d-9b77f0a661a3.png" 
               alt="EezyBuild Logo" 
-              className="w-full h-auto object-contain mix-blend-screen"
+              className="w-full h-auto object-contain"
               style={{ 
-                filter: 'brightness(1.1) contrast(1.1)',
-                background: 'transparent'
+                filter: 'invert(1) brightness(0.9) hue-rotate(180deg)',
+                mixBlendMode: 'difference'
               }}
             />
           </motion.div>
