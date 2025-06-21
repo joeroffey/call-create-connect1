@@ -273,9 +273,14 @@ What would you like to discuss about your project?`,
   };
 
   const handleSelectConversation = async (conversationId: string) => {
+    console.log('Selecting conversation:', conversationId);
+    
     // Immediately close sidebar and set the conversation
     setIsSidebarOpen(false);
     setCurrentConversationId(conversationId);
+    
+    // Clear current messages while loading
+    setMessages([]);
     
     // Load conversation title
     try {
@@ -287,15 +292,9 @@ What would you like to discuss about your project?`,
 
       if (error) throw error;
       setCurrentConversationTitle(data.title);
+      console.log('Loaded conversation title:', data.title);
     } catch (error) {
       console.error('Error loading conversation title:', error);
-    }
-  };
-
-  const handleContinueConversation = () => {
-    setIsViewingHistory(false);
-    if (inputRef.current) {
-      inputRef.current.focus();
     }
   };
 
@@ -312,7 +311,6 @@ What would you like to discuss about your project?`,
     setMessages(prevMessages => [...prevMessages, userMessage]);
     const messageText = newMessage;
     setNewMessage('');
-    setIsViewingHistory(false);
 
     // Create new conversation if needed
     let conversationId = currentConversationId;
