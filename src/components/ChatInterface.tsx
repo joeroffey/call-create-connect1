@@ -16,6 +16,7 @@ interface ChatMessageData {
   timestamp: Date;
   isWelcome?: boolean;
   images?: Array<{ url: string; title: string; source: string; }>;
+  documentsAnalyzed?: number;
 }
 
 interface ChatInterfaceProps {
@@ -331,7 +332,8 @@ What would you like to discuss about your project?`,
         text: data.response,
         sender: 'assistant',
         timestamp: new Date(),
-        images: data.images
+        images: data.images,
+        documentsAnalyzed: data.documentsAnalyzed
       };
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);

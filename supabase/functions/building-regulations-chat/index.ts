@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,13 +27,21 @@ interface PineconeResponse {
   matches: PineconeMatch[];
 }
 
+interface ProjectDocument {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_type: string;
+  file_size: number;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { message } = await req.json();
+    const { message, projectContext } = await req.json();
 
     if (!message || typeof message !== 'string') {
       throw new Error('Message is required and must be a string');
@@ -42,11 +51,15 @@ serve(async (req) => {
     const openaiKey = Deno.env.get('OPENAI_KEY');
     const pineconeKey = Deno.env.get('PINECONE_KEY');
     const pineconeHost = Deno.env.get('PINECONE_HOST');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     console.log('Environment check:', {
       hasOpenAI: !!openaiKey,
       hasPineconeKey: !!pineconeKey,
       hasPineconeHost: !!pineconeHost,
+      hasSupabaseUrl: !!supabaseUrl,
+      hasSupabaseServiceKey: !!supabaseServiceKey,
       pineconeHost: pineconeHost
     });
 
@@ -60,6 +73,35 @@ serve(async (req) => {
     }
 
     console.log('Processing message:', message);
+    console.log('Project context:', projectContext);
+
+    // Initialize Supabase client for document access
+    let supabase = null;
+    let projectDocuments: ProjectDocument[] = [];
+    let documentContext = '';
+
+    if (supabaseUrl && supabaseServiceKey && projectContext?.id) {
+      supabase = createClient(supabaseUrl, supabaseServiceKey);
+      
+      // Fetch project documents
+      const { data: documents, error: docsError } = await supabase
+        .from('project_documents')
+        .select('id, file_name, file_path, file_type, file_size')
+        .eq('project_id', projectContext.id);
+
+      if (docsError) {
+        console.error('Error fetching project documents:', docsError);
+      } else {
+        projectDocuments = documents || [];
+        console.log(`Found ${projectDocuments.length} documents for project`);
+
+        // Extract content from documents
+        if (projectDocuments.length > 0) {
+          documentContext = await extractDocumentContent(supabase, projectDocuments);
+          console.log('Document context extracted, length:', documentContext.length);
+        }
+      }
+    }
 
     // Step 1: Create embedding for the user's question
     const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
@@ -159,13 +201,45 @@ serve(async (req) => {
       console.log('Using top matches with context length:', relevantContext.length);
     }
 
-    const relevantContext = relevantMatches
+    const regulationsContext = relevantMatches
       .map(match => match.metadata.text)
       .join('\n\n---\n\n');
 
-    console.log('Found relevant context, length:', relevantContext.length);
+    console.log('Found relevant regulations context, length:', regulationsContext.length);
 
-    // Step 4: Generate response using OpenAI with UK Building Regulations context
+    // Combine building regulations context with document context
+    let combinedContext = regulationsContext;
+    if (documentContext) {
+      combinedContext = `PROJECT DOCUMENTS:\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
+    }
+
+    // Step 4: Generate response using OpenAI with enhanced context
+    const systemPrompt = `You are a UK Building Regulations specialist assistant. You MUST follow these strict guidelines:
+
+1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
+2. Use ONLY the provided context from official UK Building Regulations documents and project documents
+3. Use British English spelling and terminology throughout (e.g., "colour" not "color", "metres" not "meters", "storey" not "story", "realise" not "realize", "behaviour" not "behavior")
+4. If asked about non-UK regulations or unrelated topics, politely decline and redirect to UK Building Regulations
+5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
+6. Be precise and reference specific requirements from the documents provided
+7. Use UK construction terminology (e.g., "ground floor" not "first floor", "lift" not "elevator", "tap" not "faucet")
+8. If the context doesn't fully answer the question, provide what information is available and suggest consulting the full regulations
+9. Always maintain a professional, helpful tone appropriate for UK construction professionals
+10. Use UK units of measurement (metres, millimetres, square metres, etc.)
+11. When relevant diagrams or images are available in the Building Regulations documents, mention that visual references are available to support your answer
+12. When project documents are available, reference them specifically and explain how they relate to the building regulations requirements
+13. If project documents contain drawings, specifications, or plans, reference these when providing advice
+
+${projectContext ? `PROJECT INFORMATION:
+Project Name: ${projectContext.name}
+Project Description: ${projectContext.description || 'Not specified'}
+Project Category: ${projectContext.label || 'Not specified'}
+Project Status: ${projectContext.status || 'Not specified'}
+Number of Project Documents: ${projectDocuments.length}
+
+` : ''}Context from UK Building Regulations documents${documentContext ? ' and project documents' : ''}:
+${combinedContext}`;
+
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -177,22 +251,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a UK Building Regulations specialist assistant. You MUST follow these strict guidelines:
-
-1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
-2. Use ONLY the provided context from official UK Building Regulations documents
-3. Use British English spelling and terminology throughout (e.g., "colour" not "color", "metres" not "meters", "storey" not "story", "realise" not "realize", "behaviour" not "behavior")
-4. If asked about non-UK regulations or unrelated topics, politely decline and redirect to UK Building Regulations
-5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
-6. Be precise and reference specific requirements from the documents provided
-7. Use UK construction terminology (e.g., "ground floor" not "first floor", "lift" not "elevator", "tap" not "faucet")
-8. If the context doesn't fully answer the question, provide what information is available and suggest consulting the full regulations
-9. Always maintain a professional, helpful tone appropriate for UK construction professionals
-10. Use UK units of measurement (metres, millimetres, square metres, etc.)
-11. When relevant diagrams or images are available in the Building Regulations documents, mention that visual references are available to support your answer
-
-Context from UK Building Regulations documents:
-${relevantContext}`
+            content: systemPrompt
           },
           {
             role: 'user',
@@ -200,7 +259,7 @@ ${relevantContext}`
           }
         ],
         temperature: 0.3,
-        max_tokens: 1000,
+        max_tokens: 1200,
       }),
     });
 
@@ -217,7 +276,8 @@ ${relevantContext}`
 
     return new Response(JSON.stringify({
       response: aiResponse,
-      images: relatedImages.slice(0, 5) // Limit to 5 images max
+      images: relatedImages.slice(0, 5), // Limit to 5 images max
+      documentsAnalyzed: projectDocuments.length
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -245,3 +305,48 @@ ${relevantContext}`
     });
   }
 });
+
+// Function to extract content from uploaded documents
+async function extractDocumentContent(supabase: any, documents: ProjectDocument[]): Promise<string> {
+  let combinedContent = '';
+  
+  for (const doc of documents.slice(0, 5)) { // Limit to 5 documents to avoid token limits
+    try {
+      console.log(`Processing document: ${doc.file_name}`);
+      
+      // Download the file from Supabase Storage
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('project-documents')
+        .download(doc.file_path);
+
+      if (downloadError) {
+        console.error(`Error downloading ${doc.file_name}:`, downloadError);
+        continue;
+      }
+
+      let content = '';
+      
+      // Extract content based on file type
+      if (doc.file_type === 'text/plain' || doc.file_type === 'text/csv' || doc.file_type === 'text/markdown') {
+        content = await fileData.text();
+      } else if (doc.file_type === 'application/pdf') {
+        // For PDF files, we'll extract what we can or note that it's a PDF
+        content = `[PDF Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include drawings, specifications, or technical details relevant to the project.`;
+      } else if (doc.file_type.startsWith('image/')) {
+        content = `[Image: ${doc.file_name}] - This image may contain drawings, plans, or visual documentation relevant to the project.`;
+      } else if (doc.file_type.includes('word') || doc.file_type.includes('document')) {
+        content = `[Word Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include project specifications, requirements, or documentation.`;
+      }
+
+      if (content) {
+        combinedContent += `\n\n--- DOCUMENT: ${doc.file_name} ---\n${content.slice(0, 2000)}`; // Limit each document to 2000 chars
+      }
+      
+    } catch (error) {
+      console.error(`Error processing document ${doc.file_name}:`, error);
+      combinedContent += `\n\n--- DOCUMENT: ${doc.file_name} ---\n[Document could not be processed but is available for reference]`;
+    }
+  }
+  
+  return combinedContent;
+}
