@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Upload, Lightbulb, Book, Milestone, ArrowLeft } from 'lucide-react';
@@ -39,7 +38,6 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [isViewingHistory, setIsViewingHistory] = useState(false);
   const [currentConversationTitle, setCurrentConversationTitle] = useState<string>('');
   const [project, setProject] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -132,7 +130,7 @@ What would you like to discuss about your project?`,
 
   useEffect(() => {
     // Focus on input when component mounts
-    if (inputRef.current && !isViewingHistory) {
+    if (inputRef.current) {
       inputRef.current.focus();
     }
 
@@ -162,7 +160,6 @@ What would you like to discuss about your project?`,
       }));
       setMessages(formattedMessages);
       setRelatedImages([]);
-      setIsViewingHistory(true);
     }
   }, [conversationMessages]);
 
@@ -260,7 +257,6 @@ What would you like to discuss about your project?`,
     setMessages([welcomeMsg]);
     setCurrentConversationId(null);
     setCurrentConversationTitle('');
-    setIsViewingHistory(false);
     setRelatedImages([]);
   };
 
@@ -273,11 +269,12 @@ What would you like to discuss about your project?`,
     setMessages([welcomeMessage]);
     setCurrentConversationId(null);
     setCurrentConversationTitle('');
-    setIsViewingHistory(false);
     setRelatedImages([]);
   };
 
   const handleSelectConversation = async (conversationId: string) => {
+    // Immediately close sidebar and set the conversation
+    setIsSidebarOpen(false);
     setCurrentConversationId(conversationId);
     
     // Load conversation title
@@ -562,29 +559,6 @@ Would you like me to help you plan any milestones or discuss project timeline ma
         isProjectChat={!!projectId}
       />
 
-      {/* Historical Conversation Banner */}
-      {isViewingHistory && currentConversationTitle && (
-        <div className="bg-blue-600/20 border-b border-blue-600/30 px-4 py-3">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <span className="text-blue-200 text-sm font-medium">
-                Viewing conversation: "{currentConversationTitle}"
-              </span>
-            </div>
-            <Button
-              onClick={handleContinueConversation}
-              variant="ghost"
-              size="sm"
-              className="text-blue-300 hover:text-white hover:bg-blue-600/20"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Continue this conversation
-            </Button>
-          </div>
-        </div>
-      )}
-
       {/* Main Chat Area */}
       <div className="flex-1 flex min-h-0">
         <ChatSidebar 
@@ -664,11 +638,9 @@ Would you like me to help you plan any milestones or discuss project timeline ma
                     onKeyDown={handleKeyDown}
                     rows={1}
                     placeholder={
-                      isViewingHistory 
-                        ? "Continue this conversation..." 
-                        : projectId && project 
-                          ? `Ask about ${project.name}...` 
-                          : "Ask me a question..."
+                      projectId && project 
+                        ? `Ask about ${project.name}...` 
+                        : "Ask me a question..."
                     }
                     className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
                   />
