@@ -8,6 +8,7 @@ import SearchHistory from './search/SearchHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface SearchQuery {
   text: string;
@@ -35,12 +36,43 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchHistory, setSearchHistory] = useState<SearchQuery[]>([]);
   const [favorites, setFavorites] = useState<SearchResult[]>([]);
+  const { toast } = useToast();
 
   const handleSearch = async (query: SearchQuery) => {
+    console.log('Starting search with query:', query);
+    
+    if (!query.text.trim()) {
+      toast({
+        title: "Search Error",
+        description: "Please enter a search term",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSearching(true);
     setSearchQuery(query);
 
     try {
+      // Check if user is authenticated
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Authentication error');
+      }
+
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to use the search feature",
+          variant: "destructive"
+        });
+        setIsSearching(false);
+        return;
+      }
+
+      console.log('User authenticated, proceeding with search');
+
       // Add to search history
       setSearchHistory(prev => [query, ...prev.slice(0, 9)]);
 
@@ -62,7 +94,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
         searchMessage += ` (${filters.join(', ')})`;
       }
 
-      console.log('Searching with message:', searchMessage);
+      console.log('Calling building-regulations-chat with message:', searchMessage);
 
       // Call the building regulations chat function
       const { data, error } = await supabase.functions.invoke('building-regulations-chat', {
@@ -73,70 +105,110 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       });
 
       if (error) {
-        console.error('Search error:', error);
+        console.error('Supabase function error:', error);
         throw error;
       }
 
-      console.log('Search response:', data);
+      console.log('Search response received:', data);
+
+      // Check if we got a valid response
+      if (!data || !data.response) {
+        throw new Error('No response received from search service');
+      }
 
       // Parse the AI response into search results
       const aiResponse = data.response;
       const mockResults = parseResponseToResults(aiResponse, query);
       
+      console.log('Parsed results:', mockResults);
       setSearchResults(mockResults);
-      setIsSearching(false);
+      
+      toast({
+        title: "Search Complete",
+        description: `Found ${mockResults.length} result${mockResults.length !== 1 ? 's' : ''}`,
+      });
+
     } catch (error) {
       console.error('Search error:', error);
-      setIsSearching(false);
+      
+      let errorMessage = 'Unable to perform search at this time.';
+      
+      if (error.message?.includes('fetch')) {
+        errorMessage = 'Network error - please check your connection and try again.';
+      } else if (error.message?.includes('auth')) {
+        errorMessage = 'Authentication error - please sign in again.';
+      } else if (error.message?.includes('function')) {
+        errorMessage = 'Search service unavailable - please try again later.';
+      }
+      
+      toast({
+        title: "Search Error",
+        description: errorMessage,
+        variant: "destructive"
+      });
       
       // Show error results
       setSearchResults([{
         id: 'error-1',
         title: 'Search Error',
-        content: 'Unable to perform search at this time. Please check your connection and try again.',
+        content: errorMessage + ' Please check your connection and try again, or contact support if the problem persists.',
         part: 'System',
         section: 'Error',
         relevanceScore: 0
       }]);
+    } finally {
+      setIsSearching(false);
     }
   };
 
   // Helper function to parse AI response into structured results
   const parseResponseToResults = (response: string, query: SearchQuery): SearchResult[] => {
-    // For now, create a single comprehensive result from the AI response
-    // In a real implementation, you might want to parse the response more intelligently
+    console.log('Parsing response for query:', query);
+    
     const results: SearchResult[] = [];
     
-    // Split response into sections if it contains multiple parts
-    const sections = response.split(/Part [A-P]/g);
+    // Try to identify different parts or sections in the response
+    const sections = response.split(/(?:Part [A-P]|Section \d+|(?:\d+\.){1,2}\d+)/g);
+    const matches = response.match(/Part [A-P]|Section \d+|(?:\d+\.){1,2}\d+/g) || [];
     
-    if (sections.length > 1) {
-      // Multiple parts mentioned
+    if (sections.length > 1 && matches.length > 0) {
+      // Multiple parts/sections mentioned
       sections.forEach((section, index) => {
         if (section.trim() && index > 0) {
-          const partLetter = response.match(new RegExp(`Part [A-P]`, 'g'))?.[index - 1];
-          results.push({
-            id: `result-${index}`,
-            title: partLetter || `Building Regulations Information ${index}`,
-            content: section.trim().substring(0, 200) + '...',
-            part: partLetter || 'Building Regulations',
-            section: '1.0',
-            relevanceScore: Math.max(0.7, 1 - (index * 0.1))
-          });
+          const partOrSection = matches[index - 1];
+          const content = section.trim();
+          
+          if (content.length > 50) { // Only include substantial content
+            results.push({
+              id: `result-${index}`,
+              title: `Building Regulations - ${partOrSection}`,
+              content: content.length > 300 ? content.substring(0, 300) + '...' : content,
+              part: partOrSection.includes('Part') ? partOrSection : query.part || 'Building Regulations',
+              section: partOrSection.includes('Section') ? partOrSection.replace('Section ', '') : '1.0',
+              relevanceScore: Math.max(0.7, 1 - (index * 0.1))
+            });
+          }
         }
       });
-    } else {
-      // Single comprehensive result
+    }
+    
+    // If no structured sections found, create a single comprehensive result
+    if (results.length === 0) {
+      const title = query.part ? 
+        `Building Regulations - ${query.part}` : 
+        `Building Regulations: ${query.text}`;
+        
       results.push({
         id: 'result-1',
-        title: `Building Regulations: ${query.text}`,
-        content: response.substring(0, 300) + (response.length > 300 ? '...' : ''),
+        title: title,
+        content: response.length > 400 ? response.substring(0, 400) + '...' : response,
         part: query.part || 'Building Regulations',
         section: '1.0',
         relevanceScore: 0.95
       });
     }
 
+    console.log('Generated results:', results);
     return results;
   };
 
