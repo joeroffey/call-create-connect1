@@ -48,8 +48,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
     return {
       roomArea: roomArea.toFixed(2),
       boardsNeeded,
-      totalArea: totalArea.toFixed(2),
-      costEstimate: (boardsNeeded * 25).toFixed(2) // Rough estimate at £25 per board
+      totalArea: totalArea.toFixed(2)
     };
   };
 
@@ -227,10 +226,6 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
                         <div className="flex justify-between">
                           <span className="text-gray-400">Total Timber:</span>
                           <span className="text-white font-medium">{flooringResults.totalArea} m²</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-400">Est. Cost:</span>
-                          <span className="text-white font-medium">£{flooringResults.costEstimate}</span>
                         </div>
                       </div>
                     </>

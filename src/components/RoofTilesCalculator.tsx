@@ -20,11 +20,11 @@ const RoofTilesCalculator = ({ onBack }: RoofTilesCalculatorProps) => {
   const [results, setResults] = useState<any>(null);
 
   const tileTypes = {
-    'concrete-interlocking': { name: 'Concrete Interlocking', coverage: 9.9, price: 0.85 },
-    'clay-plain': { name: 'Clay Plain Tiles', coverage: 60, price: 0.45 },
-    'clay-pantile': { name: 'Clay Pantiles', coverage: 13.2, price: 1.20 },
-    'slate-welsh': { name: 'Welsh Slate', coverage: 21, price: 4.50 },
-    'fibre-cement': { name: 'Fibre Cement', coverage: 12.5, price: 2.10 }
+    'concrete-interlocking': { name: 'Concrete Interlocking', coverage: 9.9 },
+    'clay-plain': { name: 'Clay Plain Tiles', coverage: 60 },
+    'clay-pantile': { name: 'Clay Pantiles', coverage: 13.2 },
+    'slate-welsh': { name: 'Welsh Slate', coverage: 21 },
+    'fibre-cement': { name: 'Fibre Cement', coverage: 12.5 }
   };
 
   const calculateRoof = () => {
@@ -41,41 +41,26 @@ const RoofTilesCalculator = ({ onBack }: RoofTilesCalculatorProps) => {
 
     // Calculate tiles needed (with 10% waste)
     const tilesNeeded = Math.ceil((roofArea * selectedTile.coverage) * 1.1);
-    const tileCost = tilesNeeded * selectedTile.price;
 
     // Calculate battens (25x38mm at 345mm centres for most tiles)
     const battenSpacing = tileType === 'clay-plain' ? 0.19 : 0.345; // metres
     const numberOfBattens = Math.ceil(width / battenSpacing);
     const battenLength = numberOfBattens * length * 2; // Both sides of roof
-    const battenCost = battenLength * 2.50; // £2.50 per metre
 
     // Calculate underlay (with 10% waste)
     const underlayArea = roofArea * 1.1;
     const underlayRolls = Math.ceil(underlayArea / 50); // 50m² per roll
-    const underlayCost = underlayRolls * 45; // £45 per roll
 
     // Ridge tiles (approximate)
     const ridgeLength = length;
     const ridgeTiles = Math.ceil(ridgeLength / 0.45); // 450mm ridge tiles
-    const ridgeCost = ridgeTiles * 8.50; // £8.50 per ridge tile
-
-    // Nails and fixings
-    const fixingsCost = tilesNeeded * 0.05; // 5p per tile for fixings
-
-    const totalCost = tileCost + battenCost + underlayCost + ridgeCost + fixingsCost;
 
     setResults({
       roofArea: roofArea.toFixed(1),
       tilesNeeded,
-      tileCost: tileCost.toFixed(2),
       battenLength: battenLength.toFixed(1),
-      battenCost: battenCost.toFixed(2),
       underlayRolls,
-      underlayCost: underlayCost.toFixed(2),
       ridgeTiles,
-      ridgeCost: ridgeCost.toFixed(2),
-      fixingsCost: fixingsCost.toFixed(2),
-      totalCost: totalCost.toFixed(2),
       selectedTile: selectedTile.name
     });
   };
@@ -166,7 +151,7 @@ const RoofTilesCalculator = ({ onBack }: RoofTilesCalculatorProps) => {
                   <SelectContent className="bg-gray-800 border-gray-700">
                     {Object.entries(tileTypes).map(([key, tile]) => (
                       <SelectItem key={key} value={key} className="text-white hover:bg-gray-700">
-                        {tile.name} - £{tile.price}/tile
+                        {tile.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -221,45 +206,9 @@ const RoofTilesCalculator = ({ onBack }: RoofTilesCalculatorProps) => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gray-800/50 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Cost Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Tiles:</span>
-                      <span className="text-white">£{results.tileCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Battens:</span>
-                      <span className="text-white">£{results.battenCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Underlay:</span>
-                      <span className="text-white">£{results.underlayCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Ridge Tiles:</span>
-                      <span className="text-white">£{results.ridgeCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Fixings:</span>
-                      <span className="text-white">£{results.fixingsCost}</span>
-                    </div>
-                    <hr className="border-gray-600" />
-                    <div className="flex justify-between font-bold text-lg">
-                      <span className="text-emerald-400">Total Cost:</span>
-                      <span className="text-emerald-400">£{results.totalCost}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/20">
                 <p className="text-blue-300 text-sm">
-                  <strong>Note:</strong> Prices are estimates and include 10% waste allowance. 
-                  Actual costs may vary depending on supplier and region. 
+                  <strong>Note:</strong> Calculations include 10% waste allowance. 
                   Always confirm measurements and consult with roofing professionals.
                 </p>
               </div>

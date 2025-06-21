@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Building2, ArrowLeft, Calculator } from 'lucide-react';
@@ -23,17 +22,17 @@ const BrickCalculator = ({ onBack }: BrickCalculatorProps) => {
   const [results, setResults] = useState<any>(null);
 
   const brickTypes = {
-    'standard': { name: 'Standard Brick (215x102.5x65mm)', price: 0.35, perM2: 59 },
-    'engineering': { name: 'Engineering Brick', price: 0.45, perM2: 59 },
-    'facing-red': { name: 'Red Facing Brick', price: 0.40, perM2: 59 },
-    'facing-buff': { name: 'Buff Facing Brick', price: 0.38, perM2: 59 },
-    'reclaimed': { name: 'Reclaimed Stock Brick', price: 0.85, perM2: 59 }
+    'standard': { name: 'Standard Brick (215x102.5x65mm)', perM2: 59 },
+    'engineering': { name: 'Engineering Brick', perM2: 59 },
+    'facing-red': { name: 'Red Facing Brick', perM2: 59 },
+    'facing-buff': { name: 'Buff Facing Brick', perM2: 59 },
+    'reclaimed': { name: 'Reclaimed Stock Brick', perM2: 59 }
   };
 
   const mortarTypes = {
-    'cement-lime': { name: 'Cement:Lime:Sand (1:1:6)', strengthN: 3.6, price: 85 },
-    'cement-sand': { name: 'Cement:Sand (1:4)', strengthN: 11, price: 75 },
-    'ready-mix': { name: 'Ready Mix Mortar', strengthN: 5.2, price: 95 }
+    'cement-lime': { name: 'Cement:Lime:Sand (1:1:6)', strengthN: 3.6 },
+    'cement-sand': { name: 'Cement:Sand (1:4)', strengthN: 11 },
+    'ready-mix': { name: 'Ready Mix Mortar', strengthN: 5.2 }
   };
 
   const calculateBrickwork = () => {
@@ -60,45 +59,30 @@ const BrickCalculator = ({ onBack }: BrickCalculatorProps) => {
     if (thickness === 215) bricksPerM2 = 118; // Double thickness
     
     const bricksNeeded = Math.ceil(netArea * bricksPerM2 * 1.05); // 5% waste
-    const brickCost = bricksNeeded * selectedBrick.price;
 
     // Calculate mortar needed (approximately 0.02m³ per m² for single skin)
     const mortarVolume = netArea * (thickness === 215 ? 0.04 : 0.02);
     const mortarBags = Math.ceil(mortarVolume * 40); // 40 bags per m³
-    const mortarCost = mortarBags * (selectedMortar.price / 40);
 
     // DPC (Damp Proof Course) - assume needed at base
     const dpcLength = length;
-    const dpcCost = dpcLength * 12; // £12 per metre
 
     // Wall ties (for cavity walls)
     const wallTies = thickness > 102.5 ? Math.ceil(netArea * 2.5) : 0; // 2.5 ties per m²
-    const wallTiesCost = wallTies * 0.45; // £0.45 per tie
 
     // Sand and cement separate calculation
     const sandTonnes = mortarVolume * 1.8; // 1.8 tonnes sand per m³ mortar
     const cementBags = mortarVolume * 8; // 8 bags cement per m³ mortar
-    const sandCost = sandTonnes * 45; // £45 per tonne
-    const cementCost = cementBags * 4.50; // £4.50 per bag
-
-    const totalCost = brickCost + mortarCost + dpcCost + wallTiesCost;
 
     setResults({
       wallArea: netArea.toFixed(1),
       wallVolume: wallVolume.toFixed(2),
       bricksNeeded,
-      brickCost: brickCost.toFixed(2),
       mortarBags,
-      mortarCost: mortarCost.toFixed(2),
       sandTonnes: sandTonnes.toFixed(2),
-      sandCost: sandCost.toFixed(2),
       cementBags: Math.ceil(cementBags),
-      cementCost: cementCost.toFixed(2),
       dpcLength: dpcLength.toFixed(1),
-      dpcCost: dpcCost.toFixed(2),
       wallTies,
-      wallTiesCost: wallTiesCost.toFixed(2),
-      totalCost: totalCost.toFixed(2),
       selectedBrick: selectedBrick.name,
       selectedMortar: selectedMortar.name,
       mortarStrength: selectedMortar.strengthN
@@ -192,7 +176,7 @@ const BrickCalculator = ({ onBack }: BrickCalculatorProps) => {
                   <SelectContent className="bg-gray-800 border-gray-700">
                     {Object.entries(brickTypes).map(([key, brick]) => (
                       <SelectItem key={key} value={key} className="text-white hover:bg-gray-700">
-                        {brick.name} - £{brick.price}/brick
+                        {brick.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -294,44 +278,11 @@ const BrickCalculator = ({ onBack }: BrickCalculatorProps) => {
                 </CardContent>
               </Card>
 
-              <Card className="bg-gray-800/50 border-gray-700">
-                <CardHeader>
-                  <CardTitle className="text-white">Cost Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Bricks:</span>
-                      <span className="text-white">£{results.brickCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Mortar:</span>
-                      <span className="text-white">£{results.mortarCost}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">DPC:</span>
-                      <span className="text-white">£{results.dpcCost}</span>
-                    </div>
-                    {results.wallTiesCost > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Wall Ties:</span>
-                        <span className="text-white">£{results.wallTiesCost}</span>
-                      </div>
-                    )}
-                    <hr className="border-gray-600" />
-                    <div className="flex justify-between font-bold text-lg">
-                      <span className="text-emerald-400">Total Cost:</span>
-                      <span className="text-emerald-400">£{results.totalCost}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
               <div className="bg-blue-500/10 rounded-lg p-4 border border-blue-500/20">
                 <p className="text-blue-300 text-sm">
                   <strong>Note:</strong> Calculations include 5% waste allowance for bricks. 
                   Mortar strength: {results.mortarStrength}N/mm². 
-                  Prices are estimates - always confirm with suppliers and building control.
+                  Always confirm with suppliers and building control.
                 </p>
               </div>
             </motion.div>
