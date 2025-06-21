@@ -46,7 +46,7 @@ const ChatHeader = ({
         </motion.button>
         
         <div className="flex items-center space-x-3">
-          <div className="w-14 h-9 flex items-center justify-center">
+          <div className="w-15 h-10 flex items-center justify-center">
             <img 
               src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
               alt="EezyBuild Logo" 
