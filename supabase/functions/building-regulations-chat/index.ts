@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
@@ -33,6 +32,15 @@ interface ProjectDocument {
   file_path: string;
   file_type: string;
   file_size: number;
+}
+
+interface ConversationSummary {
+  id: string;
+  title: string;
+  created_at: string;
+  key_topics: string[];
+  important_decisions: string[];
+  compliance_issues: string[];
 }
 
 serve(async (req) => {
@@ -79,6 +87,7 @@ serve(async (req) => {
     let supabase = null;
     let projectDocuments: ProjectDocument[] = [];
     let documentContext = '';
+    let conversationHistory = '';
 
     if (supabaseUrl && supabaseServiceKey && projectContext?.id) {
       supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -101,6 +110,10 @@ serve(async (req) => {
           console.log('Document context extracted, length:', documentContext.length);
         }
       }
+
+      // Fetch and analyze previous conversations for this project
+      conversationHistory = await loadProjectConversationHistory(supabase, projectContext.id, openaiKey);
+      console.log('Conversation history loaded, length:', conversationHistory.length);
     }
 
     // Step 1: Create embedding for the user's question
@@ -207,17 +220,20 @@ serve(async (req) => {
 
     console.log('Found relevant regulations context, length:', regulationsContext.length);
 
-    // Combine building regulations context with document context
+    // Combine all context sources
     let combinedContext = regulationsContext;
     if (documentContext) {
       combinedContext = `PROJECT DOCUMENTS:\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
     }
+    if (conversationHistory) {
+      combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT:\n${conversationHistory}\n\n---\n\n${combinedContext}`;
+    }
 
-    // Step 4: Generate response using OpenAI with enhanced context
-    const systemPrompt = `You are a UK Building Regulations specialist assistant. You MUST follow these strict guidelines:
+    // Step 4: Generate response using OpenAI with enhanced context including conversation history
+    const systemPrompt = `You are a UK Building Regulations specialist assistant with memory of previous conversations in this project. You MUST follow these strict guidelines:
 
 1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
-2. Use ONLY the provided context from official UK Building Regulations documents and project documents
+2. Use ONLY the provided context from official UK Building Regulations documents, project documents, and previous conversations
 3. Use British English spelling and terminology throughout (e.g., "colour" not "color", "metres" not "meters", "storey" not "story", "realise" not "realize", "behaviour" not "behavior")
 4. If asked about non-UK regulations or unrelated topics, politely decline and redirect to UK Building Regulations
 5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
@@ -231,6 +247,9 @@ serve(async (req) => {
 13. If project documents contain drawings, specifications, or plans, reference these when providing advice
 14. When analyzing uploaded images (floor plans, drawings, etc.), provide specific feedback on building regulation compliance visible in the images
 15. For document analysis, highlight any non-compliance issues and suggest improvements where possible
+16. **IMPORTANT: Reference previous conversations when relevant** - If the user refers to something discussed before, or if previous conversations contain relevant information, acknowledge and build upon that context
+17. **Track project progress** - If previous conversations show decisions made or issues resolved, reference this progress in your responses
+18. **Maintain conversation continuity** - When users say things like "as we discussed before" or "following up on our previous chat", reference the relevant previous conversation content
 
 ${projectContext ? `PROJECT INFORMATION:
 Project Name: ${projectContext.name}
@@ -238,8 +257,9 @@ Project Description: ${projectContext.description || 'Not specified'}
 Project Category: ${projectContext.label || 'Not specified'}
 Project Status: ${projectContext.status || 'Not specified'}
 Number of Project Documents: ${projectDocuments.length}
+Previous Conversations Available: ${conversationHistory ? 'Yes' : 'No'}
 
-` : ''}Context from UK Building Regulations documents${documentContext ? ' and analyzed project documents' : ''}:
+` : ''}Context from UK Building Regulations documents${documentContext ? ', analyzed project documents' : ''}${conversationHistory ? ', and previous project conversations' : ''}:
 ${combinedContext}`;
 
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -279,7 +299,8 @@ ${combinedContext}`;
     return new Response(JSON.stringify({
       response: aiResponse,
       images: relatedImages.slice(0, 5), // Limit to 5 images max
-      documentsAnalyzed: projectDocuments.length
+      documentsAnalyzed: projectDocuments.length,
+      conversationsReferenced: conversationHistory ? 'Available' : 'None'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -307,6 +328,123 @@ ${combinedContext}`;
     });
   }
 });
+
+// New function to load and analyze previous conversations for context
+async function loadProjectConversationHistory(supabase: any, projectId: string, openaiKey: string): Promise<string> {
+  try {
+    console.log(`Loading conversation history for project: ${projectId}`);
+    
+    // Get all conversations for this project (excluding the current one being created)
+    const { data: conversations, error: convError } = await supabase
+      .from('conversations')
+      .select('id, title, created_at')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false })
+      .limit(5); // Limit to last 5 conversations to manage context size
+
+    if (convError) {
+      console.error('Error fetching conversations:', convError);
+      return '';
+    }
+
+    if (!conversations || conversations.length === 0) {
+      console.log('No previous conversations found for this project');
+      return '';
+    }
+
+    console.log(`Found ${conversations.length} previous conversations`);
+
+    let conversationSummaries = '';
+
+    // Process each conversation
+    for (const conv of conversations) {
+      // Get messages for this conversation
+      const { data: messages, error: msgError } = await supabase
+        .from('messages')
+        .select('content, role, created_at')
+        .eq('conversation_id', conv.id)
+        .order('created_at', { ascending: true });
+
+      if (msgError) {
+        console.error(`Error fetching messages for conversation ${conv.id}:`, msgError);
+        continue;
+      }
+
+      if (!messages || messages.length === 0) {
+        continue;
+      }
+
+      // Create a summary of the conversation using OpenAI
+      const conversationText = messages
+        .map(msg => `${msg.role.toUpperCase()}: ${msg.content}`)
+        .join('\n\n');
+
+      const summary = await summarizeConversation(conversationText, conv.title, openaiKey);
+      
+      if (summary) {
+        conversationSummaries += `\n\n--- CONVERSATION: "${conv.title}" (${new Date(conv.created_at).toLocaleDateString()}) ---\n${summary}`;
+      }
+    }
+
+    return conversationSummaries;
+  } catch (error) {
+    console.error('Error loading conversation history:', error);
+    return '';
+  }
+}
+
+// Function to summarize a conversation for context
+async function summarizeConversation(conversationText: string, title: string, openaiKey: string): Promise<string> {
+  try {
+    console.log(`Summarizing conversation: ${title}`);
+
+    const summaryResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini', // Using mini for summarization to save costs
+        messages: [
+          {
+            role: 'system',
+            content: `You are summarizing a UK Building Regulations conversation for future reference. Extract and summarize:
+
+1. Key topics discussed
+2. Important decisions made
+3. Building regulation compliance issues identified
+4. Specific requirements or recommendations given
+5. Any unresolved questions or follow-up items
+
+Keep the summary concise but include enough detail for future reference. Focus on actionable information and building regulation specifics.`
+          },
+          {
+            role: 'user',
+            content: `Please summarize this conversation about UK Building Regulations:\n\n${conversationText}`
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 500,
+      }),
+    });
+
+    if (!summaryResponse.ok) {
+      console.error('Failed to summarize conversation:', summaryResponse.status);
+      return '';
+    }
+
+    const summaryData = await summaryResponse.json();
+    const summary = summaryData.choices[0].message.content;
+
+    console.log(`Successfully summarized conversation: ${title}`);
+    return summary;
+
+  } catch (error) {
+    console.error(`Error summarizing conversation ${title}:`, error);
+    return '';
+  }
+}
 
 // Enhanced function to extract and analyze content from uploaded documents
 async function extractDocumentContentWithAnalysis(supabase: any, documents: ProjectDocument[], openaiKey: string, userMessage: string): Promise<string> {
