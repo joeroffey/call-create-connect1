@@ -1,12 +1,15 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, Ruler, Building2, ArrowRight } from 'lucide-react';
+import { Calculator, Ruler, Building2, ArrowRight, BookOpen, Hammer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import VolumetricCalculator from './VolumetricCalculator';
 import TimberCalculator from './TimberCalculator';
 import ReadyReckoner from './ReadyReckoner';
+import TimberGuide from './TimberGuide';
+import RoofTilesCalculator from './RoofTilesCalculator';
+import BrickCalculator from './BrickCalculator';
 
 interface AppsScreenProps {
   user: any;
@@ -36,6 +39,27 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
       description: 'Quick reference tool for unit conversions, material densities, and standard calculations.',
       icon: '📋',
       category: 'Reference'
+    },
+    {
+      id: 'timber-guide',
+      title: 'Timber Guide',
+      description: 'Comprehensive guide to UK timber grades, species, and building regulations compliance.',
+      icon: '📚',
+      category: 'Reference'
+    },
+    {
+      id: 'roof-tiles-calculator',
+      title: 'Roof Tiles Calculator',
+      description: 'Calculate roof tile quantities, battens, and materials for UK roofing projects.',
+      icon: '🏠',
+      category: 'Calculators'
+    },
+    {
+      id: 'brick-calculator',
+      title: 'Brick Calculator',
+      description: 'Calculate brick quantities, mortar, and materials for UK masonry projects.',
+      icon: '🧱',
+      category: 'Calculators'
     }
   ];
 
@@ -67,6 +91,18 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
     return <ReadyReckoner onBack={() => setActiveApp(null)} />;
   }
 
+  if (activeApp === 'timber-guide') {
+    return <TimberGuide onBack={() => setActiveApp(null)} />;
+  }
+
+  if (activeApp === 'roof-tiles-calculator') {
+    return <RoofTilesCalculator onBack={() => setActiveApp(null)} />;
+  }
+
+  if (activeApp === 'brick-calculator') {
+    return <BrickCalculator onBack={() => setActiveApp(null)} />;
+  }
+
   return (
     <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6 min-h-full">
@@ -83,6 +119,24 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
             Professional tools to help with your building projects
           </p>
         </motion.div>
+
+        {/* Category Filter */}
+        <div className="flex justify-center space-x-2 mb-6">
+          {categories.map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedCategory(category)}
+              className={selectedCategory === category 
+                ? "bg-emerald-600 hover:bg-emerald-700" 
+                : "border-gray-600 text-gray-300 hover:bg-gray-700"
+              }
+            >
+              {category}
+            </Button>
+          ))}
+        </div>
 
         {/* Apps Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
