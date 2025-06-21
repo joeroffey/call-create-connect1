@@ -348,47 +348,49 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - Improved responsive layout */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-        className="glass border-t border-white/5 px-4 py-3 flex-shrink-0"
+        className="glass border-t border-white/5 px-2 py-2 flex-shrink-0 overflow-x-auto"
       >
-        <div className="flex justify-around max-w-md mx-auto">
-          {tabs.map((tab, index) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <motion.button
-                key={tab.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
-                whileTap={{ scale: 0.96 }}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex flex-col items-center py-3 px-4 rounded-xl transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
-                    : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
-                }`}
-              >
-                <Icon className={`w-5 h-5 transition-all duration-200 ${
-                  isActive ? 'text-emerald-300' : ''
-                }`} />
-                <span className="text-xs mt-1 font-medium">{tab.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-sm"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
+        <div className="flex justify-center items-center w-full min-w-max">
+          <div className="flex space-x-1 px-2">
+            {tabs.map((tab, index) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <motion.button
+                  key={tab.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
+                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-200 min-w-[60px] ${
+                    isActive 
+                      ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
+                      : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 transition-all duration-200 ${
+                    isActive ? 'text-emerald-300' : ''
+                  }`} />
+                  <span className="text-xs mt-1 font-medium truncate max-w-[50px]">{tab.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-sm"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
       </motion.nav>
     </div>
