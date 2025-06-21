@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Upload, Lightbulb, Book, Milestone, ArrowLeft } from 'lucide-react';
@@ -349,16 +348,16 @@ What would you like to discuss about your project?`,
 
     setIsLoading(true);
     try {
-      // Include project context and document information in the request
+      // SECURITY FIX: Include project context with user ID for proper isolation
       const requestBody: any = { message: messageText };
       
-      if (projectId && project) {
+      if (projectId && project && user?.id) {
         // Fetch project documents to provide context to AI
         const { data: projectDocuments, error: docError } = await supabase
           .from('project_documents')
           .select('*')
           .eq('project_id', projectId)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id); // CRITICAL: Only this user's documents
 
         if (docError) {
           console.error('Error fetching project documents:', docError);
@@ -377,7 +376,7 @@ What would you like to discuss about your project?`,
             )
           `)
           .eq('project_id', projectId)
-          .eq('user_id', user.id)
+          .eq('user_id', user.id) // CRITICAL: Only this user's conversations
           .order('created_at', { ascending: false })
           .limit(5);
 
@@ -385,8 +384,10 @@ What would you like to discuss about your project?`,
           console.error('Error fetching project conversations:', convError);
         }
 
+        // SECURITY FIX: Include userId in project context
         requestBody.projectContext = {
           id: projectId,
+          userId: user.id, // CRITICAL: Include user ID for security
           name: project.name,
           description: project.description,
           label: project.label,
@@ -395,10 +396,10 @@ What would you like to discuss about your project?`,
           recentConversations: projectConversations || []
         };
 
-        console.log('Including enhanced project context with', projectDocuments?.length || 0, 'documents and', projectConversations?.length || 0, 'recent conversations');
+        console.log('Including enhanced project context with security - Project:', projectId, 'User:', user.id, 'Documents:', projectDocuments?.length || 0, 'Conversations:', projectConversations?.length || 0);
       }
 
-      console.log('Sending request to AI function with body:', requestBody);
+      console.log('Sending request to AI function with secure project context');
 
       const response = await fetch('https://srwbgkssoatrhxdrrtff.supabase.co/functions/v1/building-regulations-chat', {
         method: 'POST',
@@ -420,6 +421,12 @@ What would you like to discuss about your project?`,
       const data = await response.json();
       console.log('AI function response data:', data);
 
+      // SECURITY VERIFICATION: Check that response is for correct project
+      if (data.projectId && data.projectId !== projectId) {
+        console.error('SECURITY VIOLATION: Response projectId does not match request projectId');
+        throw new Error('Security violation detected in response');
+      }
+
       const assistantMessage: ChatMessageData = {
         id: generateId(),
         text: data.response,
@@ -439,10 +446,16 @@ What would you like to discuss about your project?`,
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
+      
+      let errorMessage = "There was a problem with the server. Please try again later.";
+      if (error.message.includes('Security violation')) {
+        errorMessage = "Security error detected. Please contact support immediately.";
+      }
+      
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "There was a problem with the server. Please try again later.",
+        description: errorMessage,
       })
     } finally {
       setIsLoading(false);
@@ -474,8 +487,10 @@ What would you like to discuss about your project?`,
 
     setIsUploading(true);
     try {
-      // Create file path: userId/projectId/filename
+      // SECURITY FIX: Create secure file path with proper project isolation
       const filePath = `${user.id}/${projectId}/${Date.now()}-${file.name}`;
+      
+      console.log(`Uploading document to secure path: ${filePath} for project ${projectId} and user ${user.id}`);
 
       // Upload file to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -484,7 +499,7 @@ What would you like to discuss about your project?`,
 
       if (uploadError) throw uploadError;
 
-      // Save document metadata to database
+      // SECURITY FIX: Save document metadata with proper project and user association
       const { error: dbError } = await supabase
         .from('project_documents')
         .insert([
@@ -499,6 +514,8 @@ What would you like to discuss about your project?`,
         ]);
 
       if (dbError) throw dbError;
+
+      console.log(`Document uploaded successfully to project ${projectId} for user ${user.id}`);
 
       toast({
         title: "Document uploaded successfully",

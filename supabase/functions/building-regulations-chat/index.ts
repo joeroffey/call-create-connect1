@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
@@ -32,15 +33,8 @@ interface ProjectDocument {
   file_path: string;
   file_type: string;
   file_size: number;
-}
-
-interface ConversationSummary {
-  id: string;
-  title: string;
-  created_at: string;
-  key_topics: string[];
-  important_decisions: string[];
-  compliance_issues: string[];
+  user_id: string;
+  project_id: string;
 }
 
 serve(async (req) => {
@@ -89,31 +83,63 @@ serve(async (req) => {
     let documentContext = '';
     let conversationHistory = '';
 
-    if (supabaseUrl && supabaseServiceKey && projectContext?.id) {
+    // CRITICAL: Ensure we have both project context and user authentication
+    if (!projectContext?.id || !projectContext?.userId) {
+      console.error('Missing project context or user ID - potential security risk');
+      throw new Error('Project context and user authentication required for security');
+    }
+
+    if (supabaseUrl && supabaseServiceKey) {
       supabase = createClient(supabaseUrl, supabaseServiceKey);
       
-      // Fetch project documents
+      // SECURITY FIX: Fetch ONLY documents for THIS specific project AND user
+      console.log(`Fetching documents for project: ${projectContext.id}, user: ${projectContext.userId}`);
+      
       const { data: documents, error: docsError } = await supabase
         .from('project_documents')
-        .select('id, file_name, file_path, file_type, file_size')
-        .eq('project_id', projectContext.id);
+        .select('id, file_name, file_path, file_type, file_size, user_id, project_id')
+        .eq('project_id', projectContext.id)
+        .eq('user_id', projectContext.userId); // CRITICAL: Only this user's documents
 
       if (docsError) {
         console.error('Error fetching project documents:', docsError);
+        throw new Error('Failed to fetch project documents securely');
       } else {
         projectDocuments = documents || [];
-        console.log(`Found ${projectDocuments.length} documents for project`);
+        console.log(`SECURITY CHECK: Found ${projectDocuments.length} documents for project ${projectContext.id} and user ${projectContext.userId}`);
 
-        // Extract content from documents with enhanced analysis
+        // Verify all documents belong to the correct project and user
+        const invalidDocs = projectDocuments.filter(doc => 
+          doc.project_id !== projectContext.id || doc.user_id !== projectContext.userId
+        );
+        
+        if (invalidDocs.length > 0) {
+          console.error('SECURITY BREACH DETECTED: Documents from other projects/users found:', invalidDocs);
+          throw new Error('Security violation: Unauthorized document access detected');
+        }
+
+        // Extract content from documents with enhanced analysis - ONLY from THIS project
         if (projectDocuments.length > 0) {
-          documentContext = await extractDocumentContentWithAnalysis(supabase, projectDocuments, openaiKey, message);
-          console.log('Document context extracted, length:', documentContext.length);
+          documentContext = await extractDocumentContentWithAnalysis(
+            supabase, 
+            projectDocuments, 
+            openaiKey, 
+            message,
+            projectContext.id,
+            projectContext.userId
+          );
+          console.log(`Document context extracted for project ${projectContext.id}, length:`, documentContext.length);
         }
       }
 
-      // Fetch and analyze previous conversations for this project
-      conversationHistory = await loadProjectConversationHistory(supabase, projectContext.id, openaiKey);
-      console.log('Conversation history loaded, length:', conversationHistory.length);
+      // SECURITY FIX: Fetch conversation history ONLY for THIS project AND user
+      conversationHistory = await loadProjectConversationHistory(
+        supabase, 
+        projectContext.id, 
+        projectContext.userId, 
+        openaiKey
+      );
+      console.log(`Conversation history loaded for project ${projectContext.id}, length:`, conversationHistory.length);
     }
 
     // Step 1: Create embedding for the user's question
@@ -220,20 +246,26 @@ serve(async (req) => {
 
     console.log('Found relevant regulations context, length:', regulationsContext.length);
 
-    // Combine all context sources
+    // Combine all context sources with strict project isolation
     let combinedContext = regulationsContext;
     if (documentContext) {
-      combinedContext = `PROJECT DOCUMENTS:\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
+      combinedContext = `PROJECT DOCUMENTS (Project ID: ${projectContext.id}):\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
     }
     if (conversationHistory) {
-      combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT:\n${conversationHistory}\n\n---\n\n${combinedContext}`;
+      combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT (Project ID: ${projectContext.id}):\n${conversationHistory}\n\n---\n\n${combinedContext}`;
     }
 
     // Step 4: Generate response using OpenAI with enhanced context including conversation history
-    const systemPrompt = `You are a UK Building Regulations specialist assistant with memory of previous conversations in this project. You MUST follow these strict guidelines:
+    const systemPrompt = `You are a UK Building Regulations specialist assistant with memory of previous conversations in this specific project. You MUST follow these strict guidelines:
+
+CRITICAL SECURITY RULES:
+- You are ONLY analyzing documents and conversations from Project ID: ${projectContext.id}
+- You MUST NOT reference or use information from any other projects
+- If you cannot find relevant information in the current project's documents, state this clearly
+- NEVER mix information from different projects
 
 1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
-2. Use ONLY the provided context from official UK Building Regulations documents, project documents, and previous conversations
+2. Use ONLY the provided context from official UK Building Regulations documents, THIS project's documents, and THIS project's previous conversations
 3. Use British English spelling and terminology throughout (e.g., "colour" not "color", "metres" not "meters", "storey" not "story", "realise" not "realize", "behaviour" not "behavior")
 4. If asked about non-UK regulations or unrelated topics, politely decline and redirect to UK Building Regulations
 5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
@@ -251,15 +283,15 @@ serve(async (req) => {
 17. **Track project progress** - If previous conversations show decisions made or issues resolved, reference this progress in your responses
 18. **Maintain conversation continuity** - When users say things like "as we discussed before" or "following up on our previous chat", reference the relevant previous conversation content
 
-${projectContext ? `PROJECT INFORMATION:
-Project Name: ${projectContext.name}
+PROJECT INFORMATION (Project ID: ${projectContext.id}):
+Project Name: ${projectContext.name || 'Not specified'}
 Project Description: ${projectContext.description || 'Not specified'}
 Project Category: ${projectContext.label || 'Not specified'}
 Project Status: ${projectContext.status || 'Not specified'}
 Number of Project Documents: ${projectDocuments.length}
 Previous Conversations Available: ${conversationHistory ? 'Yes' : 'No'}
 
-` : ''}Context from UK Building Regulations documents${documentContext ? ', analyzed project documents' : ''}${conversationHistory ? ', and previous project conversations' : ''}:
+Context from UK Building Regulations documents${documentContext ? ', analyzed project documents' : ''}${conversationHistory ? ', and previous project conversations' : ''} (ALL FROM PROJECT ID: ${projectContext.id}):
 ${combinedContext}`;
 
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -294,13 +326,14 @@ ${combinedContext}`;
     const chatData = await chatResponse.json();
     const aiResponse = chatData.choices[0].message.content;
 
-    console.log('Generated AI response successfully');
+    console.log(`Generated AI response successfully for project ${projectContext.id}`);
 
     return new Response(JSON.stringify({
       response: aiResponse,
       images: relatedImages.slice(0, 5), // Limit to 5 images max
       documentsAnalyzed: projectDocuments.length,
-      conversationsReferenced: conversationHistory ? 'Available' : 'None'
+      conversationsReferenced: conversationHistory ? 'Available' : 'None',
+      projectId: projectContext.id // Include for verification
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -310,7 +343,9 @@ ${combinedContext}`;
     
     let errorMessage = 'I apologise, but I encountered an error processing your request. Please try again.';
     
-    if (error.message.includes('Pinecone')) {
+    if (error.message.includes('Security violation')) {
+      errorMessage = 'Security error: Unauthorized access detected. Please contact support.';
+    } else if (error.message.includes('Pinecone')) {
       errorMessage = 'I apologise, but there seems to be an issue connecting to the Building Regulations database. Please check that your Pinecone configuration is correct and try again.';
     } else if (error.message.includes('OpenAI')) {
       errorMessage = 'I apologise, but there seems to be an issue with the service. Please check your configuration and try again.';
@@ -329,16 +364,17 @@ ${combinedContext}`;
   }
 });
 
-// New function to load and analyze previous conversations for context
-async function loadProjectConversationHistory(supabase: any, projectId: string, openaiKey: string): Promise<string> {
+// SECURITY FIX: Updated function to load and analyze previous conversations for SPECIFIC project and user
+async function loadProjectConversationHistory(supabase: any, projectId: string, userId: string, openaiKey: string): Promise<string> {
   try {
-    console.log(`Loading conversation history for project: ${projectId}`);
+    console.log(`Loading conversation history for project: ${projectId}, user: ${userId}`);
     
-    // Get all conversations for this project (excluding the current one being created)
+    // CRITICAL: Get ONLY conversations for THIS project AND user
     const { data: conversations, error: convError } = await supabase
       .from('conversations')
       .select('id, title, created_at')
       .eq('project_id', projectId)
+      .eq('user_id', userId) // CRITICAL: Only this user's conversations
       .order('created_at', { ascending: false })
       .limit(5); // Limit to last 5 conversations to manage context size
 
@@ -348,11 +384,11 @@ async function loadProjectConversationHistory(supabase: any, projectId: string, 
     }
 
     if (!conversations || conversations.length === 0) {
-      console.log('No previous conversations found for this project');
+      console.log(`No previous conversations found for project ${projectId} and user ${userId}`);
       return '';
     }
 
-    console.log(`Found ${conversations.length} previous conversations`);
+    console.log(`Found ${conversations.length} previous conversations for project ${projectId}`);
 
     let conversationSummaries = '';
 
@@ -446,15 +482,36 @@ Keep the summary concise but include enough detail for future reference. Focus o
   }
 }
 
-// Enhanced function to extract and analyze content from uploaded documents
-async function extractDocumentContentWithAnalysis(supabase: any, documents: ProjectDocument[], openaiKey: string, userMessage: string): Promise<string> {
+// SECURITY FIX: Enhanced function to extract and analyze content from uploaded documents with strict project isolation
+async function extractDocumentContentWithAnalysis(
+  supabase: any, 
+  documents: ProjectDocument[], 
+  openaiKey: string, 
+  userMessage: string,
+  projectId: string,
+  userId: string
+): Promise<string> {
   let combinedContent = '';
+  
+  console.log(`Processing ${documents.length} documents for project ${projectId}, user ${userId}`);
   
   for (const doc of documents.slice(0, 10)) { // Increased limit to 10 documents
     try {
-      console.log(`Processing document: ${doc.file_name}`);
+      // SECURITY CHECK: Verify document belongs to correct project and user
+      if (doc.project_id !== projectId || doc.user_id !== userId) {
+        console.error(`SECURITY VIOLATION: Document ${doc.id} does not belong to project ${projectId} or user ${userId}`);
+        throw new Error(`Security violation: Document access denied`);
+      }
+
+      console.log(`Processing document: ${doc.file_name} for project ${projectId}`);
       
-      // Download the file from Supabase Storage
+      // Download the file from Supabase Storage with project-specific path verification
+      const expectedPath = `${userId}/${projectId}/`;
+      if (!doc.file_path.startsWith(expectedPath)) {
+        console.error(`SECURITY VIOLATION: Document path ${doc.file_path} does not match expected project path ${expectedPath}`);
+        throw new Error(`Security violation: Invalid document path`);
+      }
+
       const { data: fileData, error: downloadError } = await supabase.storage
         .from('project-documents')
         .download(doc.file_path);
@@ -470,23 +527,26 @@ async function extractDocumentContentWithAnalysis(supabase: any, documents: Proj
       if (doc.file_type === 'text/plain' || doc.file_type === 'text/csv' || doc.file_type === 'text/markdown') {
         content = await fileData.text();
       } else if (doc.file_type.startsWith('image/')) {
-        // Analyze images using OpenAI Vision
-        content = await analyzeImageWithVision(fileData, doc.file_name, openaiKey, userMessage);
+        // Analyze images using OpenAI Vision with project context
+        content = await analyzeImageWithVision(fileData, doc.file_name, openaiKey, userMessage, projectId);
       } else if (doc.file_type === 'application/pdf') {
         // For PDF files, we'll provide enhanced context
-        content = `[PDF Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include technical drawings, specifications, building plans, or regulatory documentation relevant to the project. The document has been uploaded for building regulations compliance review.`;
+        content = `[PDF Document: ${doc.file_name} - Project: ${projectId}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include technical drawings, specifications, building plans, or regulatory documentation relevant to this specific project. The document has been uploaded for building regulations compliance review.`;
       } else if (doc.file_type.includes('word') || doc.file_type.includes('document')) {
-        content = `[Word Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of project specifications, requirements, or documentation that may include building details, compliance checklists, or technical requirements relevant to UK Building Regulations.`;
+        content = `[Word Document: ${doc.file_name} - Project: ${projectId}] - This document contains ${Math.round(doc.file_size / 1024)}KB of project specifications, requirements, or documentation that may include building details, compliance checklists, or technical requirements relevant to UK Building Regulations for this specific project.`;
       } else if (doc.file_type.includes('spreadsheet') || doc.file_type.includes('excel')) {
-        content = `[Spreadsheet: ${doc.file_name}] - This spreadsheet may contain calculations, schedules, material lists, or compliance tracking data relevant to the building project and UK Building Regulations compliance.`;
+        content = `[Spreadsheet: ${doc.file_name} - Project: ${projectId}] - This spreadsheet may contain calculations, schedules, material lists, or compliance tracking data relevant to this specific building project and UK Building Regulations compliance.`;
       }
 
       if (content) {
-        combinedContent += `\n\n--- DOCUMENT: ${doc.file_name} ---\n${content}`;
+        combinedContent += `\n\n--- PROJECT DOCUMENT: ${doc.file_name} (Project: ${projectId}) ---\n${content}`;
       }
       
     } catch (error) {
       console.error(`Error processing document ${doc.file_name}:`, error);
+      if (error.message.includes('Security violation')) {
+        throw error; // Re-throw security violations
+      }
       combinedContent += `\n\n--- DOCUMENT: ${doc.file_name} ---\n[Document could not be processed but is available for reference]`;
     }
   }
@@ -494,10 +554,10 @@ async function extractDocumentContentWithAnalysis(supabase: any, documents: Proj
   return combinedContent;
 }
 
-// Fixed function to analyze images using OpenAI Vision
-async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiKey: string, userMessage: string): Promise<string> {
+// SECURITY FIX: Enhanced function to analyze images using OpenAI Vision with project isolation
+async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiKey: string, userMessage: string, projectId: string): Promise<string> {
   try {
-    console.log(`Analyzing image: ${fileName} with OpenAI Vision`);
+    console.log(`Analyzing image: ${fileName} for project ${projectId} with OpenAI Vision`);
 
     // Convert image to base64 using a more reliable method
     const arrayBuffer = await imageFile.arrayBuffer();
@@ -522,7 +582,7 @@ async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiK
     
     const base64DataUrl = `data:${mimeType};base64,${base64Image}`;
 
-    // Analyze the image with OpenAI Vision
+    // Analyze the image with OpenAI Vision with strict project context
     const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -534,7 +594,9 @@ async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiK
         messages: [
           {
             role: 'system',
-            content: `You are a UK Building Regulations specialist analyzing architectural drawings, floor plans, and construction documents. 
+            content: `You are a UK Building Regulations specialist analyzing architectural drawings, floor plans, and construction documents ONLY for Project ID: ${projectId}. 
+
+CRITICAL: This analysis is ONLY for the specific project ${projectId}. Do not reference or use any information from other projects.
 
 Analyze this image in the context of UK Building Regulations compliance. Focus on:
 - Room layouts and dimensions
@@ -547,14 +609,14 @@ Analyze this image in the context of UK Building Regulations compliance. Focus o
 - Any visible non-compliance issues
 - Specific measurements if shown
 
-Provide detailed analysis that can be used to give building regulations advice. Be specific about what you can see in the drawing/plan.`
+Provide detailed analysis that can be used to give building regulations advice. Be specific about what you can see in the drawing/plan for this specific project.`
           },
           {
             role: 'user',
             content: [
               {
                 type: 'text',
-                text: `Please analyze this ${fileName} in the context of this user question: "${userMessage}". Focus on UK Building Regulations compliance.`
+                text: `Please analyze this ${fileName} from Project ${projectId} in the context of this user question: "${userMessage}". Focus on UK Building Regulations compliance for this specific project only.`
               },
               {
                 type: 'image_url',
@@ -580,12 +642,12 @@ Provide detailed analysis that can be used to give building regulations advice. 
     const visionData = await visionResponse.json();
     const analysis = visionData.choices[0].message.content;
 
-    console.log(`Successfully analyzed ${fileName} with Vision API`);
+    console.log(`Successfully analyzed ${fileName} for project ${projectId} with Vision API`);
     
-    return `[IMAGE ANALYSIS: ${fileName}]\n${analysis}`;
+    return `[IMAGE ANALYSIS: ${fileName} - Project: ${projectId}]\n${analysis}`;
 
   } catch (error) {
-    console.error(`Error analyzing image ${fileName}:`, error);
-    return `[Image: ${fileName}] - This image contains visual documentation relevant to the project but could not be analyzed. It may include drawings, plans, or visual documentation that should be manually reviewed for building regulations compliance.`;
+    console.error(`Error analyzing image ${fileName} for project ${projectId}:`, error);
+    return `[Image: ${fileName} - Project: ${projectId}] - This image contains visual documentation relevant to this specific project but could not be analyzed. It may include drawings, plans, or visual documentation that should be manually reviewed for building regulations compliance.`;
   }
 }
