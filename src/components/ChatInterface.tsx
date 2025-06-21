@@ -117,7 +117,7 @@ I have access to:
 • Your previous conversations about this project
 • Any documents and images you've uploaded
 • Project-specific building regulations
-• Your project timeline and milestones
+• Your project timeline and Schedule of Works
 
 All my responses will be tailored specifically to your project needs. Let's make your project a success!
 
@@ -348,16 +348,31 @@ What would you like to discuss about your project?`,
 
     setIsLoading(true);
     try {
-      // Include project context in the request if available
+      // Include project context and document information in the request
       const requestBody: any = { message: messageText };
+      
       if (projectId && project) {
+        // Fetch project documents to provide context to AI
+        const { data: projectDocuments, error: docError } = await supabase
+          .from('project_documents')
+          .select('*')
+          .eq('project_id', projectId)
+          .eq('user_id', user.id);
+
+        if (docError) {
+          console.error('Error fetching project documents:', docError);
+        }
+
         requestBody.projectContext = {
           id: projectId,
           name: project.name,
           description: project.description,
           label: project.label,
-          status: project.status
+          status: project.status,
+          documents: projectDocuments || []
         };
+
+        console.log('Including project context with', projectDocuments?.length || 0, 'documents');
       }
 
       console.log('Sending request to AI function with body:', requestBody);
@@ -517,47 +532,47 @@ What would you like to discuss about your project?`,
     }
   };
 
-  const handleMilestones = async () => {
+  const handleScheduleOfWorks = async () => {
     if (!projectId || !user) {
       toast({
         title: "Error",
-        description: "Project context required for milestone management.",
+        description: "Project context required for schedule of works management.",
         variant: "destructive"
       });
       return;
     }
 
     try {
-      // Check if milestones exist for this project
-      const { data: milestones, error } = await supabase
-        .from('project_milestones')
+      // Check if schedule of works items exist for this project
+      const { data: scheduleItems, error } = await supabase
+        .from('project_schedule_of_works')
         .select('*')
         .eq('project_id', projectId)
         .eq('user_id', user.id);
 
       if (error) throw error;
 
-      const milestoneCount = milestones?.length || 0;
+      const itemCount = scheduleItems?.length || 0;
       
-      // Create a message about the project's milestones
-      const milestoneMessage = `**Project Milestones Summary**
+      // Create a message about the project's schedule of works
+      const scheduleMessage = `**Project Schedule of Works Summary**
 
-You currently have **${milestoneCount}** milestone${milestoneCount !== 1 ? 's' : ''} for this project.
+You currently have **${itemCount}** work item${itemCount !== 1 ? 's' : ''} in your schedule of works.
 
-${milestoneCount > 0 ? 
-  `Here are your milestones:\n${milestones.map((milestone, index) => 
-    `${index + 1}. **${milestone.title}** ${milestone.completed ? '✅' : '⏳'}\n   ${milestone.description || 'No description'}\n   ${milestone.due_date ? `Due: ${new Date(milestone.due_date).toLocaleDateString()}` : 'No due date'}`
+${itemCount > 0 ? 
+  `Here are your work items:\n${scheduleItems.map((item, index) => 
+    `${index + 1}. **${item.title}** ${item.completed ? '✅' : '⏳'}\n   ${item.description || 'No description'}\n   ${item.due_date ? `Due: ${new Date(item.due_date).toLocaleDateString()}` : 'No due date'}`
   ).join('\n\n')}` : 
-  'No milestones have been created yet.'
+  'No work items have been created yet.'
 }
 
-You can manage your project milestones by going to the Projects page and clicking on this project to view details.
+You can manage your project schedule of works by going to the Projects page and clicking on this project to view details.
 
-Would you like me to help you plan any milestones or discuss project timeline management?`;
+Would you like me to help you plan any work items or discuss project timeline management?`;
 
       const assistantMessage: ChatMessageData = {
         id: generateId(),
-        text: milestoneMessage,
+        text: scheduleMessage,
         sender: 'assistant',
         timestamp: new Date(),
       };
@@ -565,10 +580,10 @@ Would you like me to help you plan any milestones or discuss project timeline ma
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
 
     } catch (error) {
-      console.error('Error fetching milestones:', error);
+      console.error('Error fetching schedule of works:', error);
       toast({
         title: "Error",
-        description: "Failed to load project milestones. Please try again.",
+        description: "Failed to load project schedule of works. Please try again.",
         variant: "destructive"
       });
     }
@@ -644,9 +659,9 @@ Would you like me to help you plan any milestones or discuss project timeline ma
                 )}
                 {projectId && (
                   <button
-                    onClick={handleMilestones}
+                    onClick={handleScheduleOfWorks}
                     className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
-                    title="Project milestones"
+                    title="Schedule of Works"
                   >
                     <Milestone className="w-5 h-5" />
                   </button>

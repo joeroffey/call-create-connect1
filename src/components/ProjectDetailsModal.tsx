@@ -17,9 +17,9 @@ interface ProjectDetailsModalProps {
 const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats' }: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [documents, setDocuments] = useState<any[]>([]);
-  const [milestones, setMilestones] = useState<any[]>([]);
-  const [newMilestone, setNewMilestone] = useState({ title: '', description: '', due_date: '' });
-  const [showAddMilestone, setShowAddMilestone] = useState(false);
+  const [scheduleOfWorks, setScheduleOfWorks] = useState<any[]>([]);
+  const [newWorkItem, setNewWorkItem] = useState({ title: '', description: '', due_date: '' });
+  const [showAddWorkItem, setShowAddWorkItem] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
@@ -38,7 +38,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
   useEffect(() => {
     if (isOpen && project) {
       fetchDocuments();
-      fetchMilestones();
+      fetchScheduleOfWorks();
     }
   }, [isOpen, project]);
 
@@ -60,56 +60,56 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
     }
   };
 
-  const fetchMilestones = async () => {
+  const fetchScheduleOfWorks = async () => {
     if (!project?.id || !user?.id) return;
     
     try {
       const { data, error } = await supabase
-        .from('project_milestones')
+        .from('project_schedule_of_works')
         .select('*')
         .eq('project_id', project.id)
         .eq('user_id', user.id)
         .order('due_date', { ascending: true });
 
       if (error) throw error;
-      setMilestones(data || []);
+      setScheduleOfWorks(data || []);
     } catch (error) {
-      console.error('Error fetching milestones:', error);
+      console.error('Error fetching schedule of works:', error);
     }
   };
 
-  const createMilestone = async () => {
-    if (!newMilestone.title.trim() || !project?.id || !user?.id) return;
+  const createWorkItem = async () => {
+    if (!newWorkItem.title.trim() || !project?.id || !user?.id) return;
 
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('project_milestones')
+        .from('project_schedule_of_works')
         .insert([
           {
             project_id: project.id,
             user_id: user.id,
-            title: newMilestone.title.trim(),
-            description: newMilestone.description.trim() || null,
-            due_date: newMilestone.due_date || null,
+            title: newWorkItem.title.trim(),
+            description: newWorkItem.description.trim() || null,
+            due_date: newWorkItem.due_date || null,
           }
         ]);
 
       if (error) throw error;
 
       toast({
-        title: "Milestone created",
-        description: `${newMilestone.title} has been added to your project.`,
+        title: "Work item created",
+        description: `${newWorkItem.title} has been added to your schedule of works.`,
       });
 
-      setNewMilestone({ title: '', description: '', due_date: '' });
-      setShowAddMilestone(false);
-      fetchMilestones();
+      setNewWorkItem({ title: '', description: '', due_date: '' });
+      setShowAddWorkItem(false);
+      fetchScheduleOfWorks();
     } catch (error: any) {
-      console.error('Error creating milestone:', error);
+      console.error('Error creating work item:', error);
       toast({
         variant: "destructive",
-        title: "Error creating milestone",
+        title: "Error creating work item",
         description: error.message || "Please try again.",
       });
     } finally {
@@ -117,20 +117,20 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
     }
   };
 
-  const toggleMilestone = async (milestoneId: string, completed: boolean) => {
+  const toggleWorkItem = async (workItemId: string, completed: boolean) => {
     try {
       const { error } = await supabase
-        .from('project_milestones')
+        .from('project_schedule_of_works')
         .update({ completed: !completed })
-        .eq('id', milestoneId);
+        .eq('id', workItemId);
 
       if (error) throw error;
-      fetchMilestones();
+      fetchScheduleOfWorks();
     } catch (error: any) {
-      console.error('Error updating milestone:', error);
+      console.error('Error updating work item:', error);
       toast({
         variant: "destructive",
-        title: "Error updating milestone",
+        title: "Error updating work item",
         description: error.message || "Please try again.",
       });
     }
@@ -250,7 +250,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
               {[
                 { id: 'chats', label: 'Chats', icon: MessageCircle, count: projectConversations.length },
                 { id: 'documents', label: 'Documents', icon: FileText, count: documents.length },
-                { id: 'milestones', label: 'Milestones', icon: Milestone, count: milestones.length },
+                { id: 'schedule', label: 'Schedule of Works', icon: Milestone, count: scheduleOfWorks.length },
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -360,51 +360,51 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
               </div>
             )}
 
-            {activeTab === 'milestones' && (
+            {activeTab === 'schedule' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Project Milestones</h3>
+                  <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
                   <button
-                    onClick={() => setShowAddMilestone(true)}
+                    onClick={() => setShowAddWorkItem(true)}
                     className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium"
                   >
                     <Plus className="w-4 h-4 inline mr-2" />
-                    Add Milestone
+                    Add Work Item
                   </button>
                 </div>
 
-                {showAddMilestone && (
+                {showAddWorkItem && (
                   <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 space-y-3">
                     <input
                       type="text"
-                      placeholder="Milestone title"
-                      value={newMilestone.title}
-                      onChange={(e) => setNewMilestone({ ...newMilestone, title: e.target.value })}
+                      placeholder="Work item title"
+                      value={newWorkItem.title}
+                      onChange={(e) => setNewWorkItem({ ...newWorkItem, title: e.target.value })}
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none"
                     />
                     <textarea
                       placeholder="Description (optional)"
-                      value={newMilestone.description}
-                      onChange={(e) => setNewMilestone({ ...newMilestone, description: e.target.value })}
+                      value={newWorkItem.description}
+                      onChange={(e) => setNewWorkItem({ ...newWorkItem, description: e.target.value })}
                       rows={2}
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none resize-none"
                     />
                     <input
                       type="date"
-                      value={newMilestone.due_date}
-                      onChange={(e) => setNewMilestone({ ...newMilestone, due_date: e.target.value })}
+                      value={newWorkItem.due_date}
+                      onChange={(e) => setNewWorkItem({ ...newWorkItem, due_date: e.target.value })}
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:border-emerald-500/60 focus:outline-none"
                     />
                     <div className="flex space-x-2">
                       <button
-                        onClick={createMilestone}
-                        disabled={!newMilestone.title.trim() || loading}
+                        onClick={createWorkItem}
+                        disabled={!newWorkItem.title.trim() || loading}
                         className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50"
                       >
                         Create
                       </button>
                       <button
-                        onClick={() => setShowAddMilestone(false)}
+                        onClick={() => setShowAddWorkItem(false)}
                         className="bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2 rounded-lg transition-all duration-200 text-sm"
                       >
                         Cancel
@@ -413,40 +413,40 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                   </div>
                 )}
 
-                {milestones.length === 0 ? (
+                {scheduleOfWorks.length === 0 ? (
                   <div className="text-center py-8">
                     <Milestone className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">No milestones created yet</p>
-                    <p className="text-gray-500 text-sm">Add milestones to track project progress</p>
+                    <p className="text-gray-400">No work items created yet</p>
+                    <p className="text-gray-500 text-sm">Add work items to track project progress</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {milestones.map((milestone) => (
+                    {scheduleOfWorks.map((workItem) => (
                       <div
-                        key={milestone.id}
+                        key={workItem.id}
                         className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 flex items-start space-x-3"
                       >
                         <button
-                          onClick={() => toggleMilestone(milestone.id, milestone.completed)}
+                          onClick={() => toggleWorkItem(workItem.id, workItem.completed)}
                           className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                            milestone.completed
+                            workItem.completed
                               ? 'bg-emerald-500 border-emerald-500 text-white'
                               : 'border-gray-600 hover:border-emerald-500'
                           }`}
                         >
-                          {milestone.completed && '✓'}
+                          {workItem.completed && '✓'}
                         </button>
                         <div className="flex-1">
-                          <h4 className={`font-medium ${milestone.completed ? 'text-gray-400 line-through' : 'text-white'}`}>
-                            {milestone.title}
+                          <h4 className={`font-medium ${workItem.completed ? 'text-gray-400 line-through' : 'text-white'}`}>
+                            {workItem.title}
                           </h4>
-                          {milestone.description && (
-                            <p className="text-gray-400 text-sm mt-1">{milestone.description}</p>
+                          {workItem.description && (
+                            <p className="text-gray-400 text-sm mt-1">{workItem.description}</p>
                           )}
-                          {milestone.due_date && (
+                          {workItem.due_date && (
                             <div className="flex items-center space-x-1 mt-2 text-xs text-gray-500">
                               <Calendar className="w-3 h-3" />
-                              <span>Due: {new Date(milestone.due_date).toLocaleDateString()}</span>
+                              <span>Due: {new Date(workItem.due_date).toLocaleDateString()}</span>
                             </div>
                           )}
                         </div>

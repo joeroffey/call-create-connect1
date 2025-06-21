@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,7 +12,7 @@ interface Conversation {
 export const useConversations = (userId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
-  const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, milestones: number}}>({});
+  const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, scheduleOfWorks: number}}>({});
   const channelRef = useRef<any>(null);
 
   const fetchConversations = async () => {
@@ -52,25 +51,25 @@ export const useConversations = (userId: string | undefined) => {
 
       if (docError) throw docError;
 
-      // Fetch milestone counts
-      const { data: milestones, error: milestoneError } = await supabase
-        .from('project_milestones')
+      // Fetch schedule of works counts
+      const { data: scheduleItems, error: scheduleError } = await supabase
+        .from('project_schedule_of_works')
         .select('project_id')
         .eq('user_id', userId);
 
-      if (milestoneError) throw milestoneError;
+      if (scheduleError) throw scheduleError;
 
       // Count by project
-      const counts: {[key: string]: {documents: number, milestones: number}} = {};
+      const counts: {[key: string]: {documents: number, scheduleOfWorks: number}} = {};
       
       documents?.forEach(doc => {
-        if (!counts[doc.project_id]) counts[doc.project_id] = { documents: 0, milestones: 0 };
+        if (!counts[doc.project_id]) counts[doc.project_id] = { documents: 0, scheduleOfWorks: 0 };
         counts[doc.project_id].documents++;
       });
 
-      milestones?.forEach(milestone => {
-        if (!counts[milestone.project_id]) counts[milestone.project_id] = { documents: 0, milestones: 0 };
-        counts[milestone.project_id].milestones++;
+      scheduleItems?.forEach(item => {
+        if (!counts[item.project_id]) counts[item.project_id] = { documents: 0, scheduleOfWorks: 0 };
+        counts[item.project_id].scheduleOfWorks++;
       });
 
       setProjectCounts(counts);
@@ -131,11 +130,11 @@ export const useConversations = (userId: string | undefined) => {
         {
           event: '*',
           schema: 'public',
-          table: 'project_milestones',
+          table: 'project_schedule_of_works',
           filter: `user_id=eq.${userId}`,
         },
         (payload) => {
-          console.log('Milestone change detected:', payload);
+          console.log('Schedule of works change detected:', payload);
           fetchProjectCounts();
         }
       );
@@ -163,13 +162,13 @@ export const useConversations = (userId: string | undefined) => {
     return conversations.filter(conv => conv.project_id === projectId).length;
   };
 
-  // Helper functions to get document and milestone counts
+  // Helper functions to get document and schedule of works counts
   const getProjectDocumentCount = (projectId: string) => {
     return projectCounts[projectId]?.documents || 0;
   };
 
-  const getProjectMilestoneCount = (projectId: string) => {
-    return projectCounts[projectId]?.milestones || 0;
+  const getProjectScheduleOfWorksCount = (projectId: string) => {
+    return projectCounts[projectId]?.scheduleOfWorks || 0;
   };
 
   return {
@@ -178,6 +177,6 @@ export const useConversations = (userId: string | undefined) => {
     refreshConversations,
     getProjectConversationCount,
     getProjectDocumentCount,
-    getProjectMilestoneCount
+    getProjectScheduleOfWorksCount
   };
 };
