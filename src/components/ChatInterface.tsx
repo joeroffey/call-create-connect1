@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Upload, Lightbulb, Book, Milestone } from 'lucide-react';
+import { Send, Upload, Lightbulb, Book, Milestone, ArrowLeft } from 'lucide-react';
 import ChatHeader from './chat/ChatHeader';
 import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
@@ -8,6 +9,7 @@ import ImageGallery from './chat/ImageGallery';
 import { useToast } from "@/hooks/use-toast"
 import { useConversationMessages } from '../hooks/useConversationMessages';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 interface ChatMessageData {
   id: string;
@@ -37,6 +39,8 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [currentConversationTitle, setCurrentConversationTitle] = useState<string>('');
   const [project, setProject] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -128,7 +132,7 @@ What would you like to discuss about your project?`,
 
   useEffect(() => {
     // Focus on input when component mounts
-    if (inputRef.current) {
+    if (inputRef.current && !isViewingHistory) {
       inputRef.current.focus();
     }
 
@@ -158,6 +162,7 @@ What would you like to discuss about your project?`,
       }));
       setMessages(formattedMessages);
       setRelatedImages([]);
+      setIsViewingHistory(true);
     }
   }, [conversationMessages]);
 
@@ -254,6 +259,8 @@ What would you like to discuss about your project?`,
     const welcomeMsg = projectId ? getProjectWelcomeMessage() : welcomeMessage;
     setMessages([welcomeMsg]);
     setCurrentConversationId(null);
+    setCurrentConversationTitle('');
+    setIsViewingHistory(false);
     setRelatedImages([]);
   };
 
@@ -265,11 +272,34 @@ What would you like to discuss about your project?`,
     // Immediately show the normal welcome message
     setMessages([welcomeMessage]);
     setCurrentConversationId(null);
+    setCurrentConversationTitle('');
+    setIsViewingHistory(false);
     setRelatedImages([]);
   };
 
-  const handleSelectConversation = (conversationId: string) => {
+  const handleSelectConversation = async (conversationId: string) => {
     setCurrentConversationId(conversationId);
+    
+    // Load conversation title
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select('title')
+        .eq('id', conversationId)
+        .single();
+
+      if (error) throw error;
+      setCurrentConversationTitle(data.title);
+    } catch (error) {
+      console.error('Error loading conversation title:', error);
+    }
+  };
+
+  const handleContinueConversation = () => {
+    setIsViewingHistory(false);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   const handleSendMessage = async () => {
@@ -285,6 +315,7 @@ What would you like to discuss about your project?`,
     setMessages(prevMessages => [...prevMessages, userMessage]);
     const messageText = newMessage;
     setNewMessage('');
+    setIsViewingHistory(false);
 
     // Create new conversation if needed
     let conversationId = currentConversationId;
@@ -531,6 +562,29 @@ Would you like me to help you plan any milestones or discuss project timeline ma
         isProjectChat={!!projectId}
       />
 
+      {/* Historical Conversation Banner */}
+      {isViewingHistory && currentConversationTitle && (
+        <div className="bg-blue-600/20 border-b border-blue-600/30 px-4 py-3">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+              <span className="text-blue-200 text-sm font-medium">
+                Viewing conversation: "{currentConversationTitle}"
+              </span>
+            </div>
+            <Button
+              onClick={handleContinueConversation}
+              variant="ghost"
+              size="sm"
+              className="text-blue-300 hover:text-white hover:bg-blue-600/20"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Continue this conversation
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Main Chat Area */}
       <div className="flex-1 flex min-h-0">
         <ChatSidebar 
@@ -609,7 +663,13 @@ Would you like me to help you plan any milestones or discuss project timeline ma
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     rows={1}
-                    placeholder={projectId && project ? `Ask about ${project.name}...` : "Ask me a question..."}
+                    placeholder={
+                      isViewingHistory 
+                        ? "Continue this conversation..." 
+                        : projectId && project 
+                          ? `Ask about ${project.name}...` 
+                          : "Ask me a question..."
+                    }
                     className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
                   />
                   <motion.button
