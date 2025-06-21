@@ -401,7 +401,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                         <Milestone className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
                       </div>
                       <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{scheduleOfWorksCount}</div>
-                      <div className="text-xs text-gray-400">Milestones</div>
+                      <div className="text-xs text-gray-400">Schedule</div>
                     </button>
                   </div>
 

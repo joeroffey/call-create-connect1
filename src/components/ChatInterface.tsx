@@ -364,16 +364,38 @@ What would you like to discuss about your project?`,
           console.error('Error fetching project documents:', docError);
         }
 
+        // Also fetch conversation history for this project to provide more context
+        const { data: projectConversations, error: convError } = await supabase
+          .from('conversations')
+          .select(`
+            id,
+            title,
+            messages (
+              role,
+              content,
+              created_at
+            )
+          `)
+          .eq('project_id', projectId)
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (convError) {
+          console.error('Error fetching project conversations:', convError);
+        }
+
         requestBody.projectContext = {
           id: projectId,
           name: project.name,
           description: project.description,
           label: project.label,
           status: project.status,
-          documents: projectDocuments || []
+          documents: projectDocuments || [],
+          recentConversations: projectConversations || []
         };
 
-        console.log('Including project context with', projectDocuments?.length || 0, 'documents');
+        console.log('Including enhanced project context with', projectDocuments?.length || 0, 'documents and', projectConversations?.length || 0, 'recent conversations');
       }
 
       console.log('Sending request to AI function with body:', requestBody);
