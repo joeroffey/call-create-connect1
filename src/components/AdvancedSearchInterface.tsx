@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import SearchFilters from './search/SearchFilters';
@@ -7,6 +6,8 @@ import QuickReferenceTools from './search/QuickReferenceTools';
 import SearchHistory from './search/SearchHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,6 +42,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
   const [isSearching, setIsSearching] = useState(false);
   const [searchHistory, setSearchHistory] = useState<SearchQuery[]>([]);
   const [favorites, setFavorites] = useState<SearchResult[]>([]);
+  const [showFilters, setShowFilters] = useState(true);
   const { toast } = useToast();
 
   const handleSearch = async (query: SearchQuery) => {
@@ -57,6 +59,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
 
     setIsSearching(true);
     setSearchQuery(query);
+    setShowFilters(false); // Hide filters when search starts
 
     try {
       // Check if user is authenticated
@@ -238,13 +241,33 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
     });
   };
 
+  const handleBackToFilters = () => {
+    setShowFilters(true);
+    setSearchResults([]);
+    setSearchQuery({ text: '' });
+  };
+
   return (
     <div className="flex-1 bg-black text-white">
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="border-b border-gray-800 p-4">
-          <h1 className="text-2xl font-bold text-white mb-2">Advanced Search</h1>
-          <p className="text-gray-400">Search through UK Building Regulations with advanced filters and tools</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-white mb-2">Advanced Search</h1>
+              <p className="text-gray-400">Search through UK Building Regulations with advanced filters and tools</p>
+            </div>
+            {!showFilters && searchResults.length > 0 && (
+              <Button
+                variant="outline"
+                onClick={handleBackToFilters}
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+              >
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Back to Filters
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Main Content */}
@@ -257,30 +280,41 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
             </TabsList>
 
             <TabsContent value="search" className="flex-1 m-0">
-              <ResizablePanelGroup direction="horizontal" className="h-full">
-                {/* Search Filters Sidebar */}
-                <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
-                  <div className="h-full border-r border-gray-800 bg-gray-900/50">
-                    <SearchFilters 
-                      onSearch={handleSearch}
+              {showFilters ? (
+                <ResizablePanelGroup direction="horizontal" className="h-full">
+                  {/* Search Filters Sidebar */}
+                  <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
+                    <div className="h-full border-r border-gray-800 bg-gray-900/50">
+                      <SearchFilters 
+                        onSearch={handleSearch}
+                        isSearching={isSearching}
+                      />
+                    </div>
+                  </ResizablePanel>
+
+                  <ResizableHandle withHandle />
+
+                  {/* Search Results */}
+                  <ResizablePanel defaultSize={50} minSize={30}>
+                    <SearchResults
+                      results={searchResults}
                       isSearching={isSearching}
+                      query={searchQuery}
+                      favorites={favorites}
+                      onToggleFavorite={toggleFavorite}
                     />
-                  </div>
-                </ResizablePanel>
-
-                <ResizableHandle withHandle />
-
-                {/* Search Results */}
-                <ResizablePanel defaultSize={50} minSize={30}>
-                  <SearchResults
-                    results={searchResults}
-                    isSearching={isSearching}
-                    query={searchQuery}
-                    favorites={favorites}
-                    onToggleFavorite={toggleFavorite}
-                  />
-                </ResizablePanel>
-              </ResizablePanelGroup>
+                  </ResizablePanel>
+                </ResizablePanelGroup>
+              ) : (
+                // Full screen results
+                <SearchResults
+                  results={searchResults}
+                  isSearching={isSearching}
+                  query={searchQuery}
+                  favorites={favorites}
+                  onToggleFavorite={toggleFavorite}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="tools" className="flex-1 m-0">

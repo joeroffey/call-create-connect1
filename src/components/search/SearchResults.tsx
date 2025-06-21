@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, ExternalLink, FileText, AlertCircle, Loader2, Image } from 'lucide-react';
@@ -179,9 +178,9 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                     : 'bg-gray-800/50 border-gray-700 hover:bg-gray-800/70'
                 } transition-colors overflow-hidden`}>
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-white text-lg mb-2 break-words">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <CardTitle className="text-white text-lg mb-2 break-words hyphens-auto leading-relaxed">
                           {result.title}
                         </CardTitle>
                         <div className="flex items-center space-x-4 text-sm text-gray-400 flex-wrap gap-2">
@@ -218,18 +217,20 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                   </CardHeader>
                   <CardContent className="pt-0 space-y-4">
                     <div className="prose prose-sm prose-invert max-w-none">
-                      <p className="text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                      <div className="text-gray-300 leading-relaxed break-words hyphens-auto overflow-wrap-anywhere">
                         {result.content}
-                      </p>
+                      </div>
                     </div>
                     
                     {/* Display images if available */}
                     {result.images && result.images.length > 0 && (
-                      <ImageGallery images={result.images} />
+                      <div className="mt-4">
+                        <ImageGallery images={result.images} />
+                      </div>
                     )}
                     
                     {!hasError && result.part !== 'System' && (
-                      <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
                         <Button
                           variant="outline"
                           size="sm"
