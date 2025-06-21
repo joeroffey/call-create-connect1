@@ -7,6 +7,7 @@ import QuickReferenceTools from './search/QuickReferenceTools';
 import SearchHistory from './search/SearchHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SearchQuery {
   text: string;
@@ -43,33 +44,100 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       // Add to search history
       setSearchHistory(prev => [query, ...prev.slice(0, 9)]);
 
-      // Simulate search results for now - in a real implementation, this would call your search API
-      setTimeout(() => {
-        const mockResults: SearchResult[] = [
-          {
-            id: '1',
-            title: 'Part A - Structure',
-            content: 'Requirements for structural safety and stability of buildings...',
-            part: 'Part A',
-            section: '1.1',
-            relevanceScore: 0.95
-          },
-          {
-            id: '2',
-            title: 'Part B - Fire Safety',
-            content: 'Fire safety provisions for buildings including escape routes...',
-            part: 'Part B',
-            section: '2.1',
-            relevanceScore: 0.87
-          }
-        ];
-        setSearchResults(mockResults);
-        setIsSearching(false);
-      }, 1000);
+      // Build search message incorporating filters
+      let searchMessage = query.text;
+      const filters = [];
+      
+      if (query.part) {
+        filters.push(`focusing on ${query.part}`);
+      }
+      if (query.buildingType) {
+        filters.push(`for ${query.buildingType} buildings`);
+      }
+      if (query.topic) {
+        filters.push(`related to ${query.topic}`);
+      }
+      
+      if (filters.length > 0) {
+        searchMessage += ` (${filters.join(', ')})`;
+      }
+
+      console.log('Searching with message:', searchMessage);
+
+      // Call the building regulations chat function
+      const { data, error } = await supabase.functions.invoke('building-regulations-chat', {
+        body: { 
+          message: searchMessage,
+          projectContext: null // No specific project context for search
+        }
+      });
+
+      if (error) {
+        console.error('Search error:', error);
+        throw error;
+      }
+
+      console.log('Search response:', data);
+
+      // Parse the AI response into search results
+      const aiResponse = data.response;
+      const mockResults = parseResponseToResults(aiResponse, query);
+      
+      setSearchResults(mockResults);
+      setIsSearching(false);
     } catch (error) {
       console.error('Search error:', error);
       setIsSearching(false);
+      
+      // Show error results
+      setSearchResults([{
+        id: 'error-1',
+        title: 'Search Error',
+        content: 'Unable to perform search at this time. Please check your connection and try again.',
+        part: 'System',
+        section: 'Error',
+        relevanceScore: 0
+      }]);
     }
+  };
+
+  // Helper function to parse AI response into structured results
+  const parseResponseToResults = (response: string, query: SearchQuery): SearchResult[] => {
+    // For now, create a single comprehensive result from the AI response
+    // In a real implementation, you might want to parse the response more intelligently
+    const results: SearchResult[] = [];
+    
+    // Split response into sections if it contains multiple parts
+    const sections = response.split(/Part [A-P]/g);
+    
+    if (sections.length > 1) {
+      // Multiple parts mentioned
+      sections.forEach((section, index) => {
+        if (section.trim() && index > 0) {
+          const partLetter = response.match(new RegExp(`Part [A-P]`, 'g'))?.[index - 1];
+          results.push({
+            id: `result-${index}`,
+            title: partLetter || `Building Regulations Information ${index}`,
+            content: section.trim().substring(0, 200) + '...',
+            part: partLetter || 'Building Regulations',
+            section: '1.0',
+            relevanceScore: Math.max(0.7, 1 - (index * 0.1))
+          });
+        }
+      });
+    } else {
+      // Single comprehensive result
+      results.push({
+        id: 'result-1',
+        title: `Building Regulations: ${query.text}`,
+        content: response.substring(0, 300) + (response.length > 300 ? '...' : ''),
+        part: query.part || 'Building Regulations',
+        section: '1.0',
+        relevanceScore: 0.95
+      });
+    }
+
+    return results;
   };
 
   const toggleFavorite = (result: SearchResult) => {

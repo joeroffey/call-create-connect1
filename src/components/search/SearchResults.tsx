@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, ExternalLink, FileText } from 'lucide-react';
+import { Search, Star, ExternalLink, FileText, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface SearchResult {
   id: string;
@@ -42,8 +43,9 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
           animate={{ opacity: 1 }}
           className="text-center"
         >
-          <div className="w-12 h-12 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Searching UK Building Regulations...</p>
+          <p className="text-sm text-gray-500 mt-2">This may take a few moments</p>
         </motion.div>
       </div>
     );
@@ -86,6 +88,9 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
     );
   }
 
+  // Check if there's an error result
+  const hasError = results.some(result => result.part === 'System' && result.section === 'Error');
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="p-6">
@@ -104,6 +109,16 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
           )}
         </div>
 
+        {/* Error Alert */}
+        {hasError && (
+          <Alert className="mb-6 border-red-600 bg-red-600/10">
+            <AlertCircle className="h-4 w-4 text-red-500" />
+            <AlertDescription className="text-red-300">
+              There was an issue performing the search. Please try again or contact support if the problem persists.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Results List */}
         <div className="space-y-4">
           <AnimatePresence>
@@ -115,7 +130,7 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors">
+                <Card className={`${hasError && result.part === 'System' ? 'bg-red-900/20 border-red-600' : 'bg-gray-800/50 border-gray-700'} hover:bg-gray-800/70 transition-colors`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -123,35 +138,43 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                           {result.title}
                         </CardTitle>
                         <div className="flex items-center space-x-4 text-sm text-gray-400">
-                          <span className="bg-blue-600/20 text-blue-400 px-2 py-1 rounded">
+                          <span className={`px-2 py-1 rounded ${hasError && result.part === 'System' ? 'bg-red-600/20 text-red-400' : 'bg-emerald-600/20 text-emerald-400'}`}>
                             {result.part}
                           </span>
-                          <span>Section {result.section}</span>
-                          <span>Relevance: {Math.round(result.relevanceScore * 100)}%</span>
+                          {result.section !== 'Error' && (
+                            <>
+                              <span>Section {result.section}</span>
+                              <span>Relevance: {Math.round(result.relevanceScore * 100)}%</span>
+                            </>
+                          )}
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => onToggleFavorite(result)}
-                        className={`${isFavorite(result) ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500`}
-                      >
-                        <Star className={`w-5 h-5 ${isFavorite(result) ? 'fill-current' : ''}`} />
-                      </Button>
+                      {!hasError && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onToggleFavorite(result)}
+                          className={`${isFavorite(result) ? 'text-yellow-500' : 'text-gray-400'} hover:text-yellow-500`}
+                        >
+                          <Star className={`w-5 h-5 ${isFavorite(result) ? 'fill-current' : ''}`} />
+                        </Button>
+                      )}
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <p className="text-gray-300 mb-4 line-clamp-3">
+                    <p className="text-gray-300 mb-4">
                       {result.content}
                     </p>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    >
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      View Full Regulation
-                    </Button>
+                    {!hasError && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-600 text-gray-300 hover:bg-gray-700"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        View Full Regulation
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
