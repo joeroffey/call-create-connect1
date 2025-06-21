@@ -169,6 +169,11 @@ What would you like to discuss about your project?`,
       console.log('Project ID:', projectId);
       console.log('User ID:', user?.id);
 
+      if (!user?.id) {
+        console.error('No user ID available for conversation creation');
+        throw new Error('User authentication required');
+      }
+
       const conversationData: any = {
         user_id: user.id,
         title: firstMessage.slice(0, 50) + (firstMessage.length > 50 ? '...' : ''),
@@ -230,6 +235,11 @@ What would you like to discuss about your project?`,
       return data.id;
     } catch (error) {
       console.error('Error creating conversation:', error);
+      toast({
+        variant: "destructive",
+        title: "Error creating conversation",
+        description: "Failed to create new conversation. Please try again.",
+      });
       return null;
     }
   };
@@ -247,6 +257,7 @@ What would you like to discuss about your project?`,
         ]);
 
       if (error) throw error;
+      console.log('Message saved successfully');
     } catch (error) {
       console.error('Error saving message:', error);
     }
@@ -301,6 +312,10 @@ What would you like to discuss about your project?`,
   const handleSendMessage = async () => {
     if (newMessage.trim() === '') return;
 
+    console.log('Sending message:', newMessage);
+    console.log('Current conversation ID:', currentConversationId);
+    console.log('User:', user?.id);
+
     const userMessage: ChatMessageData = {
       id: generateId(),
       text: newMessage,
@@ -315,12 +330,19 @@ What would you like to discuss about your project?`,
     // Create new conversation if needed
     let conversationId = currentConversationId;
     if (!conversationId && user) {
+      console.log('Creating new conversation...');
       conversationId = await createNewConversation(messageText);
+      if (!conversationId) {
+        console.error('Failed to create conversation, aborting message send');
+        return;
+      }
       setCurrentConversationId(conversationId);
+      console.log('New conversation created with ID:', conversationId);
     }
 
     // Save user message
     if (conversationId && user) {
+      console.log('Saving user message to conversation:', conversationId);
       await saveMessage(conversationId, messageText, 'user');
     }
 
@@ -338,6 +360,8 @@ What would you like to discuss about your project?`,
         };
       }
 
+      console.log('Sending request to AI function with body:', requestBody);
+
       const response = await fetch('https://srwbgkssoatrhxdrrtff.supabase.co/functions/v1/building-regulations-chat', {
         method: 'POST',
         headers: {
@@ -347,11 +371,16 @@ What would you like to discuss about your project?`,
         body: JSON.stringify(requestBody),
       });
 
+      console.log('AI function response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('AI function error:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('AI function response data:', data);
 
       const assistantMessage: ChatMessageData = {
         id: generateId(),
@@ -367,6 +396,7 @@ What would you like to discuss about your project?`,
 
       // Save assistant message
       if (conversationId && user) {
+        console.log('Saving assistant message to conversation:', conversationId);
         await saveMessage(conversationId, data.response, 'assistant');
       }
     } catch (error: any) {
