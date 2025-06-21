@@ -24,6 +24,11 @@ interface SearchResult {
   part: string;
   section: string;
   relevanceScore: number;
+  images?: Array<{
+    url: string;
+    title: string;
+    source: string;
+  }>;
 }
 
 interface AdvancedSearchInterfaceProps {
@@ -116,16 +121,17 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
         throw new Error('No response received from search service');
       }
 
-      // Parse the AI response into search results
+      // Parse the AI response into search results, including images
       const aiResponse = data.response;
-      const mockResults = parseResponseToResults(aiResponse, query);
+      const images = data.images || []; // Get images from response
+      const mockResults = parseResponseToResults(aiResponse, query, images);
       
-      console.log('Parsed results:', mockResults);
+      console.log('Parsed results with images:', mockResults);
       setSearchResults(mockResults);
       
       toast({
         title: "Search Complete",
-        description: `Found ${mockResults.length} result${mockResults.length !== 1 ? 's' : ''}`,
+        description: `Found ${mockResults.length} result${mockResults.length !== 1 ? 's' : ''} ${images.length > 0 ? `with ${images.length} image${images.length > 1 ? 's' : ''}` : ''}`,
       });
 
     } catch (error) {
@@ -162,10 +168,17 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
   };
 
   // Helper function to parse AI response into structured results
-  const parseResponseToResults = (response: string, query: SearchQuery): SearchResult[] => {
-    console.log('Parsing response for query:', query);
+  const parseResponseToResults = (response: string, query: SearchQuery, images: any[] = []): SearchResult[] => {
+    console.log('Parsing response for query:', query, 'with images:', images);
     
     const results: SearchResult[] = [];
+    
+    // Convert images to the expected format
+    const formattedImages = images.map((img, index) => ({
+      url: img.url || img.image_url || img.src || '',
+      title: img.title || img.alt || `Building Regulation Image ${index + 1}`,
+      source: img.source || 'UK Building Regulations'
+    })).filter(img => img.url); // Only include images with valid URLs
     
     // Try to identify different parts or sections in the response
     const sections = response.split(/(?:Part [A-P]|Section \d+|(?:\d+\.){1,2}\d+)/g);
@@ -185,7 +198,8 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
               content: content.length > 300 ? content.substring(0, 300) + '...' : content,
               part: partOrSection.includes('Part') ? partOrSection : query.part || 'Building Regulations',
               section: partOrSection.includes('Section') ? partOrSection.replace('Section ', '') : '1.0',
-              relevanceScore: Math.max(0.7, 1 - (index * 0.1))
+              relevanceScore: Math.max(0.7, 1 - (index * 0.1)),
+              images: index === 1 ? formattedImages : [] // Attach images to first result
             });
           }
         }
@@ -204,11 +218,12 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
         content: response.length > 400 ? response.substring(0, 400) + '...' : response,
         part: query.part || 'Building Regulations',
         section: '1.0',
-        relevanceScore: 0.95
+        relevanceScore: 0.95,
+        images: formattedImages
       });
     }
 
-    console.log('Generated results:', results);
+    console.log('Generated results with images:', results);
     return results;
   };
 

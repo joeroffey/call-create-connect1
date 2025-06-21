@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Star, ExternalLink, FileText, AlertCircle, Loader2 } from 'lucide-react';
+import { Search, Star, ExternalLink, FileText, AlertCircle, Loader2, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import ImageGallery from '../chat/ImageGallery';
 
 interface SearchResult {
   id: string;
@@ -13,6 +14,11 @@ interface SearchResult {
   part: string;
   section: string;
   relevanceScore: number;
+  images?: Array<{
+    url: string;
+    title: string;
+    source: string;
+  }>;
 }
 
 interface SearchQuery {
@@ -119,11 +125,11 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
           </h2>
           {query.text && (
             <div className="text-gray-400">
-              <p className="mb-1">
+              <p className="mb-1 break-words">
                 Results for "<span className="text-emerald-400 font-medium">{query.text}</span>"
               </p>
               {(query.part || query.buildingType || query.topic) && (
-                <div className="text-sm space-x-2">
+                <div className="text-sm space-x-2 flex flex-wrap gap-1">
                   {query.part && (
                     <span className="inline-block px-2 py-1 bg-emerald-600/20 text-emerald-400 rounded text-xs">
                       {query.part}
@@ -171,14 +177,14 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                   hasError && result.part === 'System' 
                     ? 'bg-red-900/20 border-red-600' 
                     : 'bg-gray-800/50 border-gray-700 hover:bg-gray-800/70'
-                } transition-colors`}>
+                } transition-colors overflow-hidden`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-white text-lg mb-2">
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-white text-lg mb-2 break-words">
                           {result.title}
                         </CardTitle>
-                        <div className="flex items-center space-x-4 text-sm text-gray-400">
+                        <div className="flex items-center space-x-4 text-sm text-gray-400 flex-wrap gap-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             hasError && result.part === 'System' 
                               ? 'bg-red-600/20 text-red-400' 
@@ -201,7 +207,7 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                           variant="ghost"
                           size="icon"
                           onClick={() => onToggleFavorite(result)}
-                          className={`${
+                          className={`flex-shrink-0 ${
                             isFavorite(result) ? 'text-yellow-500' : 'text-gray-400'
                           } hover:text-yellow-500 transition-colors`}
                         >
@@ -210,19 +216,36 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="text-gray-300 mb-4 leading-relaxed">
-                      {result.content}
-                    </p>
+                  <CardContent className="pt-0 space-y-4">
+                    <div className="prose prose-sm prose-invert max-w-none">
+                      <p className="text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                        {result.content}
+                      </p>
+                    </div>
+                    
+                    {/* Display images if available */}
+                    {result.images && result.images.length > 0 && (
+                      <ImageGallery images={result.images} />
+                    )}
+                    
                     {!hasError && result.part !== 'System' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                      >
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Full Regulation
-                      </Button>
+                      <div className="flex items-center justify-between pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          View Full Regulation
+                        </Button>
+                        
+                        {result.images && result.images.length > 0 && (
+                          <div className="flex items-center text-xs text-gray-500">
+                            <Image className="w-3 h-3 mr-1" />
+                            {result.images.length} image{result.images.length > 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
