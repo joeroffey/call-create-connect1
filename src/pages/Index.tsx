@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
@@ -302,7 +303,7 @@ const Index = () => {
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-16 h-12 rounded-xl overflow-hidden bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center p-2 backdrop-blur-sm">
+            <div className="w-20 h-14 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
                 alt="EezyBuild Logo" 
