@@ -95,9 +95,9 @@ serve(async (req) => {
         projectDocuments = documents || [];
         console.log(`Found ${projectDocuments.length} documents for project`);
 
-        // Extract content from documents
+        // Extract content from documents with enhanced analysis
         if (projectDocuments.length > 0) {
-          documentContext = await extractDocumentContent(supabase, projectDocuments);
+          documentContext = await extractDocumentContentWithAnalysis(supabase, projectDocuments, openaiKey, message);
           console.log('Document context extracted, length:', documentContext.length);
         }
       }
@@ -229,6 +229,8 @@ serve(async (req) => {
 11. When relevant diagrams or images are available in the Building Regulations documents, mention that visual references are available to support your answer
 12. When project documents are available, reference them specifically and explain how they relate to the building regulations requirements
 13. If project documents contain drawings, specifications, or plans, reference these when providing advice
+14. When analyzing uploaded images (floor plans, drawings, etc.), provide specific feedback on building regulation compliance visible in the images
+15. For document analysis, highlight any non-compliance issues and suggest improvements where possible
 
 ${projectContext ? `PROJECT INFORMATION:
 Project Name: ${projectContext.name}
@@ -237,7 +239,7 @@ Project Category: ${projectContext.label || 'Not specified'}
 Project Status: ${projectContext.status || 'Not specified'}
 Number of Project Documents: ${projectDocuments.length}
 
-` : ''}Context from UK Building Regulations documents${documentContext ? ' and project documents' : ''}:
+` : ''}Context from UK Building Regulations documents${documentContext ? ' and analyzed project documents' : ''}:
 ${combinedContext}`;
 
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -247,7 +249,7 @@ ${combinedContext}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o', // Using GPT-4o for better analysis capabilities
         messages: [
           {
             role: 'system',
@@ -259,7 +261,7 @@ ${combinedContext}`;
           }
         ],
         temperature: 0.3,
-        max_tokens: 1200,
+        max_tokens: 1500,
       }),
     });
 
@@ -306,11 +308,11 @@ ${combinedContext}`;
   }
 });
 
-// Function to extract content from uploaded documents
-async function extractDocumentContent(supabase: any, documents: ProjectDocument[]): Promise<string> {
+// Enhanced function to extract and analyze content from uploaded documents
+async function extractDocumentContentWithAnalysis(supabase: any, documents: ProjectDocument[], openaiKey: string, userMessage: string): Promise<string> {
   let combinedContent = '';
   
-  for (const doc of documents.slice(0, 5)) { // Limit to 5 documents to avoid token limits
+  for (const doc of documents.slice(0, 10)) { // Increased limit to 10 documents
     try {
       console.log(`Processing document: ${doc.file_name}`);
       
@@ -326,20 +328,23 @@ async function extractDocumentContent(supabase: any, documents: ProjectDocument[
 
       let content = '';
       
-      // Extract content based on file type
+      // Extract content based on file type with enhanced analysis
       if (doc.file_type === 'text/plain' || doc.file_type === 'text/csv' || doc.file_type === 'text/markdown') {
         content = await fileData.text();
-      } else if (doc.file_type === 'application/pdf') {
-        // For PDF files, we'll extract what we can or note that it's a PDF
-        content = `[PDF Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include drawings, specifications, or technical details relevant to the project.`;
       } else if (doc.file_type.startsWith('image/')) {
-        content = `[Image: ${doc.file_name}] - This image may contain drawings, plans, or visual documentation relevant to the project.`;
+        // Analyze images using OpenAI Vision
+        content = await analyzeImageWithVision(fileData, doc.file_name, openaiKey, userMessage);
+      } else if (doc.file_type === 'application/pdf') {
+        // For PDF files, we'll provide enhanced context
+        content = `[PDF Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include technical drawings, specifications, building plans, or regulatory documentation relevant to the project. The document has been uploaded for building regulations compliance review.`;
       } else if (doc.file_type.includes('word') || doc.file_type.includes('document')) {
-        content = `[Word Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include project specifications, requirements, or documentation.`;
+        content = `[Word Document: ${doc.file_name}] - This document contains ${Math.round(doc.file_size / 1024)}KB of project specifications, requirements, or documentation that may include building details, compliance checklists, or technical requirements relevant to UK Building Regulations.`;
+      } else if (doc.file_type.includes('spreadsheet') || doc.file_type.includes('excel')) {
+        content = `[Spreadsheet: ${doc.file_name}] - This spreadsheet may contain calculations, schedules, material lists, or compliance tracking data relevant to the building project and UK Building Regulations compliance.`;
       }
 
       if (content) {
-        combinedContent += `\n\n--- DOCUMENT: ${doc.file_name} ---\n${content.slice(0, 2000)}`; // Limit each document to 2000 chars
+        combinedContent += `\n\n--- DOCUMENT: ${doc.file_name} ---\n${content}`;
       }
       
     } catch (error) {
@@ -349,4 +354,85 @@ async function extractDocumentContent(supabase: any, documents: ProjectDocument[
   }
   
   return combinedContent;
+}
+
+// Function to analyze images using OpenAI Vision
+async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiKey: string, userMessage: string): Promise<string> {
+  try {
+    // Convert image to base64
+    const arrayBuffer = await imageFile.arrayBuffer();
+    const base64Image = btoa(String.fromCharCode(...new Array(arrayBuffer.byteLength).map((_, i) => new Uint8Array(arrayBuffer)[i])));
+    
+    // Determine image format
+    const imageType = imageFile.type || 'image/png';
+    const base64DataUrl = `data:${imageType};base64,${base64Image}`;
+
+    console.log(`Analyzing image: ${fileName} with OpenAI Vision`);
+
+    // Analyze the image with OpenAI Vision
+    const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: `You are a UK Building Regulations specialist analyzing architectural drawings, floor plans, and construction documents. 
+
+Analyze this image in the context of UK Building Regulations compliance. Focus on:
+- Room layouts and dimensions
+- Door and window placements
+- Accessibility compliance (Part M)
+- Fire safety provisions and escape routes (Part B)
+- Structural elements visible (Part A)
+- Ventilation and services (Parts F, G, P)
+- Energy efficiency features (Part L)
+- Any visible non-compliance issues
+- Specific measurements if shown
+
+Provide detailed analysis that can be used to give building regulations advice. Be specific about what you can see in the drawing/plan.`
+          },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Please analyze this ${fileName} in the context of this user question: "${userMessage}". Focus on UK Building Regulations compliance.`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: base64DataUrl,
+                  detail: 'high'
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.2
+      }),
+    });
+
+    if (!visionResponse.ok) {
+      const errorText = await visionResponse.text();
+      console.error('OpenAI Vision error:', errorText);
+      throw new Error(`Vision analysis failed: ${visionResponse.status}`);
+    }
+
+    const visionData = await visionResponse.json();
+    const analysis = visionData.choices[0].message.content;
+
+    console.log(`Successfully analyzed ${fileName} with Vision API`);
+    
+    return `[IMAGE ANALYSIS: ${fileName}]\n${analysis}`;
+
+  } catch (error) {
+    console.error(`Error analyzing image ${fileName}:`, error);
+    return `[Image: ${fileName}] - This image contains visual documentation relevant to the project but could not be analyzed. It may include drawings, plans, or visual documentation that should be manually reviewed for building regulations compliance.`;
+  }
 }
