@@ -173,7 +173,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
               size="sm"
               className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
             >
-              {hasActiveSubscription ? 'Manage' : 'Subscribe'}
+              {hasActiveSubscription ? 'Manage Subscription' : 'Subscribe'}
             </Button>
           </div>
           

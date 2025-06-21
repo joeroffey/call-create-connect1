@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Settings, Crown, Calculator, FolderOpen } from 'lucide-react';
+import { MessageCircle, Search, User, Bell, Crown, Calculator, FolderOpen } from 'lucide-react';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -10,6 +10,7 @@ import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import AppsScreen from '../components/AppsScreen';
 import ProjectsScreen from '../components/ProjectsScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
+import NotificationsScreen from '../components/NotificationsScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
@@ -137,7 +138,7 @@ const Index = () => {
     }
   };
 
-  // Define available tabs based on subscription
+  // Define available tabs based on subscription - replaced Settings with Notifications
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
@@ -154,10 +155,10 @@ const Index = () => {
       baseTabs.push({ id: 'projects', icon: FolderOpen, label: 'Projects' });
     }
 
-    // Always available
+    // Always available - replaced Settings with Notifications
     baseTabs.push(
-      { id: 'profile', icon: User, label: 'Profile' },
-      { id: 'settings', icon: Settings, label: 'Settings' }
+      { id: 'notifications', icon: Bell, label: 'Notifications' },
+      { id: 'profile', icon: User, label: 'Profile' }
     );
 
     return baseTabs;
@@ -217,7 +218,7 @@ const Index = () => {
         return (
           <ChatInterfaceWithSubscription 
             user={user} 
-            onViewPlans={() => setActiveTab('settings')}
+            onViewPlans={() => setActiveTab('profile')}
             projectId={currentProjectId}
             onChatComplete={handleChatComplete}
           />
@@ -229,7 +230,7 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
               <p className="text-gray-400 mb-6">Advanced Search is only available for EezyBuild ProMax subscribers.</p>
               <button 
-                onClick={() => setActiveTab('settings')}
+                onClick={() => setActiveTab('profile')}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
                 Upgrade to ProMax
@@ -245,7 +246,7 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4">Subscription Required</h2>
               <p className="text-gray-400 mb-6">Building Apps are available for Pro and ProMax subscribers.</p>
               <button 
-                onClick={() => setActiveTab('settings')}
+                onClick={() => setActiveTab('profile')}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
                 Choose a Plan
@@ -261,7 +262,7 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
               <p className="text-gray-400 mb-6">Projects feature is only available for EezyBuild ProMax subscribers.</p>
               <button 
-                onClick={() => setActiveTab('settings')}
+                onClick={() => setActiveTab('profile')}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
                 Upgrade to ProMax
@@ -270,20 +271,22 @@ const Index = () => {
           </div>;
         }
         return <ProjectsScreen user={user} onStartNewChat={handleStartNewChat} />;
+      case 'notifications':
+        return <NotificationsScreen />;
       case 'profile':
         return (
           <ProfileScreen 
             user={user} 
-            onNavigateToSettings={() => setActiveTab('settings')}
+            onNavigateToSettings={() => setActiveTab('subscription-settings')}
             onNavigateToAccountSettings={() => setActiveTab('account-settings')}
           />
         );
-      case 'settings':
+      case 'subscription-settings':
         return <SubscriptionScreen user={user} onBack={() => setActiveTab('profile')} />;
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
-        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('settings')} />;
+        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('profile')} />;
     }
   };
 
