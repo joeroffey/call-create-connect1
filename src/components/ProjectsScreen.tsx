@@ -39,7 +39,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     conversations, 
     getProjectConversationCount, 
     getProjectDocumentCount,
-    getProjectMilestoneCount,
+    getProjectScheduleOfWorksCount,
     loading: conversationsLoading 
   } = useConversations(user?.id);
 
@@ -314,7 +314,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
             {projects.map((project, index) => {
               const conversationCount = getProjectConversationCount(project.id);
               const documentCount = getProjectDocumentCount(project.id);
-              const milestoneCount = getProjectMilestoneCount(project.id);
+              const scheduleOfWorksCount = getProjectScheduleOfWorksCount(project.id);
               
               return (
                 <motion.div
@@ -400,7 +400,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                       <div className="flex items-center justify-center mb-1">
                         <Milestone className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
                       </div>
-                      <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{milestoneCount}</div>
+                      <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{scheduleOfWorksCount}</div>
                       <div className="text-xs text-gray-400">Milestones</div>
                     </button>
                   </div>
