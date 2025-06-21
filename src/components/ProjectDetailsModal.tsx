@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Milestone, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';

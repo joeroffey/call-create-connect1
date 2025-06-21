@@ -153,7 +153,7 @@ export type Database = {
           },
         ]
       }
-      project_milestones: {
+      project_schedule_of_works: {
         Row: {
           completed: boolean
           created_at: string
