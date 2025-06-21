@@ -356,18 +356,33 @@ async function extractDocumentContentWithAnalysis(supabase: any, documents: Proj
   return combinedContent;
 }
 
-// Function to analyze images using OpenAI Vision
+// Fixed function to analyze images using OpenAI Vision
 async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiKey: string, userMessage: string): Promise<string> {
   try {
-    // Convert image to base64
-    const arrayBuffer = await imageFile.arrayBuffer();
-    const base64Image = btoa(String.fromCharCode(...new Array(arrayBuffer.byteLength).map((_, i) => new Uint8Array(arrayBuffer)[i])));
-    
-    // Determine image format
-    const imageType = imageFile.type || 'image/png';
-    const base64DataUrl = `data:${imageType};base64,${base64Image}`;
-
     console.log(`Analyzing image: ${fileName} with OpenAI Vision`);
+
+    // Convert image to base64 using a more reliable method
+    const arrayBuffer = await imageFile.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Convert to base64 using btoa with proper string handling
+    let binaryString = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+      binaryString += String.fromCharCode(uint8Array[i]);
+    }
+    const base64Image = btoa(binaryString);
+    
+    // Determine the correct MIME type for OpenAI Vision API
+    let mimeType = imageFile.type;
+    
+    // Map common image types to supported formats
+    if (mimeType === 'image/jpg') mimeType = 'image/jpeg';
+    if (!mimeType || !['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(mimeType)) {
+      // Default to jpeg if type is unknown or unsupported
+      mimeType = 'image/jpeg';
+    }
+    
+    const base64DataUrl = `data:${mimeType};base64,${base64Image}`;
 
     // Analyze the image with OpenAI Vision
     const visionResponse = await fetch('https://api.openai.com/v1/chat/completions', {
