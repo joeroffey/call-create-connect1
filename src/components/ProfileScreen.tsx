@@ -61,7 +61,15 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
   const handleManageSubscription = async () => {
     if (hasActiveSubscription) {
       // Open Stripe Customer Portal for existing subscribers
-      await openCustomerPortal();
+      try {
+        await openCustomerPortal();
+      } catch (error) {
+        toast({
+          title: "Unable to open subscription management",
+          description: "Please try again later or contact support if the issue persists.",
+          variant: "destructive"
+        });
+      }
     } else {
       // Navigate to subscription plans for non-subscribers
       onNavigateToSettings();
