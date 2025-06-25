@@ -58,9 +58,23 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
     }
   };
 
+  // Check if this is a demo subscription (local database only)
+  const isDemoSubscription = subscription?.id && !subscription.id.startsWith('stripe-');
+
   const handleManageSubscription = async () => {
     if (hasActiveSubscription) {
-      // Open Stripe Customer Portal for existing subscribers
+      if (isDemoSubscription) {
+        // For demo subscriptions, show a message and redirect to plans
+        toast({
+          title: "Demo Subscription",
+          description: "This is a demo subscription. To manage a real subscription, please upgrade to a paid plan.",
+          variant: "default"
+        });
+        onNavigateToSettings();
+        return;
+      }
+      
+      // Open Stripe Customer Portal for real subscribers
       try {
         await openCustomerPortal();
       } catch (error) {
@@ -173,7 +187,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                 <h3 className="font-semibold text-white">Subscription Status</h3>
                 <p className="text-sm text-gray-400">
                   {hasActiveSubscription 
-                    ? `Active - ${subscription?.plan_type === 'basic' ? 'EezyBuild' : 
+                    ? `${isDemoSubscription ? 'Demo - ' : 'Active - '}${subscription?.plan_type === 'basic' ? 'EezyBuild' : 
                                    subscription?.plan_type === 'pro' ? 'Pro' : 
                                    subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}`
                     : 'No Active Plan'
@@ -192,7 +206,10 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
               size="sm"
               className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
             >
-              {hasActiveSubscription ? 'Manage Subscription' : 'Subscribe'}
+              {hasActiveSubscription 
+                ? (isDemoSubscription ? 'Upgrade Plan' : 'Manage Subscription')
+                : 'Subscribe'
+              }
             </Button>
           </div>
           
