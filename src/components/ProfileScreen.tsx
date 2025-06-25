@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -20,7 +21,7 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
-  const { subscription, hasActiveSubscription, createProMaxDemo, refetch } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createProMaxDemo, refetch, openCustomerPortal } = useSubscription(user?.id);
   const [isActivatingDemo, setIsActivatingDemo] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
@@ -54,6 +55,16 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
       await refetch();
     } finally {
       setIsActivatingDemo(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    if (hasActiveSubscription) {
+      // Open Stripe Customer Portal for existing subscribers
+      await openCustomerPortal();
+    } else {
+      // Navigate to subscription plans for non-subscribers
+      onNavigateToSettings();
     }
   };
 
@@ -168,7 +179,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
               </div>
             </div>
             <Button
-              onClick={onNavigateToSettings}
+              onClick={handleManageSubscription}
               variant="outline"
               size="sm"
               className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
