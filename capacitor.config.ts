@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.5bc45bc5496543ea93777fc2efe6fd86',
+  appId: 'com.lovable.callcreateconnect',
   appName: 'call-create-connect',
   webDir: 'dist',
   server: {
