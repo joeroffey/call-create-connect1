@@ -375,7 +375,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
             {activeTab === 'schedule' && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
+                  <h3 className="text-lg font-semibold text-white">Schedule</h3>
                   <button
                     onClick={() => setShowAddWorkItem(true)}
                     className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium"
