@@ -266,7 +266,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
 
           {/* Tabs */}
           <div className="border-b border-gray-800/30">
-            <div className="flex space-x-0">
+            <div className="flex space-x-0 justify-center">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
