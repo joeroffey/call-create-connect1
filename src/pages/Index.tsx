@@ -333,7 +333,7 @@ const Index = () => {
       </motion.header>
 
       {/* Main Content - fills space between header and nav with proper mobile spacing */}
-      <main className="flex-1 min-h-0 overflow-y-auto pb-20">
+      <main className="flex-1 min-h-0 overflow-y-auto pb-24">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -348,15 +348,15 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation - Fixed and responsive */}
+      {/* Bottom Navigation - Fixed and responsive with proper centering */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-        className="fixed-nav glass border-t border-white/5 px-2 py-2 safe-area-bottom"
+        className="fixed bottom-0 left-0 right-0 glass border-t border-white/5 px-4 py-3 safe-area-bottom"
       >
         <div className="flex justify-center items-center w-full">
-          <div className="flex w-full max-w-md mx-auto">
+          <div className="flex w-full max-w-md mx-auto justify-center">
             {tabs.map((tab, index) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -370,7 +370,7 @@ const Index = () => {
                   whileTap={{ scale: 0.96 }}
                   whileHover={{ scale: 1.02 }}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-200 flex-1 ${
+                  className={`relative flex flex-col items-center py-2 px-4 rounded-xl transition-all duration-200 flex-1 min-w-0 ${
                     isActive 
                       ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
                       : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
@@ -383,7 +383,7 @@ const Index = () => {
                   {isActive && (
                     <motion.div
                       layoutId="activeTab"
-                      className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-sm"
+                      className="absolute -bottom-1 w-2 h-2 bg-emerald-400 rounded-full shadow-sm"
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     />
                   )}
