@@ -219,7 +219,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
   const tabs = [
     { id: 'chats', label: 'Chats', icon: MessageCircle, count: projectConversations.length },
     { id: 'documents', label: 'Documents', icon: FileText, count: documents.length },
-    { id: 'schedule', label: 'Schedule of Works', icon: Clock, count: scheduleOfWorks.length },
+    { id: 'schedule', label: 'Schedule', icon: Clock, count: scheduleOfWorks.length },
   ];
 
   console.log('ProjectDetailsModal rendering - activeTab:', activeTab, 'isOpen:', isOpen);
