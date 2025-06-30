@@ -82,24 +82,31 @@ serve(async (req) => {
     let documentContext = '';
     let conversationHistory = '';
 
-    // FIXED: Only require project context and user authentication for project-specific chats
+    // SECURITY FIX: Strict project context validation
     if (projectContext) {
+      // CRITICAL: Validate all required fields for project context
       if (!projectContext.id || !projectContext.userId) {
-        console.error('Project context provided but missing project ID or user ID - potential security risk');
-        throw new Error('Project context requires both project ID and user authentication for security');
+        console.error('SECURITY VIOLATION: Project context missing required fields');
+        throw new Error('Invalid project context - missing project ID or user ID');
+      }
+
+      // CRITICAL: Validate project context format
+      if (typeof projectContext.id !== 'string' || typeof projectContext.userId !== 'string') {
+        console.error('SECURITY VIOLATION: Project context fields have invalid types');
+        throw new Error('Invalid project context - invalid field types');
       }
 
       if (supabaseUrl && supabaseServiceKey) {
         supabase = createClient(supabaseUrl, supabaseServiceKey);
         
-        // SECURITY: Fetch ONLY documents for THIS specific project AND user
-        console.log(`Fetching documents for project: ${projectContext.id}, user: ${projectContext.userId}`);
+        // SECURITY FIX: Fetch ONLY documents for THIS specific project AND user
+        console.log(`SECURITY: Fetching documents for project: ${projectContext.id}, user: ${projectContext.userId}`);
         
         const { data: documents, error: docsError } = await supabase
           .from('project_documents')
           .select('id, file_name, file_path, file_type, file_size, user_id, project_id')
           .eq('project_id', projectContext.id)
-          .eq('user_id', projectContext.userId); // CRITICAL: Only this user's documents
+          .eq('user_id', projectContext.userId); // CRITICAL: Only this user's documents for this project
 
         if (docsError) {
           console.error('Error fetching project documents:', docsError);
@@ -108,17 +115,21 @@ serve(async (req) => {
           projectDocuments = documents || [];
           console.log(`SECURITY CHECK: Found ${projectDocuments.length} documents for project ${projectContext.id} and user ${projectContext.userId}`);
 
-          // Verify all documents belong to the correct project and user
-          const invalidDocs = projectDocuments.filter(doc => 
-            doc.project_id !== projectContext.id || doc.user_id !== projectContext.userId
-          );
+          // CRITICAL: Verify ALL documents belong to the correct project and user
+          const invalidDocs = projectDocuments.filter(doc => {
+            const isValid = doc.project_id === projectContext.id && doc.user_id === projectContext.userId;
+            if (!isValid) {
+              console.error(`SECURITY VIOLATION: Document ${doc.id} belongs to project ${doc.project_id} user ${doc.user_id}, expected project ${projectContext.id} user ${projectContext.userId}`);
+            }
+            return !isValid;
+          });
           
           if (invalidDocs.length > 0) {
             console.error('SECURITY BREACH DETECTED: Documents from other projects/users found:', invalidDocs);
             throw new Error('Security violation: Unauthorized document access detected');
           }
 
-          // Extract content from documents with enhanced analysis - ONLY from THIS project
+          // SECURITY: Extract content from documents with strict project isolation
           if (projectDocuments.length > 0) {
             documentContext = await extractDocumentContentWithAnalysis(
               supabase, 
@@ -128,7 +139,7 @@ serve(async (req) => {
               projectContext.id,
               projectContext.userId
             );
-            console.log(`Document context extracted for project ${projectContext.id}, length:`, documentContext.length);
+            console.log(`SECURITY: Document context extracted for project ${projectContext.id}, length:`, documentContext.length);
           }
         }
 
@@ -139,7 +150,7 @@ serve(async (req) => {
           projectContext.userId, 
           openaiKey
         );
-        console.log(`Conversation history loaded for project ${projectContext.id}, length:`, conversationHistory.length);
+        console.log(`SECURITY: Conversation history loaded for project ${projectContext.id}, length:`, conversationHistory.length);
       }
     } else {
       console.log('No project context provided - processing as general chat');
@@ -249,14 +260,14 @@ serve(async (req) => {
 
     console.log('Found relevant regulations context, length:', regulationsContext.length);
 
-    // Combine all context sources with project isolation (only if project context exists)
+    // Combine all context sources with strict project isolation
     let combinedContext = regulationsContext;
     if (projectContext) {
       if (documentContext) {
-        combinedContext = `PROJECT DOCUMENTS (Project ID: ${projectContext.id}):\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
+        combinedContext = `PROJECT DOCUMENTS (Project ID: ${projectContext.id}, User ID: ${projectContext.userId}):\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
       }
       if (conversationHistory) {
-        combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT (Project ID: ${projectContext.id}):\n${conversationHistory}\n\n---\n\n${combinedContext}`;
+        combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT (Project ID: ${projectContext.id}, User ID: ${projectContext.userId}):\n${conversationHistory}\n\n---\n\n${combinedContext}`;
       }
     }
 
@@ -265,10 +276,10 @@ serve(async (req) => {
       `You are a UK Building Regulations specialist assistant with memory of previous conversations in this specific project. You MUST follow these strict guidelines:
 
 CRITICAL SECURITY RULES:
-- You are ONLY analyzing documents and conversations from Project ID: ${projectContext.id}
-- You MUST NOT reference or use information from any other projects
+- You are ONLY analyzing documents and conversations from Project ID: ${projectContext.id} for User ID: ${projectContext.userId}
+- You MUST NOT reference or use information from any other projects or users
 - If you cannot find relevant information in the current project's documents, state this clearly
-- NEVER mix information from different projects
+- NEVER mix information from different projects or users
 
 1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
 2. Use ONLY the provided context from official UK Building Regulations documents, THIS project's documents, and THIS project's previous conversations
@@ -289,7 +300,7 @@ CRITICAL SECURITY RULES:
 17. **Track project progress** - If previous conversations show decisions made or issues resolved, reference this progress in your responses
 18. **Maintain conversation continuity** - When users say things like "as we discussed before" or "following up on our previous chat", reference the relevant previous conversation content
 
-PROJECT INFORMATION (Project ID: ${projectContext.id}):
+PROJECT INFORMATION (Project ID: ${projectContext.id}, User ID: ${projectContext.userId}):
 Project Name: ${projectContext.name || 'Not specified'}
 Project Description: ${projectContext.description || 'Not specified'}
 Project Category: ${projectContext.label || 'Not specified'}
@@ -297,7 +308,7 @@ Project Status: ${projectContext.status || 'Not specified'}
 Number of Project Documents: ${projectDocuments.length}
 Previous Conversations Available: ${conversationHistory ? 'Yes' : 'No'}
 
-Context from UK Building Regulations documents${documentContext ? ', analyzed project documents' : ''}${conversationHistory ? ', and previous project conversations' : ''} (ALL FROM PROJECT ID: ${projectContext.id}):
+Context from UK Building Regulations documents${documentContext ? ', analyzed project documents' : ''}${conversationHistory ? ', and previous project conversations' : ''} (ALL FROM PROJECT ID: ${projectContext.id}, USER ID: ${projectContext.userId}):
 ${combinedContext}` :
       `You are a UK Building Regulations specialist assistant. You MUST follow these strict guidelines:
 
@@ -323,7 +334,7 @@ ${combinedContext}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o', // Using GPT-4o for better analysis capabilities
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -352,12 +363,12 @@ ${combinedContext}`;
 
     const responseData: any = {
       response: aiResponse,
-      images: relatedImages.slice(0, 5), // Limit to 5 images max
+      images: relatedImages.slice(0, 5),
       documentsAnalyzed: projectDocuments.length,
       conversationsReferenced: conversationHistory ? 'Available' : 'None'
     };
 
-    // Only include project ID if this was a project-specific request
+    // SECURITY: Only include project ID if this was a project-specific request
     if (projectContext) {
       responseData.projectId = projectContext.id;
     }
@@ -392,10 +403,10 @@ ${combinedContext}`;
   }
 });
 
-// SECURITY FIX: Updated function to load and analyze previous conversations for SPECIFIC project and user
+// SECURITY FIX: Enhanced function to load and analyze previous conversations for SPECIFIC project and user ONLY
 async function loadProjectConversationHistory(supabase: any, projectId: string, userId: string, openaiKey: string): Promise<string> {
   try {
-    console.log(`Loading conversation history for project: ${projectId}, user: ${userId}`);
+    console.log(`SECURITY: Loading conversation history for project: ${projectId}, user: ${userId}`);
     
     // CRITICAL: Get ONLY conversations for THIS project AND user
     const { data: conversations, error: convError } = await supabase
@@ -404,7 +415,7 @@ async function loadProjectConversationHistory(supabase: any, projectId: string, 
       .eq('project_id', projectId)
       .eq('user_id', userId) // CRITICAL: Only this user's conversations
       .order('created_at', { ascending: false })
-      .limit(5); // Limit to last 5 conversations to manage context size
+      .limit(5);
 
     if (convError) {
       console.error('Error fetching conversations:', convError);
@@ -412,16 +423,22 @@ async function loadProjectConversationHistory(supabase: any, projectId: string, 
     }
 
     if (!conversations || conversations.length === 0) {
-      console.log(`No previous conversations found for project ${projectId} and user ${userId}`);
+      console.log(`SECURITY: No previous conversations found for project ${projectId} and user ${userId}`);
       return '';
     }
 
-    console.log(`Found ${conversations.length} previous conversations for project ${projectId}`);
+    console.log(`SECURITY: Found ${conversations.length} previous conversations for project ${projectId} and user ${userId}`);
 
     let conversationSummaries = '';
 
-    // Process each conversation
+    // Process each conversation with security checks
     for (const conv of conversations) {
+      // SECURITY: Verify conversation belongs to correct project and user
+      if (conv.project_id !== projectId || conv.user_id !== userId) {
+        console.error(`SECURITY VIOLATION: Conversation ${conv.id} does not belong to project ${projectId} or user ${userId}`);
+        continue;
+      }
+
       // Get messages for this conversation
       const { data: messages, error: msgError } = await supabase
         .from('messages')
@@ -469,7 +486,7 @@ async function summarizeConversation(conversationText: string, title: string, op
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Using mini for summarization to save costs
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -510,7 +527,7 @@ Keep the summary concise but include enough detail for future reference. Focus o
   }
 }
 
-// SECURITY FIX: Enhanced function to extract and analyze content from uploaded documents with strict project isolation
+// SECURITY FIX: Enhanced function to extract and analyze content from uploaded documents with STRICT project isolation
 async function extractDocumentContentWithAnalysis(
   supabase: any, 
   documents: ProjectDocument[], 
@@ -521,19 +538,19 @@ async function extractDocumentContentWithAnalysis(
 ): Promise<string> {
   let combinedContent = '';
   
-  console.log(`Processing ${documents.length} documents for project ${projectId}, user ${userId}`);
+  console.log(`SECURITY: Processing ${documents.length} documents for project ${projectId}, user ${userId}`);
   
-  for (const doc of documents.slice(0, 10)) { // Increased limit to 10 documents
+  for (const doc of documents.slice(0, 10)) {
     try {
-      // SECURITY CHECK: Verify document belongs to correct project and user
+      // CRITICAL SECURITY CHECK: Verify document belongs to correct project and user
       if (doc.project_id !== projectId || doc.user_id !== userId) {
         console.error(`SECURITY VIOLATION: Document ${doc.id} does not belong to project ${projectId} or user ${userId}`);
         throw new Error(`Security violation: Document access denied`);
       }
 
-      console.log(`Processing document: ${doc.file_name} for project ${projectId}`);
+      console.log(`SECURITY: Processing document: ${doc.file_name} for project ${projectId}, user ${userId}`);
       
-      // Download the file from Supabase Storage with project-specific path verification
+      // SECURITY: Download the file from Supabase Storage with strict path verification
       const expectedPath = `${userId}/${projectId}/`;
       if (!doc.file_path.startsWith(expectedPath)) {
         console.error(`SECURITY VIOLATION: Document path ${doc.file_path} does not match expected project path ${expectedPath}`);
@@ -555,19 +572,18 @@ async function extractDocumentContentWithAnalysis(
       if (doc.file_type === 'text/plain' || doc.file_type === 'text/csv' || doc.file_type === 'text/markdown') {
         content = await fileData.text();
       } else if (doc.file_type.startsWith('image/')) {
-        // Analyze images using OpenAI Vision with project context
-        content = await analyzeImageWithVision(fileData, doc.file_name, openaiKey, userMessage, projectId);
+        // Analyze images using OpenAI Vision with strict project context
+        content = await analyzeImageWithVision(fileData, doc.file_name, openaiKey, userMessage, projectId, userId);
       } else if (doc.file_type === 'application/pdf') {
-        // For PDF files, we'll provide enhanced context
-        content = `[PDF Document: ${doc.file_name} - Project: ${projectId}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include technical drawings, specifications, building plans, or regulatory documentation relevant to this specific project. The document has been uploaded for building regulations compliance review.`;
+        content = `[PDF Document: ${doc.file_name} - Project: ${projectId}, User: ${userId}] - This document contains ${Math.round(doc.file_size / 1024)}KB of content that may include technical drawings, specifications, building plans, or regulatory documentation relevant to this specific project. The document has been uploaded for building regulations compliance review.`;
       } else if (doc.file_type.includes('word') || doc.file_type.includes('document')) {
-        content = `[Word Document: ${doc.file_name} - Project: ${projectId}] - This document contains ${Math.round(doc.file_size / 1024)}KB of project specifications, requirements, or documentation that may include building details, compliance checklists, or technical requirements relevant to UK Building Regulations for this specific project.`;
+        content = `[Word Document: ${doc.file_name} - Project: ${projectId}, User: ${userId}] - This document contains ${Math.round(doc.file_size / 1024)}KB of project specifications, requirements, or documentation that may include building details, compliance checklists, or technical requirements relevant to UK Building Regulations for this specific project.`;
       } else if (doc.file_type.includes('spreadsheet') || doc.file_type.includes('excel')) {
-        content = `[Spreadsheet: ${doc.file_name} - Project: ${projectId}] - This spreadsheet may contain calculations, schedules, material lists, or compliance tracking data relevant to this specific building project and UK Building Regulations compliance.`;
+        content = `[Spreadsheet: ${doc.file_name} - Project: ${projectId}, User: ${userId}] - This spreadsheet may contain calculations, schedules, material lists, or compliance tracking data relevant to this specific building project and UK Building Regulations compliance.`;
       }
 
       if (content) {
-        combinedContent += `\n\n--- PROJECT DOCUMENT: ${doc.file_name} (Project: ${projectId}) ---\n${content}`;
+        combinedContent += `\n\n--- PROJECT DOCUMENT: ${doc.file_name} (Project: ${projectId}, User: ${userId}) ---\n${content}`;
       }
       
     } catch (error) {
@@ -582,10 +598,10 @@ async function extractDocumentContentWithAnalysis(
   return combinedContent;
 }
 
-// SECURITY FIX: Enhanced function to analyze images using OpenAI Vision with project isolation
-async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiKey: string, userMessage: string, projectId: string): Promise<string> {
+// SECURITY FIX: Enhanced function to analyze images using OpenAI Vision with strict project isolation
+async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiKey: string, userMessage: string, projectId: string, userId: string): Promise<string> {
   try {
-    console.log(`Analyzing image: ${fileName} for project ${projectId} with OpenAI Vision`);
+    console.log(`SECURITY: Analyzing image: ${fileName} for project ${projectId}, user ${userId} with OpenAI Vision`);
 
     // Convert image to base64 using a more reliable method
     const arrayBuffer = await imageFile.arrayBuffer();
@@ -604,7 +620,6 @@ async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiK
     // Map common image types to supported formats
     if (mimeType === 'image/jpg') mimeType = 'image/jpeg';
     if (!mimeType || !['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(mimeType)) {
-      // Default to jpeg if type is unknown or unsupported
       mimeType = 'image/jpeg';
     }
     
@@ -622,9 +637,9 @@ async function analyzeImageWithVision(imageFile: Blob, fileName: string, openaiK
         messages: [
           {
             role: 'system',
-            content: `You are a UK Building Regulations specialist analyzing architectural drawings, floor plans, and construction documents ONLY for Project ID: ${projectId}. 
+            content: `You are a UK Building Regulations specialist analyzing architectural drawings, floor plans, and construction documents ONLY for Project ID: ${projectId}, User ID: ${userId}. 
 
-CRITICAL: This analysis is ONLY for the specific project ${projectId}. Do not reference or use any information from other projects.
+CRITICAL: This analysis is ONLY for the specific project ${projectId} and user ${userId}. Do not reference or use any information from other projects or users.
 
 Analyze this image in the context of UK Building Regulations compliance. Focus on:
 - Room layouts and dimensions
@@ -644,7 +659,7 @@ Provide detailed analysis that can be used to give building regulations advice. 
             content: [
               {
                 type: 'text',
-                text: `Please analyze this ${fileName} from Project ${projectId} in the context of this user question: "${userMessage}". Focus on UK Building Regulations compliance for this specific project only.`
+                text: `Please analyze this ${fileName} from Project ${projectId} (User ${userId}) in the context of this user question: "${userMessage}". Focus on UK Building Regulations compliance for this specific project only.`
               },
               {
                 type: 'image_url',
@@ -670,12 +685,12 @@ Provide detailed analysis that can be used to give building regulations advice. 
     const visionData = await visionResponse.json();
     const analysis = visionData.choices[0].message.content;
 
-    console.log(`Successfully analyzed ${fileName} for project ${projectId} with Vision API`);
+    console.log(`SECURITY: Successfully analyzed ${fileName} for project ${projectId}, user ${userId} with Vision API`);
     
-    return `[IMAGE ANALYSIS: ${fileName} - Project: ${projectId}]\n${analysis}`;
+    return `[IMAGE ANALYSIS: ${fileName} - Project: ${projectId}, User: ${userId}]\n${analysis}`;
 
   } catch (error) {
-    console.error(`Error analyzing image ${fileName} for project ${projectId}:`, error);
-    return `[Image: ${fileName} - Project: ${projectId}] - This image contains visual documentation relevant to this specific project but could not be analyzed. It may include drawings, plans, or visual documentation that should be manually reviewed for building regulations compliance.`;
+    console.error(`Error analyzing image ${fileName} for project ${projectId}, user ${userId}:`, error);
+    return `[Image: ${fileName} - Project: ${projectId}, User: ${userId}] - This image contains visual documentation relevant to this specific project but could not be analyzed. It may include drawings, plans, or visual documentation that should be manually reviewed for building regulations compliance.`;
   }
 }
