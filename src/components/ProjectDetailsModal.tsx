@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -257,6 +256,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                 { id: 'schedule', label: 'Schedule of Works', icon: Clock, count: scheduleOfWorks.length },
               ].map((tab) => {
                 const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
                 return (
                   <button
                     key={tab.id}
@@ -265,7 +265,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                       setActiveTab(tab.id);
                     }}
                     className={`flex items-center space-x-2 px-6 py-3 border-b-2 transition-colors ${
-                      activeTab === tab.id
+                      isActive
                         ? 'border-emerald-500 text-emerald-300 bg-emerald-500/5'
                         : 'border-transparent text-gray-400 hover:text-white hover:bg-gray-800/30'
                     }`}
