@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -215,7 +216,14 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
 
   if (!isOpen) return null;
 
+  const tabs = [
+    { id: 'chats', label: 'Chats', icon: MessageCircle, count: projectConversations.length },
+    { id: 'documents', label: 'Documents', icon: FileText, count: documents.length },
+    { id: 'schedule', label: 'Schedule of Works', icon: Clock, count: scheduleOfWorks.length },
+  ];
+
   console.log('ProjectDetailsModal rendering - activeTab:', activeTab, 'isOpen:', isOpen);
+  console.log('Available tabs:', tabs.map(t => t.id));
 
   return (
     <AnimatePresence>
@@ -250,19 +258,15 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
           {/* Tabs */}
           <div className="border-b border-gray-800/30">
             <div className="flex space-x-0">
-              {[
-                { id: 'chats', label: 'Chats', icon: MessageCircle, count: projectConversations.length },
-                { id: 'documents', label: 'Documents', icon: FileText, count: documents.length },
-                { id: 'schedule', label: 'Schedule of Works', icon: Clock, count: scheduleOfWorks.length },
-              ].map((tab) => {
+              {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
-                console.log(`Tab ${tab.id}: isActive = ${isActive}, activeTab = ${activeTab}, tab.id = ${tab.id}`);
+                console.log(`Tab ${tab.id}: isActive = ${isActive}, activeTab = "${activeTab}", tab.id = "${tab.id}"`);
                 return (
                   <button
                     key={tab.id}
                     onClick={() => {
-                      console.log('Tab clicked:', tab.id);
+                      console.log('Tab clicked:', tab.id, 'Setting activeTab to:', tab.id);
                       setActiveTab(tab.id);
                     }}
                     className={`flex items-center space-x-2 px-6 py-3 border-b-2 transition-colors ${
