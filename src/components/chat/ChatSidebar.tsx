@@ -265,9 +265,11 @@ const ChatSidebar = ({
                               {conversation.title}
                             </h3>
                             {conversation.project_id && (
-                              <div className="flex items-center bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">
-                                <FolderOpen className="w-3 h-3 mr-1" />
-                                {projectNames[conversation.project_id] || 'Project'}
+                              <div className="flex items-center bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs min-w-0 flex-shrink-0">
+                                <FolderOpen className="w-3 h-3 mr-1 flex-shrink-0" />
+                                <span className="truncate max-w-20">
+                                  {projectNames[conversation.project_id] || 'Project'}
+                                </span>
                               </div>
                             )}
                           </div>
