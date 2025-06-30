@@ -139,7 +139,8 @@ serve(async (req) => {
         // Create simplified conversation history (no AI summarization for speed)
         conversationHistory = conversations
           .map(conv => {
-            const recentMessages = conv.messages
+            const messages = conv.messages || [];
+            const recentMessages = messages
               .slice(-4) // Only last 4 messages per conversation
               .map(msg => `${msg.role.toUpperCase()}: ${msg.content.slice(0, 200)}...`) // Truncate for performance
               .join('\n');
@@ -212,12 +213,12 @@ serve(async (req) => {
 
     const pineconeData: PineconeResponse = await pineconeResponse.json();
     
-    // FIXED: Add proper null checks for pineconeData.matches
+    // FIXED: Add comprehensive null checks for pineconeData and matches
     console.log('Pinecone response:', pineconeData);
     
-    // Ensure matches exists and is an array before filtering
-    const allMatches = pineconeData?.matches || [];
-    const relevantMatches = allMatches.filter(match => match && match.score > 0.3); // Increased threshold for better quality
+    // Ensure matches exists, is an array, and has proper structure before filtering
+    const allMatches = (pineconeData && Array.isArray(pineconeData.matches)) ? pineconeData.matches : [];
+    const relevantMatches = allMatches.filter(match => match && match.score && match.score > 0.3); // Increased threshold for better quality
 
     console.log(`Found ${allMatches.length} total matches, ${relevantMatches.length} relevant matches`);
 
