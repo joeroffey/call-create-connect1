@@ -307,7 +307,7 @@ const Index = () => {
           >
             <div className="w-40 h-24 flex items-center">
               <img 
-                src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
+                src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png" 
                 alt="EezyBuild Logo" 
                 className="w-full h-full object-contain"
               />
