@@ -211,12 +211,20 @@ serve(async (req) => {
     }
 
     const pineconeData: PineconeResponse = await pineconeResponse.json();
-    const relevantMatches = pineconeData.matches?.filter(match => match.score > 0.3) || []; // Increased threshold for better quality
+    
+    // FIXED: Add proper null checks for pineconeData.matches
+    console.log('Pinecone response:', pineconeData);
+    
+    // Ensure matches exists and is an array before filtering
+    const allMatches = pineconeData?.matches || [];
+    const relevantMatches = allMatches.filter(match => match && match.score > 0.3); // Increased threshold for better quality
+
+    console.log(`Found ${allMatches.length} total matches, ${relevantMatches.length} relevant matches`);
 
     // Collect images from relevant matches
     const relatedImages: Array<{url: string, title: string, source: string}> = [];
     relevantMatches.forEach(match => {
-      if (match.metadata.images && Array.isArray(match.metadata.images)) {
+      if (match?.metadata?.images && Array.isArray(match.metadata.images)) {
         match.metadata.images.slice(0, 3).forEach(img => { // Limit to 3 images per match
           relatedImages.push({
             url: img.url,
@@ -228,8 +236,9 @@ serve(async (req) => {
     });
 
     if (relevantMatches.length === 0) {
-      const topMatches = pineconeData.matches?.slice(0, 2) || []; // Reduced from 3 to 2
+      const topMatches = allMatches.slice(0, 2) || []; // Reduced from 3 to 2
       const relevantContext = topMatches
+        .filter(match => match?.metadata?.text) // Add null check
         .map(match => match.metadata.text.slice(0, 1000)) // Truncate for performance
         .join('\n\n---\n\n');
       
@@ -244,6 +253,7 @@ serve(async (req) => {
     }
 
     const regulationsContext = relevantMatches
+      .filter(match => match?.metadata?.text) // Add null check
       .map(match => match.metadata.text.slice(0, 1500)) // Truncate for performance
       .join('\n\n---\n\n');
 
