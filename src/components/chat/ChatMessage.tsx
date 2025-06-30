@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock } from 'lucide-react';
+import { Clock, User } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 
 interface ChatMessageProps {
@@ -35,7 +35,7 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
               : 'bg-gray-700 text-emerald-400'
           }`}>
             {isUser ? (
-              <span className="text-sm font-medium">You</span>
+              <User className="w-4 h-4" />
             ) : (
               <Clock className="w-4 h-4" />
             )}
