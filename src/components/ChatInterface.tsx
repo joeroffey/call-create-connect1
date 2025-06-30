@@ -129,11 +129,6 @@ What would you like to discuss about your project?`,
   };
 
   useEffect(() => {
-    // Focus on input when component mounts
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-
     // Add welcome message on initial load - only if no conversation is selected and no messages exist
     if (messages.length === 0 && !currentConversationId) {
       const welcomeMsg = projectId ? getProjectWelcomeMessage() : welcomeMessage;
