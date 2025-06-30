@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -38,9 +39,44 @@ const ChatSidebar = ({
   projectId
 }: ChatSidebarProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [projectNames, setProjectNames] = useState<{[key: string]: string}>({});
   const { conversations, loading, refreshConversations } = useConversations(user?.id);
   const { hasActiveSubscription } = useSubscription(user?.id);
   const { toast } = useToast();
+
+  // Fetch project names for conversations
+  useEffect(() => {
+    const fetchProjectNames = async () => {
+      if (!user?.id || conversations.length === 0) return;
+
+      // Get unique project IDs from conversations
+      const projectIds = [...new Set(conversations
+        .filter(conv => conv.project_id)
+        .map(conv => conv.project_id))];
+
+      if (projectIds.length === 0) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('projects')
+          .select('id, name')
+          .in('id', projectIds);
+
+        if (error) throw error;
+
+        const namesMap: {[key: string]: string} = {};
+        data?.forEach(project => {
+          namesMap[project.id] = project.name;
+        });
+
+        setProjectNames(namesMap);
+      } catch (error) {
+        console.error('Error fetching project names:', error);
+      }
+    };
+
+    fetchProjectNames();
+  }, [conversations, user?.id]);
 
   // Debug logging
   useEffect(() => {
@@ -231,7 +267,7 @@ const ChatSidebar = ({
                             {conversation.project_id && (
                               <div className="flex items-center bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs">
                                 <FolderOpen className="w-3 h-3 mr-1" />
-                                Project
+                                {projectNames[conversation.project_id] || 'Project'}
                               </div>
                             )}
                           </div>
