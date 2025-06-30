@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Upload } from 'lucide-react';
+import { Send, Upload, Clock } from 'lucide-react';
 import ChatHeader from './chat/ChatHeader';
 import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
@@ -699,7 +699,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                     className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
                     title="Schedule of Works"
                   >
-                    Schedule of Works
+                    <Clock className="w-5 h-5" />
                   </button>
                 )}
                 <input
