@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -279,15 +278,15 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                       console.log('Tab clicked:', tab.id, 'Setting activeTab to:', tab.id);
                       setActiveTab(tab.id);
                     }}
-                    className={`flex items-center space-x-2 px-6 py-3 border-b-2 transition-colors min-w-0 ${
+                    className={`flex items-center justify-center space-x-2 px-6 py-3 border-b-2 transition-colors ${
                       isActive
                         ? 'border-emerald-500 text-emerald-300 bg-emerald-500/5'
                         : 'border-transparent text-gray-400 hover:text-white hover:bg-gray-800/30'
                     }`}
+                    title={tab.label}
                   >
-                    <Icon className="w-4 h-4 flex-shrink-0" />
-                    <span className="truncate">{tab.label}</span>
-                    <span className="bg-gray-700/50 text-gray-300 px-2 py-1 rounded-full text-xs flex-shrink-0">
+                    <Icon className="w-5 h-5" />
+                    <span className="bg-gray-700/50 text-gray-300 px-2 py-1 rounded-full text-xs">
                       {tab.count}
                     </span>
                   </button>
