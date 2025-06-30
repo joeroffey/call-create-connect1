@@ -189,7 +189,7 @@ serve(async (req) => {
     const embeddingData = await embeddingResponse.json();
     const embedding = embeddingData.data[0].embedding;
 
-    // Query Pinecone with reduced topK for faster response
+    // Query Pinecone with balanced topK for good quality
     const pineconeUrl = `${pineconeHost.replace(/\/$/, '')}/query`;
     const pineconeResponse = await fetch(pineconeUrl, {
       method: 'POST',
@@ -199,7 +199,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         vector: embedding,
-        topK: 5, // Reduced from 8 to 5 for faster response
+        topK: 8, // Increased back to 8 for better quality
         includeMetadata: true,
         includeValues: false,
       }),
@@ -218,7 +218,7 @@ serve(async (req) => {
     
     // Ensure matches exists, is an array, and has proper structure before filtering
     const allMatches = (pineconeData && Array.isArray(pineconeData.matches)) ? pineconeData.matches : [];
-    const relevantMatches = allMatches.filter(match => match && match.score && match.score > 0.3); // Increased threshold for better quality
+    const relevantMatches = allMatches.filter(match => match && match.score && match.score > 0.25); // Lowered threshold back to 0.25 for better coverage
 
     console.log(`Found ${allMatches.length} total matches, ${relevantMatches.length} relevant matches`);
 
@@ -237,10 +237,10 @@ serve(async (req) => {
     });
 
     if (relevantMatches.length === 0) {
-      const topMatches = allMatches.slice(0, 2) || []; // Reduced from 3 to 2
+      const topMatches = allMatches.slice(0, 3) || []; // Increased back to 3 for better fallback
       const relevantContext = topMatches
         .filter(match => match?.metadata?.text) // Add null check
-        .map(match => match.metadata.text.slice(0, 1000)) // Truncate for performance
+        .map(match => match.metadata.text.slice(0, 1500)) // Increased context length
         .join('\n\n---\n\n');
       
       if (!relevantContext?.trim()) {
@@ -255,14 +255,14 @@ serve(async (req) => {
 
     const regulationsContext = relevantMatches
       .filter(match => match?.metadata?.text) // Add null check
-      .map(match => match.metadata.text.slice(0, 1500)) // Truncate for performance
+      .map(match => match.metadata.text.slice(0, 2000)) // Increased context length for better quality
       .join('\n\n---\n\n');
 
     // Combine all context
     const preparedContext = await chatPrep;
     let combinedContext = preparedContext + 'UK BUILDING REGULATIONS:\n' + regulationsContext;
 
-    // Generate response using faster model and reduced tokens
+    // Generate response using faster model but with more tokens for quality
     const systemPrompt = projectContext ? 
       `You are a UK Building Regulations specialist assistant with access to project ${projectContext.id} data. 
 
@@ -272,11 +272,11 @@ Guidelines:
 1. Answer UK Building Regulations questions only
 2. Use British English throughout 
 3. Cite specific regulation parts when possible
-4. Be concise and helpful
+4. Be comprehensive and helpful
 5. Reference project documents and previous conversations when relevant
 
 Context: ${combinedContext}` :
-      `You are a UK Building Regulations specialist assistant. Answer only UK Building Regulations questions using British English. Be concise and cite specific regulation parts.
+      `You are a UK Building Regulations specialist assistant. Answer only UK Building Regulations questions using British English. Be comprehensive and cite specific regulation parts.
 
 Context: ${combinedContext}`;
 
@@ -287,7 +287,7 @@ Context: ${combinedContext}`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Using faster, cheaper model
+        model: 'gpt-4o-mini', // Using faster model
         messages: [
           {
             role: 'system',
@@ -298,8 +298,8 @@ Context: ${combinedContext}`;
             content: message
           }
         ],
-        temperature: 0.2, // Reduced for faster, more focused responses
-        max_tokens: 800, // Reduced from 1500 for faster response
+        temperature: 0.3, // Slightly increased for more natural responses
+        max_tokens: 1000, // Balanced token count for quality vs speed
       }),
     });
 
@@ -316,7 +316,7 @@ Context: ${combinedContext}`;
 
     const responseData: any = {
       response: aiResponse,
-      images: relatedImages.slice(0, 3), // Reduced from 5 to 3 images
+      images: relatedImages.slice(0, 4), // Increased to 4 images for better quality
       documentsAnalyzed: projectDocuments.length,
       conversationsReferenced: conversationHistory ? 'Available' : 'None'
     };
