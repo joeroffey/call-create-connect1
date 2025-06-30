@@ -157,7 +157,7 @@ const Index = () => {
 
     // Always available
     baseTabs.push(
-      { id: 'notifications', icon: Bell, label: 'Notifications' },
+      { id: 'notifications', icon: Bell, label: 'Updates' },
       { id: 'profile', icon: User, label: 'Profile' }
     );
 
