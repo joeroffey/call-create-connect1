@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -135,6 +136,31 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       toast({
         variant: "destructive",
         title: "Error updating project",
+        description: error.message || "Please try again.",
+      });
+    }
+  };
+
+  const handleStatusChange = async (projectId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Status updated",
+        description: `Project status changed to ${newStatus.replace('-', ' ')}.`,
+      });
+
+      fetchProjects();
+    } catch (error: any) {
+      console.error('Error updating status:', error);
+      toast({
+        variant: "destructive",
+        title: "Error updating status",
         description: error.message || "Please try again.",
       });
     }
@@ -296,6 +322,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
                 onDelete={deleteProject}
                 onTogglePin={togglePinProject}
                 onProjectStatsClick={handleProjectStatsClick}
+                onStatusChange={handleStatusChange}
               />
             ))}
           </div>

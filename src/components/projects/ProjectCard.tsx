@@ -1,6 +1,7 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, Pin, MessageCircle, FileText, Clock } from 'lucide-react';
+import { Edit, Trash2, Pin, MessageCircle, FileText, Clock, ChevronDown } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -25,6 +26,7 @@ interface ProjectCardProps {
   onDelete: (projectId: string, projectName: string) => void;
   onTogglePin: (projectId: string, currentPinned: boolean) => void;
   onProjectStatsClick: (project: Project, section: string) => void;
+  onStatusChange: (projectId: string, newStatus: string) => void;
 }
 
 const ProjectCard = ({
@@ -37,8 +39,11 @@ const ProjectCard = ({
   onEdit,
   onDelete,
   onTogglePin,
-  onProjectStatsClick
+  onProjectStatsClick,
+  onStatusChange
 }: ProjectCardProps) => {
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'planning': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
@@ -64,6 +69,18 @@ const ProjectCard = ({
     console.log('Calling onProjectStatsClick with:', project, 'schedule');
     onProjectStatsClick(project, 'schedule');
   };
+
+  const handleStatusChange = (newStatus: string) => {
+    onStatusChange(project.id, newStatus);
+    setShowStatusDropdown(false);
+  };
+
+  const statusOptions = [
+    { value: 'planning', label: 'Planning' },
+    { value: 'in-progress', label: 'In Progress' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'on-hold', label: 'On Hold' }
+  ];
 
   return (
     <motion.div
@@ -111,13 +128,43 @@ const ProjectCard = ({
 
       {/* Status and Label */}
       <div className="flex items-center space-x-2 mb-4">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
-          {project.status.replace('-', ' ')}
-        </span>
+        <div className="relative">
+          <button
+            onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
+          >
+            <span>{project.status.replace('-', ' ')}</span>
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          
+          {showStatusDropdown && (
+            <div className="absolute top-full left-0 mt-1 bg-gray-800/95 backdrop-blur-sm border border-gray-700/50 rounded-lg shadow-xl z-10 min-w-32">
+              {statusOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => handleStatusChange(option.value)}
+                  className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-700/50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                    project.status === option.value ? 'text-emerald-300' : 'text-gray-300'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getLabelColor(project.label)}`}>
           {project.label}
         </span>
       </div>
+
+      {/* Click outside to close dropdown */}
+      {showStatusDropdown && (
+        <div 
+          className="fixed inset-0 z-5" 
+          onClick={() => setShowStatusDropdown(false)}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-4 py-3 border-t border-b border-gray-800/30">
