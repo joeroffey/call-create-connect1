@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Upload, Milestone } from 'lucide-react';
@@ -34,7 +35,7 @@ const generateId = () => {
 
 const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
-  const [newMessage, set নিউMessage] = useState('');
+  const [newMessage, setNewMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
