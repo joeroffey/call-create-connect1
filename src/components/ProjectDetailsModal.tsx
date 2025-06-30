@@ -121,9 +121,19 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
 
   const toggleWorkItem = async (workItemId: string, completed: boolean) => {
     try {
+      const updateData: any = { completed: !completed };
+      
+      // If marking as completed, set completion date
+      if (!completed) {
+        updateData.completed_at = new Date().toISOString();
+      } else {
+        // If marking as not completed, clear completion date
+        updateData.completed_at = null;
+      }
+
       const { error } = await supabase
         .from('project_schedule_of_works')
-        .update({ completed: !completed })
+        .update(updateData)
         .eq('id', workItemId);
 
       if (error) throw error;
@@ -455,12 +465,20 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                           {workItem.description && (
                             <p className="text-gray-400 text-sm mt-1">{workItem.description}</p>
                           )}
-                          {workItem.due_date && (
-                            <div className="flex items-center space-x-1 mt-2 text-xs text-gray-500">
-                              <Calendar className="w-3 h-3" />
-                              <span>Due: {new Date(workItem.due_date).toLocaleDateString()}</span>
-                            </div>
-                          )}
+                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
+                            {workItem.due_date && (
+                              <div className="flex items-center space-x-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>Due: {new Date(workItem.due_date).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                            {workItem.completed && workItem.completed_at && (
+                              <div className="flex items-center space-x-1 text-emerald-400">
+                                <Clock className="w-3 h-3" />
+                                <span>Completed: {new Date(workItem.completed_at).toLocaleDateString()}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
