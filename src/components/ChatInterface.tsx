@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Upload, Lightbulb, Book, Milestone, ArrowLeft } from 'lucide-react';
+import { Send, Upload, Milestone } from 'lucide-react';
 import ChatHeader from './chat/ChatHeader';
 import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
@@ -653,7 +653,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
           {/* Chat Messages */}
           <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
             {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} />
+              <ChatMessage key={message.id} message={message} isProjectChat={!!projectId} />
             ))}
             {isLoading && (
               <ChatMessage
@@ -663,6 +663,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                   sender: 'assistant',
                   timestamp: new Date(),
                 }}
+                isProjectChat={!!projectId}
               />
             )}
           </div>

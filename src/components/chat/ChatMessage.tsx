@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Bot, FileText } from 'lucide-react';
+import { User, Bot, FileText, Clock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
@@ -14,9 +14,10 @@ interface ChatMessageProps {
     images?: Array<{ url: string; title: string; source: string; }>;
     documentsAnalyzed?: number;
   };
+  isProjectChat?: boolean;
 }
 
-const ChatMessage = ({ message }: ChatMessageProps) => {
+const ChatMessage = ({ message, isProjectChat = false }: ChatMessageProps) => {
   const isUser = message.sender === 'user';
   
   return (
@@ -30,7 +31,11 @@ const ChatMessage = ({ message }: ChatMessageProps) => {
       {!isUser && (
         <div className="flex-shrink-0">
           <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center">
-            <Bot className="w-4 h-4 text-white" />
+            {isProjectChat ? (
+              <Clock className="w-4 h-4 text-white" />
+            ) : (
+              <Bot className="w-4 h-4 text-white" />
+            )}
           </div>
         </div>
       )}
