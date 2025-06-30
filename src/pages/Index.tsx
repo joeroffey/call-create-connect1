@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
@@ -302,11 +301,11 @@ const Index = () => {
       >
         <div className="flex items-center justify-between">
           <motion.div 
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-4"
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-40 h-24 flex items-center justify-start">
+            <div className="w-40 h-24 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
                 alt="EezyBuild Logo" 
