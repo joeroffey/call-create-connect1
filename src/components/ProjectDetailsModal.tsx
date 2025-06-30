@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -31,6 +32,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
   // Update activeTab when initialTab changes
   useEffect(() => {
     if (isOpen) {
+      console.log('ProjectDetailsModal opened with initialTab:', initialTab);
       setActiveTab(initialTab);
     }
   }, [isOpen, initialTab]);
@@ -214,6 +216,8 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
 
   if (!isOpen) return null;
 
+  console.log('ProjectDetailsModal rendering - activeTab:', activeTab, 'isOpen:', isOpen);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -256,7 +260,10 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      console.log('Tab clicked:', tab.id);
+                      setActiveTab(tab.id);
+                    }}
                     className={`flex items-center space-x-2 px-6 py-3 border-b-2 transition-colors ${
                       activeTab === tab.id
                         ? 'border-emerald-500 text-emerald-300 bg-emerald-500/5'

@@ -59,6 +59,12 @@ const ProjectCard = ({
     }
   };
 
+  const handleScheduleClick = () => {
+    console.log('Schedule button clicked for project:', project.name);
+    console.log('Calling onProjectStatsClick with:', project, 'schedule');
+    onProjectStatsClick(project, 'schedule');
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -136,7 +142,7 @@ const ProjectCard = ({
           <div className="text-xs text-gray-400">Docs</div>
         </button>
         <button
-          onClick={() => onProjectStatsClick(project, 'milestones')}
+          onClick={handleScheduleClick}
           className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
         >
           <div className="flex items-center justify-center mb-1">

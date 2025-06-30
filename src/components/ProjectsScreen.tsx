@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -242,9 +241,11 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   };
 
   const handleProjectStatsClick = (project: Project, section: string) => {
+    console.log('handleProjectStatsClick called with:', project.name, section);
     setSelectedProject(project);
     setActiveTab(section);
     setShowProjectDetails(true);
+    console.log('Modal should now be open with activeTab:', section);
   };
 
   if (loading || conversationsLoading) {
@@ -306,6 +307,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         project={selectedProject}
         isOpen={showProjectDetails}
         onClose={() => {
+          console.log('Closing ProjectDetailsModal');
           setShowProjectDetails(false);
           setSelectedProject(null);
         }}
