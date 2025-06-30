@@ -291,21 +291,21 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter safe-area-top safe-area-bottom">
-      {/* Header */}
+    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter">
+      {/* Header - Mobile optimized */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="glass border-b border-white/5 px-6 py-4 flex-shrink-0"
+        className="glass border-b border-white/5 px-4 py-3 flex-shrink-0 pt-safe-area-top"
       >
         <div className="flex items-center justify-between">
           <motion.div 
-            className="flex items-center space-x-4"
+            className="flex items-center space-x-3"
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-16 h-12 flex items-center justify-center">
+            <div className="w-12 h-9 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
                 alt="EezyBuild Logo" 
@@ -314,18 +314,18 @@ const Index = () => {
             </div>
             <div>
               {currentProjectId && (
-                <p className="text-sm text-emerald-400">Project Chat Mode</p>
+                <p className="text-xs text-emerald-400">Project Chat Mode</p>
               )}
             </div>
           </motion.div>
           <motion.div 
-            className="flex items-center space-x-3 bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-emerald-500/20"
+            className="flex items-center space-x-2 bg-emerald-500/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-500/20"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
           >
-            <Crown className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-emerald-300 font-medium">
+            <Crown className="w-3 h-3 text-emerald-400" />
+            <span className="text-xs text-emerald-300 font-medium">
               {getSubscriptionDisplayName()}
             </span>
           </motion.div>
@@ -348,49 +348,47 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation - Improved responsive layout */}
+      {/* Bottom Navigation - Mobile optimized, fixed width */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-        className="glass border-t border-white/5 px-2 py-2 flex-shrink-0 overflow-x-auto"
+        className="glass border-t border-white/5 px-1 py-1 flex-shrink-0 pb-safe-area-bottom"
       >
-        <div className="flex justify-center items-center w-full min-w-max">
-          <div className="flex space-x-1 px-2">
-            {tabs.map((tab, index) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              
-              return (
-                <motion.button
-                  key={tab.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
-                  whileTap={{ scale: 0.96 }}
-                  whileHover={{ scale: 1.02 }}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-200 min-w-[60px] ${
-                    isActive 
-                      ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
-                      : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
-                  }`}
-                >
-                  <Icon className={`w-5 h-5 transition-all duration-200 ${
-                    isActive ? 'text-emerald-300' : ''
-                  }`} />
-                  <span className="text-xs mt-1 font-medium truncate max-w-[50px]">{tab.label}</span>
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-sm"
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
+        <div className="flex justify-between items-center w-full">
+          {tabs.map((tab, index) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            return (
+              <motion.button
+                key={tab.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.02 }}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative flex flex-col items-center py-2 px-1 rounded-xl transition-all duration-200 flex-1 max-w-[80px] ${
+                  isActive 
+                    ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
+                    : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
+                }`}
+              >
+                <Icon className={`w-4 h-4 transition-all duration-200 ${
+                  isActive ? 'text-emerald-300' : ''
+                }`} />
+                <span className="text-[10px] mt-0.5 font-medium truncate leading-tight">{tab.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute -bottom-0.5 w-1 h-1 bg-emerald-400 rounded-full shadow-sm"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
       </motion.nav>
     </div>
