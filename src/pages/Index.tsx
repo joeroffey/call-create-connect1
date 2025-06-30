@@ -305,7 +305,7 @@ const Index = () => {
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-24 h-16 flex items-center justify-center">
+            <div className="w-32 h-20 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
                 alt="EezyBuild Logo" 
