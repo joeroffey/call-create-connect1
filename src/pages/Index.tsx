@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
+import { MessageCircle, Search, User, Bell, Crown, Calculator, FolderOpen } from 'lucide-react';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -139,14 +138,16 @@ const Index = () => {
     }
   };
 
-  // Define available tabs based on subscription - Tools available for all users (Basic gets volumetrics)
+  // Define available tabs based on subscription - replaced Settings with Notifications
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
     ];
 
-    // Tools available for all users (Basic, Pro, and ProMax)
-    baseTabs.push({ id: 'tools', icon: Wrench, label: 'Tools' });
+    // Apps available for Pro and ProMax
+    if (subscriptionTier === 'pro' || subscriptionTier === 'enterprise') {
+      baseTabs.push({ id: 'apps', icon: Calculator, label: 'Apps' });
+    }
 
     // Advanced Search only for ProMax
     if (subscriptionTier === 'enterprise') {
@@ -238,8 +239,22 @@ const Index = () => {
           </div>;
         }
         return <AdvancedSearchInterface user={user} />;
-      case 'tools':
-        return <AppsScreen user={user} subscriptionTier={subscriptionTier} />;
+      case 'apps':
+        if (subscriptionTier !== 'pro' && subscriptionTier !== 'enterprise') {
+          return <div className="flex-1 flex items-center justify-center p-8 text-center">
+            <div>
+              <h2 className="text-xl font-bold text-white mb-4">Subscription Required</h2>
+              <p className="text-gray-400 mb-6">Building Apps are available for Pro and ProMax subscribers.</p>
+              <button 
+                onClick={() => setActiveTab('profile')}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
+              >
+                Choose a Plan
+              </button>
+            </div>
+          </div>;
+        }
+        return <AppsScreen user={user} />;
       case 'projects':
         if (subscriptionTier !== 'enterprise') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">
@@ -276,21 +291,21 @@ const Index = () => {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter">
-      {/* Header - Mobile optimized */}
+    <div className="h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white flex flex-col overflow-hidden font-inter safe-area-top safe-area-bottom">
+      {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="glass border-b border-white/5 px-4 py-3 flex-shrink-0 pt-safe-area-top"
+        className="glass border-b border-white/5 px-6 py-4 flex-shrink-0"
       >
         <div className="flex items-center justify-between">
           <motion.div 
-            className="flex items-center space-x-3"
+            className="flex items-center space-x-4"
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-12 h-9 flex items-center justify-center">
+            <div className="w-16 h-12 flex items-center justify-center">
               <img 
                 src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
                 alt="EezyBuild Logo" 
@@ -299,18 +314,18 @@ const Index = () => {
             </div>
             <div>
               {currentProjectId && (
-                <p className="text-xs text-emerald-400">Project Chat Mode</p>
+                <p className="text-sm text-emerald-400">Project Chat Mode</p>
               )}
             </div>
           </motion.div>
           <motion.div 
-            className="flex items-center space-x-2 bg-emerald-500/10 backdrop-blur-sm px-3 py-1.5 rounded-full border border-emerald-500/20"
+            className="flex items-center space-x-3 bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-emerald-500/20"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
           >
-            <Crown className="w-3 h-3 text-emerald-400" />
-            <span className="text-xs text-emerald-300 font-medium">
+            <Crown className="w-4 h-4 text-emerald-400" />
+            <span className="text-sm text-emerald-300 font-medium">
               {getSubscriptionDisplayName()}
             </span>
           </motion.div>
@@ -333,47 +348,49 @@ const Index = () => {
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation - Mobile optimized, fixed width */}
+      {/* Bottom Navigation - Improved responsive layout */}
       <motion.nav 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
-        className="glass border-t border-white/5 px-1 py-1 flex-shrink-0 pb-safe-area-bottom"
+        className="glass border-t border-white/5 px-2 py-2 flex-shrink-0 overflow-x-auto"
       >
-        <div className="flex justify-between items-center w-full">
-          {tabs.map((tab, index) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            
-            return (
-              <motion.button
-                key={tab.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
-                whileTap={{ scale: 0.96 }}
-                whileHover={{ scale: 1.02 }}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex flex-col items-center py-2 px-1 rounded-xl transition-all duration-200 flex-1 max-w-[80px] ${
-                  isActive 
-                    ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
-                    : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
-                }`}
-              >
-                <Icon className={`w-4 h-4 transition-all duration-200 ${
-                  isActive ? 'text-emerald-300' : ''
-                }`} />
-                <span className="text-[10px] mt-0.5 font-medium truncate leading-tight">{tab.label}</span>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTab"
-                    className="absolute -bottom-0.5 w-1 h-1 bg-emerald-400 rounded-full shadow-sm"
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
+        <div className="flex justify-center items-center w-full min-w-max">
+          <div className="flex space-x-1 px-2">
+            {tabs.map((tab, index) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              
+              return (
+                <motion.button
+                  key={tab.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
+                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02 }}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex flex-col items-center py-2 px-3 rounded-xl transition-all duration-200 min-w-[60px] ${
+                    isActive 
+                      ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20' 
+                      : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
+                  }`}
+                >
+                  <Icon className={`w-5 h-5 transition-all duration-200 ${
+                    isActive ? 'text-emerald-300' : ''
+                  }`} />
+                  <span className="text-xs mt-1 font-medium truncate max-w-[50px]">{tab.label}</span>
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute -bottom-1 w-1.5 h-1.5 bg-emerald-400 rounded-full shadow-sm"
+                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
       </motion.nav>
     </div>
