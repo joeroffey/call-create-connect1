@@ -153,7 +153,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
             name: newProject.name.trim(),
             description: newProject.description.trim() || null,
             label: newProject.label,
-            status: 'planning'
+            status: 'set-up' // Changed from 'planning' to 'set-up'
           }
         ])
         .select()

@@ -1,7 +1,15 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, Pin, MessageCircle, FileText, Milestone } from 'lucide-react';
+import { MessageSquare, FileText, Clock, Pin, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Project {
   id: string;
@@ -38,25 +46,50 @@ const ProjectCard = ({
   onEdit,
   onDelete,
   onTogglePin,
-  onProjectStatsClick
+  onProjectStatsClick,
 }: ProjectCardProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'planning': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'in-progress': return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
-      case 'completed': return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'on-hold': return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-      default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+      case 'set-up': // Changed from 'planning'
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'in-progress':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'completed':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'on-hold':
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+    }
+  };
+
+  const getStatusDisplayName = (status: string) => {
+    switch (status) {
+      case 'set-up': // Changed from 'planning'
+        return 'Set-Up';
+      case 'in-progress':
+        return 'In Progress';
+      case 'completed':
+        return 'Completed';
+      case 'on-hold':
+        return 'On Hold';
+      default:
+        return status;
     }
   };
 
   const getLabelColor = (label: string) => {
     switch (label) {
-      case 'Residential': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-      case 'Commercial': return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
-      case 'Industrial': return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
-      case 'Infrastructure': return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
-      default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+      case 'Residential':
+        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+      case 'Commercial':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'Industrial':
+        return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+      case 'Mixed Use':
+        return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
 
@@ -65,118 +98,120 @@ const ProjectCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`bg-gray-900/50 backdrop-blur-sm border rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group relative ${
-        project.pinned 
-          ? 'border-emerald-500/50 ring-1 ring-emerald-500/20' 
-          : 'border-gray-800/50'
-      }`}
+      className="relative"
     >
-      {/* Pin indicator */}
-      {project.pinned && (
-        <div className="absolute -top-2 -right-2 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center">
-          <Pin className="w-2 h-2 text-white" />
-        </div>
-      )}
+      <Card className="card-professional hover:border-emerald-500/40 transition-all duration-300 group h-full flex flex-col">
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-2 mb-2">
+                <CardTitle className="text-lg text-white group-hover:text-emerald-300 transition-colors truncate">
+                  {project.name}
+                </CardTitle>
+                {project.pinned && (
+                  <Pin className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <span className={`px-2 py-1 rounded-full text-xs border ${getLabelColor(project.label)}`}>
+                  {project.label}
+                </span>
+                <span className={`px-2 py-1 rounded-full text-xs border ${getStatusColor(project.status)}`}>
+                  {getStatusDisplayName(project.status)}
+                </span>
+              </div>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                <DropdownMenuItem 
+                  onClick={() => onEdit(project)}
+                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onTogglePin(project.id, project.pinned || false)}
+                  className="text-gray-300 hover:text-white hover:bg-gray-700"
+                >
+                  <Pin className="w-4 h-4 mr-2" />
+                  {project.pinned ? 'Unpin' : 'Pin'}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onDelete(project.id, project.name)}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <CardDescription className="text-gray-400 line-clamp-2">
+            {project.description || 'No description provided'}
+          </CardDescription>
+        </CardHeader>
 
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors">
-            {project.name}
-          </h3>
-          {project.description && (
-            <p className="text-gray-400 text-sm mb-3 line-clamp-2">
-              {project.description}
-            </p>
-          )}
-        </div>
-        <div className="relative">
-          <button 
-            onClick={() => onTogglePin(project.id, project.pinned || false)}
-            className={`p-2 hover:bg-gray-800/50 rounded-lg transition-colors ${
-              project.pinned 
-                ? 'text-emerald-400 hover:text-emerald-300' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-            title={project.pinned ? 'Unpin project' : 'Pin project to top'}
+        <CardContent className="flex-1 flex flex-col justify-between">
+          {/* Project Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              onClick={() => onProjectStatsClick(project, 'chats')}
+              className="bg-gray-800/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-2">
+                <MessageSquare className="w-4 h-4 text-blue-400" />
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-white">{conversationCount}</div>
+                  <div className="text-xs text-gray-400">Chats</div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              onClick={() => onProjectStatsClick(project, 'documents')}
+              className="bg-gray-800/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-2">
+                <FileText className="w-4 h-4 text-green-400" />
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-white">{documentCount}</div>
+                  <div className="text-xs text-gray-400">Docs</div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              onClick={() => onProjectStatsClick(project, 'schedule')}
+              className="bg-gray-800/50 rounded-lg p-3 cursor-pointer hover:bg-gray-700/50 transition-colors"
+            >
+              <div className="flex items-center space-x-2">
+                <Clock className="w-4 h-4 text-purple-400" /> {/* Changed from target/milestone icon to clock */}
+                <div className="text-center">
+                  <div className="text-lg font-semibold text-white">{scheduleOfWorksCount}</div>
+                  <div className="text-xs text-gray-400">Tasks</div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Action Button */}
+          <Button
+            onClick={() => onStartNewChat(project.id)}
+            className="w-full gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
           >
-            <Pin className={`w-4 h-4 ${project.pinned ? 'fill-current' : ''}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* Status and Label */}
-      <div className="flex items-center space-x-2 mb-4">
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(project.status)}`}>
-          {project.status.replace('-', ' ')}
-        </span>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getLabelColor(project.label)}`}>
-          {project.label}
-        </span>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-4 py-3 border-t border-b border-gray-800/30">
-        <button
-          onClick={() => onProjectStatsClick(project, 'chats')}
-          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
-        >
-          <div className="flex items-center justify-center mb-1">
-            <MessageCircle className="w-4 h-4 text-emerald-400 group-hover/stat:text-emerald-300" />
-          </div>
-          <div className="text-lg font-semibold text-white group-hover/stat:text-emerald-300">{conversationCount}</div>
-          <div className="text-xs text-gray-400">Chats</div>
-        </button>
-        <button
-          onClick={() => onProjectStatsClick(project, 'documents')}
-          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
-        >
-          <div className="flex items-center justify-center mb-1">
-            <FileText className="w-4 h-4 text-blue-400 group-hover/stat:text-blue-300" />
-          </div>
-          <div className="text-lg font-semibold text-white group-hover/stat:text-blue-300">{documentCount}</div>
-          <div className="text-xs text-gray-400">Docs</div>
-        </button>
-        <button
-          onClick={() => onProjectStatsClick(project, 'milestones')}
-          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
-        >
-          <div className="flex items-center justify-center mb-1">
-            <Milestone className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
-          </div>
-          <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{scheduleOfWorksCount}</div>
-          <div className="text-xs text-gray-400">Schedule</div>
-        </button>
-      </div>
-
-      {/* Actions */}
-      <div className="flex space-x-2">
-        <button
-          onClick={() => onStartNewChat(project.id)}
-          className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium"
-        >
-          Start Chat
-        </button>
-        <button
-          onClick={() => onEdit(project)}
-          className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 border border-gray-700/50 rounded-lg transition-all duration-200"
-        >
-          <Edit className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => onDelete(project.id, project.name)}
-          className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg transition-all duration-200"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Project dates */}
-      <div className="mt-4 pt-3 border-t border-gray-800/30 text-xs text-gray-500">
-        <div className="flex items-center justify-between">
-          <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
-          <span>Updated: {new Date(project.updated_at).toLocaleDateString()}</span>
-        </div>
-      </div>
+            Start New Chat
+          </Button>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

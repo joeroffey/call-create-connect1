@@ -13,55 +13,70 @@ import BrickCalculator from './BrickCalculator';
 
 interface AppsScreenProps {
   user: any;
+  subscriptionTier?: string;
 }
 
-const AppsScreen = ({ user }: AppsScreenProps) => {
+const AppsScreen = ({ user, subscriptionTier = 'none' }: AppsScreenProps) => {
   const [activeApp, setActiveApp] = useState<string | null>(null);
 
   const apps = [
-    {
-      id: 'timber-calculator',
-      title: 'Timber Calculator',
-      description: 'Calculate timber requirements for flooring, framing, and roofing projects with cost estimates.',
-      icon: '🪵',
-      category: 'Calculators'
-    },
     {
       id: 'volumetric-calculator',
       title: 'Volumetric Calculator',
       description: 'Calculate volumes and material quantities for concrete, aggregates, and other building materials.',
       icon: '📐',
-      category: 'Calculators'
+      category: 'Calculators',
+      requiredTier: 'basic' // Available for EezyBuild Basic and above
+    },
+    {
+      id: 'timber-calculator',
+      title: 'Timber Calculator',
+      description: 'Calculate timber requirements for flooring, framing, and roofing projects with cost estimates.',
+      icon: '🪵',
+      category: 'Calculators',
+      requiredTier: 'pro' // Pro and ProMax only
     },
     {
       id: 'ready-reckoner',
       title: 'Ready Reckoner',
       description: 'Quick reference tool for unit conversions, material densities, and standard calculations.',
       icon: '📋',
-      category: 'Reference'
+      category: 'Reference',
+      requiredTier: 'pro' // Pro and ProMax only
     },
     {
       id: 'timber-guide',
       title: 'Timber Guide',
       description: 'Comprehensive guide to UK timber grades, species, and building regulations compliance.',
       icon: '📚',
-      category: 'Reference'
+      category: 'Reference',
+      requiredTier: 'pro' // Pro and ProMax only
     },
     {
       id: 'roof-tiles-calculator',
       title: 'Roof Tiles Calculator',
       description: 'Calculate roof tile quantities, battens, and materials for UK roofing projects.',
       icon: '🏠',
-      category: 'Calculators'
+      category: 'Calculators',
+      requiredTier: 'pro' // Pro and ProMax only
     },
     {
       id: 'brick-calculator',
       title: 'Brick Calculator',
       description: 'Calculate brick quantities, mortar, and materials for UK masonry projects.',
       icon: '🧱',
-      category: 'Calculators'
+      category: 'Calculators',
+      requiredTier: 'pro' // Pro and ProMax only
     }
   ];
+
+  // Helper function to check if user has access to a tool
+  const hasAccessToTool = (requiredTier: string) => {
+    const tierHierarchy = ['none', 'basic', 'pro', 'enterprise'];
+    const userTierIndex = tierHierarchy.indexOf(subscriptionTier);
+    const requiredTierIndex = tierHierarchy.indexOf(requiredTier);
+    return userTierIndex >= requiredTierIndex;
+  };
 
   const categories = ['All', ...Array.from(new Set(apps.map(app => app.category)))];
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -113,7 +128,7 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
           className="text-center"
         >
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-            Construction Apps
+            Construction Tools
           </h1>
           <p className="text-gray-400">
             Professional tools to help with your building projects
@@ -138,9 +153,11 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
           ))}
         </div>
 
-        {/* Apps Grid */}
+        {/* Tools Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredApps.map((app, index) => {
+            const hasAccess = hasAccessToTool(app.requiredTier);
+            
             return (
               <motion.div
                 key={app.id}
@@ -148,7 +165,9 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="card-professional hover:border-emerald-500/40 transition-all duration-300 group cursor-pointer">
+                <Card className={`card-professional transition-all duration-300 group cursor-pointer ${
+                  hasAccess ? 'hover:border-emerald-500/40' : 'opacity-60'
+                }`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
@@ -156,12 +175,23 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
                           <span className="text-2xl">{app.icon}</span>
                         </div>
                         <div>
-                          <CardTitle className="text-lg text-white group-hover:text-emerald-300 transition-colors">
+                          <CardTitle className={`text-lg group-hover:text-emerald-300 transition-colors ${
+                            hasAccess ? 'text-white' : 'text-gray-400'
+                          }`}>
                             {app.title}
                           </CardTitle>
+                          {!hasAccess && (
+                            <div className="text-xs text-orange-400 mt-1">
+                              {app.requiredTier === 'pro' ? 'Pro Required' : 'ProMax Required'}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-200" />
+                      <ArrowRight className={`w-5 h-5 transition-all duration-200 ${
+                        hasAccess 
+                          ? 'text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-1' 
+                          : 'text-gray-600'
+                      }`} />
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -169,10 +199,15 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
                       {app.description}
                     </CardDescription>
                     <Button
-                      onClick={() => handleAppClick(app.id)}
-                      className="w-full gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                      onClick={() => hasAccess && handleAppClick(app.id)}
+                      disabled={!hasAccess}
+                      className={`w-full font-medium ${
+                        hasAccess 
+                          ? 'gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black' 
+                          : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                      }`}
                     >
-                      Open App
+                      {hasAccess ? 'Open Tool' : 'Upgrade Required'}
                     </Button>
                   </CardContent>
                 </Card>
@@ -193,7 +228,7 @@ const AppsScreen = ({ user }: AppsScreenProps) => {
               Professional Construction Tools
             </h3>
             <p className="text-gray-400 mb-4">
-              All the essential calculators and references you need for accurate construction planning and material estimation.
+              Essential calculators and references for accurate construction planning and material estimation.
             </p>
             <div className="flex items-center justify-center space-x-2 text-sm text-emerald-400">
               <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />

@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Bell, Crown, Calculator, FolderOpen } from 'lucide-react';
+import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -138,16 +139,14 @@ const Index = () => {
     }
   };
 
-  // Define available tabs based on subscription - replaced Settings with Notifications
+  // Define available tabs based on subscription - Tools available for all users (Basic gets volumetrics)
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
     ];
 
-    // Apps available for Pro and ProMax
-    if (subscriptionTier === 'pro' || subscriptionTier === 'enterprise') {
-      baseTabs.push({ id: 'apps', icon: Calculator, label: 'Apps' });
-    }
+    // Tools available for all users (Basic, Pro, and ProMax)
+    baseTabs.push({ id: 'tools', icon: Wrench, label: 'Tools' });
 
     // Advanced Search only for ProMax
     if (subscriptionTier === 'enterprise') {
@@ -239,22 +238,8 @@ const Index = () => {
           </div>;
         }
         return <AdvancedSearchInterface user={user} />;
-      case 'apps':
-        if (subscriptionTier !== 'pro' && subscriptionTier !== 'enterprise') {
-          return <div className="flex-1 flex items-center justify-center p-8 text-center">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">Subscription Required</h2>
-              <p className="text-gray-400 mb-6">Building Apps are available for Pro and ProMax subscribers.</p>
-              <button 
-                onClick={() => setActiveTab('profile')}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
-              >
-                Choose a Plan
-              </button>
-            </div>
-          </div>;
-        }
-        return <AppsScreen user={user} />;
+      case 'tools':
+        return <AppsScreen user={user} subscriptionTier={subscriptionTier} />;
       case 'projects':
         if (subscriptionTier !== 'enterprise') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">
