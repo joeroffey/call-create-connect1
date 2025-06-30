@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
     StatusBar: {
       style: 'DARK',
       backgroundColor: '#000000',
-      overlaysWebView: false
+      overlaysWebView: true
     },
     SplashScreen: {
       launchShowDuration: 0,
@@ -27,8 +27,7 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: true,
     captureInput: true,
-    webContentsDebuggingEnabled: false,
-    appendUserAgent: 'EezyBuildApp'
+    webContentsDebuggingEnabled: false
   },
   ios: {
     contentInset: 'never',
