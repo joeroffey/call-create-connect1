@@ -8,7 +8,7 @@ import ImageModal from './ImageModal';
 interface Message {
   id: string;
   text: string;
-  sender: 'user' | 'assistant';
+  sender: 'user' | 'bot';
   timestamp: Date;
   isTyping?: boolean;
   images?: Array<{
@@ -71,8 +71,8 @@ const MessageBubble = ({ message }: MessageBubbleProps) => {
               </p>
             </div>
 
-            {/* Images button for assistant messages */}
-            {message.sender === 'assistant' && message.images && message.images.length > 0 && (
+            {/* Images button for bot messages */}
+            {message.sender === 'bot' && message.images && message.images.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 8, scale: 0.96 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
