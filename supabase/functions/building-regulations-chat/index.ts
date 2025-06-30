@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
@@ -83,63 +82,67 @@ serve(async (req) => {
     let documentContext = '';
     let conversationHistory = '';
 
-    // CRITICAL: Ensure we have both project context and user authentication
-    if (!projectContext?.id || !projectContext?.userId) {
-      console.error('Missing project context or user ID - potential security risk');
-      throw new Error('Project context and user authentication required for security');
-    }
-
-    if (supabaseUrl && supabaseServiceKey) {
-      supabase = createClient(supabaseUrl, supabaseServiceKey);
-      
-      // SECURITY FIX: Fetch ONLY documents for THIS specific project AND user
-      console.log(`Fetching documents for project: ${projectContext.id}, user: ${projectContext.userId}`);
-      
-      const { data: documents, error: docsError } = await supabase
-        .from('project_documents')
-        .select('id, file_name, file_path, file_type, file_size, user_id, project_id')
-        .eq('project_id', projectContext.id)
-        .eq('user_id', projectContext.userId); // CRITICAL: Only this user's documents
-
-      if (docsError) {
-        console.error('Error fetching project documents:', docsError);
-        throw new Error('Failed to fetch project documents securely');
-      } else {
-        projectDocuments = documents || [];
-        console.log(`SECURITY CHECK: Found ${projectDocuments.length} documents for project ${projectContext.id} and user ${projectContext.userId}`);
-
-        // Verify all documents belong to the correct project and user
-        const invalidDocs = projectDocuments.filter(doc => 
-          doc.project_id !== projectContext.id || doc.user_id !== projectContext.userId
-        );
-        
-        if (invalidDocs.length > 0) {
-          console.error('SECURITY BREACH DETECTED: Documents from other projects/users found:', invalidDocs);
-          throw new Error('Security violation: Unauthorized document access detected');
-        }
-
-        // Extract content from documents with enhanced analysis - ONLY from THIS project
-        if (projectDocuments.length > 0) {
-          documentContext = await extractDocumentContentWithAnalysis(
-            supabase, 
-            projectDocuments, 
-            openaiKey, 
-            message,
-            projectContext.id,
-            projectContext.userId
-          );
-          console.log(`Document context extracted for project ${projectContext.id}, length:`, documentContext.length);
-        }
+    // FIXED: Only require project context and user authentication for project-specific chats
+    if (projectContext) {
+      if (!projectContext.id || !projectContext.userId) {
+        console.error('Project context provided but missing project ID or user ID - potential security risk');
+        throw new Error('Project context requires both project ID and user authentication for security');
       }
 
-      // SECURITY FIX: Fetch conversation history ONLY for THIS project AND user
-      conversationHistory = await loadProjectConversationHistory(
-        supabase, 
-        projectContext.id, 
-        projectContext.userId, 
-        openaiKey
-      );
-      console.log(`Conversation history loaded for project ${projectContext.id}, length:`, conversationHistory.length);
+      if (supabaseUrl && supabaseServiceKey) {
+        supabase = createClient(supabaseUrl, supabaseServiceKey);
+        
+        // SECURITY: Fetch ONLY documents for THIS specific project AND user
+        console.log(`Fetching documents for project: ${projectContext.id}, user: ${projectContext.userId}`);
+        
+        const { data: documents, error: docsError } = await supabase
+          .from('project_documents')
+          .select('id, file_name, file_path, file_type, file_size, user_id, project_id')
+          .eq('project_id', projectContext.id)
+          .eq('user_id', projectContext.userId); // CRITICAL: Only this user's documents
+
+        if (docsError) {
+          console.error('Error fetching project documents:', docsError);
+          throw new Error('Failed to fetch project documents securely');
+        } else {
+          projectDocuments = documents || [];
+          console.log(`SECURITY CHECK: Found ${projectDocuments.length} documents for project ${projectContext.id} and user ${projectContext.userId}`);
+
+          // Verify all documents belong to the correct project and user
+          const invalidDocs = projectDocuments.filter(doc => 
+            doc.project_id !== projectContext.id || doc.user_id !== projectContext.userId
+          );
+          
+          if (invalidDocs.length > 0) {
+            console.error('SECURITY BREACH DETECTED: Documents from other projects/users found:', invalidDocs);
+            throw new Error('Security violation: Unauthorized document access detected');
+          }
+
+          // Extract content from documents with enhanced analysis - ONLY from THIS project
+          if (projectDocuments.length > 0) {
+            documentContext = await extractDocumentContentWithAnalysis(
+              supabase, 
+              projectDocuments, 
+              openaiKey, 
+              message,
+              projectContext.id,
+              projectContext.userId
+            );
+            console.log(`Document context extracted for project ${projectContext.id}, length:`, documentContext.length);
+          }
+        }
+
+        // SECURITY: Fetch conversation history ONLY for THIS project AND user
+        conversationHistory = await loadProjectConversationHistory(
+          supabase, 
+          projectContext.id, 
+          projectContext.userId, 
+          openaiKey
+        );
+        console.log(`Conversation history loaded for project ${projectContext.id}, length:`, conversationHistory.length);
+      }
+    } else {
+      console.log('No project context provided - processing as general chat');
     }
 
     // Step 1: Create embedding for the user's question
@@ -246,17 +249,20 @@ serve(async (req) => {
 
     console.log('Found relevant regulations context, length:', regulationsContext.length);
 
-    // Combine all context sources with strict project isolation
+    // Combine all context sources with project isolation (only if project context exists)
     let combinedContext = regulationsContext;
-    if (documentContext) {
-      combinedContext = `PROJECT DOCUMENTS (Project ID: ${projectContext.id}):\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
-    }
-    if (conversationHistory) {
-      combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT (Project ID: ${projectContext.id}):\n${conversationHistory}\n\n---\n\n${combinedContext}`;
+    if (projectContext) {
+      if (documentContext) {
+        combinedContext = `PROJECT DOCUMENTS (Project ID: ${projectContext.id}):\n${documentContext}\n\n---\n\nUK BUILDING REGULATIONS:\n${regulationsContext}`;
+      }
+      if (conversationHistory) {
+        combinedContext = `PREVIOUS CONVERSATIONS IN THIS PROJECT (Project ID: ${projectContext.id}):\n${conversationHistory}\n\n---\n\n${combinedContext}`;
+      }
     }
 
-    // Step 4: Generate response using OpenAI with enhanced context including conversation history
-    const systemPrompt = `You are a UK Building Regulations specialist assistant with memory of previous conversations in this specific project. You MUST follow these strict guidelines:
+    // Step 4: Generate response using OpenAI with context (project-aware or general)
+    const systemPrompt = projectContext ? 
+      `You are a UK Building Regulations specialist assistant with memory of previous conversations in this specific project. You MUST follow these strict guidelines:
 
 CRITICAL SECURITY RULES:
 - You are ONLY analyzing documents and conversations from Project ID: ${projectContext.id}
@@ -292,6 +298,22 @@ Number of Project Documents: ${projectDocuments.length}
 Previous Conversations Available: ${conversationHistory ? 'Yes' : 'No'}
 
 Context from UK Building Regulations documents${documentContext ? ', analyzed project documents' : ''}${conversationHistory ? ', and previous project conversations' : ''} (ALL FROM PROJECT ID: ${projectContext.id}):
+${combinedContext}` :
+      `You are a UK Building Regulations specialist assistant. You MUST follow these strict guidelines:
+
+1. ONLY answer questions about UK Building Regulations, planning permissions, and construction requirements
+2. Use ONLY the provided context from official UK Building Regulations documents
+3. Use British English spelling and terminology throughout (e.g., "colour" not "color", "metres" not "meters", "storey" not "story", "realise" not "realize", "behaviour" not "behavior")
+4. If asked about non-UK regulations or unrelated topics, politely decline and redirect to UK Building Regulations
+5. Always cite specific regulation parts when possible (e.g., "Part A - Structure", "Part B - Fire Safety", "Part L - Conservation of fuel and power")
+6. Be precise and reference specific requirements from the documents provided
+7. Use UK construction terminology (e.g., "ground floor" not "first floor", "lift" not "elevator", "tap" not "faucet")
+8. If the context doesn't fully answer the question, provide what information is available and suggest consulting the full regulations
+9. Always maintain a professional, helpful tone appropriate for UK construction professionals
+10. Use UK units of measurement (metres, millimetres, square metres, etc.)
+11. When relevant diagrams or images are available in the Building Regulations documents, mention that visual references are available to support your answer
+
+Context from UK Building Regulations documents:
 ${combinedContext}`;
 
     const chatResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -326,15 +348,21 @@ ${combinedContext}`;
     const chatData = await chatResponse.json();
     const aiResponse = chatData.choices[0].message.content;
 
-    console.log(`Generated AI response successfully for project ${projectContext.id}`);
+    console.log(`Generated AI response successfully${projectContext ? ` for project ${projectContext.id}` : ' for general chat'}`);
 
-    return new Response(JSON.stringify({
+    const responseData: any = {
       response: aiResponse,
       images: relatedImages.slice(0, 5), // Limit to 5 images max
       documentsAnalyzed: projectDocuments.length,
-      conversationsReferenced: conversationHistory ? 'Available' : 'None',
-      projectId: projectContext.id // Include for verification
-    }), {
+      conversationsReferenced: conversationHistory ? 'Available' : 'None'
+    };
+
+    // Only include project ID if this was a project-specific request
+    if (projectContext) {
+      responseData.projectId = projectContext.id;
+    }
+
+    return new Response(JSON.stringify(responseData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 

@@ -343,7 +343,7 @@ What would you like to discuss about your project?`,
 
     setIsLoading(true);
     try {
-      // SECURITY FIX: Include project context with user ID for proper isolation
+      // FIXED: Only include project context if we have both projectId and user
       const requestBody: any = { message: messageText };
       
       if (projectId && project && user?.id) {
@@ -379,7 +379,7 @@ What would you like to discuss about your project?`,
           console.error('Error fetching project conversations:', convError);
         }
 
-        // SECURITY FIX: Include userId in project context
+        // Include project context only when we have a project
         requestBody.projectContext = {
           id: projectId,
           userId: user.id, // CRITICAL: Include user ID for security
@@ -392,9 +392,11 @@ What would you like to discuss about your project?`,
         };
 
         console.log('Including enhanced project context with security - Project:', projectId, 'User:', user.id, 'Documents:', projectDocuments?.length || 0, 'Conversations:', projectConversations?.length || 0);
+      } else {
+        console.log('Sending general chat request without project context');
       }
 
-      console.log('Sending request to AI function with secure project context');
+      console.log('Sending request to AI function');
 
       const response = await fetch('https://srwbgkssoatrhxdrrtff.supabase.co/functions/v1/building-regulations-chat', {
         method: 'POST',
@@ -416,8 +418,8 @@ What would you like to discuss about your project?`,
       const data = await response.json();
       console.log('AI function response data:', data);
 
-      // SECURITY VERIFICATION: Check that response is for correct project
-      if (data.projectId && data.projectId !== projectId) {
+      // SECURITY VERIFICATION: Check that response is for correct project (only if we sent project context)
+      if (requestBody.projectContext && data.projectId && data.projectId !== projectId) {
         console.error('SECURITY VIOLATION: Response projectId does not match request projectId');
         throw new Error('Security violation detected in response');
       }
