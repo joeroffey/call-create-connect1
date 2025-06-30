@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -258,7 +257,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
               ].map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
-                console.log(`Tab ${tab.id}: isActive = ${isActive}, activeTab = ${activeTab}`);
+                console.log(`Tab ${tab.id}: isActive = ${isActive}, activeTab = ${activeTab}, tab.id = ${tab.id}`);
                 return (
                   <button
                     key={tab.id}
