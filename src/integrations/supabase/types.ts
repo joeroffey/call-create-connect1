@@ -156,6 +156,7 @@ export type Database = {
       project_schedule_of_works: {
         Row: {
           completed: boolean
+          completed_at: string | null
           created_at: string
           description: string | null
           due_date: string | null
@@ -167,6 +168,7 @@ export type Database = {
         }
         Insert: {
           completed?: boolean
+          completed_at?: string | null
           created_at?: string
           description?: string | null
           due_date?: string | null
@@ -178,6 +180,7 @@ export type Database = {
         }
         Update: {
           completed?: boolean
+          completed_at?: string | null
           created_at?: string
           description?: string | null
           due_date?: string | null
