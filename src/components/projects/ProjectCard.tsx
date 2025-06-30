@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, Pin, MessageCircle, FileText, Milestone } from 'lucide-react';
+import { Edit, Trash2, Pin, MessageCircle, FileText, Clock } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -141,7 +140,7 @@ const ProjectCard = ({
           className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
         >
           <div className="flex items-center justify-center mb-1">
-            <Milestone className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
+            <Clock className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
           </div>
           <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{scheduleOfWorksCount}</div>
           <div className="text-xs text-gray-400">Schedule</div>

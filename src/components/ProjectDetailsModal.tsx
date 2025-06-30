@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageCircle, FileText, Milestone, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
+import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { useConversations } from '../hooks/useConversations';
@@ -251,7 +250,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
               {[
                 { id: 'chats', label: 'Chats', icon: MessageCircle, count: projectConversations.length },
                 { id: 'documents', label: 'Documents', icon: FileText, count: documents.length },
-                { id: 'schedule', label: 'Schedule of Works', icon: Milestone, count: scheduleOfWorks.length },
+                { id: 'schedule', label: 'Schedule of Works', icon: Clock, count: scheduleOfWorks.length },
               ].map((tab) => {
                 const Icon = tab.icon;
                 return (
@@ -416,7 +415,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
 
                 {scheduleOfWorks.length === 0 ? (
                   <div className="text-center py-8">
-                    <Milestone className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                    <Clock className="w-12 h-12 text-gray-600 mx-auto mb-3" />
                     <p className="text-gray-400">No work items created yet</p>
                     <p className="text-gray-500 text-sm">Add work items to track project progress</p>
                   </div>
