@@ -301,18 +301,18 @@ const Index = () => {
       >
         <div className="flex items-center justify-between">
           <motion.div 
-            className="flex items-center space-x-4"
+            className="flex items-center"
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-32 h-20 flex items-center justify-center">
+            <div className="w-40 h-24 flex items-center">
               <img 
                 src="/lovable-uploads/7346f91f-4a0c-4476-898f-ade068450963.png" 
                 alt="EezyBuild Logo" 
                 className="w-full h-full object-contain"
               />
             </div>
-            <div>
+            <div className="ml-4">
               {currentProjectId && (
                 <p className="text-sm text-emerald-400">Project Chat Mode</p>
               )}
