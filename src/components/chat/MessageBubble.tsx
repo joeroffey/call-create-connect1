@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Image } from 'lucide-react';
+import { User, Image, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ImageModal from './ImageModal';
 
@@ -20,9 +20,10 @@ interface Message {
 
 interface MessageBubbleProps {
   message: Message;
+  isProjectChat?: boolean;
 }
 
-const MessageBubble = ({ message }: MessageBubbleProps) => {
+const MessageBubble = ({ message, isProjectChat = false }: MessageBubbleProps) => {
   const [showImageModal, setShowImageModal] = useState(false);
 
   return (
@@ -49,6 +50,8 @@ const MessageBubble = ({ message }: MessageBubbleProps) => {
           }`}>
             {message.sender === 'user' ? (
               <User className="w-4 h-4 text-white" />
+            ) : isProjectChat ? (
+              <Clock className="w-4 h-4 text-white" />
             ) : (
               <img 
                 src="/lovable-uploads/9fe22cc5-2c91-4dbf-95e3-aefc00d511c7.png" 
