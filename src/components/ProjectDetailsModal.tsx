@@ -192,37 +192,37 @@ const ProjectDetailsModal = ({
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex-1 overflow-hidden px-6 pb-4">
-                <TabsContent value="chats" className="mt-4 h-full">
-                  <div className="flex flex-col h-full space-y-4">
-                    <div className="flex items-center justify-between flex-shrink-0">
-                      <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
-                      <Button 
-                        onClick={handleStartNewChat}
-                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Start New Chat
-                      </Button>
-                    </div>
-                    
-                    {projectConversations.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="text-center">
-                          <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
-                          <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
-                          <Button 
-                            onClick={handleStartNewChat}
-                            className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Start New Chat
-                          </Button>
-                        </div>
+              <div className="flex-1 overflow-hidden px-6 pb-6">
+                <TabsContent value="chats" className="mt-4 h-full flex flex-col">
+                  <div className="flex items-center justify-between flex-shrink-0 mb-4">
+                    <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
+                    <Button 
+                      onClick={handleStartNewChat}
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Start New Chat
+                    </Button>
+                  </div>
+                  
+                  {projectConversations.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
+                        <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
+                        <Button 
+                          onClick={handleStartNewChat}
+                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Start New Chat
+                        </Button>
                       </div>
-                    ) : (
-                      <ScrollArea className="flex-1">
+                    </div>
+                  ) : (
+                    <div className="flex-1 min-h-0">
+                      <ScrollArea className="h-full">
                         <div className="space-y-3 pr-4">
                           {projectConversations.map((conversation: any) => (
                             <motion.div
@@ -248,23 +248,23 @@ const ProjectDetailsModal = ({
                           ))}
                         </div>
                       </ScrollArea>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </TabsContent>
 
-                <TabsContent value="documents" className="mt-4 h-full">
-                  <div className="flex flex-col h-full space-y-4">
-                    <h3 className="text-lg font-semibold text-white flex-shrink-0">Project Documents</h3>
-                    {documents.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="text-center">
-                          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
-                          <p className="text-gray-500">Documents will appear here when uploaded to the project</p>
-                        </div>
+                <TabsContent value="documents" className="mt-4 h-full flex flex-col">
+                  <h3 className="text-lg font-semibold text-white flex-shrink-0 mb-4">Project Documents</h3>
+                  {documents.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
+                        <p className="text-gray-500">Documents will appear here when uploaded to the project</p>
                       </div>
-                    ) : (
-                      <ScrollArea className="flex-1">
+                    </div>
+                  ) : (
+                    <div className="flex-1 min-h-0">
+                      <ScrollArea className="h-full">
                         <div className="space-y-3 pr-4">
                           {documents.map((doc: any) => (
                             <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
@@ -281,23 +281,23 @@ const ProjectDetailsModal = ({
                           ))}
                         </div>
                       </ScrollArea>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </TabsContent>
 
-                <TabsContent value="schedule" className="mt-4 h-full">
-                  <div className="flex flex-col h-full space-y-4">
-                    <h3 className="text-lg font-semibold text-white flex-shrink-0">Schedule of Works</h3>
-                    {scheduleItems.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="text-center">
-                          <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
-                          <p className="text-gray-500">Schedule items will appear here when added to the project</p>
-                        </div>
+                <TabsContent value="schedule" className="mt-4 h-full flex flex-col">
+                  <h3 className="text-lg font-semibold text-white flex-shrink-0 mb-4">Schedule of Works</h3>
+                  {scheduleItems.length === 0 ? (
+                    <div className="flex-1 flex items-center justify-center">
+                      <div className="text-center">
+                        <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
+                        <p className="text-gray-500">Schedule items will appear here when added to the project</p>
                       </div>
-                    ) : (
-                      <ScrollArea className="flex-1">
+                    </div>
+                  ) : (
+                    <div className="flex-1 min-h-0">
+                      <ScrollArea className="h-full">
                         <div className="space-y-3 pr-4">
                           {scheduleItems.map((item: any) => (
                             <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
@@ -322,8 +322,8 @@ const ProjectDetailsModal = ({
                           ))}
                         </div>
                       </ScrollArea>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </TabsContent>
               </div>
             </Tabs>
