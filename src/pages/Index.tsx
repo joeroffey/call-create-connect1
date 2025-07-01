@@ -186,9 +186,9 @@ const Index = () => {
     setCurrentProjectId(null);
   };
 
-  // Navigation handler for viewing subscription plans
+  // Navigation handler for viewing subscription plans - FIXED
   const handleViewPlans = () => {
-    console.log('handleViewPlans called - navigating to subscription plans');
+    console.log('handleViewPlans called - navigating to subscription screen');
     setActiveTab('subscription');
   };
 
@@ -220,6 +220,8 @@ const Index = () => {
   }
 
   const renderContent = () => {
+    console.log('Rendering content for activeTab:', activeTab);
+    
     switch (activeTab) {
       case 'chat':
         return (
@@ -253,7 +255,7 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4">Subscription Required</h2>
               <p className="text-gray-400 mb-6">Building Tools are available for Pro and ProMax subscribers.</p>
               <button 
-                onClick={() => setActiveTab('profile')}
+                onClick={handleViewPlans}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
                 Choose a Plan
@@ -269,7 +271,7 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
               <p className="text-gray-400 mb-6">Projects feature is only available for EezyBuild ProMax subscribers.</p>
               <button 
-                onClick={() => setActiveTab('profile')}
+                onClick={handleViewPlans}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
                 Upgrade to ProMax
@@ -289,6 +291,7 @@ const Index = () => {
           />
         );
       case 'subscription':
+        console.log('Rendering SubscriptionScreen');
         return <SubscriptionScreen user={user} onBack={() => setActiveTab('profile')} />;
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;

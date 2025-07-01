@@ -10,7 +10,7 @@ interface SubscriptionPromptProps {
 
 const SubscriptionPrompt = ({ onViewPlans }: SubscriptionPromptProps) => {
   const handleViewPlans = () => {
-    console.log('View plans clicked - navigating to subscription settings');
+    console.log('SubscriptionPrompt: View plans clicked - calling onViewPlans callback');
     onViewPlans();
   };
 
