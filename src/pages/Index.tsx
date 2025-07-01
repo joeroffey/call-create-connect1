@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
+import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen, Users } from 'lucide-react';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -11,6 +11,7 @@ import AppsScreen from '../components/AppsScreen';
 import ProjectsScreen from '../components/ProjectsScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
 import NotificationsScreen from '../components/NotificationsScreen';
+import TeamScreen from '../components/TeamScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
@@ -24,6 +25,7 @@ const Index = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
@@ -164,14 +166,13 @@ const Index = () => {
     }
   };
 
-  // Define available tabs based on subscription - renamed Apps to Tools
+  // Define available tabs based on subscription - replaced Updates with Team
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
     ];
 
     // Tools available for EezyBuild (basic), Pro and ProMax
-    // Check for both the plan_type from subscription and hasActiveSubscription
     if (hasActiveSubscription && subscription && (subscription.plan_type === 'basic' || subscription.plan_type === 'pro' || subscription.plan_type === 'enterprise')) {
       baseTabs.push({ id: 'apps', icon: Wrench, label: 'Tools' });
     }
@@ -182,11 +183,13 @@ const Index = () => {
       baseTabs.push({ id: 'projects', icon: FolderOpen, label: 'Projects' });
     }
 
+    // Team tab available for all subscription levels (will show upgrade prompt if needed)
+    baseTabs.push({ id: 'team', icon: Users, label: 'Team' });
+
     // Always available tabs
     baseTabs.push(
-      { id: 'notifications', icon: Bell, label: 'Updates' },
       { id: 'profile', icon: User, label: 'Profile' },
-      { id: 'subscription', icon: Crown, label: 'Plans' } // Always show subscription tab
+      { id: 'subscription', icon: Crown, label: 'Plans' }
     );
 
     return baseTabs;
@@ -312,8 +315,8 @@ const Index = () => {
           </div>;
         }
         return <ProjectsScreen user={user} onStartNewChat={handleStartNewChat} />;
-      case 'notifications':
-        return <NotificationsScreen />;
+      case 'team':
+        return <TeamScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} />;
       case 'profile':
         return (
           <ProfileScreen 
@@ -361,19 +364,62 @@ const Index = () => {
               )}
             </div>
           </motion.div>
-          <motion.div 
-            className="flex items-center space-x-3 bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-emerald-500/20"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <Crown className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm text-emerald-300 font-medium">
-              {getSubscriptionDisplayName()}
-            </span>
-          </motion.div>
+          
+          <div className="flex items-center space-x-4">
+            {/* Notifications Bell Icon */}
+            <motion.button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-full bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Bell className="w-5 h-5 text-gray-300" />
+              {/* Notification badge - you can add logic to show unread count */}
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+            </motion.button>
+
+            {/* Subscription Badge */}
+            <motion.div 
+              className="flex items-center space-x-3 bg-emerald-500/10 backdrop-blur-sm px-4 py-2 rounded-full border border-emerald-500/20"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, ease: [0.4, 0, 0.2, 1] }}
+            >
+              <Crown className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm text-emerald-300 font-medium">
+                {getSubscriptionDisplayName()}
+              </span>
+            </motion.div>
+          </div>
         </div>
       </motion.header>
+
+      {/* Notifications Overlay */}
+      <AnimatePresence>
+        {showNotifications && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-20 right-6 z-50 w-96 max-h-96 bg-gray-900/95 backdrop-blur-xl border border-gray-700 rounded-xl shadow-2xl overflow-hidden"
+          >
+            <div className="p-4 border-b border-gray-700">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white">Updates</h3>
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              <NotificationsScreen />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content - fills space between header and nav with proper mobile spacing */}
       <main className="flex-1 min-h-0 overflow-y-auto pb-24">
