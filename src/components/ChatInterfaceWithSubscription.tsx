@@ -8,13 +8,15 @@ interface ChatInterfaceWithSubscriptionProps {
   user: any;
   onViewPlans: () => void;
   projectId?: string | null;
+  conversationId?: string | null;
   onChatComplete?: () => void;
 }
 
 const ChatInterfaceWithSubscription = ({ 
   user, 
   onViewPlans, 
-  projectId, 
+  projectId,
+  conversationId,
   onChatComplete 
 }: ChatInterfaceWithSubscriptionProps) => {
   const { hasActiveSubscription, loading } = useSubscription(user?.id);
@@ -43,6 +45,7 @@ const ChatInterfaceWithSubscription = ({
       user={user} 
       onViewPlans={onViewPlans}
       projectId={projectId}
+      conversationId={conversationId}
       onChatComplete={onChatComplete}
     />
   );
