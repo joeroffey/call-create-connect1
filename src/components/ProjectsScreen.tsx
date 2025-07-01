@@ -39,14 +39,17 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [activeTab, setActiveTab] = useState('chats');
   const { toast } = useToast();
   
-  // Get conversations data with the new helper functions
+  // Get conversations data with the new helper functions - using single instance
+  const conversationsHook = useConversations(user?.id);
   const { 
     conversations, 
     getProjectConversationCount, 
     getProjectDocumentCount,
     getProjectScheduleOfWorksCount,
-    loading: conversationsLoading 
-  } = useConversations(user?.id);
+    loading: conversationsLoading,
+    incrementDocumentCount,
+    incrementScheduleCount
+  } = conversationsHook;
 
   console.log('ProjectsScreen - conversations loaded:', conversations.length);
   console.log('ProjectsScreen - conversations:', conversations);
@@ -330,7 +333,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         )}
       </div>
 
-      {/* Project Details Modal */}
+      {/* Project Details Modal - Pass the shared hook */}
       <ProjectDetailsModal
         project={selectedProject}
         isOpen={showProjectDetails}
@@ -342,6 +345,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         onStartNewChat={onStartNewChat}
         user={user}
         initialTab={activeTab}
+        conversationsHook={conversationsHook}
       />
 
       {/* Create Project Modal */}

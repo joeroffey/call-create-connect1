@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
-import { useConversations } from '../hooks/useConversations';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -13,9 +12,10 @@ interface ProjectDetailsModalProps {
   onStartNewChat: (projectId: string) => void;
   user: any;
   initialTab?: string;
+  conversationsHook: any; // Accept the shared hook instance
 }
 
-const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats' }: ProjectDetailsModalProps) => {
+const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats', conversationsHook }: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [documents, setDocuments] = useState<any[]>([]);
   const [scheduleOfWorks, setScheduleOfWorks] = useState<any[]>([]);
@@ -24,7 +24,8 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
-  const { conversations, getProjectConversationCount, incrementDocumentCount, incrementScheduleCount } = useConversations(user?.id);
+  // Use the shared conversations hook instance
+  const { conversations, getProjectConversationCount, incrementDocumentCount, incrementScheduleCount } = conversationsHook;
   
   // Filter conversations for this project
   const projectConversations = conversations.filter(conv => conv.project_id === project?.id);
