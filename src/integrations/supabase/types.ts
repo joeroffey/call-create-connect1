@@ -83,6 +83,10 @@ export type Database = {
           date_of_birth: string | null
           full_name: string | null
           id: string
+          mobile_number: string | null
+          mobile_verification_code: string | null
+          mobile_verification_expires_at: string | null
+          mobile_verified: boolean | null
           occupation: string | null
           updated_at: string
           user_id: string
@@ -93,6 +97,10 @@ export type Database = {
           date_of_birth?: string | null
           full_name?: string | null
           id?: string
+          mobile_number?: string | null
+          mobile_verification_code?: string | null
+          mobile_verification_expires_at?: string | null
+          mobile_verified?: boolean | null
           occupation?: string | null
           updated_at?: string
           user_id: string
@@ -103,6 +111,10 @@ export type Database = {
           date_of_birth?: string | null
           full_name?: string | null
           id?: string
+          mobile_number?: string | null
+          mobile_verification_code?: string | null
+          mobile_verification_expires_at?: string | null
+          mobile_verified?: boolean | null
           occupation?: string | null
           updated_at?: string
           user_id?: string
