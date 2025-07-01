@@ -218,7 +218,7 @@ const Index = () => {
         return (
           <ChatInterfaceWithSubscription 
             user={user} 
-            onViewPlans={() => setActiveTab('profile')}
+            onViewPlans={() => setActiveTab('subscription-settings')}
             projectId={currentProjectId}
             onChatComplete={handleChatComplete}
           />
@@ -286,7 +286,7 @@ const Index = () => {
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
-        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('profile')} />;
+        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('subscription-settings')} />;
     }
   };
 
