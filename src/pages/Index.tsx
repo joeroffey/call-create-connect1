@@ -188,8 +188,8 @@ const Index = () => {
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
     ];
 
-    // Tools available for Pro and ProMax
-    if (subscriptionTier === 'pro' || subscriptionTier === 'enterprise') {
+    // Tools available for EezyBuild (basic), Pro and ProMax
+    if (subscriptionTier === 'basic' || subscriptionTier === 'pro' || subscriptionTier === 'enterprise') {
       baseTabs.push({ id: 'apps', icon: Wrench, label: 'Tools' });
     }
 
