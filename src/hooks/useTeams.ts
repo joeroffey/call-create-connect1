@@ -31,7 +31,10 @@ export const useTeams = (userId?: string) => {
   const { toast } = useToast();
 
   const fetchTeams = async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -40,6 +43,7 @@ export const useTeams = (userId?: string) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      console.log('Fetched teams:', data);
       setTeams(data || []);
     } catch (error) {
       console.error('Error fetching teams:', error);
@@ -57,6 +61,8 @@ export const useTeams = (userId?: string) => {
     if (!userId) return null;
 
     try {
+      console.log('Creating team:', { name, description, userId });
+      
       const { data, error } = await supabase
         .from('teams')
         .insert([{
@@ -68,15 +74,21 @@ export const useTeams = (userId?: string) => {
         .single();
 
       if (error) throw error;
+      console.log('Team created:', data);
 
       // Add creator as owner to team_members
-      await supabase
+      const { error: memberError } = await supabase
         .from('team_members')
         .insert([{
           team_id: data.id,
           user_id: userId,
           role: 'owner'
         }]);
+
+      if (memberError) {
+        console.error('Error adding team member:', memberError);
+        throw memberError;
+      }
 
       // Update teams list immediately with the new team
       setTeams(prevTeams => [data, ...prevTeams]);
@@ -86,6 +98,7 @@ export const useTeams = (userId?: string) => {
         description: "Team created successfully",
       });
 
+      console.log('Team creation completed successfully');
       return data;
     } catch (error) {
       console.error('Error creating team:', error);

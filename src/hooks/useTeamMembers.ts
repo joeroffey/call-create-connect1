@@ -10,9 +10,15 @@ export const useTeamMembers = (teamId?: string) => {
   const { toast } = useToast();
 
   const fetchMembers = async () => {
-    if (!teamId) return;
+    if (!teamId) {
+      setMembers([]);
+      setLoading(false);
+      return;
+    }
     
     try {
+      console.log('Fetching members for team:', teamId);
+      
       const { data, error } = await supabase
         .from('team_members')
         .select(`
@@ -61,6 +67,7 @@ export const useTeamMembers = (teamId?: string) => {
         };
       });
       
+      console.log('Fetched team members:', typedMembers);
       setMembers(typedMembers);
     } catch (error) {
       console.error('Error fetching team members:', error);

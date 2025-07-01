@@ -35,6 +35,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   // Select first team by default when teams are loaded
   React.useEffect(() => {
     if (teams.length > 0 && !selectedTeamId) {
+      console.log('Auto-selecting first team:', teams[0]);
       setSelectedTeamId(teams[0].id);
     }
   }, [teams, selectedTeamId]);
@@ -45,8 +46,10 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   const hasTeamAccess = subscriptionTier === 'enterprise';
 
   const handleCreateTeam = async (name: string, description?: string) => {
+    console.log('handleCreateTeam called with:', { name, description });
     const newTeam = await createTeam(name, description);
     if (newTeam) {
+      console.log('Setting newly created team as selected:', newTeam.id);
       // Set the newly created team as selected
       setSelectedTeamId(newTeam.id);
     }
@@ -218,6 +221,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
 
   // If no teams exist, show create team interface
   if (teams.length === 0) {
+    console.log('No teams found, showing create team interface');
     return (
       <div className="flex-1 flex items-center justify-center p-8 text-center bg-black">
         <div className="max-w-md">
@@ -234,6 +238,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
       </div>
     );
   }
+
+  console.log('Rendering team dashboard for team:', selectedTeam?.name);
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
