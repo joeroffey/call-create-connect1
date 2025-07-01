@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Phone, MessageSquare, Check, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import CountrySelector from './CountrySelector';
 
@@ -24,7 +22,7 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
   const [isVerifying, setIsVerifying] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
-  const { toast } = useToast();
+  const [errorMessage, setErrorMessage] = useState('');
 
   const countryPhoneCodes: { [key: string]: string } = {
     'GB': '+44',
@@ -77,15 +75,12 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
 
   const sendVerificationCode = async () => {
     if (!phoneNumber.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter your mobile number",
-        variant: "destructive",
-      });
+      setErrorMessage('Please enter your mobile number');
       return;
     }
 
     setIsSending(true);
+    setErrorMessage('');
     try {
       const fullPhoneNumber = formatPhoneNumber(phoneNumber);
       
@@ -100,17 +95,9 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
       setIsCodeSent(true);
       setTimeLeft(600); // 10 minutes
       
-      toast({
-        title: "Code Sent",
-        description: `Verification code sent to ${fullPhoneNumber}`,
-      });
     } catch (error: any) {
       console.error('Error sending verification code:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send verification code. Please try again.",
-        variant: "destructive",
-      });
+      setErrorMessage(error.message || 'Failed to send verification code. Please try again.');
     } finally {
       setIsSending(false);
     }
@@ -118,15 +105,12 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
 
   const verifyCode = async () => {
     if (!verificationCode.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter the verification code",
-        variant: "destructive",
-      });
+      setErrorMessage('Please enter the verification code');
       return;
     }
 
     setIsVerifying(true);
+    setErrorMessage('');
     try {
       const fullPhoneNumber = formatPhoneNumber(phoneNumber);
       
@@ -139,17 +123,9 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
 
       if (error) {
         if (error.message.includes('expired')) {
-          toast({
-            title: "Code Expired",
-            description: "Verification code has expired. Please request a new one.",
-            variant: "destructive",
-          });
+          setErrorMessage('Verification code has expired. Please request a new one.');
         } else {
-          toast({
-            title: "Invalid Code",
-            description: "The verification code is incorrect. Please try again.",
-            variant: "destructive",
-          });
+          setErrorMessage('The verification code is incorrect. Please try again.');
         }
         return;
       }
@@ -169,17 +145,9 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
       }
 
       onVerified(true);
-      toast({
-        title: "Verified!",
-        description: "Your mobile number has been successfully verified.",
-      });
     } catch (error: any) {
       console.error('Error verifying code:', error);
-      toast({
-        title: "Error",
-        description: "Failed to verify code. Please try again.",
-        variant: "destructive",
-      });
+      setErrorMessage('Failed to verify code. Please try again.');
     } finally {
       setIsVerifying(false);
     }
@@ -193,6 +161,12 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
 
   return (
     <div className={`space-y-4 ${className}`}>
+      {errorMessage && (
+        <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-300 text-sm">
+          {errorMessage}
+        </div>
+      )}
+      
       <div className="space-y-3">
         <Label className="text-emerald-300 text-base font-medium">Country</Label>
         <CountrySelector

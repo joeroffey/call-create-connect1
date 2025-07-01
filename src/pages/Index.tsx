@@ -14,7 +14,6 @@ import NotificationsScreen from '../components/NotificationsScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
-import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -25,7 +24,6 @@ const Index = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const { toast } = useToast();
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
@@ -41,13 +39,6 @@ const Index = () => {
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
       
-      // Show success toast
-      toast({
-        title: "Payment Successful!",
-        description: "Your subscription is being activated. This may take up to 2 minutes...",
-        duration: 8000,
-      });
-
       // More aggressive refresh strategy for post-checkout
       const aggressiveRefresh = async () => {
         if (user?.id) {
@@ -65,15 +56,6 @@ const Index = () => {
               await refetch();
             }, delays[i]);
           }
-          
-          // Final success message after the last attempt
-          setTimeout(() => {
-            toast({
-              title: "Subscription Status Updated!",
-              description: "Please refresh the page if you don't see your plan activated.",
-              duration: 5000,
-            });
-          }, 65000);
         }
       };
 
@@ -83,7 +65,7 @@ const Index = () => {
       // Switch to subscription tab to show the updated status
       setActiveTab('subscription');
     }
-  }, [user?.id, refetch, toast]);
+  }, [user?.id, refetch]);
 
   useEffect(() => {
     // Set up auth state listener
