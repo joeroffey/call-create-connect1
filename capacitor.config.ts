@@ -18,6 +18,9 @@ const config: CapacitorConfig = {
     },
     Keyboard: {
       resize: 'ionic'
+    },
+    InAppPurchase2: {
+      autoFinish: false
     }
   }
 };

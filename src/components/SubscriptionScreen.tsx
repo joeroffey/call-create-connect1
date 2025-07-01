@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Capacitor } from '@capacitor/core';
 import { 
   Crown, 
   Check, 
@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useSubscription } from '@/hooks/useSubscription';
+import { useInAppPurchases } from '@/hooks/useInAppPurchases';
 
 interface SubscriptionScreenProps {
   user: any;
@@ -22,6 +23,7 @@ interface SubscriptionScreenProps {
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const { subscription, hasActiveSubscription, hasUsedTrial, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
+  const { products, loading: iapLoading, isNative, purchaseProduct, restorePurchases } = useInAppPurchases(user?.id);
   const [loading, setLoading] = useState<string | null>(null);
 
   const plans = [
@@ -81,9 +83,16 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const handlePlanSelection = async (planType: string) => {
     setLoading(planType);
     try {
-      await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+      if (isNative) {
+        // Use in-app purchases on mobile
+        const productId = `com.lovable.callcreateconnect.${planType}_monthly`;
+        await purchaseProduct(productId);
+      } else {
+        // Use Stripe on web
+        await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+      }
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error('Error with plan selection:', error);
     } finally {
       setLoading(null);
     }
@@ -92,9 +101,13 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const handleManageSubscription = async () => {
     setLoading('manage');
     try {
-      await openCustomerPortal();
+      if (isNative) {
+        await restorePurchases();
+      } else {
+        await openCustomerPortal();
+      }
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      console.error('Error managing subscription:', error);
     } finally {
       setLoading(null);
     }
@@ -148,6 +161,11 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <p className="text-gray-400">
               Professional building regulations assistance
               {!hasUsedTrial && !hasActiveSubscription && " with 7-day free trial"}
+              {isNative && (
+                <span className="block text-sm text-emerald-400 mt-1">
+                  Payments processed through {Capacitor.getPlatform() === 'ios' ? 'App Store' : 'Google Play'}
+                </span>
+              )}
             </p>
           </div>
         </motion.div>
@@ -260,11 +278,31 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
               <div className="text-center mb-6">
                 <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
                 <div className="mb-2">
-                  <span className="text-3xl font-bold text-white">{plan.price}</span>
-                  <span className="text-gray-400 ml-1">/{plan.period}</span>
+                  {isNative && products.length > 0 ? (
+                    // Show native store prices if available
+                    (() => {
+                      const product = products.find(p => p.productId.includes(plan.planType));
+                      return product ? (
+                        <>
+                          <span className="text-3xl font-bold text-white">{product.price}</span>
+                          <span className="text-gray-400 ml-1">/{plan.period}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-3xl font-bold text-white">{plan.price}</span>
+                          <span className="text-gray-400 ml-1">/{plan.period}</span>
+                        </>
+                      );
+                    })()
+                  ) : (
+                    <>
+                      <span className="text-3xl font-bold text-white">{plan.price}</span>
+                      <span className="text-gray-400 ml-1">/{plan.period}</span>
+                    </>
+                  )}
                 </div>
-                {/* Only show trial info if user hasn't used trial and doesn't have active subscription */}
-                {!hasUsedTrial && !hasActiveSubscription && (
+                {/* Only show trial info if user hasn't used trial and doesn't have active subscription and not on native */}
+                {!hasUsedTrial && !hasActiveSubscription && !isNative && (
                   <div className="mb-2">
                     <span className="text-sm font-medium text-emerald-400">
                       7-day free trial
@@ -285,7 +323,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
 
               <Button
                 onClick={() => handlePlanSelection(plan.planType)}
-                disabled={plan.current || loading === plan.planType}
+                disabled={plan.current || loading === plan.planType || (isNative && iapLoading)}
                 className={`w-full h-12 rounded-xl font-medium ${
                   plan.current
                     ? 'bg-emerald-600 text-white cursor-default'
@@ -296,22 +334,24 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                     : 'bg-gray-700 hover:bg-gray-600 text-white'
                 }`}
               >
-                {loading === plan.planType ? (
+                {loading === plan.planType || (isNative && iapLoading) ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
                 {plan.current 
                   ? 'Current Plan' 
-                  : !hasUsedTrial && !hasActiveSubscription 
-                    ? 'Start Free Trial' 
-                    : 'Subscribe Now'
+                  : isNative 
+                    ? 'Subscribe Now'
+                    : !hasUsedTrial && !hasActiveSubscription 
+                      ? 'Start Free Trial' 
+                      : 'Subscribe Now'
                 }
               </Button>
             </motion.div>
           ))}
         </div>
 
-        {/* Trial Information - Only show if user hasn't used trial and has no active subscription */}
-        {!hasActiveSubscription && !hasUsedTrial && (
+        {/* Trial Information - Only show if user hasn't used trial and has no active subscription and not on native */}
+        {!hasActiveSubscription && !hasUsedTrial && !isNative && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -326,18 +366,22 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </motion.div>
         )}
 
-        {/* No Trial Available Information - Show if user has used trial or has active subscription */}
-        {(hasUsedTrial || hasActiveSubscription) && !hasActiveSubscription && (
+        {/* No Trial Available Information - Show if user has used trial or has active subscription or on native */}
+        {((hasUsedTrial || hasActiveSubscription) && !hasActiveSubscription) || isNative && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
             className="mt-8 text-center bg-orange-500/10 rounded-2xl p-6 border border-orange-500/20"
           >
-            <h3 className="text-lg font-semibold text-white mb-2">No Free Trial Available</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">
+              {isNative ? 'App Store Subscription' : 'No Free Trial Available'}
+            </h3>
             <p className="text-gray-300 text-sm">
-              You've already used your 7-day free trial. All subscriptions will be charged immediately 
-              at the full monthly rate.
+              {isNative 
+                ? `Subscriptions are managed through your ${Capacitor.getPlatform() === 'ios' ? 'App Store' : 'Google Play'} account and will be charged immediately.`
+                : 'You\'ve already used your 7-day free trial. All subscriptions will be charged immediately at the full monthly rate.'
+              }
             </p>
           </motion.div>
         )}
@@ -351,14 +395,14 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             className="mt-8 text-center"
           >
             <p className="text-gray-400 text-sm mb-4">
-              Need to downgrade or cancel your subscription?
+              Need to {isNative ? 'manage' : 'downgrade or cancel'} your subscription?
             </p>
             <Button
               onClick={handleManageSubscription}
               variant="ghost"
               className="text-gray-300 hover:text-white hover:bg-gray-800"
             >
-              Manage Subscription & Billing
+              {isNative ? 'Restore Purchases' : 'Manage Subscription & Billing'}
             </Button>
           </motion.div>
         )}
