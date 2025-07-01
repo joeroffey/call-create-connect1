@@ -19,6 +19,8 @@ import { useTeams } from '@/hooks/useTeams';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import CreateTeamModal from '@/components/team/CreateTeamModal';
 import InviteMemberModal from '@/components/team/InviteMemberModal';
+import TeamLogoUpload from '@/components/team/TeamLogoUpload';
+import TaskManagement from '@/components/team/TaskManagement';
 
 interface TeamScreenProps {
   user: any;
@@ -27,10 +29,10 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'members' | 'projects' | 'settings'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'members' | 'schedule' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
-  const { teams, loading: teamsLoading, createTeam } = useTeams(user?.id);
+  const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
 
   console.log('TeamScreen render:', {
@@ -61,50 +63,67 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   const hasTeamAccess = subscriptionTier === 'enterprise';
 
   const handleCreateTeam = async (name: string, description?: string) => {
-    console.log('TeamScreen: handleCreateTeam called with:', { name, description });
     try {
       const newTeam = await createTeam(name, description);
-      console.log('TeamScreen: Team created, result:', newTeam);
-      
       if (newTeam) {
-        console.log('TeamScreen: Setting newly created team as selected:', newTeam.id);
         setSelectedTeamId(newTeam.id);
-        console.log('TeamScreen: Team selection updated to:', newTeam.id);
         return newTeam;
       }
       return newTeam;
     } catch (error) {
       console.error('TeamScreen: Error in handleCreateTeam:', error);
-      throw error; // Re-throw to let the modal handle it
+      throw error;
     }
+  };
+
+  const handleLogoUpdate = (logoUrl: string | null) => {
+    refetchTeams();
   };
 
   if (!hasTeamAccess) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8 text-center bg-black">
-        <div className="max-w-md">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Users className="w-8 h-8 text-white" />
+      <div className="min-h-screen flex items-center justify-center p-8 text-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <div className="max-w-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
+            <Users className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">Team Collaboration</h2>
-          <p className="text-gray-400 mb-6">
-            Team features are available for EezyBuild ProMax subscribers. Create teams, share projects, 
-            assign tasks, and collaborate with your team members.
+          <h2 className="text-3xl font-bold text-white mb-6">Team Collaboration</h2>
+          <p className="text-gray-300 mb-8 text-lg leading-relaxed">
+            Unlock powerful team features with EezyBuild ProMax. Create teams, manage schedules, 
+            assign tasks, and collaborate seamlessly with your team members.
           </p>
-          <div className="bg-gray-900/50 backdrop-blur-xl rounded-xl border border-gray-800 p-4 mb-6">
-            <h3 className="text-white font-semibold mb-2">ProMax Team Features:</h3>
-            <ul className="text-sm text-gray-300 space-y-1 text-left">
-              <li>• Create and manage teams</li>
-              <li>• Share projects with team members</li>
-              <li>• Assign tasks and schedule items</li>
-              <li>• Team comments and collaboration</li>
-              <li>• Real-time activity updates</li>
-              <li>• Role-based permissions</li>
-            </ul>
+          <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700 p-6 mb-8">
+            <h3 className="text-white font-semibold mb-4 text-xl">ProMax Team Features:</h3>
+            <div className="grid grid-cols-1 gap-3 text-left">
+              <div className="flex items-center text-gray-300">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                Create and manage multiple teams
+              </div>
+              <div className="flex items-center text-gray-300">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                Upload custom team logos
+              </div>
+              <div className="flex items-center text-gray-300">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                Advanced task scheduling & assignment
+              </div>
+              <div className="flex items-center text-gray-300">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                Share projects with team members
+              </div>
+              <div className="flex items-center text-gray-300">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                Real-time activity tracking
+              </div>
+              <div className="flex items-center text-gray-300">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
+                Role-based permissions
+              </div>
+            </div>
           </div>
           <Button 
             onClick={onViewPlans}
-            className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-3 rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all"
+            className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-xl text-lg font-semibold"
           >
             Upgrade to ProMax
           </Button>
@@ -114,10 +133,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   }
 
   if (teamsLoading) {
-    console.log('TeamScreen: Teams still loading...');
     return (
-      <div className="flex-1 flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading teams...</p>
+        </div>
       </div>
     );
   }
@@ -132,51 +153,59 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   };
 
   const renderOverview = () => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Team Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-gray-900/50 border-gray-800">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <Users className="w-8 h-8 text-emerald-500" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-emerald-500/20 rounded-xl">
+                <Users className="w-6 h-6 text-emerald-400" />
+              </div>
               <div>
-                <p className="text-2xl font-bold text-white">{members.length}</p>
+                <p className="text-3xl font-bold text-white">{members.length}</p>
                 <p className="text-sm text-gray-400">Team Members</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gray-900/50 border-gray-800">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <FileText className="w-8 h-8 text-blue-500" />
+        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-blue-500/20 rounded-xl">
+                <FileText className="w-6 h-6 text-blue-400" />
+              </div>
               <div>
-                <p className="text-2xl font-bold text-white">0</p>
+                <p className="text-3xl font-bold text-white">0</p>
                 <p className="text-sm text-gray-400">Shared Projects</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gray-900/50 border-gray-800">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <Calendar className="w-8 h-8 text-orange-500" />
+        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-orange-500/20 rounded-xl">
+                <Calendar className="w-6 h-6 text-orange-400" />
+              </div>
               <div>
-                <p className="text-2xl font-bold text-white">0</p>
+                <p className="text-3xl font-bold text-white">0</p>
                 <p className="text-sm text-gray-400">Active Tasks</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gray-900/50 border-gray-800">
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <MessageSquare className="w-8 h-8 text-purple-500" />
+        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <div className="p-3 bg-purple-500/20 rounded-xl">
+                <MessageSquare className="w-6 h-6 text-purple-400" />
+              </div>
               <div>
-                <p className="text-2xl font-bold text-white">0</p>
+                <p className="text-3xl font-bold text-white">0</p>
                 <p className="text-sm text-gray-400">Recent Comments</p>
               </div>
             </div>
@@ -185,14 +214,19 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
       </div>
 
       {/* Recent Activity */}
-      <Card className="bg-gray-900/50 border-gray-800">
-        <CardHeader>
-          <CardTitle className="text-white">Recent Team Activity</CardTitle>
+      <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700">
+        <CardHeader className="border-b border-gray-700">
+          <CardTitle className="text-white flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            Recent Team Activity
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-gray-400">
-            <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No recent activity to show</p>
+        <CardContent className="p-8">
+          <div className="text-center text-gray-400">
+            <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 opacity-50" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No recent activity</h3>
             <p className="text-sm">Team activity will appear here once you start collaborating</p>
           </div>
         </CardContent>
@@ -201,30 +235,30 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   );
 
   const renderMembers = () => (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold text-white">Team Members</h3>
+        <h3 className="text-2xl font-bold text-white">Team Members</h3>
         <InviteMemberModal onInviteMember={inviteMember} />
       </div>
       
       <div className="grid gap-4">
         {members.map((member) => (
-          <Card key={member.id} className="bg-gray-900/50 border-gray-800">
-            <CardContent className="p-4">
+          <Card key={member.id} className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-medium">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-semibold text-lg shadow-lg">
                     {member.profiles?.full_name?.substring(0, 2).toUpperCase() || 'UN'}
                   </div>
                   <div>
-                    <p className="text-white font-medium">{member.profiles?.full_name || 'Unknown User'}</p>
-                    <p className="text-gray-400 text-sm">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                    <p className="text-white font-semibold text-lg">{member.profiles?.full_name || 'Unknown User'}</p>
+                    <p className="text-gray-400">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="border-gray-600 text-gray-300">
+                <div className="flex items-center space-x-3">
+                  <Badge variant="outline" className="border-gray-600 text-gray-300 px-3 py-1">
                     {getRoleIcon(member.role)}
-                    <span className="ml-1 capitalize">{member.role}</span>
+                    <span className="ml-2 capitalize font-medium">{member.role}</span>
                   </Badge>
                 </div>
               </div>
@@ -233,9 +267,11 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
         ))}
         
         {members.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
-            <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No team members yet</p>
+          <div className="text-center py-12 text-gray-400">
+            <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="w-8 h-8 opacity-50" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No team members yet</h3>
             <p className="text-sm">Invite members to start collaborating</p>
           </div>
         )}
@@ -243,23 +279,16 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
     </div>
   );
 
-  console.log('TeamScreen render decision:', {
-    teamsLength: teams.length,
-    selectedTeam: selectedTeam?.name,
-    hasSelectedTeam: !!selectedTeam
-  });
-
   // If no teams exist, show create team interface
   if (teams.length === 0) {
-    console.log('TeamScreen: No teams found, showing create team interface');
     return (
-      <div className="flex-1 flex items-center justify-center p-8 text-center bg-black">
-        <div className="max-w-md">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Users className="w-8 h-8 text-white" />
+      <div className="min-h-screen flex items-center justify-center p-8 text-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <div className="max-w-lg">
+          <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-2xl">
+            <Users className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">Create Your First Team</h2>
-          <p className="text-gray-400 mb-6">
+          <h2 className="text-3xl font-bold text-white mb-6">Create Your First Team</h2>
+          <p className="text-gray-300 mb-8 text-lg leading-relaxed">
             Start collaborating with your team members by creating a team. 
             Share projects, assign tasks, and work together efficiently.
           </p>
@@ -269,38 +298,46 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
     );
   }
 
-  console.log('TeamScreen: Rendering team dashboard for team:', selectedTeam?.name);
-
   return (
-    <div className="flex-1 overflow-y-auto bg-black text-white">
-      <div className="px-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-6 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+            <div className="flex items-center space-x-6">
+              <TeamLogoUpload
+                teamId={selectedTeamId!}
+                currentLogoUrl={selectedTeam?.logo_url}
+                onLogoUpdate={handleLogoUpdate}
+              />
               <div>
-                <h1 className="text-2xl font-bold text-white">{selectedTeam?.name || 'Team'}</h1>
-                <p className="text-gray-400">{members.length} members</p>
+                <h1 className="text-4xl font-bold text-white mb-2">{selectedTeam?.name || 'Team'}</h1>
+                <div className="flex items-center gap-4 text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    {members.length} members
+                  </div>
+                  {selectedTeam?.description && (
+                    <p className="text-gray-400">{selectedTeam.description}</p>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-3">
               <CreateTeamModal 
                 onCreateTeam={handleCreateTeam}
                 trigger={
-                  <Button variant="outline" className="border-gray-600 text-gray-300">
-                    <Plus className="w-4 h-4 mr-2" />
+                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+                    <Plus className="w-4 h-4 mr-1" />
                     New Team
                   </Button>
                 }
               />
-              <Button variant="outline" className="border-gray-600 text-gray-300">
+              <Button variant="outline" className="border-gray-600 text-gray-300 hover:border-gray-500">
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
               </Button>
@@ -309,11 +346,11 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
 
           {/* Team Selector */}
           {teams.length > 1 && (
-            <div className="mb-4">
+            <div className="mb-6">
               <select
                 value={selectedTeamId || ''}
                 onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="bg-gray-800 border border-gray-600 text-white px-4 py-2 rounded-lg"
+                className="bg-gray-800/50 border border-gray-600 text-white px-4 py-3 rounded-xl hover:border-gray-500 transition-colors"
               >
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
@@ -325,22 +362,23 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           )}
 
           {/* Navigation Tabs */}
-          <div className="flex space-x-1 bg-gray-900/50 p-1 rounded-lg">
+          <div className="flex flex-wrap gap-2 bg-gray-800/30 backdrop-blur-sm p-2 rounded-xl">
             {[
-              { id: 'overview', label: 'Overview' },
-              { id: 'members', label: 'Members' },
-              { id: 'projects', label: 'Projects' },
-              { id: 'settings', label: 'Settings' }
+              { id: 'overview', label: 'Overview', icon: FileText },
+              { id: 'members', label: 'Members', icon: Users },
+              { id: 'schedule', label: 'Schedule', icon: Calendar },
+              { id: 'settings', label: 'Settings', icon: Settings }
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveView(tab.id as any)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
                   activeView === tab.id
-                    ? 'bg-emerald-500 text-white'
+                    ? 'bg-emerald-500 text-white shadow-lg'
                     : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
                 }`}
               >
+                <tab.icon className="w-4 h-4" />
                 {tab.label}
               </button>
             ))}
@@ -350,20 +388,22 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
         {/* Content */}
         <motion.div
           key={activeView}
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3 }}
         >
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
-          {activeView === 'projects' && (
-            <div className="text-center py-12">
-              <p className="text-gray-400">Team projects management coming soon...</p>
-            </div>
+          {activeView === 'schedule' && selectedTeamId && (
+            <TaskManagement teamId={selectedTeamId} members={members} />
           )}
           {activeView === 'settings' && (
-            <div className="text-center py-12">
-              <p className="text-gray-400">Team settings coming soon...</p>
+            <div className="text-center py-16">
+              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Settings className="w-8 h-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">Team Settings</h3>
+              <p className="text-gray-400">Advanced team settings coming soon...</p>
             </div>
           )}
         </motion.div>

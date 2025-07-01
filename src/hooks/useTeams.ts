@@ -7,6 +7,7 @@ export interface Team {
   name: string;
   description?: string;
   owner_id: string;
+  logo_url?: string;
   created_at: string;
   updated_at: string;
 }
