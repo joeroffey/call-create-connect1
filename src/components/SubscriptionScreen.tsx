@@ -21,7 +21,7 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, isInitialLoad, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
   const [loading, setLoading] = useState<string | null>(null);
 
   const plans = [
@@ -152,7 +152,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </div>
         </motion.div>
 
-        {/* Current Subscription Status - REDESIGNED */}
+        {/* Current Subscription Status - Show immediately */}
         {hasActiveSubscription && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -163,7 +163,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  {/* Left Section - Status Info */}
                   <div className="flex items-start gap-4">
                     <div className="relative flex-shrink-0">
                       <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
@@ -178,7 +177,11 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                         <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">
-                        {getPlanDisplayName()} Plan
+                        {isInitialLoad ? (
+                          <div className="h-6 w-24 bg-gray-700 rounded animate-pulse"></div>
+                        ) : (
+                          getPlanDisplayName() + ' Plan'
+                        )}
                       </h3>
                       <p className="text-gray-300 text-sm mb-3">
                         Your premium subscription is active and ready to use
@@ -188,7 +191,11 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span className="text-gray-300">
-                            Renews {getSubscriptionExpiration()}
+                            {isInitialLoad ? (
+                              <div className="h-4 w-32 bg-gray-700 rounded animate-pulse"></div>
+                            ) : (
+                              `Renews ${getSubscriptionExpiration()}`
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -199,7 +206,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                     </div>
                   </div>
                   
-                  {/* Right Section - Action Button */}
                   <div className="flex-shrink-0">
                     <Button
                       onClick={handleManageSubscription}

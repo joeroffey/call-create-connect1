@@ -22,7 +22,7 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
-  const { subscription, hasActiveSubscription, refetch, openCustomerPortal } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, isInitialLoad, refetch, openCustomerPortal } = useSubscription(user?.id);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -49,7 +49,6 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
 
   const handleManageSubscription = async () => {
     if (hasActiveSubscription) {
-      // Open Stripe Customer Portal for subscribers
       try {
         await openCustomerPortal();
       } catch (error) {
@@ -60,7 +59,6 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
         });
       }
     } else {
-      // Navigate to subscription plans for non-subscribers
       onNavigateToSettings();
     }
   };
@@ -159,18 +157,17 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
           <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
         </motion.div>
 
-        {/* Current Subscription Status - REDESIGNED */}
-        {hasActiveSubscription && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
+        {/* Subscription Status - Show immediately with skeleton if needed */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-8"
+        >
+          {hasActiveSubscription ? (
             <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  {/* Left Section - Status Info */}
                   <div className="flex items-start gap-4">
                     <div className="relative flex-shrink-0">
                       <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
@@ -185,7 +182,11 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                         <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
                       </div>
                       <h3 className="text-xl font-bold text-white mb-2">
-                        {getPlanDisplayName()} Plan
+                        {isInitialLoad ? (
+                          <div className="h-6 w-24 bg-gray-700 rounded animate-pulse"></div>
+                        ) : (
+                          getPlanDisplayName() + ' Plan'
+                        )}
                       </h3>
                       <p className="text-gray-300 text-sm mb-3">
                         Your premium subscription is active and ready to use
@@ -195,7 +196,11 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
                           <span className="text-gray-300">
-                            Renews {getSubscriptionExpiration()}
+                            {isInitialLoad ? (
+                              <div className="h-4 w-32 bg-gray-700 rounded animate-pulse"></div>
+                            ) : (
+                              `Renews ${getSubscriptionExpiration()}`
+                            )}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -206,7 +211,6 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                     </div>
                   </div>
                   
-                  {/* Right Section - Action Button */}
                   <div className="flex-shrink-0">
                     <Button
                       onClick={handleManageSubscription}
@@ -218,38 +222,30 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-        )}
-
-        {/* No Subscription State */}
-        {!hasActiveSubscription && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 p-6 mb-6"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-600">
-                  <Crown className="w-5 h-5 text-white" />
+          ) : (
+            <div className="bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-600">
+                    <Crown className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-white">Subscription Status</h3>
+                    <p className="text-sm text-gray-400">No Active Plan</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-white">Subscription Status</h3>
-                  <p className="text-sm text-gray-400">No Active Plan</p>
-                </div>
+                <Button
+                  onClick={handleManageSubscription}
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+                >
+                  Subscribe
+                </Button>
               </div>
-              <Button
-                onClick={handleManageSubscription}
-                variant="outline"
-                size="sm"
-                className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
-              >
-                Subscribe
-              </Button>
             </div>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
 
         {/* User Information */}
         <motion.div
