@@ -621,6 +621,16 @@ export type Database = {
           error_message: string
         }[]
       }
+      get_teams_for_user: {
+        Args: { p_user_id: string }
+        Returns: {
+          id: string
+          name: string
+          description: string
+          owner_id: string
+          created_at: string
+        }[]
+      }
       is_team_member: {
         Args: { user_id_param: string; team_id_param: string }
         Returns: boolean
