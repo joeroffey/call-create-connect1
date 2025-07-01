@@ -55,7 +55,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           <h2 className="text-2xl font-bold text-white mb-4">Team Collaboration</h2>
           <p className="text-gray-400 mb-6">
             Team features are available for EezyBuild ProMax subscribers. Create teams, share projects, 
-            assign tasks, and collaborate with your building crew.
+            assign tasks, and collaborate with your team members.
           </p>
           <div className="bg-gray-900/50 backdrop-blur-xl rounded-xl border border-gray-800 p-4 mb-6">
             <h3 className="text-white font-semibold mb-2">ProMax Team Features:</h3>
@@ -218,7 +218,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           </div>
           <h2 className="text-2xl font-bold text-white mb-4">Create Your First Team</h2>
           <p className="text-gray-400 mb-6">
-            Start collaborating with your building crew by creating a team. 
+            Start collaborating with your team members by creating a team. 
             Share projects, assign tasks, and work together efficiently.
           </p>
           <CreateTeamModal onCreateTeam={createTeam} />
