@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -143,22 +142,22 @@ const ProjectDetailsModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-gray-950/95 backdrop-blur-md border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden"
+          className="bg-gray-950 border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden pointer-events-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="p-6 border-b border-gray-800/50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FolderOpen className="w-6 h-6 text-white" />
+                <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FolderOpen className="w-6 h-6 text-gray-400" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <h2 className="text-2xl font-bold text-white truncate">{project.name}</h2>
@@ -174,9 +173,9 @@ const ProjectDetailsModal = ({
             </div>
           </div>
 
-          {/* Content - Fixed height container */}
-          <div className="flex-1 min-h-0 flex flex-col">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+          {/* Content */}
+          <div className="flex-1 overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
               <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 mx-6 mt-6 flex-shrink-0">
                 <TabsTrigger value="chats" className="flex items-center justify-center space-x-2">
                   <MessageCircle className="w-4 h-4" />
@@ -192,15 +191,14 @@ const ProjectDetailsModal = ({
                 </TabsTrigger>
               </TabsList>
 
-              {/* Scrollable content area */}
-              <div className="flex-1 min-h-0 px-6 pb-6">
-                <TabsContent value="chats" className="mt-4 h-full flex flex-col data-[state=inactive]:hidden">
+              <div className="flex-1 overflow-hidden px-6 pb-6">
+                <TabsContent value="chats" className="mt-4 h-full flex flex-col m-0">
                   <div className="flex items-center justify-between flex-shrink-0 mb-4">
                     <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
                     <Button 
                       onClick={handleStartNewChat}
                       size="sm"
-                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Start New Chat
@@ -215,7 +213,7 @@ const ProjectDetailsModal = ({
                         <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
                         <Button 
                           onClick={handleStartNewChat}
-                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
                         >
                           <Plus className="w-4 h-4 mr-2" />
                           Start New Chat
@@ -223,8 +221,8 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <ScrollArea className="flex-1">
-                      <div className="space-y-3 pr-4">
+                    <div className="flex-1 overflow-y-auto">
+                      <div className="space-y-3">
                         {projectConversations.map((conversation: any) => (
                           <motion.div
                             key={conversation.id}
@@ -248,11 +246,11 @@ const ProjectDetailsModal = ({
                           </motion.div>
                         ))}
                       </div>
-                    </ScrollArea>
+                    </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="documents" className="mt-4 h-full flex flex-col data-[state=inactive]:hidden">
+                <TabsContent value="documents" className="mt-4 h-full flex flex-col m-0">
                   <h3 className="text-lg font-semibold text-white flex-shrink-0 mb-4">Project Documents</h3>
                   {documents.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
@@ -263,8 +261,8 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <ScrollArea className="flex-1">
-                      <div className="space-y-3 pr-4">
+                    <div className="flex-1 overflow-y-auto">
+                      <div className="space-y-3">
                         {documents.map((doc: any) => (
                           <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
                             <div className="flex items-center justify-between">
@@ -279,11 +277,11 @@ const ProjectDetailsModal = ({
                           </div>
                         ))}
                       </div>
-                    </ScrollArea>
+                    </div>
                   )}
                 </TabsContent>
 
-                <TabsContent value="schedule" className="mt-4 h-full flex flex-col data-[state=inactive]:hidden">
+                <TabsContent value="schedule" className="mt-4 h-full flex flex-col m-0">
                   <h3 className="text-lg font-semibold text-white flex-shrink-0 mb-4">Schedule of Works</h3>
                   {scheduleItems.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
@@ -294,8 +292,8 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <ScrollArea className="flex-1">
-                      <div className="space-y-3 pr-4">
+                    <div className="flex-1 overflow-y-auto">
+                      <div className="space-y-3">
                         {scheduleItems.map((item: any) => (
                           <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
                             <div className="flex items-start justify-between">
@@ -318,7 +316,7 @@ const ProjectDetailsModal = ({
                           </div>
                         ))}
                       </div>
-                    </ScrollArea>
+                    </div>
                   )}
                 </TabsContent>
               </div>
@@ -326,7 +324,7 @@ const ProjectDetailsModal = ({
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-800/50 bg-gray-950/50 flex-shrink-0">
+          <div className="p-6 border-t border-gray-800/50 bg-gray-950 flex-shrink-0">
             <div className="flex items-center justify-between text-sm text-gray-400">
               <div className="flex items-center space-x-4">
                 <span>Status: <span className="text-white">{project.status}</span></span>
