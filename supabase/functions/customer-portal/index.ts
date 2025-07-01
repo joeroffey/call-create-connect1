@@ -89,9 +89,8 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Use a simple return URL that will close the tab/window
-    const origin = req.headers.get("origin") || "http://localhost:3000";
-    const returnUrl = `${origin}/?portal=closed`;
+    // Use a return URL that will close the window
+    const returnUrl = "javascript:window.close();";
     
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,

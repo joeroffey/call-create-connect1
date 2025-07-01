@@ -166,10 +166,19 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) throw error;
 
-      // Open customer portal in a new tab to avoid overlay issues
+      // Force open in new window with specific features to prevent overlay
       if (data.url) {
-        console.log('🔗 Opening customer portal in new tab');
-        window.open(data.url, '_blank');
+        console.log('🔗 Opening customer portal in new window');
+        const portalWindow = window.open(
+          data.url, 
+          'stripe-portal',
+          'width=800,height=600,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no'
+        );
+        
+        // Optional: Focus the new window
+        if (portalWindow) {
+          portalWindow.focus();
+        }
       }
 
       return true;
