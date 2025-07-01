@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -129,6 +130,11 @@ const ProjectDetailsModal = ({
     }
   };
 
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+  };
+
   if (!isOpen || !project) return null;
 
   return (
@@ -144,24 +150,24 @@ const ProjectDetailsModal = ({
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-gradient-to-br from-gray-950 via-black to-gray-950 border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
+          className="bg-gradient-to-br from-gray-950 via-black to-gray-950 border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-800/50">
+          <div className="p-6 border-b border-gray-800/50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
                   <FolderOpen className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-white">{project.name}</h2>
-                  <p className="text-gray-400">{project.description || 'No description'}</p>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-2xl font-bold text-white truncate">{project.name}</h2>
+                  <p className="text-gray-400 text-sm truncate">{project.description || 'No description'}</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
+                className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors flex-shrink-0"
               >
                 <X className="w-5 h-5 text-gray-400" />
               </button>
@@ -171,25 +177,25 @@ const ProjectDetailsModal = ({
           {/* Content */}
           <div className="flex-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 m-6 mb-0">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 m-6 mb-0 flex-shrink-0">
                 <TabsTrigger value="chats" className="flex items-center space-x-2">
                   <MessageCircle className="w-4 h-4" />
-                  <span>Chats ({getProjectConversationCount(project.id)})</span>
+                  <span>{getProjectConversationCount(project.id)}</span>
                 </TabsTrigger>
                 <TabsTrigger value="documents" className="flex items-center space-x-2">
                   <FileText className="w-4 h-4" />
-                  <span>Documents ({getProjectDocumentCount(project.id)})</span>
+                  <span>{getProjectDocumentCount(project.id)}</span>
                 </TabsTrigger>
                 <TabsTrigger value="schedule" className="flex items-center space-x-2">
                   <CheckSquare className="w-4 h-4" />
-                  <span>Schedule ({getProjectScheduleOfWorksCount(project.id)})</span>
+                  <span>{getProjectScheduleOfWorksCount(project.id)}</span>
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex-1 overflow-y-auto p-6 pt-4">
-                <TabsContent value="chats" className="mt-0 h-full">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+              <div className="flex-1 overflow-hidden px-6 pb-4">
+                <TabsContent value="chats" className="mt-4 h-full">
+                  <div className="flex flex-col h-full space-y-4">
+                    <div className="flex items-center justify-between flex-shrink-0">
                       <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
                       <Button 
                         onClick={handleStartNewChat}
@@ -201,109 +207,121 @@ const ProjectDetailsModal = ({
                     </div>
                     
                     {projectConversations.length === 0 ? (
-                      <div className="text-center py-12">
-                        <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
-                        <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
-                        <Button 
-                          onClick={handleStartNewChat}
-                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Start New Chat
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        {projectConversations.map((conversation: any) => (
-                          <motion.div
-                            key={conversation.id}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.99 }}
-                            className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
-                            onClick={() => handleConversationClick(conversation.id)}
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
+                          <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
+                          <Button 
+                            onClick={handleStartNewChat}
+                            className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
                           >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-white mb-1 truncate">
-                                  {conversation.title}
-                                </h4>
-                                <div className="flex items-center text-sm text-gray-400">
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  <span>{formatDate(conversation.updated_at)}</span>
-                                </div>
-                              </div>
-                              <MessageCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 ml-3" />
-                            </div>
-                          </motion.div>
-                        ))}
+                            <Plus className="w-4 h-4 mr-2" />
+                            Start New Chat
+                          </Button>
+                        </div>
                       </div>
+                    ) : (
+                      <ScrollArea className="flex-1">
+                        <div className="space-y-3 pr-4">
+                          {projectConversations.map((conversation: any) => (
+                            <motion.div
+                              key={conversation.id}
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                              className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
+                              onClick={() => handleConversationClick(conversation.id)}
+                            >
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0 pr-3">
+                                  <h4 className="font-medium text-white mb-1 truncate">
+                                    {truncateText(conversation.title, 60)}
+                                  </h4>
+                                  <div className="flex items-center text-sm text-gray-400">
+                                    <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+                                    <span>{formatDate(conversation.updated_at)}</span>
+                                  </div>
+                                </div>
+                                <MessageCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     )}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="documents" className="mt-0">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white">Project Documents</h3>
+                <TabsContent value="documents" className="mt-4 h-full">
+                  <div className="flex flex-col h-full space-y-4">
+                    <h3 className="text-lg font-semibold text-white flex-shrink-0">Project Documents</h3>
                     {documents.length === 0 ? (
-                      <div className="text-center py-12">
-                        <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
-                        <p className="text-gray-500">Documents will appear here when uploaded to the project</p>
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
+                          <p className="text-gray-500">Documents will appear here when uploaded to the project</p>
+                        </div>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {documents.map((doc: any) => (
-                          <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <h4 className="font-medium text-white">{doc.file_name}</h4>
-                                <p className="text-sm text-gray-400">
-                                  {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
-                                </p>
+                      <ScrollArea className="flex-1">
+                        <div className="space-y-3 pr-4">
+                          {documents.map((doc: any) => (
+                            <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-medium text-white truncate">{doc.file_name}</h4>
+                                  <p className="text-sm text-gray-400">
+                                    {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
+                                  </p>
+                                </div>
+                                <FileText className="w-5 h-5 text-blue-400 flex-shrink-0 ml-3" />
                               </div>
-                              <FileText className="w-5 h-5 text-blue-400" />
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     )}
                   </div>
                 </TabsContent>
 
-                <TabsContent value="schedule" className="mt-0">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
+                <TabsContent value="schedule" className="mt-4 h-full">
+                  <div className="flex flex-col h-full space-y-4">
+                    <h3 className="text-lg font-semibold text-white flex-shrink-0">Schedule of Works</h3>
                     {scheduleItems.length === 0 ? (
-                      <div className="text-center py-12">
-                        <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
-                        <p className="text-gray-500">Schedule items will appear here when added to the project</p>
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
+                          <p className="text-gray-500">Schedule items will appear here when added to the project</p>
+                        </div>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {scheduleItems.map((item: any) => (
-                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                            <div className="flex items-start justify-between">
-                              <div>
-                                <h4 className="font-medium text-white">{item.title}</h4>
-                                {item.description && (
-                                  <p className="text-sm text-gray-400 mt-1">{item.description}</p>
-                                )}
-                                <div className="flex items-center mt-2 text-sm text-gray-500">
-                                  <Calendar className="w-3 h-3 mr-1" />
-                                  <span>
-                                    {item.due_date ? formatDate(item.due_date) : 'No due date'}
-                                  </span>
+                      <ScrollArea className="flex-1">
+                        <div className="space-y-3 pr-4">
+                          {scheduleItems.map((item: any) => (
+                            <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-medium text-white truncate">{item.title}</h4>
+                                  {item.description && (
+                                    <p className="text-sm text-gray-400 mt-1 line-clamp-2">{item.description}</p>
+                                  )}
+                                  <div className="flex items-center mt-2 text-sm text-gray-500">
+                                    <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+                                    <span>
+                                      {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                    </span>
+                                  </div>
                                 </div>
+                                <div className={`w-3 h-3 rounded-full flex-shrink-0 ml-3 ${
+                                  item.completed ? 'bg-green-500' : 'bg-gray-600'
+                                }`} />
                               </div>
-                              <div className={`w-3 h-3 rounded-full ${
-                                item.completed ? 'bg-green-500' : 'bg-gray-600'
-                              }`} />
                             </div>
-                          </div>
-                        ))}
-                      </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     )}
                   </div>
                 </TabsContent>
@@ -312,13 +330,13 @@ const ProjectDetailsModal = ({
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t border-gray-800/50 bg-gray-950/50">
+          <div className="p-6 border-t border-gray-800/50 bg-gray-950/50 flex-shrink-0">
             <div className="flex items-center justify-between text-sm text-gray-400">
               <div className="flex items-center space-x-4">
-                <span>Status: {project.status}</span>
-                <span>Label: {project.label}</span>
+                <span>Status: <span className="text-white">{project.status}</span></span>
+                <span>Label: <span className="text-white">{project.label}</span></span>
               </div>
-              <span>Last updated: {formatDate(project.updated_at)}</span>
+              <span>Last updated: <span className="text-white">{formatDate(project.updated_at)}</span></span>
             </div>
           </div>
         </motion.div>
