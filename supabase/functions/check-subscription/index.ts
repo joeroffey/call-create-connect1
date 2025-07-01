@@ -95,12 +95,12 @@ serve(async (req) => {
       }))
     });
 
-    // Look for active, trialing, or past_due subscriptions
+    // Look for active, trialing, or past_due subscriptions - FIX THE BUG HERE
     const activeSubscriptions = allSubscriptions.data.filter(sub => 
       ['active', 'trialing', 'past_due'].includes(sub.status)
     );
     logStep("Filtered active subscriptions", { 
-      count: activeSubscriptions.data.length,
+      count: activeSubscriptions.length,  // FIXED: removed .data
       activeStatuses: activeSubscriptions.map(sub => sub.status)
     });
 
