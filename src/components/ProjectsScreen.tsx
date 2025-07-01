@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -10,6 +9,7 @@ import ProjectCard from './projects/ProjectCard';
 import CreateProjectModal from './projects/CreateProjectModal';
 import EditProjectModal from './projects/EditProjectModal';
 import EmptyProjectsState from './projects/EmptyProjectsState';
+import DebugPanel from './DebugPanel';
 
 interface Project {
   id: string;
@@ -316,6 +316,11 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-950 via-black to-gray-950 overflow-hidden">
+      {/* Debug Panel - Remove this once issues are resolved */}
+      <div className="p-6 pb-0">
+        <DebugPanel user={user} />
+      </div>
+
       {/* Header */}
       <div className="p-6 border-b border-gray-800/30">
         <div className="flex items-center justify-between">
