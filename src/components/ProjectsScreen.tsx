@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -38,6 +39,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [activeTab, setActiveTab] = useState('chats');
   const { toast } = useToast();
   
+  console.log('ProjectsScreen render - user:', user?.id, 'projects:', projects.length);
+  
   // Get conversations data with the new helper functions - using single instance
   const conversationsHook = useConversations(user?.id);
   const { 
@@ -54,8 +57,13 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   console.log('ProjectsScreen - conversations:', conversations);
 
   const fetchProjects = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('No user ID, skipping project fetch');
+      setLoading(false);
+      return;
+    }
     
+    console.log('Fetching projects for user:', user.id);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -64,7 +72,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         .eq('user_id', user.id)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching projects:', error);
+        throw error;
+      }
       
       console.log('ProjectsScreen - fetched projects:', data);
       
@@ -76,6 +87,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       });
       
       setProjects(sortedProjects);
+      console.log('Projects set successfully:', sortedProjects.length);
     } catch (error) {
       console.error('Error fetching projects:', error);
       toast({
@@ -89,6 +101,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   };
 
   useEffect(() => {
+    console.log('Projects useEffect triggered, user ID:', user?.id);
     fetchProjects();
   }, [user?.id]);
 
@@ -96,6 +109,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   useEffect(() => {
     if (!user?.id) return;
 
+    console.log('Setting up real-time subscription for projects');
     const channel = supabase
       .channel('projects-changes')
       .on(
@@ -114,6 +128,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       .subscribe();
 
     return () => {
+      console.log('Cleaning up projects subscription');
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
@@ -289,12 +304,15 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   };
 
   if (loading || conversationsLoading) {
+    console.log('Projects screen loading - projects loading:', loading, 'conversations loading:', conversationsLoading);
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
+
+  console.log('Rendering projects screen with', projects.length, 'projects');
 
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-950 via-black to-gray-950 overflow-hidden">
