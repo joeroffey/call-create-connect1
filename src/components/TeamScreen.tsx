@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -33,7 +32,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   const { teams, loading: teamsLoading, createTeam } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
 
-  // Select first team by default
+  // Select first team by default when teams are loaded
   React.useEffect(() => {
     if (teams.length > 0 && !selectedTeamId) {
       setSelectedTeamId(teams[0].id);
@@ -44,6 +43,15 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
 
   // Check if user has team access
   const hasTeamAccess = subscriptionTier === 'enterprise';
+
+  const handleCreateTeam = async (name: string, description?: string) => {
+    const newTeam = await createTeam(name, description);
+    if (newTeam) {
+      // Set the newly created team as selected
+      setSelectedTeamId(newTeam.id);
+    }
+    return newTeam;
+  };
 
   if (!hasTeamAccess) {
     return (
@@ -221,7 +229,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
             Start collaborating with your team members by creating a team. 
             Share projects, assign tasks, and work together efficiently.
           </p>
-          <CreateTeamModal onCreateTeam={createTeam} />
+          <CreateTeamModal onCreateTeam={handleCreateTeam} />
         </div>
       </div>
     );
@@ -248,7 +256,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
             </div>
             <div className="flex items-center space-x-2">
               <CreateTeamModal 
-                onCreateTeam={createTeam}
+                onCreateTeam={handleCreateTeam}
                 trigger={
                   <Button variant="outline" className="border-gray-600 text-gray-300">
                     <Plus className="w-4 h-4 mr-2" />

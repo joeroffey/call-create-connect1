@@ -78,7 +78,9 @@ export const useTeams = (userId?: string) => {
           role: 'owner'
         }]);
 
-      await fetchTeams();
+      // Update teams list immediately with the new team
+      setTeams(prevTeams => [data, ...prevTeams]);
+      
       toast({
         title: "Success",
         description: "Team created successfully",
