@@ -54,6 +54,16 @@ const ProjectCard = ({
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'planning': return 'Set-up';
+      case 'in-progress': return 'In Progress';
+      case 'completed': return 'Completed';
+      case 'on-hold': return 'On Hold';
+      default: return status.replace('-', ' ');
+    }
+  };
+
   const getLabelColor = (label: string) => {
     switch (label) {
       case 'Residential': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
@@ -76,7 +86,7 @@ const ProjectCard = ({
   };
 
   const statusOptions = [
-    { value: 'planning', label: 'Planning' },
+    { value: 'planning', label: 'Set-up' },
     { value: 'in-progress', label: 'In Progress' },
     { value: 'completed', label: 'Completed' },
     { value: 'on-hold', label: 'On Hold' }
@@ -133,7 +143,7 @@ const ProjectCard = ({
             onClick={() => setShowStatusDropdown(!showStatusDropdown)}
             className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
           >
-            <span>{project.status.replace('-', ' ')}</span>
+            <span>{getStatusLabel(project.status)}</span>
             <ChevronDown className="w-3 h-3" />
           </button>
           
