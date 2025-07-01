@@ -1,265 +1,135 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2, CalendarIcon } from 'lucide-react';
-import { format } from "date-fns";
+import { 
+  X, 
+  MessageCircle, 
+  FileText, 
+  CheckSquare, 
+  Calendar,
+  Plus,
+  Clock,
+  User,
+  FolderOpen
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectDetailsModalProps {
   project: any;
   isOpen: boolean;
   onClose: () => void;
-  onStartNewChat: (projectId: string) => void;
+  onStartNewChat: (projectId: string, conversationId?: string) => void;
   user: any;
   initialTab?: string;
-  conversationsHook: any; // Accept the shared hook instance
+  conversationsHook: any;
 }
 
-const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, initialTab = 'chats', conversationsHook }: ProjectDetailsModalProps) => {
+const ProjectDetailsModal = ({ 
+  project, 
+  isOpen, 
+  onClose, 
+  onStartNewChat, 
+  user,
+  initialTab = 'chats',
+  conversationsHook
+}: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [documents, setDocuments] = useState<any[]>([]);
-  const [scheduleOfWorks, setScheduleOfWorks] = useState<any[]>([]);
-  const [newWorkItem, setNewWorkItem] = useState({ title: '', description: '', due_date: '' });
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const [showAddWorkItem, setShowAddWorkItem] = useState(false);
+  const [scheduleItems, setScheduleItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  
-  // Use the shared conversations hook instance
-  const { conversations, getProjectConversationCount, incrementDocumentCount, incrementScheduleCount } = conversationsHook;
-  
-  // Filter conversations for this project
-  const projectConversations = conversations.filter(conv => conv.project_id === project?.id);
 
-  // Update activeTab when initialTab changes
+  const {
+    conversations,
+    getProjectConversationCount,
+    getProjectDocumentCount,
+    getProjectScheduleOfWorksCount
+  } = conversationsHook;
+
+  // Filter conversations for this project
+  const projectConversations = conversations.filter(
+    (conv: any) => conv.project_id === project?.id
+  );
+
   useEffect(() => {
-    if (isOpen) {
-      console.log('ProjectDetailsModal opened with initialTab:', initialTab);
-      setActiveTab(initialTab);
-    }
-  }, [isOpen, initialTab]);
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   useEffect(() => {
     if (isOpen && project) {
-      fetchDocuments();
-      fetchScheduleOfWorks();
+      fetchProjectDetails();
     }
-  }, [isOpen, project]);
+  }, [isOpen, project?.id]);
 
-  // Reset form when closing add work item
-  useEffect(() => {
-    if (!showAddWorkItem) {
-      setNewWorkItem({ title: '', description: '', due_date: '' });
-      setSelectedDate(undefined);
-    }
-  }, [showAddWorkItem]);
-
-  const fetchDocuments = async () => {
+  const fetchProjectDetails = async () => {
     if (!project?.id || !user?.id) return;
     
+    setLoading(true);
     try {
-      const { data, error } = await supabase
+      // Fetch documents
+      const { data: docsData, error: docsError } = await supabase
         .from('project_documents')
         .select('*')
         .eq('project_id', project.id)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-    }
-  };
+      if (docsError) throw docsError;
+      setDocuments(docsData || []);
 
-  const fetchScheduleOfWorks = async () => {
-    if (!project?.id || !user?.id) return;
-    
-    try {
-      const { data, error } = await supabase
+      // Fetch schedule of works
+      const { data: scheduleData, error: scheduleError } = await supabase
         .from('project_schedule_of_works')
         .select('*')
         .eq('project_id', project.id)
         .eq('user_id', user.id)
-        .order('due_date', { ascending: true });
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setScheduleOfWorks(data || []);
+      if (scheduleError) throw scheduleError;
+      setScheduleItems(scheduleData || []);
+
     } catch (error) {
-      console.error('Error fetching schedule of works:', error);
-    }
-  };
-
-  const createWorkItem = async () => {
-    if (!newWorkItem.title.trim() || !project?.id || !user?.id) return;
-
-    // Optimistically update the count immediately
-    incrementScheduleCount(project.id);
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from('project_schedule_of_works')
-        .insert([
-          {
-            project_id: project.id,
-            user_id: user.id,
-            title: newWorkItem.title.trim(),
-            description: newWorkItem.description.trim() || null,
-            due_date: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
-          }
-        ]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Work item created",
-        description: `${newWorkItem.title} has been added to your schedule of works.`,
-      });
-
-      setNewWorkItem({ title: '', description: '', due_date: '' });
-      setSelectedDate(undefined);
-      setShowAddWorkItem(false);
-      fetchScheduleOfWorks();
-    } catch (error: any) {
-      console.error('Error creating work item:', error);
+      console.error('Error fetching project details:', error);
       toast({
         variant: "destructive",
-        title: "Error creating work item",
-        description: error.message || "Please try again.",
+        title: "Error loading project details",
+        description: "Please try again later.",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleWorkItem = async (workItemId: string, completed: boolean) => {
-    try {
-      const updateData: any = { completed: !completed };
-      
-      // If marking as completed, set completion date
-      if (!completed) {
-        updateData.completed_at = new Date().toISOString();
-      } else {
-        // If marking as not completed, clear completion date
-        updateData.completed_at = null;
-      }
+  const handleConversationClick = (conversationId: string) => {
+    console.log('Opening conversation:', conversationId, 'for project:', project?.id);
+    onStartNewChat(project?.id, conversationId);
+    onClose();
+  };
 
-      const { error } = await supabase
-        .from('project_schedule_of_works')
-        .update(updateData)
-        .eq('id', workItemId);
+  const handleStartNewChat = () => {
+    console.log('Starting new chat for project:', project?.id);
+    onStartNewChat(project?.id);
+    onClose();
+  };
 
-      if (error) throw error;
-      fetchScheduleOfWorks();
-    } catch (error: any) {
-      console.error('Error updating work item:', error);
-      toast({
-        variant: "destructive",
-        title: "Error updating work item",
-        description: error.message || "Please try again.",
-      });
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+
+    if (diffInHours < 24) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffInHours < 48) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString();
     }
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0 || !project?.id || !user?.id) return;
-
-    const file = files[0];
-    
-    // Check file type and size
-    const supportedTypes = [
-      'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-      'application/pdf',
-      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain', 'text/csv', 'text/markdown'
-    ];
-
-    if (!supportedTypes.includes(file.type)) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file type",
-        description: "Please select an image, PDF, Word document, or text file.",
-      });
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        variant: "destructive",
-        title: "File too large",
-        description: "Please select a file smaller than 10MB.",
-      });
-      return;
-    }
-
-    // Optimistically update the count immediately
-    incrementDocumentCount(project.id);
-
-    setLoading(true);
-    try {
-      const filePath = `${user.id}/${project.id}/${Date.now()}-${file.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('project-documents')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { error: dbError } = await supabase
-        .from('project_documents')
-        .insert([
-          {
-            project_id: project.id,
-            user_id: user.id,
-            file_name: file.name,
-            file_path: filePath,
-            file_type: file.type,
-            file_size: file.size,
-          }
-        ]);
-
-      if (dbError) throw dbError;
-
-      toast({
-        title: "Document uploaded",
-        description: `${file.name} has been uploaded successfully.`,
-      });
-
-      fetchDocuments();
-    } catch (error: any) {
-      console.error('Error uploading document:', error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: error.message || "Failed to upload document.",
-      });
-    } finally {
-      setLoading(false);
-      event.target.value = '';
-    }
-  };
-
-  if (!isOpen) return null;
-
-  const tabs = [
-    { id: 'chats', label: 'Chats', icon: MessageCircle, count: projectConversations.length },
-    { id: 'documents', label: 'Documents', icon: FileText, count: documents.length },
-    { id: 'schedule', label: 'Schedule', icon: Clock, count: scheduleOfWorks.length },
-  ];
-
-  console.log('ProjectDetailsModal rendering - activeTab:', activeTab, 'isOpen:', isOpen);
-  console.log('Available tabs:', tabs.map(t => t.id));
+  if (!isOpen || !project) return null;
 
   return (
     <AnimatePresence>
@@ -267,274 +137,189 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-gradient-to-br from-gray-950 via-black to-gray-950 border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl"
           onClick={(e) => e.stopPropagation()}
-          className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-800/30 flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-white">{project?.name}</h2>
-              <p className="text-gray-400 text-sm">{project?.description}</p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Tabs */}
-          <div className="border-b border-gray-800/30">
-            <div className="flex space-x-0 justify-center">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                console.log(`Tab ${tab.id}: isActive = ${isActive}, activeTab = "${activeTab}", tab.id = "${tab.id}"`);
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => {
-                      console.log('Tab clicked:', tab.id, 'Setting activeTab to:', tab.id);
-                      setActiveTab(tab.id);
-                    }}
-                    className={`flex items-center justify-center space-x-2 px-6 py-3 border-b-2 transition-colors ${
-                      isActive
-                        ? 'border-emerald-500 text-emerald-300 bg-emerald-500/5'
-                        : 'border-transparent text-gray-400 hover:text-white hover:bg-gray-800/30'
-                    }`}
-                    title={tab.label}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <span className="bg-gray-700/50 text-gray-300 px-2 py-1 rounded-full text-xs">
-                      {tab.count}
-                    </span>
-                  </button>
-                );
-              })}
+          <div className="p-6 border-b border-gray-800/50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                  <FolderOpen className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">{project.name}</h2>
+                  <p className="text-gray-400">{project.description || 'No description'}</p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-400" />
+              </button>
             </div>
           </div>
 
           {/* Content */}
-          <div className="flex-1 p-6 overflow-y-auto">
-            {activeTab === 'chats' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
-                  <button
-                    onClick={() => {
-                      onStartNewChat(project.id);
-                      onClose();
-                    }}
-                    className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium"
-                  >
-                    Start New Chat
-                  </button>
-                </div>
-                
-                {projectConversations.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">No conversations yet</p>
-                    <p className="text-gray-500 text-sm">Start a chat to discuss this project</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {projectConversations.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:border-emerald-500/30 transition-colors"
+          <div className="flex-1 overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 m-6 mb-0">
+                <TabsTrigger value="chats" className="flex items-center space-x-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Chats ({getProjectConversationCount(project.id)})</span>
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="flex items-center space-x-2">
+                  <FileText className="w-4 h-4" />
+                  <span>Documents ({getProjectDocumentCount(project.id)})</span>
+                </TabsTrigger>
+                <TabsTrigger value="schedule" className="flex items-center space-x-2">
+                  <CheckSquare className="w-4 h-4" />
+                  <span>Schedule ({getProjectScheduleOfWorksCount(project.id)})</span>
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="flex-1 overflow-y-auto p-6 pt-4">
+                <TabsContent value="chats" className="mt-0 h-full">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
+                      <Button 
+                        onClick={handleStartNewChat}
+                        className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
                       >
-                        <h4 className="text-white font-medium mb-1">{conversation.title}</h4>
-                        <p className="text-gray-400 text-sm">
-                          {new Date(conversation.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'documents' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Project Documents</h3>
-                  <label className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium cursor-pointer">
-                    <Upload className="w-4 h-4 inline mr-2" />
-                    Upload Document
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.csv,.md"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                {documents.length === 0 ? (
-                  <div className="text-center py-8">
-                    <FileText className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">No documents uploaded yet</p>
-                    <p className="text-gray-500 text-sm">Upload documents to share with the AI</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {documents.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 flex items-center justify-between"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <FileText className="w-5 h-5 text-blue-400" />
-                          <div>
-                            <h4 className="text-white font-medium">{doc.file_name}</h4>
-                            <p className="text-gray-400 text-sm">
-                              {(doc.file_size / 1024 / 1024).toFixed(2)} MB • {new Date(doc.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'schedule' && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Schedule</h3>
-                  <button
-                    onClick={() => setShowAddWorkItem(true)}
-                    className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium"
-                  >
-                    <Plus className="w-4 h-4 inline mr-2" />
-                    Add Work Item
-                  </button>
-                </div>
-
-                {showAddWorkItem && (
-                  <div className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 space-y-3">
-                    <input
-                      type="text"
-                      placeholder="Work item title"
-                      value={newWorkItem.title}
-                      onChange={(e) => setNewWorkItem({ ...newWorkItem, title: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none"
-                    />
-                    <textarea
-                      placeholder="Description (optional)"
-                      value={newWorkItem.description}
-                      onChange={(e) => setNewWorkItem({ ...newWorkItem, description: e.target.value })}
-                      rows={2}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none resize-none"
-                    />
+                        <Plus className="w-4 h-4 mr-2" />
+                        Start New Chat
+                      </Button>
+                    </div>
                     
-                    {/* Modern Date Picker */}
-                    <div className="space-y-2">
-                      <label className="text-sm text-gray-300">Due Date (optional)</label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal bg-gray-700/50 border-gray-600/50 text-white hover:bg-gray-600/50 hover:text-white",
-                              !selectedDate && "text-gray-400"
-                            )}
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={selectedDate}
-                            onSelect={setSelectedDate}
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={createWorkItem}
-                        disabled={!newWorkItem.title.trim() || loading}
-                        className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50"
-                      >
-                        Create
-                      </button>
-                      <button
-                        onClick={() => setShowAddWorkItem(false)}
-                        className="bg-gray-700/50 hover:bg-gray-600/50 text-gray-300 px-4 py-2 rounded-lg transition-all duration-200 text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {scheduleOfWorks.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Clock className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-400">No work items created yet</p>
-                    <p className="text-gray-500 text-sm">Add work items to track project progress</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {scheduleOfWorks.map((workItem) => (
-                      <div
-                        key={workItem.id}
-                        className="p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 flex items-start space-x-3"
-                      >
-                        <button
-                          onClick={() => toggleWorkItem(workItem.id, workItem.completed)}
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                            workItem.completed
-                              ? 'bg-emerald-500 border-emerald-500 text-white'
-                              : 'border-gray-600 hover:border-emerald-500'
-                          }`}
+                    {projectConversations.length === 0 ? (
+                      <div className="text-center py-12">
+                        <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
+                        <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
+                        <Button 
+                          onClick={handleStartNewChat}
+                          className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
                         >
-                          {workItem.completed && '✓'}
-                        </button>
-                        <div className="flex-1">
-                          <h4 className={`font-medium ${workItem.completed ? 'text-gray-400 line-through' : 'text-white'}`}>
-                            {workItem.title}
-                          </h4>
-                          {workItem.description && (
-                            <p className="text-gray-400 text-sm mt-1">{workItem.description}</p>
-                          )}
-                          <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                            {workItem.due_date && (
-                              <div className="flex items-center space-x-1">
-                                <Calendar className="w-3 h-3" />
-                                <span>Due: {new Date(workItem.due_date).toLocaleDateString()}</span>
-                              </div>
-                            )}
-                            {workItem.completed && workItem.completed_at && (
-                              <div className="flex items-center space-x-1 text-emerald-400">
-                                <Clock className="w-3 h-3" />
-                                <span>Completed: {new Date(workItem.completed_at).toLocaleDateString()}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Start New Chat
+                        </Button>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="space-y-3">
+                        {projectConversations.map((conversation: any) => (
+                          <motion.div
+                            key={conversation.id}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
+                            onClick={() => handleConversationClick(conversation.id)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-white mb-1 truncate">
+                                  {conversation.title}
+                                </h4>
+                                <div className="flex items-center text-sm text-gray-400">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  <span>{formatDate(conversation.updated_at)}</span>
+                                </div>
+                              </div>
+                              <MessageCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 ml-3" />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </TabsContent>
+
+                <TabsContent value="documents" className="mt-0">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Project Documents</h3>
+                    {documents.length === 0 ? (
+                      <div className="text-center py-12">
+                        <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
+                        <p className="text-gray-500">Documents will appear here when uploaded to the project</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {documents.map((doc: any) => (
+                          <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-medium text-white">{doc.file_name}</h4>
+                                <p className="text-sm text-gray-400">
+                                  {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
+                                </p>
+                              </div>
+                              <FileText className="w-5 h-5 text-blue-400" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="schedule" className="mt-0">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
+                    {scheduleItems.length === 0 ? (
+                      <div className="text-center py-12">
+                        <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                        <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
+                        <p className="text-gray-500">Schedule items will appear here when added to the project</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {scheduleItems.map((item: any) => (
+                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <h4 className="font-medium text-white">{item.title}</h4>
+                                {item.description && (
+                                  <p className="text-sm text-gray-400 mt-1">{item.description}</p>
+                                )}
+                                <div className="flex items-center mt-2 text-sm text-gray-500">
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  <span>
+                                    {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className={`w-3 h-3 rounded-full ${
+                                item.completed ? 'bg-green-500' : 'bg-gray-600'
+                              }`} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
               </div>
-            )}
+            </Tabs>
+          </div>
+
+          {/* Footer */}
+          <div className="p-6 border-t border-gray-800/50 bg-gray-950/50">
+            <div className="flex items-center justify-between text-sm text-gray-400">
+              <div className="flex items-center space-x-4">
+                <span>Status: {project.status}</span>
+                <span>Label: {project.label}</span>
+              </div>
+              <span>Last updated: {formatDate(project.updated_at)}</span>
+            </div>
           </div>
         </motion.div>
       </motion.div>

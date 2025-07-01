@@ -24,6 +24,7 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Get subscription info
@@ -218,15 +219,17 @@ const Index = () => {
     }
   }, [subscriptionTier, activeTab]);
 
-  const handleStartNewChat = (projectId: string) => {
-    console.log('Starting new chat for project:', projectId);
+  const handleStartNewChat = (projectId: string, conversationId?: string) => {
+    console.log('Starting new chat for project:', projectId, 'conversation:', conversationId);
     setCurrentProjectId(projectId);
+    setCurrentConversationId(conversationId || null);
     setActiveTab('chat');
   };
 
   const handleChatComplete = () => {
     // Reset project context when chat is done or user navigates away
     setCurrentProjectId(null);
+    setCurrentConversationId(null);
   };
 
   // Navigation handler for viewing subscription plans - ENHANCED DEBUGGING
@@ -274,6 +277,7 @@ const Index = () => {
             user={user} 
             onViewPlans={handleViewPlans}
             projectId={currentProjectId}
+            conversationId={currentConversationId}
             onChatComplete={handleChatComplete}
           />
         );

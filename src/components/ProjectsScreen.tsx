@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
@@ -25,7 +24,7 @@ interface Project {
 
 interface ProjectsScreenProps {
   user: any;
-  onStartNewChat: (projectId: string) => void;
+  onStartNewChat: (projectId: string, conversationId?: string) => void;
 }
 
 const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
@@ -278,6 +277,17 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     console.log('Modal should now be open with activeTab:', section);
   };
 
+  const handleStartNewChatFromModal = (projectId: string, conversationId?: string) => {
+    console.log('Starting chat for project:', projectId, 'conversation:', conversationId);
+    if (conversationId) {
+      // Open existing conversation
+      onStartNewChat(projectId, conversationId);
+    } else {
+      // Start new chat for project
+      onStartNewChat(projectId);
+    }
+  };
+
   if (loading || conversationsLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -342,7 +352,7 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           setShowProjectDetails(false);
           setSelectedProject(null);
         }}
-        onStartNewChat={onStartNewChat}
+        onStartNewChat={handleStartNewChatFromModal}
         user={user}
         initialTab={activeTab}
         conversationsHook={conversationsHook}
