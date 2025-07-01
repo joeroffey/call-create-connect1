@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -6,9 +7,12 @@ import {
   ArrowLeft,
   Star,
   Building,
-  Loader2
+  Loader2,
+  Calendar,
+  Shield
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useSubscription } from '@/hooks/useSubscription';
 
 interface SubscriptionScreenProps {
@@ -99,6 +103,33 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
     }
   };
 
+  const getPlanDisplayName = () => {
+    if (!hasActiveSubscription || !subscription) return 'No Plan';
+    
+    switch (subscription.plan_type) {
+      case 'basic':
+        return 'EezyBuild';
+      case 'pro':
+        return 'Pro';
+      case 'enterprise':
+        return 'ProMax';
+      default:
+        return 'Unknown Plan';
+    }
+  };
+
+  const getSubscriptionExpiration = () => {
+    if (!hasActiveSubscription || !subscription?.current_period_end) {
+      return 'N/A';
+    }
+    
+    return new Date(subscription.current_period_end).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
       <div className="px-6 py-8">
@@ -121,38 +152,72 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </div>
         </motion.div>
 
-        {/* Current Subscription Status */}
+        {/* Current Subscription Status - REDESIGNED */}
         {hasActiveSubscription && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-r from-emerald-500/20 to-blue-600/20 rounded-2xl p-6 mb-8 border border-emerald-500/30"
+            className="mb-8"
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
-                  <Crown className="w-6 h-6 text-white" />
+            <Card className="relative overflow-hidden border-0 bg-gradient-to-r from-emerald-500/20 via-emerald-400/15 to-blue-500/20 backdrop-blur-xl">
+              {/* Animated background pattern */}
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-blue-500/10 opacity-50"></div>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-400 via-emerald-300 to-blue-400"></div>
+              
+              <CardContent className="relative p-8">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4">
+                    {/* Icon with glow effect */}
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-emerald-400 rounded-full blur-md opacity-30"></div>
+                      <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Crown className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Shield className="w-4 h-4 text-emerald-400" />
+                          <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-white mb-1">
+                          {getPlanDisplayName()} Plan
+                        </h3>
+                        <p className="text-emerald-200/80 text-sm">
+                          Your premium subscription is active and ready to use
+                        </p>
+                      </div>
+                      
+                      <div className="flex items-center space-x-6 text-sm">
+                        <div className="flex items-center space-x-2">
+                          <Calendar className="w-4 h-4 text-gray-300" />
+                          <span className="text-gray-300">
+                            Renews {getSubscriptionExpiration()}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <span className="text-emerald-300 font-medium">Active</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button
+                    onClick={handleManageSubscription}
+                    disabled={loading === 'manage'}
+                    className="bg-white/15 hover:bg-white/25 text-white border border-white/20 backdrop-blur-sm transition-all duration-200 px-6 py-2.5 font-medium"
+                  >
+                    {loading === 'manage' ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : null}
+                    Manage Subscription
+                  </Button>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
-                  <p className="text-emerald-300">
-                    You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 
-                                             subscription?.plan_type === 'pro' ? 'Pro' : 'EezyBuild'} plan
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={handleManageSubscription}
-                disabled={loading === 'manage'}
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
-              >
-                {loading === 'manage' ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : null}
-                Manage Subscription
-              </Button>
-            </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
