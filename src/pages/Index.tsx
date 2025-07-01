@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
@@ -186,10 +185,12 @@ const Index = () => {
     setCurrentProjectId(null);
   };
 
-  // Navigation handler for viewing subscription plans - FIXED
+  // Navigation handler for viewing subscription plans - ENHANCED DEBUGGING
   const handleViewPlans = () => {
-    console.log('handleViewPlans called - navigating to subscription screen');
+    console.log('🚀 handleViewPlans called - setting activeTab to subscription');
+    console.log('🔄 Current activeTab:', activeTab);
     setActiveTab('subscription');
+    console.log('✅ activeTab should now be: subscription');
   };
 
   if (loading) {
@@ -220,7 +221,7 @@ const Index = () => {
   }
 
   const renderContent = () => {
-    console.log('Rendering content for activeTab:', activeTab);
+    console.log('🖥️ Rendering content for activeTab:', activeTab);
     
     switch (activeTab) {
       case 'chat':
@@ -291,11 +292,12 @@ const Index = () => {
           />
         );
       case 'subscription':
-        console.log('Rendering SubscriptionScreen');
+        console.log('🎯 Rendering SubscriptionScreen component');
         return <SubscriptionScreen user={user} onBack={() => setActiveTab('profile')} />;
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
+        console.log('🔄 Default case - rendering ChatInterfaceWithSubscription');
         return <ChatInterfaceWithSubscription user={user} onViewPlans={handleViewPlans} />;
     }
   };

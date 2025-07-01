@@ -9,8 +9,10 @@ interface SubscriptionPromptProps {
 }
 
 const SubscriptionPrompt = ({ onViewPlans }: SubscriptionPromptProps) => {
-  const handleViewPlans = () => {
-    console.log('SubscriptionPrompt: View plans clicked - calling onViewPlans callback');
+  const handleViewPlans = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('SubscriptionPrompt: Button clicked - calling onViewPlans');
     onViewPlans();
   };
 
