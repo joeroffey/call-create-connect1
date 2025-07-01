@@ -30,8 +30,28 @@ const Index = () => {
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
 
   useEffect(() => {
-    // Check for successful subscription in URL and handle it
+    // Check for return from customer portal
     const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('portal_return') === 'true') {
+      console.log('🔙 Returned from customer portal');
+      
+      // Clean up URL immediately
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Refresh subscription status
+      if (user?.id) {
+        refetch();
+      }
+      
+      toast({
+        title: "Welcome back!",
+        description: "Your subscription has been updated.",
+        duration: 3000,
+      });
+    }
+
+    // Check for successful subscription in URL and handle it
     if (urlParams.get('success') === 'true') {
       const sessionId = urlParams.get('session_id');
       console.log('🎉 Checkout success detected:', { sessionId });

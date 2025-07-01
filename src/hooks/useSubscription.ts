@@ -166,19 +166,10 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) throw error;
 
-      // Force open in new window with specific features to prevent overlay
+      // Open in same tab to avoid overlay issues
       if (data.url) {
-        console.log('🔗 Opening customer portal in new window');
-        const portalWindow = window.open(
-          data.url, 
-          'stripe-portal',
-          'width=800,height=600,scrollbars=yes,resizable=yes,menubar=no,toolbar=no,location=no,status=no'
-        );
-        
-        // Optional: Focus the new window
-        if (portalWindow) {
-          portalWindow.focus();
-        }
+        console.log('🔗 Redirecting to customer portal');
+        window.location.href = data.url;
       }
 
       return true;
@@ -186,7 +177,7 @@ export const useSubscription = (userId: string | null) => {
       console.error('💥 Error opening customer portal:', error);
       toast({
         title: "Error",
-        description: "Failed to open customer portal",
+        description: "Failed to open customer portal. Please try again.",
         variant: "destructive"
       });
       return false;

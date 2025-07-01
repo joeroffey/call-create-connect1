@@ -89,8 +89,9 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Use a return URL that will close the window
-    const returnUrl = "javascript:window.close();";
+    // Use the origin from request headers for return URL
+    const origin = req.headers.get("origin") || "https://preview--call-create-connect.lovable.app";
+    const returnUrl = `${origin}/?portal_return=true`;
     
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
