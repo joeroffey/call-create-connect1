@@ -79,6 +79,27 @@ export const useConversations = (userId: string | undefined) => {
     }
   };
 
+  // Optimistic update functions
+  const incrementDocumentCount = (projectId: string) => {
+    setProjectCounts(prev => ({
+      ...prev,
+      [projectId]: {
+        documents: (prev[projectId]?.documents || 0) + 1,
+        scheduleOfWorks: prev[projectId]?.scheduleOfWorks || 0
+      }
+    }));
+  };
+
+  const incrementScheduleCount = (projectId: string) => {
+    setProjectCounts(prev => ({
+      ...prev,
+      [projectId]: {
+        documents: prev[projectId]?.documents || 0,
+        scheduleOfWorks: (prev[projectId]?.scheduleOfWorks || 0) + 1
+      }
+    }));
+  };
+
   useEffect(() => {
     fetchConversations();
     fetchProjectCounts();
@@ -178,6 +199,8 @@ export const useConversations = (userId: string | undefined) => {
     refreshConversations,
     getProjectConversationCount,
     getProjectDocumentCount,
-    getProjectScheduleOfWorksCount
+    getProjectScheduleOfWorksCount,
+    incrementDocumentCount,
+    incrementScheduleCount
   };
 };

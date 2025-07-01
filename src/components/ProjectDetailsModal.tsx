@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
@@ -23,7 +24,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   
-  const { conversations, getProjectConversationCount } = useConversations(user?.id);
+  const { conversations, getProjectConversationCount, incrementDocumentCount, incrementScheduleCount } = useConversations(user?.id);
   
   // Filter conversations for this project
   const projectConversations = conversations.filter(conv => conv.project_id === project?.id);
@@ -81,6 +82,9 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
 
   const createWorkItem = async () => {
     if (!newWorkItem.title.trim() || !project?.id || !user?.id) return;
+
+    // Optimistically update the count immediately
+    incrementScheduleCount(project.id);
 
     setLoading(true);
     try {
@@ -178,6 +182,9 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
       });
       return;
     }
+
+    // Optimistically update the count immediately
+    incrementDocumentCount(project.id);
 
     setLoading(true);
     try {

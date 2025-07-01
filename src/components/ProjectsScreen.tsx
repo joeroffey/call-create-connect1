@@ -150,9 +150,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
 
       if (error) throw error;
 
+      const statusLabel = newStatus === 'planning' ? 'Set-up' : newStatus.replace('-', ' ');
       toast({
         title: "Status updated",
-        description: `Project status changed to ${newStatus.replace('-', ' ')}.`,
+        description: `Project status changed to ${statusLabel}.`,
       });
 
       fetchProjects();
