@@ -143,21 +143,21 @@ const ProjectDetailsModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-gradient-to-br from-gray-950 via-black to-gray-950 border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col"
+          className="bg-gray-950/95 backdrop-blur-md border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="p-6 border-b border-gray-800/50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
                   <FolderOpen className="w-6 h-6 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -174,30 +174,32 @@ const ProjectDetailsModal = ({
             </div>
           </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 m-6 mb-0 flex-shrink-0">
-                <TabsTrigger value="chats" className="flex items-center space-x-2">
+          {/* Content - Fixed height container */}
+          <div className="flex-1 min-h-0 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
+              <TabsList className="grid w-full grid-cols-3 bg-gray-900/50 mx-6 mt-6 flex-shrink-0">
+                <TabsTrigger value="chats" className="flex items-center justify-center space-x-2">
                   <MessageCircle className="w-4 h-4" />
-                  <span>{getProjectConversationCount(project.id)}</span>
+                  <span className="text-sm font-medium">{getProjectConversationCount(project.id)}</span>
                 </TabsTrigger>
-                <TabsTrigger value="documents" className="flex items-center space-x-2">
+                <TabsTrigger value="documents" className="flex items-center justify-center space-x-2">
                   <FileText className="w-4 h-4" />
-                  <span>{getProjectDocumentCount(project.id)}</span>
+                  <span className="text-sm font-medium">{getProjectDocumentCount(project.id)}</span>
                 </TabsTrigger>
-                <TabsTrigger value="schedule" className="flex items-center space-x-2">
+                <TabsTrigger value="schedule" className="flex items-center justify-center space-x-2">
                   <CheckSquare className="w-4 h-4" />
-                  <span>{getProjectScheduleOfWorksCount(project.id)}</span>
+                  <span className="text-sm font-medium">{getProjectScheduleOfWorksCount(project.id)}</span>
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex-1 overflow-hidden px-6 pb-6">
-                <TabsContent value="chats" className="mt-4 h-full flex flex-col">
+              {/* Scrollable content area */}
+              <div className="flex-1 min-h-0 px-6 pb-6">
+                <TabsContent value="chats" className="mt-4 h-full flex flex-col data-[state=inactive]:hidden">
                   <div className="flex items-center justify-between flex-shrink-0 mb-4">
                     <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
                     <Button 
                       onClick={handleStartNewChat}
+                      size="sm"
                       className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white"
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -221,38 +223,36 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1 min-h-0">
-                      <ScrollArea className="h-full">
-                        <div className="space-y-3 pr-4">
-                          {projectConversations.map((conversation: any) => (
-                            <motion.div
-                              key={conversation.id}
-                              whileHover={{ scale: 1.01 }}
-                              whileTap={{ scale: 0.99 }}
-                              className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
-                              onClick={() => handleConversationClick(conversation.id)}
-                            >
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1 min-w-0 pr-3">
-                                  <h4 className="font-medium text-white mb-1 truncate">
-                                    {truncateText(conversation.title, 60)}
-                                  </h4>
-                                  <div className="flex items-center text-sm text-gray-400">
-                                    <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-                                    <span>{formatDate(conversation.updated_at)}</span>
-                                  </div>
+                    <ScrollArea className="flex-1">
+                      <div className="space-y-3 pr-4">
+                        {projectConversations.map((conversation: any) => (
+                          <motion.div
+                            key={conversation.id}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
+                            onClick={() => handleConversationClick(conversation.id)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0 pr-3">
+                                <h4 className="font-medium text-white mb-1 truncate">
+                                  {truncateText(conversation.title, 50)}
+                                </h4>
+                                <div className="flex items-center text-sm text-gray-400">
+                                  <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
+                                  <span>{formatDate(conversation.updated_at)}</span>
                                 </div>
-                                <MessageCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                               </div>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </div>
+                              <MessageCircle className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </ScrollArea>
                   )}
                 </TabsContent>
 
-                <TabsContent value="documents" className="mt-4 h-full flex flex-col">
+                <TabsContent value="documents" className="mt-4 h-full flex flex-col data-[state=inactive]:hidden">
                   <h3 className="text-lg font-semibold text-white flex-shrink-0 mb-4">Project Documents</h3>
                   {documents.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
@@ -263,29 +263,27 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1 min-h-0">
-                      <ScrollArea className="h-full">
-                        <div className="space-y-3 pr-4">
-                          {documents.map((doc: any) => (
-                            <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-medium text-white truncate">{doc.file_name}</h4>
-                                  <p className="text-sm text-gray-400">
-                                    {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
-                                  </p>
-                                </div>
-                                <FileText className="w-5 h-5 text-blue-400 flex-shrink-0 ml-3" />
+                    <ScrollArea className="flex-1">
+                      <div className="space-y-3 pr-4">
+                        {documents.map((doc: any) => (
+                          <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-medium text-white truncate">{doc.file_name}</h4>
+                                <p className="text-sm text-gray-400">
+                                  {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
+                                </p>
                               </div>
+                              <FileText className="w-5 h-5 text-blue-400 flex-shrink-0 ml-3" />
                             </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
                   )}
                 </TabsContent>
 
-                <TabsContent value="schedule" className="mt-4 h-full flex flex-col">
+                <TabsContent value="schedule" className="mt-4 h-full flex flex-col data-[state=inactive]:hidden">
                   <h3 className="text-lg font-semibold text-white flex-shrink-0 mb-4">Schedule of Works</h3>
                   {scheduleItems.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
@@ -296,33 +294,31 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1 min-h-0">
-                      <ScrollArea className="h-full">
-                        <div className="space-y-3 pr-4">
-                          {scheduleItems.map((item: any) => (
-                            <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                              <div className="flex items-start justify-between">
-                                <div className="min-w-0 flex-1">
-                                  <h4 className="font-medium text-white truncate">{item.title}</h4>
-                                  {item.description && (
-                                    <p className="text-sm text-gray-400 mt-1 line-clamp-2">{item.description}</p>
-                                  )}
-                                  <div className="flex items-center mt-2 text-sm text-gray-500">
-                                    <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
-                                    <span>
-                                      {item.due_date ? formatDate(item.due_date) : 'No due date'}
-                                    </span>
-                                  </div>
+                    <ScrollArea className="flex-1">
+                      <div className="space-y-3 pr-4">
+                        {scheduleItems.map((item: any) => (
+                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-medium text-white truncate">{item.title}</h4>
+                                {item.description && (
+                                  <p className="text-sm text-gray-400 mt-1 line-clamp-2">{item.description}</p>
+                                )}
+                                <div className="flex items-center mt-2 text-sm text-gray-500">
+                                  <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
+                                  <span>
+                                    {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                  </span>
                                 </div>
-                                <div className={`w-3 h-3 rounded-full flex-shrink-0 ml-3 ${
-                                  item.completed ? 'bg-green-500' : 'bg-gray-600'
-                                }`} />
                               </div>
+                              <div className={`w-3 h-3 rounded-full flex-shrink-0 ml-3 ${
+                                item.completed ? 'bg-green-500' : 'bg-gray-600'
+                              }`} />
                             </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
                   )}
                 </TabsContent>
               </div>
