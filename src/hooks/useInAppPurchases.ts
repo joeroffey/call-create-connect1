@@ -35,7 +35,7 @@ export const useInAppPurchases = (userId: string | null): InAppPurchaseHook => {
 
   useEffect(() => {
     if (isNative && userId) {
-      // For now, we'll set up mock products until the native plugin is properly configured
+      // Set up mock products for demonstration
       initializeMockProducts();
     }
   }, [isNative, userId]);
