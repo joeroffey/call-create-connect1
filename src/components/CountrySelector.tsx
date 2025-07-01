@@ -78,18 +78,17 @@ const CountrySelector = ({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between h-12 bg-gray-800/50 border-emerald-500/30 hover:bg-gray-700/50 hover:border-emerald-400/50 transition-all duration-200",
-            !selectedCountry && "text-gray-400",
-            selectedCountry && "text-white",
+            "w-full justify-between h-12 bg-white border-gray-300 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 text-gray-900",
+            !selectedCountry && "text-gray-500",
             className
           )}
         >
           <div className="flex items-center space-x-3">
-            <Globe className="h-5 w-5 text-emerald-400" />
+            <Globe className="h-5 w-5 text-gray-400" />
             {selectedCountry ? (
               <div className="flex items-center space-x-2">
                 <span className="text-lg">{selectedCountry.flag}</span>
-                <span className="text-base">{selectedCountry.name}</span>
+                <span className="text-base font-medium">{selectedCountry.name}</span>
               </div>
             ) : (
               <span className="text-base">{placeholder}</span>
@@ -99,19 +98,19 @@ const CountrySelector = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-full p-0 bg-gray-800 border-emerald-500/30 shadow-2xl" 
+        className="w-full p-0 bg-white border border-gray-200 shadow-xl rounded-lg" 
         align="start"
         sideOffset={8}
       >
-        <Command className="bg-gray-800 border-none">
-          <div className="p-3 border-b border-gray-700">
+        <Command className="bg-white border-none rounded-lg">
+          <div className="p-3 border-b border-gray-100">
             <CommandInput 
               placeholder="Search countries..." 
-              className="h-10 bg-gray-700/50 border-gray-600 text-white placeholder-gray-400 focus:border-emerald-400"
+              className="h-10 bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
           <CommandList className="max-h-80">
-            <CommandEmpty className="p-4 text-center text-gray-400">
+            <CommandEmpty className="p-4 text-center text-gray-500">
               No country found.
             </CommandEmpty>
             <CommandGroup className="p-0">
@@ -123,15 +122,15 @@ const CountrySelector = ({
                     onChange(country.code);
                     setOpen(false);
                   }}
-                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-700/50 text-white data-[selected]:bg-emerald-600 data-[selected]:text-white transition-colors duration-150"
+                  className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50 text-gray-900 data-[selected]:bg-blue-50 data-[selected]:text-blue-900 transition-colors duration-150 border-b border-gray-50 last:border-b-0"
                 >
                   <div className="flex items-center space-x-3">
                     <span className="text-lg w-6 text-center">{country.flag}</span>
-                    <span className="text-base">{country.name}</span>
+                    <span className="text-base font-medium">{country.name}</span>
                   </div>
                   <Check
                     className={cn(
-                      "h-4 w-4 text-emerald-400",
+                      "h-4 w-4 text-blue-600",
                       selectedCountry?.code === country.code ? "opacity-100" : "opacity-0"
                     )}
                   />

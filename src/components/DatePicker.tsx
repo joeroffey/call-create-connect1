@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, ChevronDown } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -10,6 +10,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface DatePickerProps {
   value: string;
@@ -22,6 +29,9 @@ const DatePicker = ({ value, onChange, className, placeholder = "Select your dat
   const [date, setDate] = useState<Date | undefined>(
     value ? new Date(value) : undefined
   );
+  const [month, setMonth] = useState<Date>(
+    date || new Date(1990, 0) // Default to January 1990
+  );
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -29,6 +39,24 @@ const DatePicker = ({ value, onChange, className, placeholder = "Select your dat
       onChange(format(selectedDate, 'yyyy-MM-dd'));
     }
   };
+
+  const handleMonthChange = (monthIndex: string) => {
+    const newMonth = new Date(month.getFullYear(), parseInt(monthIndex));
+    setMonth(newMonth);
+  };
+
+  const handleYearChange = (year: string) => {
+    const newMonth = new Date(parseInt(year), month.getMonth());
+    setMonth(newMonth);
+  };
+
+  // Generate years from 1900 to current year
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 1900 + 1 }, (_, i) => currentYear - i);
+  const months = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   return (
     <Popover>
@@ -61,10 +89,42 @@ const DatePicker = ({ value, onChange, className, placeholder = "Select your dat
             <h3 className="text-lg font-semibold text-white mb-1">Select Date</h3>
             <p className="text-sm text-gray-400">Choose your date of birth</p>
           </div>
+          
+          {/* Month and Year Selectors */}
+          <div className="flex gap-2 mb-4">
+            <Select value={month.getMonth().toString()} onValueChange={handleMonthChange}>
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-700 border-gray-600">
+                {months.map((monthName, index) => (
+                  <SelectItem key={index} value={index.toString()} className="text-white hover:bg-gray-600">
+                    {monthName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            <Select value={month.getFullYear().toString()} onValueChange={handleYearChange}>
+              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-700 border-gray-600 max-h-48">
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()} className="text-white hover:bg-gray-600">
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <Calendar
             mode="single"
             selected={date}
             onSelect={handleDateSelect}
+            month={month}
+            onMonthChange={setMonth}
             disabled={(date) =>
               date > new Date() || date < new Date("1900-01-01")
             }

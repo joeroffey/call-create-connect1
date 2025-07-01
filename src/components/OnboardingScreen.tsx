@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { User, MapPin, Briefcase, Calendar, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import AddressAutocomplete from './AddressAutocomplete';
@@ -177,21 +178,31 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
               <h2 className="text-2xl font-bold text-white mb-2">What's your occupation?</h2>
               <p className="text-gray-400">This helps us provide relevant guidance</p>
             </div>
-            <div className="space-y-2">
-              <Label className="text-emerald-300 text-base font-medium">Occupation</Label>
-              <select
-                value={formData.occupation}
-                onChange={(e) => handleInputChange('occupation', e.target.value)}
-                className="w-full h-12 px-4 rounded-md bg-gray-800/50 border border-emerald-500/30 text-white focus:border-emerald-400 focus:ring-emerald-400/20 focus:outline-none transition-all duration-200 hover:bg-gray-700/50"
-                autoFocus
-              >
-                <option value="" className="bg-gray-800">Select your occupation</option>
-                {OCCUPATIONS.map((occupation) => (
-                  <option key={occupation} value={occupation} className="bg-gray-800">
-                    {occupation}
-                  </option>
-                ))}
-              </select>
+            <div className="space-y-4">
+              <Label className="text-emerald-300 text-base font-medium">Select your occupation</Label>
+              <div className="bg-gray-800/50 border border-emerald-500/30 rounded-lg p-4 max-h-80 overflow-y-auto">
+                <RadioGroup
+                  value={formData.occupation}
+                  onValueChange={(value) => handleInputChange('occupation', value)}
+                  className="space-y-3"
+                >
+                  {OCCUPATIONS.map((occupation) => (
+                    <div key={occupation} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-700/30 transition-colors">
+                      <RadioGroupItem 
+                        value={occupation} 
+                        id={occupation}
+                        className="border-emerald-500/50 text-emerald-400 focus:ring-emerald-400"
+                      />
+                      <Label 
+                        htmlFor={occupation} 
+                        className="text-white text-base font-medium cursor-pointer flex-1"
+                      >
+                        {occupation}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
             </div>
           </motion.div>
         );
