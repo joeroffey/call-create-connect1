@@ -81,19 +81,41 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    const subscriptions = await stripe.subscriptions.list({
+    // Check all subscription statuses, not just active ones
+    const allSubscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
-      limit: 1,
+      limit: 10,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+    logStep("All subscriptions found", { 
+      count: allSubscriptions.data.length,
+      subscriptions: allSubscriptions.data.map(sub => ({
+        id: sub.id,
+        status: sub.status,
+        current_period_end: sub.current_period_end
+      }))
+    });
+
+    // Look for active, trialing, or past_due subscriptions
+    const activeSubscriptions = allSubscriptions.data.filter(sub => 
+      ['active', 'trialing', 'past_due'].includes(sub.status)
+    );
+    logStep("Filtered active subscriptions", { 
+      count: activeSubscriptions.data.length,
+      activeStatuses: activeSubscriptions.map(sub => sub.status)
+    });
+
+    const hasActiveSub = activeSubscriptions.length > 0;
     let subscriptionTier = null;
     let subscriptionEnd = null;
 
     if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
+      const subscription = activeSubscriptions[0];
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      logStep("Active subscription found", { 
+        subscriptionId: subscription.id, 
+        status: subscription.status,
+        endDate: subscriptionEnd 
+      });
       
       // Determine subscription tier from price amount
       const priceId = subscription.items.data[0].price.id;
