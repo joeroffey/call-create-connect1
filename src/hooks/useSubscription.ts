@@ -23,16 +23,17 @@ export const useSubscription = (userId: string | null) => {
     }
 
     try {
-      console.log('Checking subscription status for user:', userId);
+      console.log('🔍 Checking subscription status for user:', userId);
       
       // Check Stripe subscription status
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log('❌ No session found');
         setLoading(false);
         return;
       }
 
-      console.log('Checking Stripe subscription status...');
+      console.log('📡 Calling check-subscription function...');
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -40,11 +41,11 @@ export const useSubscription = (userId: string | null) => {
       });
 
       if (error) {
-        console.error('Stripe check failed:', error);
+        console.error('❌ Stripe check failed:', error);
         setSubscription(null);
         setHasActiveSubscription(false);
       } else if (data.subscribed && data.subscription_tier) {
-        console.log('Found Stripe subscription:', data);
+        console.log('✅ Active subscription found:', data);
         const subscriptionData: Subscription = {
           id: 'stripe-sub',
           plan_type: data.subscription_tier,
@@ -54,13 +55,14 @@ export const useSubscription = (userId: string | null) => {
         
         setSubscription(subscriptionData);
         setHasActiveSubscription(true);
+        console.log('🎯 Subscription state updated:', { hasActiveSubscription: true, tier: data.subscription_tier });
       } else {
-        console.log('No active subscription found');
+        console.log('❌ No active subscription found');
         setSubscription(null);
         setHasActiveSubscription(false);
       }
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      console.error('💥 Error checking subscription:', error);
       setSubscription(null);
       setHasActiveSubscription(false);
     } finally {
@@ -70,6 +72,7 @@ export const useSubscription = (userId: string | null) => {
 
   const createCheckoutSession = async (planType: 'basic' | 'pro' | 'enterprise') => {
     try {
+      console.log('🛒 Creating checkout session for plan:', planType);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Not authenticated');
@@ -84,17 +87,18 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) throw error;
 
-      // Open Stripe checkout in a new tab
+      // Open Stripe checkout in the same tab to avoid overlay issues
       if (data.url) {
-        window.open(data.url, '_blank');
+        console.log('🔗 Redirecting to Stripe checkout');
+        window.location.href = data.url;
       }
 
       return true;
     } catch (error) {
-      console.error('Error creating checkout session:', error);
+      console.error('💥 Error creating checkout session:', error);
       toast({
         title: "Error",
-        description: "Failed to create checkout session",
+        description: "Failed to create checkout session. Please try again.",
         variant: "destructive"
       });
       return false;

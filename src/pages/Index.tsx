@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
@@ -36,24 +37,44 @@ const Index = () => {
       const sessionId = urlParams.get('session_id');
       console.log('🎉 Checkout success detected:', { sessionId });
       
-      // Show success toast
-      toast({
-        title: "Subscription Activated!",
-        description: "Welcome to your new plan. Your trial period has started.",
-        duration: 5000,
-      });
-
-      // Force refresh subscription status after a short delay
-      setTimeout(() => {
-        if (user?.id) {
-          console.log('🔄 Refreshing subscription status after successful checkout');
-          refetch();
-        }
-      }, 2000);
-
-      // Clean up URL by removing success parameters
+      // Clean up URL immediately to prevent overlay issues
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
+      
+      // Show success toast
+      toast({
+        title: "Payment Successful!",
+        description: "Your subscription is being activated. Please wait a moment...",
+        duration: 6000,
+      });
+
+      // Force refresh subscription status multiple times to ensure it's updated
+      const refreshSubscription = async () => {
+        if (user?.id) {
+          console.log('🔄 Refreshing subscription status after successful checkout');
+          await refetch();
+          
+          // Check again after a delay to ensure Stripe has processed
+          setTimeout(async () => {
+            console.log('🔄 Second subscription refresh');
+            await refetch();
+            
+            // Final check and toast
+            setTimeout(async () => {
+              console.log('🔄 Final subscription refresh');
+              await refetch();
+              toast({
+                title: "Subscription Activated!",
+                description: "Welcome to your new plan! Your 7-day trial has started.",
+                duration: 5000,
+              });
+            }, 3000);
+          }, 2000);
+        }
+      };
+
+      // Start the refresh process
+      setTimeout(refreshSubscription, 1000);
       
       // Switch to subscription tab to show the updated status
       setActiveTab('subscription');
