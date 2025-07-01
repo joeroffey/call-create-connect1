@@ -4,11 +4,11 @@ import { motion } from 'framer-motion';
 import { 
   Crown, 
   Check, 
-  Zap, 
-  Users, 
   Building,
   ArrowLeft,
-  Star
+  Star,
+  Smartphone,
+  CreditCard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -19,7 +19,7 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, createDemoSubscription, createCheckoutSession } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createCheckoutSession } = useSubscription(user?.id);
 
   const plans = [
     {
@@ -34,7 +34,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Email support',
         'Chat history'
       ],
-      buttonText: 'Choose EezyBuild',
+      buttonText: 'Start Free Trial',
       planType: 'basic',
       current: hasActiveSubscription && subscription?.plan_type === 'basic'
     },
@@ -51,7 +51,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Priority support',
         'Extended chat history'
       ],
-      buttonText: 'Choose Pro',
+      buttonText: 'Start Free Trial',
       planType: 'pro',
       popular: true,
       current: hasActiveSubscription && subscription?.plan_type === 'pro'
@@ -71,24 +71,21 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'White-label options',
         'Dedicated support'
       ],
-      buttonText: 'Choose ProMax',
+      buttonText: 'Start Free Trial',
       planType: 'enterprise',
       enterprise: true,
       current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
     }
   ];
 
-  const handlePlanSelection = async (planType: string) => {
-    // For developer demo, allow creating demo subscriptions
-    if (user?.email === 'josephh.roffey@gmail.com') {
-      if (planType === 'pro') {
-        await createDemoSubscription();
-        return;
-      }
-    }
-    
-    // For all other cases, create Stripe checkout session
+  const handleStripeCheckout = async (planType: string) => {
     await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+  };
+
+  const handleInAppPurchase = async (planType: string) => {
+    // This will be implemented when we add Capacitor in-app purchases
+    console.log('In-app purchase for:', planType);
+    // TODO: Implement in-app purchase logic
   };
 
   return (
@@ -109,7 +106,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold">Choose Your Plan</h1>
-            <p className="text-gray-400">Professional building regulations assistance</p>
+            <p className="text-gray-400">7-day free trial • Cancel anytime</p>
           </div>
         </motion.div>
 
@@ -130,6 +127,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 <p className="text-emerald-300">
                   You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 
                                            subscription?.plan_type === 'pro' ? 'Pro' : 'EezyBuild'} plan
+                  {subscription?.status === 'trialing' && ' (Free Trial)'}
                 </p>
               </div>
             </div>
@@ -137,7 +135,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         )}
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -178,6 +176,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   <span className="text-3xl font-bold text-white">{plan.price}</span>
                   <span className="text-gray-400 ml-1">/{plan.period}</span>
                 </div>
+                <p className="text-xs text-emerald-400 mb-2">7-day free trial</p>
                 <p className="text-gray-400 text-sm">{plan.description}</p>
               </div>
 
@@ -190,52 +189,70 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 ))}
               </ul>
 
-              <Button
-                onClick={() => handlePlanSelection(plan.planType)}
-                disabled={plan.current}
-                className={`w-full h-12 rounded-xl font-medium ${
-                  plan.current
-                    ? 'bg-emerald-600 text-white cursor-default'
-                    : plan.popular
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : plan.enterprise
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600 text-white'
-                }`}
-              >
-                {plan.current ? 'Current Plan' : plan.buttonText}
-              </Button>
+              {!plan.current && (
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => handleStripeCheckout(plan.planType)}
+                    className={`w-full h-10 rounded-xl font-medium ${
+                      plan.popular
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : plan.enterprise
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                        : 'bg-gray-700 hover:bg-gray-600 text-white'
+                    }`}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    {plan.buttonText} - Web
+                  </Button>
+                  
+                  <Button
+                    onClick={() => handleInAppPurchase(plan.planType)}
+                    variant="outline"
+                    className="w-full h-10 rounded-xl font-medium border-gray-600 text-gray-300 hover:bg-gray-800"
+                  >
+                    <Smartphone className="w-4 h-4 mr-2" />
+                    App Store
+                  </Button>
+                </div>
+              )}
+
+              {plan.current && (
+                <Button
+                  disabled
+                  className="w-full h-10 rounded-xl font-medium bg-emerald-600 text-white cursor-default"
+                >
+                  Current Plan
+                </Button>
+              )}
             </motion.div>
           ))}
         </div>
 
-        {/* Developer Demo Section */}
-        {user?.email === 'josephh.roffey@gmail.com' && !hasActiveSubscription && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 bg-gradient-to-r from-yellow-500/20 to-orange-600/20 rounded-2xl p-6 border border-yellow-500/30"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Developer Access</h3>
-                  <p className="text-yellow-300">Get a free Pro demo for testing</p>
-                </div>
+        {/* Payment Method Info */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="bg-gray-900/50 rounded-2xl p-6 border border-gray-700"
+        >
+          <h3 className="text-lg font-semibold text-white mb-4">Choose Your Payment Method</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="flex items-center space-x-3 p-4 bg-gray-800/50 rounded-lg">
+              <CreditCard className="w-8 h-8 text-blue-400" />
+              <div>
+                <h4 className="font-medium text-white">Web Payment</h4>
+                <p className="text-sm text-gray-400">Pay with credit card, debit card, or bank transfer via Stripe</p>
               </div>
-              <Button
-                onClick={() => createDemoSubscription()}
-                className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
-              >
-                Activate Demo
-              </Button>
             </div>
-          </motion.div>
-        )}
+            <div className="flex items-center space-x-3 p-4 bg-gray-800/50 rounded-lg">
+              <Smartphone className="w-8 h-8 text-green-400" />
+              <div>
+                <h4 className="font-medium text-white">App Store</h4>
+                <p className="text-sm text-gray-400">Pay through your device's app store (Google Play/App Store)</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

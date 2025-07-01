@@ -65,7 +65,7 @@ serve(async (req) => {
     };
 
     const selectedPlan = pricing[planType as keyof typeof pricing];
-    logStep("Creating checkout session", { planType, amount: selectedPlan.amount });
+    logStep("Creating checkout session with 7-day trial", { planType, amount: selectedPlan.amount });
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     
@@ -87,6 +87,9 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 7, // 7-day free trial
+      },
       success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
       metadata: {

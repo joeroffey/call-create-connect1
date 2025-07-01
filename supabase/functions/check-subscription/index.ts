@@ -83,32 +83,53 @@ serve(async (req) => {
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "active",
+      status: "all",
       limit: 1,
     });
-    const hasActiveSub = subscriptions.data.length > 0;
+    
+    let hasActiveSub = false;
     let subscriptionTier = null;
     let subscriptionEnd = null;
+    let subscriptionStatus = null;
+    let trialEnd = null;
 
-    if (hasActiveSub) {
+    if (subscriptions.data.length > 0) {
       const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
+      const isActive = subscription.status === 'active' || subscription.status === 'trialing';
       
-      // Determine subscription tier from price amount
-      const priceId = subscription.items.data[0].price.id;
-      const price = await stripe.prices.retrieve(priceId);
-      const amount = price.unit_amount || 0;
-      
-      if (amount <= 1499) {
-        subscriptionTier = "basic";
-      } else if (amount <= 2999) {
-        subscriptionTier = "pro";
-      } else {
-        subscriptionTier = "enterprise";
+      if (isActive) {
+        hasActiveSub = true;
+        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+        subscriptionStatus = subscription.status;
+        
+        if (subscription.trial_end) {
+          trialEnd = new Date(subscription.trial_end * 1000).toISOString();
+        }
+        
+        logStep("Active subscription found", { 
+          subscriptionId: subscription.id, 
+          status: subscription.status,
+          endDate: subscriptionEnd,
+          trialEnd 
+        });
+        
+        // Determine subscription tier from price amount
+        const priceId = subscription.items.data[0].price.id;
+        const price = await stripe.prices.retrieve(priceId);
+        const amount = price.unit_amount || 0;
+        
+        if (amount <= 1499) {
+          subscriptionTier = "basic";
+        } else if (amount <= 2999) {
+          subscriptionTier = "pro";
+        } else {
+          subscriptionTier = "enterprise";
+        }
+        logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
       }
-      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
-    } else {
+    }
+
+    if (!hasActiveSub) {
       logStep("No active subscription found");
     }
 
@@ -128,17 +149,24 @@ serve(async (req) => {
       await supabaseClient.from("subscriptions").upsert({
         user_id: user.id,
         plan_type: subscriptionTier,
-        status: 'active',
+        status: subscriptionStatus === 'trialing' ? 'active' : subscriptionStatus,
         current_period_end: subscriptionEnd,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
     }
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    logStep("Updated database with subscription info", { 
+      subscribed: hasActiveSub, 
+      subscriptionTier, 
+      status: subscriptionStatus 
+    });
+    
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      status: subscriptionStatus,
+      trial_end: trialEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
