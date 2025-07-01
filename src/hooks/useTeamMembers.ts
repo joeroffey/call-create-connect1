@@ -16,8 +16,13 @@ export const useTeamMembers = (teamId?: string) => {
       const { data, error } = await supabase
         .from('team_members')
         .select(`
-          *,
-          profiles!team_members_user_id_fkey (
+          id,
+          team_id,
+          user_id,
+          role,
+          invited_by,
+          joined_at,
+          profiles (
             full_name,
             user_id
           )
@@ -25,7 +30,14 @@ export const useTeamMembers = (teamId?: string) => {
         .eq('team_id', teamId);
 
       if (error) throw error;
-      setMembers(data || []);
+      
+      // Type cast the data to ensure proper typing
+      const typedMembers = (data || []).map(member => ({
+        ...member,
+        role: member.role as 'owner' | 'admin' | 'member' | 'viewer'
+      }));
+      
+      setMembers(typedMembers);
     } catch (error) {
       console.error('Error fetching team members:', error);
       toast({
