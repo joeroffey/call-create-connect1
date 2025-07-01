@@ -65,7 +65,7 @@ serve(async (req) => {
     };
 
     const selectedPlan = pricing[planType as keyof typeof pricing];
-    logStep("Creating checkout session", { planType, amount: selectedPlan.amount });
+    logStep("Creating checkout session with 7-day trial", { planType, amount: selectedPlan.amount });
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
     
@@ -87,6 +87,9 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
+      subscription_data: {
+        trial_period_days: 7, // 7-day trial period
+      },
       success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/?canceled=true`,
       metadata: {
@@ -95,7 +98,7 @@ serve(async (req) => {
       }
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created with trial", { sessionId: session.id, url: session.url });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

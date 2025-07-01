@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -26,6 +25,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'EezyBuild',
       price: '£14.99',
       period: 'per month',
+      trial: '7-day free trial',
       description: 'Essential building regulations assistant',
       features: [
         'AI chat assistance',
@@ -41,6 +41,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'Pro',
       price: '£29.99',
       period: 'per month',
+      trial: '7-day free trial',
       description: 'Advanced features for professionals',
       features: [
         'Everything in EezyBuild',
@@ -58,6 +59,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'ProMax',
       price: '£59.99',
       period: 'per month',
+      trial: '7-day free trial',
       description: 'Complete solution for teams and enterprises',
       features: [
         'Everything in Pro',
@@ -115,7 +117,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
-            <p className="text-gray-400">Professional building regulations assistance</p>
+            <p className="text-gray-400">Professional building regulations assistance with 7-day free trial</p>
           </div>
         </motion.div>
 
@@ -196,6 +198,9 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   <span className="text-3xl font-bold text-white">{plan.price}</span>
                   <span className="text-gray-400 ml-1">/{plan.period}</span>
                 </div>
+                <div className="mb-2">
+                  <span className="text-emerald-400 text-sm font-medium">{plan.trial}</span>
+                </div>
                 <p className="text-gray-400 text-sm">{plan.description}</p>
               </div>
 
@@ -224,11 +229,27 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 {loading === plan.planType ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
-                {plan.current ? 'Current Plan' : `Choose ${plan.name}`}
+                {plan.current ? 'Current Plan' : `Start Free Trial`}
               </Button>
             </motion.div>
           ))}
         </div>
+
+        {/* Trial Information */}
+        {!hasActiveSubscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 text-center bg-emerald-500/10 rounded-2xl p-6 border border-emerald-500/20"
+          >
+            <h3 className="text-lg font-semibold text-white mb-2">Start Your Free Trial</h3>
+            <p className="text-gray-300 text-sm">
+              Try any plan free for 7 days. No credit card required upfront. 
+              Cancel anytime during your trial period with no charges.
+            </p>
+          </motion.div>
+        )}
 
         {/* Downgrade/Cancel Information */}
         {hasActiveSubscription && (
