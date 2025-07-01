@@ -19,7 +19,6 @@ import { useTeams } from '@/hooks/useTeams';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import CreateTeamModal from '@/components/team/CreateTeamModal';
 import InviteMemberModal from '@/components/team/InviteMemberModal';
-import DebugPanel from './DebugPanel';
 
 interface TeamScreenProps {
   user: any;
@@ -253,24 +252,17 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   if (teams.length === 0) {
     console.log('TeamScreen: No teams found, showing create team interface');
     return (
-      <div className="flex-1 flex flex-col bg-black text-white">
-        {/* Debug Panel */}
-        <div className="p-6 pb-0">
-          <DebugPanel user={user} />
-        </div>
-        
-        <div className="flex-1 flex items-center justify-center p-8 text-center">
-          <div className="max-w-md">
-            <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-4">Create Your First Team</h2>
-            <p className="text-gray-400 mb-6">
-              Start collaborating with your team members by creating a team. 
-              Share projects, assign tasks, and work together efficiently.
-            </p>
-            <CreateTeamModal onCreateTeam={handleCreateTeam} />
+      <div className="flex-1 flex items-center justify-center p-8 text-center bg-black">
+        <div className="max-w-md">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Users className="w-8 h-8 text-white" />
           </div>
+          <h2 className="text-2xl font-bold text-white mb-4">Create Your First Team</h2>
+          <p className="text-gray-400 mb-6">
+            Start collaborating with your team members by creating a team. 
+            Share projects, assign tasks, and work together efficiently.
+          </p>
+          <CreateTeamModal onCreateTeam={handleCreateTeam} />
         </div>
       </div>
     );
@@ -281,9 +273,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
       <div className="px-6 py-8">
-        {/* Debug Panel */}
-        <DebugPanel user={user} />
-
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
