@@ -22,7 +22,7 @@ export const useTeamMembers = (teamId?: string) => {
           role,
           invited_by,
           joined_at,
-          profiles (
+          profiles!inner(
             full_name,
             user_id
           )
@@ -31,10 +31,18 @@ export const useTeamMembers = (teamId?: string) => {
 
       if (error) throw error;
       
-      // Type cast the data to ensure proper typing
-      const typedMembers = (data || []).map(member => ({
-        ...member,
-        role: member.role as 'owner' | 'admin' | 'member' | 'viewer'
+      // Type cast and structure the data properly
+      const typedMembers: TeamMember[] = (data || []).map(member => ({
+        id: member.id,
+        team_id: member.team_id,
+        user_id: member.user_id,
+        role: member.role as 'owner' | 'admin' | 'member' | 'viewer',
+        invited_by: member.invited_by,
+        joined_at: member.joined_at,
+        profiles: member.profiles ? {
+          full_name: member.profiles.full_name || '',
+          user_id: member.profiles.user_id
+        } : undefined
       }));
       
       setMembers(typedMembers);
