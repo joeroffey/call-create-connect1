@@ -1,13 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
   Crown, 
   Settings,
-  LogOut
+  LogOut,
+  Shield,
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -108,6 +110,21 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
     });
   };
 
+  const getPlanDisplayName = () => {
+    if (!hasActiveSubscription || !subscription) return 'No Plan';
+    
+    switch (subscription.plan_type) {
+      case 'basic':
+        return 'EezyBuild';
+      case 'pro':
+        return 'Pro';
+      case 'enterprise':
+        return 'ProMax';
+      default:
+        return 'Unknown Plan';
+    }
+  };
+
   const handleAccountSettings = () => {
     setShowAccountSettings(true);
   };
@@ -142,47 +159,97 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
           <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
         </motion.div>
 
-        {/* Subscription Status */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 p-6 mb-6"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                hasActiveSubscription ? 'bg-emerald-500' : 'bg-gray-600'
-              }`}>
-                <Crown className="w-5 h-5 text-white" />
+        {/* Current Subscription Status - REDESIGNED */}
+        {hasActiveSubscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+          >
+            <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
+              <CardContent className="p-6">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                  {/* Left Section - Status Info */}
+                  <div className="flex items-start gap-4">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Crown className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
+                    </div>
+                    
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                        <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {getPlanDisplayName()} Plan
+                      </h3>
+                      <p className="text-gray-300 text-sm mb-3">
+                        Your premium subscription is active and ready to use
+                      </p>
+                      
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                          <span className="text-gray-300">
+                            Renews {getSubscriptionExpiration()}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <span className="text-emerald-300 font-medium">Active</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right Section - Action Button */}
+                  <div className="flex-shrink-0">
+                    <Button
+                      onClick={handleManageSubscription}
+                      className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm transition-all duration-200 px-4 py-2 font-medium"
+                    >
+                      Manage Subscription
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* No Subscription State */}
+        {!hasActiveSubscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gray-900/50 backdrop-blur-xl rounded-2xl border border-gray-800 p-6 mb-6"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-600">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-white">Subscription Status</h3>
+                  <p className="text-sm text-gray-400">No Active Plan</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-white">Subscription Status</h3>
-                <p className="text-sm text-gray-400">
-                  {hasActiveSubscription 
-                    ? `Active - ${subscription?.plan_type === 'basic' ? 'EezyBuild' : 
-                                   subscription?.plan_type === 'pro' ? 'Pro' : 
-                                   subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}`
-                    : 'No Active Plan'
-                  }
-                </p>
-                {hasActiveSubscription && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Expires: {getSubscriptionExpiration()}
-                  </p>
-                )}
-              </div>
+              <Button
+                onClick={handleManageSubscription}
+                variant="outline"
+                size="sm"
+                className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+              >
+                Subscribe
+              </Button>
             </div>
-            <Button
-              onClick={handleManageSubscription}
-              variant="outline"
-              size="sm"
-              className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
-            >
-              {hasActiveSubscription ? 'Manage Subscription' : 'Subscribe'}
-            </Button>
-          </div>
-        </motion.div>
+          </motion.div>
+        )}
 
         {/* User Information */}
         <motion.div
