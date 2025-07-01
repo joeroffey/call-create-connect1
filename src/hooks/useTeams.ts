@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export interface Team {
   id: string;
@@ -35,30 +34,24 @@ export const useTeams = (userId?: string) => {
       setLoading(false);
       return;
     }
-    
-    try {
-      console.log('useTeams: Fetching teams for user:', userId);
-      
-      // First get teams where user is a member
-      const { data: memberTeams, error: memberError } = await supabase
-        .from('team_members')
-        .select(`
-          team_id,
-          teams!inner(*)
-        `)
-        .eq('user_id', userId);
 
-      if (memberError) {
-        console.error('useTeams: Error fetching member teams:', memberError);
-        throw memberError;
+    try {
+      console.log('useTeams: Fetching teams for user with RPC:', userId);
+
+      // This is the new, more robust way to fetch the data.
+      const { data: teamsData, error } = await supabase
+        .rpc('get_teams_for_user', { p_user_id: userId });
+
+      if (error) {
+        console.error('useTeams: Error fetching teams via RPC:', error);
+        throw error;
       }
 
-      // Extract teams from the member data
-      const teamsData = memberTeams?.map(mt => mt.teams).filter(Boolean) || [];
       console.log('useTeams: Fetched teams:', teamsData);
-      setTeams(teamsData);
+      setTeams(teamsData || []); // The data is already in the correct format.
+
     } catch (error) {
-      console.error('useTeams: Error fetching teams:', error);
+      console.error('useTeams: Error in fetchTeams:', error);
       toast({
         title: "Error",
         description: "Failed to load teams",
