@@ -635,6 +635,10 @@ export type Database = {
         Args: { user_id_param: string; team_id_param: string }
         Returns: boolean
       }
+      user_can_access_project: {
+        Args: { project_user_id: string; project_team_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
