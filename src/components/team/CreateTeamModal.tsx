@@ -24,10 +24,18 @@ const CreateTeamModal = ({ onCreateTeam, trigger }: CreateTeamModalProps) => {
 
     setLoading(true);
     try {
-      await onCreateTeam(name.trim(), description.trim() || undefined);
-      setName('');
-      setDescription('');
-      setOpen(false);
+      const result = await onCreateTeam(name.trim(), description.trim() || undefined);
+      console.log('CreateTeamModal: Team creation result:', result);
+      
+      // Only close and reset if creation was successful
+      if (result) {
+        setName('');
+        setDescription('');
+        setOpen(false);
+      }
+    } catch (error) {
+      console.error('CreateTeamModal: Error creating team:', error);
+      // Don't close the modal on error, let user try again
     } finally {
       setLoading(false);
     }
