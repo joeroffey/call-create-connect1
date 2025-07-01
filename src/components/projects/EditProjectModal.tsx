@@ -58,7 +58,7 @@ const EditProjectModal = ({
             
             <div className="space-y-4">
               <div>
-                <Label htmlFor="edit-name" className="text-sm font-medium text-gray-300 mb-2">
+                <Label htmlFor="edit-name" className="text-sm font-medium text-gray-300 mb-2 block">
                   Project Name *
                 </Label>
                 <Input
@@ -72,7 +72,7 @@ const EditProjectModal = ({
               </div>
 
               <div>
-                <Label htmlFor="edit-description" className="text-sm font-medium text-gray-300 mb-2">
+                <Label htmlFor="edit-description" className="text-sm font-medium text-gray-300 mb-2 block">
                   Description
                 </Label>
                 <textarea
@@ -86,27 +86,39 @@ const EditProjectModal = ({
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-300 mb-2">
+                <Label className="text-sm font-medium text-gray-300 mb-2 block">
                   Project Type
                 </Label>
                 <Select
                   value={editingProject.label}
                   onValueChange={(value) => setEditingProject({ ...editingProject, label: value })}
                 >
-                  <SelectTrigger className="w-full bg-gray-800/50 border-gray-700/50 text-white focus:border-emerald-500/60 focus:ring-emerald-500/20">
+                  <SelectTrigger className="w-full h-10 bg-gray-800/50 border-gray-700/50 text-white hover:bg-gray-800/70 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20">
                     <SelectValue placeholder="Select project type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
-                    <SelectItem value="Residential" className="focus:bg-gray-700 focus:text-white">
+                  <SelectContent className="bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 text-white z-[60]">
+                    <SelectItem 
+                      value="Residential" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       Residential
                     </SelectItem>
-                    <SelectItem value="Commercial" className="focus:bg-gray-700 focus:text-white">
+                    <SelectItem 
+                      value="Commercial" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       Commercial
                     </SelectItem>
-                    <SelectItem value="Industrial" className="focus:bg-gray-700 focus:text-white">
+                    <SelectItem 
+                      value="Industrial" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       Industrial
                     </SelectItem>
-                    <SelectItem value="Infrastructure" className="focus:bg-gray-700 focus:text-white">
+                    <SelectItem 
+                      value="Infrastructure" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       Infrastructure
                     </SelectItem>
                   </SelectContent>
@@ -114,27 +126,39 @@ const EditProjectModal = ({
               </div>
 
               <div>
-                <Label className="text-sm font-medium text-gray-300 mb-2">
+                <Label className="text-sm font-medium text-gray-300 mb-2 block">
                   Status
                 </Label>
                 <Select
                   value={editingProject.status}
                   onValueChange={(value) => setEditingProject({ ...editingProject, status: value })}
                 >
-                  <SelectTrigger className="w-full bg-gray-800/50 border-gray-700/50 text-white focus:border-emerald-500/60 focus:ring-emerald-500/20">
+                  <SelectTrigger className="w-full h-10 bg-gray-800/50 border-gray-700/50 text-white hover:bg-gray-800/70 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20">
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
-                    <SelectItem value="planning" className="focus:bg-gray-700 focus:text-white">
+                  <SelectContent className="bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 text-white z-[60]">
+                    <SelectItem 
+                      value="planning" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       Planning
                     </SelectItem>
-                    <SelectItem value="in-progress" className="focus:bg-gray-700 focus:text-white">
+                    <SelectItem 
+                      value="in-progress" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       In Progress
                     </SelectItem>
-                    <SelectItem value="completed" className="focus:bg-gray-700 focus:text-white">
+                    <SelectItem 
+                      value="completed" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       Completed
                     </SelectItem>
-                    <SelectItem value="on-hold" className="focus:bg-gray-700 focus:text-white">
+                    <SelectItem 
+                      value="on-hold" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
                       On Hold
                     </SelectItem>
                   </SelectContent>
@@ -146,7 +170,7 @@ const EditProjectModal = ({
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="flex-1 border-gray-700/50 text-gray-300 hover:bg-gray-800/50"
+                className="flex-1 border-gray-700/50 text-gray-300 hover:bg-gray-800/50 hover:text-white"
               >
                 Cancel
               </Button>
