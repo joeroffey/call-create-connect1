@@ -141,7 +141,7 @@ const EditProjectModal = ({
                       value="planning" 
                       className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
                     >
-                      Planning
+                      Set-up
                     </SelectItem>
                     <SelectItem 
                       value="in-progress" 
