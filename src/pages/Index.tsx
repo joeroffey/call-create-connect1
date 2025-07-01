@@ -14,6 +14,7 @@ import NotificationsScreen from '../components/NotificationsScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('chat');
@@ -23,23 +24,41 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // Get subscription info
-  const { subscription, hasActiveSubscription } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
 
   useEffect(() => {
-    // Check for successful subscription in URL
+    // Check for successful subscription in URL and handle it
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('success') === 'true') {
-      // Refresh subscription status after successful payment
+      const sessionId = urlParams.get('session_id');
+      console.log('🎉 Checkout success detected:', { sessionId });
+      
+      // Show success toast
+      toast({
+        title: "Subscription Activated!",
+        description: "Welcome to your new plan. Your trial period has started.",
+        duration: 5000,
+      });
+
+      // Force refresh subscription status after a short delay
       setTimeout(() => {
         if (user?.id) {
-          // Force refresh subscription status
-          window.location.href = '/';
+          console.log('🔄 Refreshing subscription status after successful checkout');
+          refetch();
         }
       }, 2000);
+
+      // Clean up URL by removing success parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+      
+      // Switch to subscription tab to show the updated status
+      setActiveTab('subscription');
     }
-  }, []);
+  }, [user?.id, refetch, toast]);
 
   useEffect(() => {
     // Set up auth state listener
