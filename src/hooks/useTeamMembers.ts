@@ -17,7 +17,7 @@ export const useTeamMembers = (teamId?: string) => {
         .from('team_members')
         .select(`
           *,
-          profiles:user_id (
+          profiles!team_members_user_id_fkey (
             full_name,
             user_id
           )
