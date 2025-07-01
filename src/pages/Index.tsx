@@ -155,10 +155,11 @@ const Index = () => {
       baseTabs.push({ id: 'projects', icon: FolderOpen, label: 'Projects' });
     }
 
-    // Always available
+    // Always available tabs
     baseTabs.push(
       { id: 'notifications', icon: Bell, label: 'Updates' },
-      { id: 'profile', icon: User, label: 'Profile' }
+      { id: 'profile', icon: User, label: 'Profile' },
+      { id: 'subscription', icon: Crown, label: 'Plans' } // Always show subscription tab
     );
 
     return baseTabs;
