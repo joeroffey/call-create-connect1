@@ -39,7 +39,8 @@ export const useTeams = (userId?: string) => {
       console.log('useTeams: Fetching teams for user with RPC:', userId);
 
       // This is the new, more robust way to fetch the data.
-      const { data: teamsData, error } = await supabase
+      // Using type assertion since the function exists but isn't in the auto-generated types yet
+      const { data: teamsData, error } = await (supabase as any)
         .rpc('get_teams_for_user', { p_user_id: userId });
 
       if (error) {
@@ -48,7 +49,8 @@ export const useTeams = (userId?: string) => {
       }
 
       console.log('useTeams: Fetched teams:', teamsData);
-      setTeams(teamsData || []); // The data is already in the correct format.
+      // Cast the data to the correct type since we know the structure
+      setTeams((teamsData as Team[]) || []);
 
     } catch (error) {
       console.error('useTeams: Error in fetchTeams:', error);
