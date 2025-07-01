@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -28,7 +29,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'EezyBuild',
       price: '£14.99',
       period: 'per month',
-      trial: hasUsedTrial ? 'No free trial' : '7-day free trial',
       description: 'Essential building regulations assistant',
       features: [
         'AI chat assistance',
@@ -44,7 +44,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'Pro',
       price: '£29.99',
       period: 'per month',
-      trial: hasUsedTrial ? 'No free trial' : '7-day free trial',
       description: 'Advanced features for professionals',
       features: [
         'Everything in EezyBuild',
@@ -62,7 +61,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'ProMax',
       price: '£59.99',
       period: 'per month',
-      trial: hasUsedTrial ? 'No free trial' : '7-day free trial',
       description: 'Complete solution for teams and enterprises',
       features: [
         'Everything in Pro',
@@ -149,7 +147,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
             <p className="text-gray-400">
               Professional building regulations assistance
-              {!hasUsedTrial && " with 7-day free trial"}
+              {!hasUsedTrial && !hasActiveSubscription && " with 7-day free trial"}
             </p>
           </div>
         </motion.div>
@@ -265,11 +263,14 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   <span className="text-3xl font-bold text-white">{plan.price}</span>
                   <span className="text-gray-400 ml-1">/{plan.period}</span>
                 </div>
-                <div className="mb-2">
-                  <span className={`text-sm font-medium ${hasUsedTrial ? 'text-gray-400' : 'text-emerald-400'}`}>
-                    {plan.trial}
-                  </span>
-                </div>
+                {/* Only show trial info if user hasn't used trial and doesn't have active subscription */}
+                {!hasUsedTrial && !hasActiveSubscription && (
+                  <div className="mb-2">
+                    <span className="text-sm font-medium text-emerald-400">
+                      7-day free trial
+                    </span>
+                  </div>
+                )}
                 <p className="text-gray-400 text-sm">{plan.description}</p>
               </div>
 
@@ -298,13 +299,18 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 {loading === plan.planType ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
-                {plan.current ? 'Current Plan' : hasUsedTrial ? `Subscribe Now` : `Start Free Trial`}
+                {plan.current 
+                  ? 'Current Plan' 
+                  : !hasUsedTrial && !hasActiveSubscription 
+                    ? 'Start Free Trial' 
+                    : 'Subscribe Now'
+                }
               </Button>
             </motion.div>
           ))}
         </div>
 
-        {/* Trial Information - Only show if user hasn't used trial */}
+        {/* Trial Information - Only show if user hasn't used trial and has no active subscription */}
         {!hasActiveSubscription && !hasUsedTrial && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -320,8 +326,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </motion.div>
         )}
 
-        {/* No Trial Available Information - Show if user has used trial */}
-        {!hasActiveSubscription && hasUsedTrial && (
+        {/* No Trial Available Information - Show if user has used trial or has active subscription */}
+        {(hasUsedTrial || hasActiveSubscription) && !hasActiveSubscription && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
