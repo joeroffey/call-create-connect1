@@ -1,9 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2 } from 'lucide-react';
+import { X, MessageCircle, FileText, Clock, Plus, Calendar, Upload, Download, Trash2, CalendarIcon } from 'lucide-react';
+import { format } from "date-fns";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -20,6 +29,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
   const [documents, setDocuments] = useState<any[]>([]);
   const [scheduleOfWorks, setScheduleOfWorks] = useState<any[]>([]);
   const [newWorkItem, setNewWorkItem] = useState({ title: '', description: '', due_date: '' });
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [showAddWorkItem, setShowAddWorkItem] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -44,6 +54,14 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
       fetchScheduleOfWorks();
     }
   }, [isOpen, project]);
+
+  // Reset form when closing add work item
+  useEffect(() => {
+    if (!showAddWorkItem) {
+      setNewWorkItem({ title: '', description: '', due_date: '' });
+      setSelectedDate(undefined);
+    }
+  }, [showAddWorkItem]);
 
   const fetchDocuments = async () => {
     if (!project?.id || !user?.id) return;
@@ -97,7 +115,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
             user_id: user.id,
             title: newWorkItem.title.trim(),
             description: newWorkItem.description.trim() || null,
-            due_date: newWorkItem.due_date || null,
+            due_date: selectedDate ? selectedDate.toISOString().split('T')[0] : null,
           }
         ]);
 
@@ -109,6 +127,7 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
       });
 
       setNewWorkItem({ title: '', description: '', due_date: '' });
+      setSelectedDate(undefined);
       setShowAddWorkItem(false);
       fetchScheduleOfWorks();
     } catch (error: any) {
@@ -418,12 +437,35 @@ const ProjectDetailsModal = ({ project, isOpen, onClose, onStartNewChat, user, i
                       rows={2}
                       className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none resize-none"
                     />
-                    <input
-                      type="date"
-                      value={newWorkItem.due_date}
-                      onChange={(e) => setNewWorkItem({ ...newWorkItem, due_date: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:border-emerald-500/60 focus:outline-none"
-                    />
+                    
+                    {/* Modern Date Picker */}
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-300">Due Date (optional)</label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal bg-gray-700/50 border-gray-600/50 text-white hover:bg-gray-600/50 hover:text-white",
+                              !selectedDate && "text-gray-400"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700" align="start">
+                          <CalendarComponent
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={setSelectedDate}
+                            initialFocus
+                            className="p-3 pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
                     <div className="flex space-x-2">
                       <button
                         onClick={createWorkItem}
