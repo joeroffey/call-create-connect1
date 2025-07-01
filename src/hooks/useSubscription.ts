@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -21,9 +20,9 @@ const CACHE_DURATION = 30000; // 30 seconds
 
 export const useSubscription = (userId: string | null) => {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Changed default to false
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(false); // Changed default to false
   const { toast } = useToast();
   const cacheKeyRef = useRef<string>('');
 
@@ -42,19 +41,22 @@ export const useSubscription = (userId: string | null) => {
     cacheKeyRef.current = cacheKey;
     const cached = subscriptionCache.get(cacheKey);
     
-    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
-      console.log('📦 Using cached subscription data');
+    if (cached) {
+      console.log('📦 Using cached subscription data immediately');
       setSubscription(cached.subscription);
       setHasActiveSubscription(cached.hasActiveSubscription);
       setLoading(false);
       setIsInitialLoad(false);
       
-      // Still check for updates in background
-      setTimeout(() => {
+      // Check if cache is stale and update in background if needed
+      if ((Date.now() - cached.timestamp) >= CACHE_DURATION) {
+        console.log('🔄 Cache is stale, updating in background');
         checkSubscriptionStatus(0, true);
-      }, 100);
+      }
     } else {
-      // No cache, load immediately
+      // No cache, need to load
+      setLoading(true);
+      setIsInitialLoad(true);
       checkSubscriptionStatus();
     }
   }, [userId]);
@@ -87,8 +89,8 @@ export const useSubscription = (userId: string | null) => {
       if (error) {
         console.error('❌ Stripe check failed:', error);
         
-        if (retryCount < 4) {
-          const delay = (retryCount + 1) * 5000;
+        if (retryCount < 2 && !isBackgroundUpdate) { // Reduced retry count for faster response
+          const delay = (retryCount + 1) * 2000; // Reduced delay
           console.log(`⏳ Retrying subscription check in ${delay/1000} seconds...`);
           setTimeout(() => {
             checkSubscriptionStatus(retryCount + 1, isBackgroundUpdate);
@@ -125,7 +127,7 @@ export const useSubscription = (userId: string | null) => {
           timestamp: Date.now()
         });
         
-        if (retryCount > 0) {
+        if (retryCount > 0 && !isBackgroundUpdate) {
           toast({
             title: "Subscription Found!",
             description: `Your ${data.subscription_tier} plan is now active.`,
@@ -135,8 +137,8 @@ export const useSubscription = (userId: string | null) => {
       } else {
         console.log('❌ No active subscription found in response:', data);
         
-        if (retryCount < 4) {
-          const delay = (retryCount + 1) * 8000;
+        if (retryCount < 2 && !isBackgroundUpdate) { // Reduced retry count
+          const delay = (retryCount + 1) * 3000; // Reduced delay
           console.log(`⏳ Retrying subscription check in ${delay/1000} seconds...`);
           setTimeout(() => {
             checkSubscriptionStatus(retryCount + 1, isBackgroundUpdate);
@@ -157,8 +159,8 @@ export const useSubscription = (userId: string | null) => {
     } catch (error) {
       console.error('💥 Error checking subscription:', error);
       
-      if (retryCount < 4) {
-        const delay = (retryCount + 1) * 5000;
+      if (retryCount < 2 && !isBackgroundUpdate) { // Reduced retry count
+        const delay = (retryCount + 1) * 2000; // Reduced delay
         console.log(`⏳ Retrying subscription check due to error in ${delay/1000} seconds...`);
         setTimeout(() => {
           checkSubscriptionStatus(retryCount + 1, isBackgroundUpdate);
@@ -176,7 +178,7 @@ export const useSubscription = (userId: string | null) => {
         timestamp: Date.now()
       });
     } finally {
-      if (retryCount === 0 || retryCount >= 4) {
+      if (!isBackgroundUpdate) {
         setLoading(false);
         setIsInitialLoad(false);
       }

@@ -157,7 +157,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
           <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
         </motion.div>
 
-        {/* Subscription Status - Show immediately with skeleton if needed */}
+        {/* Subscription Status - Show immediately */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -166,46 +166,46 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
         >
           {hasActiveSubscription ? (
             <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
-              <CardContent className="p-6">
+              <CardContent className="p-8">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-6">
                     <div className="relative flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Crown className="w-6 h-6 text-white" />
+                      <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Crown className="w-8 h-8 text-white" />
                       </div>
-                      <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full animate-pulse"></div>
                     </div>
                     
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Shield className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                        <span className="text-xs font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                        <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">
-                        {isInitialLoad ? (
-                          <div className="h-6 w-24 bg-gray-700 rounded animate-pulse"></div>
+                      <h3 className="text-2xl font-bold text-white mb-3">
+                        {isInitialLoad && !subscription ? (
+                          <div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
                         ) : (
                           getPlanDisplayName() + ' Plan'
                         )}
                       </h3>
-                      <p className="text-gray-300 text-sm mb-3">
+                      <p className="text-gray-300 text-base mb-4">
                         Your premium subscription is active and ready to use
                       </p>
                       
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex items-center gap-3">
+                          <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
                           <span className="text-gray-300">
-                            {isInitialLoad ? (
-                              <div className="h-4 w-32 bg-gray-700 rounded animate-pulse"></div>
+                            {isInitialLoad && !subscription ? (
+                              <div className="h-5 w-40 bg-gray-700 rounded animate-pulse"></div>
                             ) : (
                               `Renews ${getSubscriptionExpiration()}`
                             )}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                          <span className="text-emerald-300 font-medium">Active</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          <span className="text-emerald-300 font-medium text-base">Active</span>
                         </div>
                       </div>
                     </div>
@@ -214,7 +214,8 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                   <div className="flex-shrink-0">
                     <Button
                       onClick={handleManageSubscription}
-                      className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm transition-all duration-200 px-4 py-2 font-medium"
+                      size="lg"
+                      className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-sm transition-all duration-200 px-6 py-3 font-medium"
                     >
                       Manage Subscription
                     </Button>
