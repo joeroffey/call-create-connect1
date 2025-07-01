@@ -621,6 +621,10 @@ export type Database = {
           error_message: string
         }[]
       }
+      is_team_member: {
+        Args: { user_id_param: string; team_id_param: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
