@@ -20,7 +20,7 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, isInitialLoad, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
   const [loading, setLoading] = useState<string | null>(null);
 
   const plans = [
@@ -151,7 +151,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </div>
         </motion.div>
 
-        {/* Current Subscription Status - Show immediately */}
+        {/* Current Subscription Status - Always visible immediately */}
         {hasActiveSubscription && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -176,11 +176,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                         <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
                       </div>
                       <h3 className="text-2xl font-bold text-white mb-3">
-                        {isInitialLoad && !subscription ? (
-                          <div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
-                        ) : (
-                          getPlanDisplayName() + ' Plan'
-                        )}
+                        {getPlanDisplayName()} Plan
                       </h3>
                       <p className="text-gray-300 text-base mb-4">
                         Your premium subscription is active and ready to use
@@ -190,11 +186,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                         <div className="flex items-center gap-3">
                           <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
                           <span className="text-gray-300">
-                            {isInitialLoad && !subscription ? (
-                              <div className="h-5 w-40 bg-gray-700 rounded animate-pulse"></div>
-                            ) : (
-                              `Renews ${getSubscriptionExpiration()}`
-                            )}
+                            Renews {getSubscriptionExpiration()}
                           </span>
                         </div>
                         <div className="flex items-center gap-3">

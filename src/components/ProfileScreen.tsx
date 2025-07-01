@@ -22,7 +22,7 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
-  const { subscription, hasActiveSubscription, isInitialLoad, refetch, openCustomerPortal } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, refetch, openCustomerPortal } = useSubscription(user?.id);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -157,7 +157,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
           <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
         </motion.div>
 
-        {/* Subscription Status - Show immediately */}
+        {/* Subscription Status - Always visible immediately */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -182,11 +182,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                         <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
                       </div>
                       <h3 className="text-2xl font-bold text-white mb-3">
-                        {isInitialLoad && !subscription ? (
-                          <div className="h-8 w-32 bg-gray-700 rounded animate-pulse"></div>
-                        ) : (
-                          getPlanDisplayName() + ' Plan'
-                        )}
+                        {getPlanDisplayName()} Plan
                       </h3>
                       <p className="text-gray-300 text-base mb-4">
                         Your premium subscription is active and ready to use
@@ -196,11 +192,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                         <div className="flex items-center gap-3">
                           <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
                           <span className="text-gray-300">
-                            {isInitialLoad && !subscription ? (
-                              <div className="h-5 w-40 bg-gray-700 rounded animate-pulse"></div>
-                            ) : (
-                              `Renews ${getSubscriptionExpiration()}`
-                            )}
+                            Renews {getSubscriptionExpiration()}
                           </span>
                         </div>
                         <div className="flex items-center gap-3">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -9,73 +10,123 @@ interface Subscription {
   current_period_end: string;
 }
 
-// Simple in-memory cache for subscription data
-const subscriptionCache = new Map<string, {
+interface CachedSubscriptionData {
   subscription: Subscription | null;
   hasActiveSubscription: boolean;
   timestamp: number;
-}>();
+}
 
-const CACHE_DURATION = 30000; // 30 seconds
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const STORAGE_KEY = 'subscription_cache';
+
+// Get initial data from localStorage
+const getInitialCacheData = (userId: string | null): CachedSubscriptionData | null => {
+  if (!userId) return null;
+  
+  try {
+    const stored = localStorage.getItem(`${STORAGE_KEY}_${userId}`);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      return parsed;
+    }
+  } catch (error) {
+    console.log('Failed to parse cached subscription data:', error);
+  }
+  return null;
+};
+
+// Save data to localStorage
+const saveCacheData = (userId: string, data: CachedSubscriptionData) => {
+  try {
+    localStorage.setItem(`${STORAGE_KEY}_${userId}`, JSON.stringify(data));
+  } catch (error) {
+    console.log('Failed to save subscription cache:', error);
+  }
+};
 
 export const useSubscription = (userId: string | null) => {
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(false); // Changed default to false
-  const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(false); // Changed default to false
+  const initialCacheData = getInitialCacheData(userId);
+  
+  const [subscription, setSubscription] = useState<Subscription | null>(
+    initialCacheData?.subscription || null
+  );
+  const [loading, setLoading] = useState(false);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState(
+    initialCacheData?.hasActiveSubscription || false
+  );
+  const [isInitialLoad, setIsInitialLoad] = useState(false);
   const { toast } = useToast();
-  const cacheKeyRef = useRef<string>('');
+  const lastCheckRef = useRef<number>(0);
 
-  // Generate cache key
-  const getCacheKey = (userId: string) => `subscription_${userId}`;
+  // Check if we need to refresh data
+  const shouldRefreshData = (cachedData: CachedSubscriptionData | null): boolean => {
+    if (!cachedData) return true;
+    return (Date.now() - cachedData.timestamp) >= CACHE_DURATION;
+  };
 
-  // Load from cache immediately if available
+  // Update cache and state
+  const updateSubscriptionData = (
+    subscriptionData: Subscription | null,
+    hasActive: boolean,
+    userId: string
+  ) => {
+    const cacheData: CachedSubscriptionData = {
+      subscription: subscriptionData,
+      hasActiveSubscription: hasActive,
+      timestamp: Date.now()
+    };
+
+    setSubscription(subscriptionData);
+    setHasActiveSubscription(hasActive);
+    saveCacheData(userId, cacheData);
+  };
+
+  // Main effect to handle subscription checking
   useEffect(() => {
     if (!userId) {
+      setSubscription(null);
+      setHasActiveSubscription(false);
       setLoading(false);
       setIsInitialLoad(false);
       return;
     }
 
-    const cacheKey = getCacheKey(userId);
-    cacheKeyRef.current = cacheKey;
-    const cached = subscriptionCache.get(cacheKey);
+    const cachedData = getInitialCacheData(userId);
     
-    if (cached) {
+    // Always set the cached data immediately
+    if (cachedData) {
+      setSubscription(cachedData.subscription);
+      setHasActiveSubscription(cachedData.hasActiveSubscription);
       console.log('📦 Using cached subscription data immediately');
-      setSubscription(cached.subscription);
-      setHasActiveSubscription(cached.hasActiveSubscription);
-      setLoading(false);
-      setIsInitialLoad(false);
-      
-      // Check if cache is stale and update in background if needed
-      if ((Date.now() - cached.timestamp) >= CACHE_DURATION) {
-        console.log('🔄 Cache is stale, updating in background');
-        checkSubscriptionStatus(0, true);
-      }
-    } else {
-      // No cache, need to load
-      setLoading(true);
-      setIsInitialLoad(true);
-      checkSubscriptionStatus();
+    }
+
+    setLoading(false);
+    setIsInitialLoad(false);
+    
+    // Check if we need to refresh in the background
+    if (shouldRefreshData(cachedData)) {
+      console.log('🔄 Cache is stale or missing, updating in background');
+      checkSubscriptionStatus(true);
     }
   }, [userId]);
 
-  const checkSubscriptionStatus = async (retryCount = 0, isBackgroundUpdate = false) => {
-    if (!userId) {
-      setLoading(false);
-      setIsInitialLoad(false);
+  const checkSubscriptionStatus = async (isBackgroundUpdate = false) => {
+    if (!userId) return;
+
+    // Prevent multiple simultaneous checks
+    const now = Date.now();
+    if (now - lastCheckRef.current < 5000) {
+      console.log('⏭️ Skipping check - too recent');
       return;
     }
+    lastCheckRef.current = now;
 
     try {
-      console.log(`🔍 Checking subscription status for user (attempt ${retryCount + 1}):`, userId);
+      console.log('🔍 Checking subscription status for user:', userId);
       
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         console.log('❌ No session found');
-        setLoading(false);
-        setIsInitialLoad(false);
         return;
       }
 
@@ -88,26 +139,11 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) {
         console.error('❌ Stripe check failed:', error);
-        
-        if (retryCount < 2 && !isBackgroundUpdate) { // Reduced retry count for faster response
-          const delay = (retryCount + 1) * 2000; // Reduced delay
-          console.log(`⏳ Retrying subscription check in ${delay/1000} seconds...`);
-          setTimeout(() => {
-            checkSubscriptionStatus(retryCount + 1, isBackgroundUpdate);
-          }, delay);
-          return;
-        }
-        
-        setSubscription(null);
-        setHasActiveSubscription(false);
-        
-        // Update cache
-        subscriptionCache.set(cacheKeyRef.current, {
-          subscription: null,
-          hasActiveSubscription: false,
-          timestamp: Date.now()
-        });
-      } else if (data.subscribed && data.subscription_tier) {
+        // Don't clear existing data on error
+        return;
+      }
+
+      if (data.subscribed && data.subscription_tier) {
         console.log('✅ Active subscription found:', data);
         const subscriptionData: Subscription = {
           id: 'stripe-sub',
@@ -116,72 +152,23 @@ export const useSubscription = (userId: string | null) => {
           current_period_end: data.subscription_end
         };
         
-        setSubscription(subscriptionData);
-        setHasActiveSubscription(true);
+        updateSubscriptionData(subscriptionData, true, userId);
         console.log('🎯 Subscription state updated:', { hasActiveSubscription: true, tier: data.subscription_tier });
         
-        // Update cache
-        subscriptionCache.set(cacheKeyRef.current, {
-          subscription: subscriptionData,
-          hasActiveSubscription: true,
-          timestamp: Date.now()
-        });
-        
-        if (retryCount > 0 && !isBackgroundUpdate) {
+        if (!isBackgroundUpdate) {
           toast({
-            title: "Subscription Found!",
-            description: `Your ${data.subscription_tier} plan is now active.`,
-            duration: 5000,
+            title: "Subscription Updated!",
+            description: `Your ${data.subscription_tier} plan is active.`,
+            duration: 3000,
           });
         }
       } else {
-        console.log('❌ No active subscription found in response:', data);
-        
-        if (retryCount < 2 && !isBackgroundUpdate) { // Reduced retry count
-          const delay = (retryCount + 1) * 3000; // Reduced delay
-          console.log(`⏳ Retrying subscription check in ${delay/1000} seconds...`);
-          setTimeout(() => {
-            checkSubscriptionStatus(retryCount + 1, isBackgroundUpdate);
-          }, delay);
-          return;
-        }
-        
-        setSubscription(null);
-        setHasActiveSubscription(false);
-        
-        // Update cache
-        subscriptionCache.set(cacheKeyRef.current, {
-          subscription: null,
-          hasActiveSubscription: false,
-          timestamp: Date.now()
-        });
+        console.log('❌ No active subscription found');
+        updateSubscriptionData(null, false, userId);
       }
     } catch (error) {
       console.error('💥 Error checking subscription:', error);
-      
-      if (retryCount < 2 && !isBackgroundUpdate) { // Reduced retry count
-        const delay = (retryCount + 1) * 2000; // Reduced delay
-        console.log(`⏳ Retrying subscription check due to error in ${delay/1000} seconds...`);
-        setTimeout(() => {
-          checkSubscriptionStatus(retryCount + 1, isBackgroundUpdate);
-        }, delay);
-        return;
-      }
-      
-      setSubscription(null);
-      setHasActiveSubscription(false);
-      
-      // Update cache with error state
-      subscriptionCache.set(cacheKeyRef.current, {
-        subscription: null,
-        hasActiveSubscription: false,
-        timestamp: Date.now()
-      });
-    } finally {
-      if (!isBackgroundUpdate) {
-        setLoading(false);
-        setIsInitialLoad(false);
-      }
+      // Don't clear existing data on error
     }
   };
 
@@ -256,21 +243,12 @@ export const useSubscription = (userId: string | null) => {
     }
   };
 
-  // Clear cache when user changes
-  useEffect(() => {
-    return () => {
-      if (cacheKeyRef.current) {
-        subscriptionCache.delete(cacheKeyRef.current);
-      }
-    };
-  }, [userId]);
-
   return {
     subscription,
     loading,
     hasActiveSubscription,
     isInitialLoad,
-    refetch: () => checkSubscriptionStatus(0),
+    refetch: () => checkSubscriptionStatus(false),
     createCheckoutSession,
     openCustomerPortal
   };
