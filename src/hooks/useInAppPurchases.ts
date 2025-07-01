@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from 'react';
-import { InAppPurchase2 } from '@capacitor-community/in-app-purchase-2';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,70 +35,55 @@ export const useInAppPurchases = (userId: string | null): InAppPurchaseHook => {
 
   useEffect(() => {
     if (isNative && userId) {
-      initializeStore();
+      // For now, we'll set up mock products until the native plugin is properly configured
+      initializeMockProducts();
     }
   }, [isNative, userId]);
 
-  const initializeStore = async () => {
-    try {
-      setLoading(true);
-      
-      // Initialize the store
-      await InAppPurchase2.initialize({
-        products: Object.values(PRODUCT_IDS)
-      });
-
-      // Set up event listeners
-      InAppPurchase2.addListener('productUpdated', (product) => {
-        console.log('Product updated:', product);
-        updateProductList();
-      });
-
-      InAppPurchase2.addListener('purchaseUpdated', async (purchase) => {
-        console.log('Purchase updated:', purchase);
-        await handlePurchaseUpdate(purchase);
-      });
-
-      // Load products
-      await updateProductList();
-      
-    } catch (error) {
-      console.error('Failed to initialize in-app purchases:', error);
-      toast({
-        title: "Store Error",
-        description: "Failed to initialize app store. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProductList = async () => {
-    try {
-      const storeProducts = await InAppPurchase2.getProducts();
-      const formattedProducts = storeProducts.map(product => ({
-        productId: product.productId,
-        title: product.title,
-        description: product.description,
-        price: product.price,
-        currency: product.currency
-      }));
-      setProducts(formattedProducts);
-    } catch (error) {
-      console.error('Failed to load products:', error);
-    }
+  const initializeMockProducts = () => {
+    // Mock products with UK pricing for demonstration
+    const mockProducts: Product[] = [
+      {
+        productId: PRODUCT_IDS.basic,
+        title: 'EezyBuild Monthly',
+        description: 'Essential building regulations assistant',
+        price: '£14.99',
+        currency: 'GBP'
+      },
+      {
+        productId: PRODUCT_IDS.pro,
+        title: 'Pro Monthly',
+        description: 'Advanced features for professionals',
+        price: '£29.99',
+        currency: 'GBP'
+      },
+      {
+        productId: PRODUCT_IDS.enterprise,
+        title: 'ProMax Monthly',
+        description: 'Complete solution for teams and enterprises',
+        price: '£59.99',
+        currency: 'GBP'
+      }
+    ];
+    setProducts(mockProducts);
   };
 
   const purchaseProduct = async (productId: string) => {
     try {
       setLoading(true);
-      await InAppPurchase2.purchaseProduct({ productId });
       
+      if (!isNative) {
+        throw new Error('In-app purchases only available on mobile devices');
+      }
+
+      // This would integrate with the actual native in-app purchase system
+      // For now, we'll show a message indicating this needs native implementation
       toast({
-        title: "Purchase Started",
-        description: "Processing your subscription purchase...",
+        title: "Native Purchase Required",
+        description: "This feature requires the app to be built and deployed to app stores with proper in-app purchase configuration.",
+        variant: "destructive"
       });
+
     } catch (error) {
       console.error('Purchase failed:', error);
       toast({
@@ -115,12 +99,17 @@ export const useInAppPurchases = (userId: string | null): InAppPurchaseHook => {
   const restorePurchases = async () => {
     try {
       setLoading(true);
-      await InAppPurchase2.restorePurchases();
       
+      if (!isNative) {
+        throw new Error('Restore purchases only available on mobile devices');
+      }
+
+      // This would restore purchases from the app store
       toast({
-        title: "Restore Complete",
-        description: "Your purchases have been restored.",
+        title: "Restore Purchases",
+        description: "This feature will be available when the app is deployed to app stores.",
       });
+      
     } catch (error) {
       console.error('Restore failed:', error);
       toast({
@@ -130,44 +119,6 @@ export const useInAppPurchases = (userId: string | null): InAppPurchaseHook => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePurchaseUpdate = async (purchase: any) => {
-    if (purchase.state === 'purchased' || purchase.state === 'restored') {
-      try {
-        // Verify purchase with our backend
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-
-        await supabase.functions.invoke('verify-in-app-purchase', {
-          body: {
-            productId: purchase.productId,
-            transactionId: purchase.transactionId,
-            receipt: purchase.receipt,
-            platform: Capacitor.getPlatform()
-          },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        toast({
-          title: "Subscription Active",
-          description: "Your subscription is now active!",
-        });
-
-        // Finish the transaction
-        await InAppPurchase2.finishTransaction({ transactionId: purchase.transactionId });
-        
-      } catch (error) {
-        console.error('Failed to verify purchase:', error);
-        toast({
-          title: "Verification Failed",
-          description: "Purchase completed but verification failed. Contact support.",
-          variant: "destructive"
-        });
-      }
     }
   };
 
