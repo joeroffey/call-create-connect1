@@ -189,12 +189,13 @@ const Index = () => {
     ];
 
     // Tools available for EezyBuild (basic), Pro and ProMax
-    if (subscriptionTier === 'basic' || subscriptionTier === 'pro' || subscriptionTier === 'enterprise') {
+    // Check for both the plan_type from subscription and hasActiveSubscription
+    if (hasActiveSubscription && subscription && (subscription.plan_type === 'basic' || subscription.plan_type === 'pro' || subscription.plan_type === 'enterprise')) {
       baseTabs.push({ id: 'apps', icon: Wrench, label: 'Tools' });
     }
 
     // Advanced Search only for ProMax
-    if (subscriptionTier === 'enterprise') {
+    if (hasActiveSubscription && subscription && subscription.plan_type === 'enterprise') {
       baseTabs.push({ id: 'search', icon: Search, label: 'Search' });
       baseTabs.push({ id: 'projects', icon: FolderOpen, label: 'Projects' });
     }
