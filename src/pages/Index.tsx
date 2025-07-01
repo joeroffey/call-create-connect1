@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
@@ -44,37 +43,41 @@ const Index = () => {
       // Show success toast
       toast({
         title: "Payment Successful!",
-        description: "Your subscription is being activated. Please wait a moment...",
-        duration: 6000,
+        description: "Your subscription is being activated. This may take up to 2 minutes...",
+        duration: 8000,
       });
 
-      // Force refresh subscription status multiple times to ensure it's updated
-      const refreshSubscription = async () => {
+      // More aggressive refresh strategy for post-checkout
+      const aggressiveRefresh = async () => {
         if (user?.id) {
-          console.log('🔄 Refreshing subscription status after successful checkout');
+          console.log('🔄 Starting aggressive subscription refresh after successful checkout');
+          
+          // Immediate refresh
           await refetch();
           
-          // Check again after a delay to ensure Stripe has processed
-          setTimeout(async () => {
-            console.log('🔄 Second subscription refresh');
-            await refetch();
-            
-            // Final check and toast
+          // Staggered retries with increasing delays
+          const delays = [3000, 8000, 15000, 30000, 60000]; // 3s, 8s, 15s, 30s, 60s
+          
+          for (let i = 0; i < delays.length; i++) {
             setTimeout(async () => {
-              console.log('🔄 Final subscription refresh');
+              console.log(`🔄 Subscription refresh attempt ${i + 2}`);
               await refetch();
-              toast({
-                title: "Subscription Activated!",
-                description: "Welcome to your new plan! Your 7-day trial has started.",
-                duration: 5000,
-              });
-            }, 3000);
-          }, 2000);
+            }, delays[i]);
+          }
+          
+          // Final success message after the last attempt
+          setTimeout(() => {
+            toast({
+              title: "Subscription Status Updated!",
+              description: "Please refresh the page if you don't see your plan activated.",
+              duration: 5000,
+            });
+          }, 65000);
         }
       };
 
-      // Start the refresh process
-      setTimeout(refreshSubscription, 1000);
+      // Start the aggressive refresh process
+      setTimeout(aggressiveRefresh, 1000);
       
       // Switch to subscription tab to show the updated status
       setActiveTab('subscription');

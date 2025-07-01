@@ -16,16 +16,15 @@ export const useSubscription = (userId: string | null) => {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(false);
   const { toast } = useToast();
 
-  const checkSubscriptionStatus = async () => {
+  const checkSubscriptionStatus = async (retryCount = 0) => {
     if (!userId) {
       setLoading(false);
       return;
     }
 
     try {
-      console.log('🔍 Checking subscription status for user:', userId);
+      console.log(`🔍 Checking subscription status for user (attempt ${retryCount + 1}):`, userId);
       
-      // Check Stripe subscription status
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         console.log('❌ No session found');
@@ -42,6 +41,17 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) {
         console.error('❌ Stripe check failed:', error);
+        
+        // If we're retrying after a successful checkout and still no subscription found,
+        // wait a bit longer and try again (up to 3 times)
+        if (retryCount < 2) {
+          console.log(`⏳ Retrying subscription check in ${(retryCount + 1) * 3} seconds...`);
+          setTimeout(() => {
+            checkSubscriptionStatus(retryCount + 1);
+          }, (retryCount + 1) * 3000);
+          return;
+        }
+        
         setSubscription(null);
         setHasActiveSubscription(false);
       } else if (data.subscribed && data.subscription_tier) {
@@ -58,15 +68,38 @@ export const useSubscription = (userId: string | null) => {
         console.log('🎯 Subscription state updated:', { hasActiveSubscription: true, tier: data.subscription_tier });
       } else {
         console.log('❌ No active subscription found');
+        
+        // If we're retrying after a successful checkout and still no subscription found,
+        // wait a bit longer and try again (up to 3 times)
+        if (retryCount < 2) {
+          console.log(`⏳ Retrying subscription check in ${(retryCount + 1) * 5} seconds...`);
+          setTimeout(() => {
+            checkSubscriptionStatus(retryCount + 1);
+          }, (retryCount + 1) * 5000);
+          return;
+        }
+        
         setSubscription(null);
         setHasActiveSubscription(false);
       }
     } catch (error) {
       console.error('💥 Error checking subscription:', error);
+      
+      // If we're retrying after a successful checkout, try again
+      if (retryCount < 2) {
+        console.log(`⏳ Retrying subscription check due to error in ${(retryCount + 1) * 3} seconds...`);
+        setTimeout(() => {
+          checkSubscriptionStatus(retryCount + 1);
+        }, (retryCount + 1) * 3000);
+        return;
+      }
+      
       setSubscription(null);
       setHasActiveSubscription(false);
     } finally {
-      setLoading(false);
+      if (retryCount === 0 || retryCount >= 2) {
+        setLoading(false);
+      }
     }
   };
 
