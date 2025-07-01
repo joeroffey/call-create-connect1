@@ -88,23 +88,14 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
     setIsSending(true);
     try {
       const fullPhoneNumber = formatPhoneNumber(phoneNumber);
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
       
-      // Store verification code in database
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          mobile_number: fullPhoneNumber,
-          mobile_verification_code: code,
-          mobile_verification_expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
-        })
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
+      // Use Supabase Auth for phone verification
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: fullPhoneNumber,
+      });
 
       if (error) throw error;
 
-      // In a real app, you would send SMS here
-      console.log(`Verification code for ${fullPhoneNumber}: ${code}`);
-      
       onChange(fullPhoneNumber);
       setIsCodeSent(true);
       setTimeLeft(600); // 10 minutes
@@ -117,7 +108,7 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
       console.error('Error sending verification code:', error);
       toast({
         title: "Error",
-        description: "Failed to send verification code. Please try again.",
+        description: error.message || "Failed to send verification code. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -137,46 +128,45 @@ const MobileVerification = ({ value, onChange, onVerified, className }: MobileVe
 
     setIsVerifying(true);
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('mobile_verification_code, mobile_verification_expires_at')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+      const fullPhoneNumber = formatPhoneNumber(phoneNumber);
+      
+      // Verify the code with Supabase Auth
+      const { error } = await supabase.auth.verifyOtp({
+        phone: fullPhoneNumber,
+        token: verificationCode,
+        type: 'sms'
+      });
 
-      if (error) throw error;
-
-      const expiresAt = new Date(data.mobile_verification_expires_at);
-      const now = new Date();
-
-      if (now > expiresAt) {
-        toast({
-          title: "Code Expired",
-          description: "Verification code has expired. Please request a new one.",
-          variant: "destructive",
-        });
+      if (error) {
+        if (error.message.includes('expired')) {
+          toast({
+            title: "Code Expired",
+            description: "Verification code has expired. Please request a new one.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Invalid Code",
+            description: "The verification code is incorrect. Please try again.",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
-      if (data.mobile_verification_code !== verificationCode) {
-        toast({
-          title: "Invalid Code",
-          description: "The verification code is incorrect. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Mark as verified
+      // Update the user's profile with verified phone number
       const { error: updateError } = await supabase
         .from('profiles')
         .update({
-          mobile_verified: true,
-          mobile_verification_code: null,
-          mobile_verification_expires_at: null
+          mobile_number: fullPhoneNumber,
+          mobile_verified: true
         })
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        // Don't throw here as the verification was successful
+      }
 
       onVerified(true);
       toast({
