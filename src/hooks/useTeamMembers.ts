@@ -21,29 +21,45 @@ export const useTeamMembers = (teamId?: string) => {
           user_id,
           role,
           invited_by,
-          joined_at,
-          profiles!inner(
-            full_name,
-            user_id
-          )
+          joined_at
         `)
         .eq('team_id', teamId);
 
       if (error) throw error;
+
+      // Fetch profiles separately to avoid join issues
+      const memberIds = data?.map(member => member.user_id) || [];
+      let profilesData = [];
       
-      // Type cast and structure the data properly
-      const typedMembers: TeamMember[] = (data || []).map(member => ({
-        id: member.id,
-        team_id: member.team_id,
-        user_id: member.user_id,
-        role: member.role as 'owner' | 'admin' | 'member' | 'viewer',
-        invited_by: member.invited_by,
-        joined_at: member.joined_at,
-        profiles: member.profiles ? {
-          full_name: member.profiles.full_name || '',
-          user_id: member.profiles.user_id
-        } : undefined
-      }));
+      if (memberIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', memberIds);
+        
+        if (profilesError) {
+          console.error('Error fetching profiles:', profilesError);
+        } else {
+          profilesData = profiles || [];
+        }
+      }
+
+      // Combine the data
+      const typedMembers: TeamMember[] = (data || []).map(member => {
+        const profile = profilesData.find(p => p.user_id === member.user_id);
+        return {
+          id: member.id,
+          team_id: member.team_id,
+          user_id: member.user_id,
+          role: member.role as 'owner' | 'admin' | 'member' | 'viewer',
+          invited_by: member.invited_by,
+          joined_at: member.joined_at,
+          profiles: profile ? {
+            full_name: profile.full_name || '',
+            user_id: profile.user_id
+          } : undefined
+        };
+      });
       
       setMembers(typedMembers);
     } catch (error) {
