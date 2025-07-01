@@ -1,14 +1,13 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, MapPin, Briefcase, Calendar, Phone, ArrowRight, Check } from 'lucide-react';
+import { User, MapPin, Briefcase, Calendar, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import AddressAutocomplete from './AddressAutocomplete';
 import DatePicker from './DatePicker';
-import MobileVerification from './MobileVerification';
 
 interface OnboardingScreenProps {
   user: any;
@@ -43,9 +42,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
   const [formData, setFormData] = useState({
     address: '',
     occupation: '',
-    dateOfBirth: '',
-    mobileNumber: '',
-    mobileVerified: false
+    dateOfBirth: ''
   });
   const { toast } = useToast();
 
@@ -53,12 +50,8 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleMobileVerified = (verified: boolean) => {
-    setFormData(prev => ({ ...prev, mobileVerified: verified }));
-  };
-
   const handleNext = () => {
-    if (step < 4) {
+    if (step < 3) {
       setStep(step + 1);
     } else {
       handleSubmit();
@@ -80,9 +73,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
           full_name: user.name,
           address: formData.address,
           occupation: formData.occupation,
-          date_of_birth: formData.dateOfBirth,
-          mobile_number: formData.mobileNumber,
-          mobile_verified: formData.mobileVerified
+          date_of_birth: formData.dateOfBirth
         }, {
           onConflict: 'user_id'
         });
@@ -113,8 +104,6 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
         address: formData.address,
         occupation: formData.occupation,
         dateOfBirth: formData.dateOfBirth,
-        mobileNumber: formData.mobileNumber,
-        mobileVerified: formData.mobileVerified,
         onboardingCompleted: true
       };
 
@@ -142,7 +131,6 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
       case 1: return formData.address.trim() !== '';
       case 2: return formData.occupation !== '';
       case 3: return formData.dateOfBirth !== '';
-      case 4: return formData.mobileNumber !== '' && formData.mobileVerified;
       default: return false;
     }
   };
@@ -232,28 +220,6 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
           </motion.div>
         );
 
-      case 4:
-        return (
-          <motion.div
-            key="step4"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
-          >
-            <div className="text-center mb-8">
-              <Phone className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-2">Verify your mobile number</h2>
-              <p className="text-gray-400">We'll send you important updates about your projects</p>
-            </div>
-            <MobileVerification
-              value={formData.mobileNumber}
-              onChange={(value) => handleInputChange('mobileNumber', value)}
-              onVerified={handleMobileVerified}
-              className="space-y-4"
-            />
-          </motion.div>
-        );
-
       default:
         return null;
     }
@@ -269,7 +235,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
         {/* Progress indicator */}
         <div className="max-w-md mx-auto w-full mb-8">
           <div className="flex items-center justify-between mb-4">
-            {[1, 2, 3, 4].map((num) => (
+            {[1, 2, 3].map((num) => (
               <div key={num} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
                   num <= step 
@@ -278,7 +244,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
                 }`}>
                   {num < step ? <Check className="w-4 h-4" /> : num}
                 </div>
-                {num < 4 && (
+                {num < 3 && (
                   <div className={`w-8 h-0.5 transition-colors ${
                     num < step ? 'bg-emerald-500' : 'bg-gray-700'
                   }`} />
@@ -287,7 +253,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             ))}
           </div>
           <p className="text-center text-gray-400 text-sm">
-            Step {step} of 4
+            Step {step} of 3
           </p>
         </div>
 
@@ -330,7 +296,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
                   whileHover={{ x: 2 }}
                   transition={{ type: "spring", stiffness: 400 }}
                 >
-                  <span>{step === 4 ? 'Complete Setup' : 'Next'}</span>
+                  <span>{step === 3 ? 'Complete Setup' : 'Next'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </motion.div>
               )}
