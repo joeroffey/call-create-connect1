@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -13,6 +12,7 @@ interface Subscription {
 interface CachedSubscriptionData {
   subscription: Subscription | null;
   hasActiveSubscription: boolean;
+  hasUsedTrial: boolean;
   timestamp: number;
 }
 
@@ -54,6 +54,9 @@ export const useSubscription = (userId: string | null) => {
   const [hasActiveSubscription, setHasActiveSubscription] = useState(
     initialCacheData?.hasActiveSubscription || false
   );
+  const [hasUsedTrial, setHasUsedTrial] = useState(
+    initialCacheData?.hasUsedTrial || false
+  );
   const [isInitialLoad, setIsInitialLoad] = useState(false);
   const { toast } = useToast();
   const lastCheckRef = useRef<number>(0);
@@ -68,16 +71,19 @@ export const useSubscription = (userId: string | null) => {
   const updateSubscriptionData = (
     subscriptionData: Subscription | null,
     hasActive: boolean,
+    trialUsed: boolean,
     userId: string
   ) => {
     const cacheData: CachedSubscriptionData = {
       subscription: subscriptionData,
       hasActiveSubscription: hasActive,
+      hasUsedTrial: trialUsed,
       timestamp: Date.now()
     };
 
     setSubscription(subscriptionData);
     setHasActiveSubscription(hasActive);
+    setHasUsedTrial(trialUsed);
     saveCacheData(userId, cacheData);
   };
 
@@ -86,6 +92,7 @@ export const useSubscription = (userId: string | null) => {
     if (!userId) {
       setSubscription(null);
       setHasActiveSubscription(false);
+      setHasUsedTrial(false);
       setLoading(false);
       setIsInitialLoad(false);
       return;
@@ -97,6 +104,7 @@ export const useSubscription = (userId: string | null) => {
     if (cachedData) {
       setSubscription(cachedData.subscription);
       setHasActiveSubscription(cachedData.hasActiveSubscription);
+      setHasUsedTrial(cachedData.hasUsedTrial);
       console.log('📦 Using cached subscription data immediately');
     }
 
@@ -152,8 +160,17 @@ export const useSubscription = (userId: string | null) => {
           current_period_end: data.subscription_end
         };
         
-        updateSubscriptionData(subscriptionData, true, userId);
-        console.log('🎯 Subscription state updated:', { hasActiveSubscription: true, tier: data.subscription_tier });
+        updateSubscriptionData(
+          subscriptionData, 
+          true, 
+          data.has_used_trial || false, 
+          userId
+        );
+        console.log('🎯 Subscription state updated:', { 
+          hasActiveSubscription: true, 
+          tier: data.subscription_tier,
+          hasUsedTrial: data.has_used_trial 
+        });
         
         if (!isBackgroundUpdate) {
           toast({
@@ -164,7 +181,12 @@ export const useSubscription = (userId: string | null) => {
         }
       } else {
         console.log('❌ No active subscription found');
-        updateSubscriptionData(null, false, userId);
+        updateSubscriptionData(
+          null, 
+          false, 
+          data.has_used_trial || false, 
+          userId
+        );
       }
     } catch (error) {
       console.error('💥 Error checking subscription:', error);
@@ -190,7 +212,23 @@ export const useSubscription = (userId: string | null) => {
       if (error) throw error;
 
       if (data.url) {
-        console.log('🔗 Redirecting to Stripe checkout');
+        console.log('🔗 Redirecting to Stripe checkout', { withTrial: data.has_trial });
+        
+        // Show appropriate message based on trial eligibility
+        if (data.has_trial) {
+          toast({
+            title: "Starting Free Trial",
+            description: "You'll get 7 days free, then be charged monthly.",
+            duration: 4000,
+          });
+        } else {
+          toast({
+            title: "Upgrading Plan",
+            description: "You'll be charged immediately as you've already used your free trial.",
+            duration: 4000,
+          });
+        }
+        
         window.location.href = data.url;
       }
 
@@ -247,6 +285,7 @@ export const useSubscription = (userId: string | null) => {
     subscription,
     loading,
     hasActiveSubscription,
+    hasUsedTrial,
     isInitialLoad,
     refetch: () => checkSubscriptionStatus(false),
     createCheckoutSession,

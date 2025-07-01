@@ -27,7 +27,8 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
     );
 
     const authHeader = req.headers.get("Authorization");
@@ -47,14 +48,38 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     
-    // Check if customer exists
+    // Check if customer exists and their trial usage
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
+    let hasUsedTrial = false;
+
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing customer found", { customerId });
+      
+      // Check if they've ever had a trial by looking at all their subscriptions
+      const allSubscriptions = await stripe.subscriptions.list({
+        customer: customerId,
+        limit: 10,
+      });
+      
+      hasUsedTrial = allSubscriptions.data.some(sub => sub.trial_end !== null);
+      logStep("Trial usage check", { hasUsedTrial });
     } else {
-      logStep("Creating new customer");
+      logStep("Creating new customer - eligible for trial");
+      hasUsedTrial = false;
+    }
+
+    // Also check our database for trial usage tracking
+    const { data: subscriberData } = await supabaseClient
+      .from('subscribers')
+      .select('has_used_trial')
+      .eq('email', user.email)
+      .single();
+
+    if (subscriberData?.has_used_trial) {
+      hasUsedTrial = true;
+      logStep("Database confirms trial already used");
     }
 
     // Define pricing for each tier
@@ -65,11 +90,8 @@ serve(async (req) => {
     };
 
     const selectedPlan = pricing[planType as keyof typeof pricing];
-    logStep("Creating checkout session with 7-day trial", { planType, amount: selectedPlan.amount });
-
-    const origin = req.headers.get("origin") || "http://localhost:3000";
     
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig: any = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [
@@ -87,20 +109,36 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      subscription_data: {
-        trial_period_days: 7, // 7-day trial period
-      },
-      success_url: `${origin}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/?canceled=true`,
+      success_url: `${req.headers.get("origin") || "http://localhost:3000"}/?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get("origin") || "http://localhost:3000"}/?canceled=true`,
       metadata: {
         user_id: user.id,
         plan_type: planType
       }
+    };
+
+    // Only add trial if user hasn't used one before
+    if (!hasUsedTrial) {
+      sessionConfig.subscription_data = {
+        trial_period_days: 7
+      };
+      logStep("Creating checkout session with 7-day trial", { planType, amount: selectedPlan.amount });
+    } else {
+      logStep("Creating checkout session without trial (already used)", { planType, amount: selectedPlan.amount });
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    logStep("Checkout session created", { 
+      sessionId: session.id, 
+      url: session.url,
+      withTrial: !hasUsedTrial 
     });
 
-    logStep("Checkout session created with trial", { sessionId: session.id, url: session.url });
-
-    return new Response(JSON.stringify({ url: session.url }), {
+    return new Response(JSON.stringify({ 
+      url: session.url,
+      has_trial: !hasUsedTrial 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

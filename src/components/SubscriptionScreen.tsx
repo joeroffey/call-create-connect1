@@ -20,7 +20,7 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, hasUsedTrial, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
   const [loading, setLoading] = useState<string | null>(null);
 
   const plans = [
@@ -28,7 +28,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'EezyBuild',
       price: '£14.99',
       period: 'per month',
-      trial: '7-day free trial',
+      trial: hasUsedTrial ? 'No free trial' : '7-day free trial',
       description: 'Essential building regulations assistant',
       features: [
         'AI chat assistance',
@@ -44,7 +44,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'Pro',
       price: '£29.99',
       period: 'per month',
-      trial: '7-day free trial',
+      trial: hasUsedTrial ? 'No free trial' : '7-day free trial',
       description: 'Advanced features for professionals',
       features: [
         'Everything in EezyBuild',
@@ -62,7 +62,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       name: 'ProMax',
       price: '£59.99',
       period: 'per month',
-      trial: '7-day free trial',
+      trial: hasUsedTrial ? 'No free trial' : '7-day free trial',
       description: 'Complete solution for teams and enterprises',
       features: [
         'Everything in Pro',
@@ -147,7 +147,10 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
-            <p className="text-gray-400">Professional building regulations assistance with 7-day free trial</p>
+            <p className="text-gray-400">
+              Professional building regulations assistance
+              {!hasUsedTrial && " with 7-day free trial"}
+            </p>
           </div>
         </motion.div>
 
@@ -263,7 +266,9 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   <span className="text-gray-400 ml-1">/{plan.period}</span>
                 </div>
                 <div className="mb-2">
-                  <span className="text-emerald-400 text-sm font-medium">{plan.trial}</span>
+                  <span className={`text-sm font-medium ${hasUsedTrial ? 'text-gray-400' : 'text-emerald-400'}`}>
+                    {plan.trial}
+                  </span>
                 </div>
                 <p className="text-gray-400 text-sm">{plan.description}</p>
               </div>
@@ -293,14 +298,14 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 {loading === plan.planType ? (
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 ) : null}
-                {plan.current ? 'Current Plan' : `Start Free Trial`}
+                {plan.current ? 'Current Plan' : hasUsedTrial ? `Subscribe Now` : `Start Free Trial`}
               </Button>
             </motion.div>
           ))}
         </div>
 
-        {/* Trial Information */}
-        {!hasActiveSubscription && (
+        {/* Trial Information - Only show if user hasn't used trial */}
+        {!hasActiveSubscription && !hasUsedTrial && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -311,6 +316,22 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <p className="text-gray-300 text-sm">
               Try any plan free for 7 days. No credit card required upfront. 
               Cancel anytime during your trial period with no charges.
+            </p>
+          </motion.div>
+        )}
+
+        {/* No Trial Available Information - Show if user has used trial */}
+        {!hasActiveSubscription && hasUsedTrial && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-8 text-center bg-orange-500/10 rounded-2xl p-6 border border-orange-500/20"
+          >
+            <h3 className="text-lg font-semibold text-white mb-2">No Free Trial Available</h3>
+            <p className="text-gray-300 text-sm">
+              You've already used your 7-day free trial. All subscriptions will be charged immediately 
+              at the full monthly rate.
             </p>
           </motion.div>
         )}

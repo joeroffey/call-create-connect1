@@ -55,6 +55,7 @@ serve(async (req) => {
         subscribed: false,
         subscription_tier: null,
         subscription_end: null,
+        has_used_trial: false, // Initialize trial usage tracking
         updated_at: new Date().toISOString(),
       }, { onConflict: 'email' });
       
@@ -72,7 +73,10 @@ serve(async (req) => {
           .eq('user_id', user.id);
       }
       
-      return new Response(JSON.stringify({ subscribed: false }), {
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        has_used_trial: false 
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -91,16 +95,21 @@ serve(async (req) => {
       subscriptions: allSubscriptions.data.map(sub => ({
         id: sub.id,
         status: sub.status,
-        current_period_end: sub.current_period_end
+        current_period_end: sub.current_period_end,
+        trial_end: sub.trial_end
       }))
     });
 
-    // Look for active, trialing, or past_due subscriptions - FIX THE BUG HERE
+    // Check if user has ever had a trial (including expired ones)
+    const hasUsedTrial = allSubscriptions.data.some(sub => sub.trial_end !== null);
+    logStep("Trial usage check", { hasUsedTrial });
+
+    // Look for active, trialing, or past_due subscriptions
     const activeSubscriptions = allSubscriptions.data.filter(sub => 
       ['active', 'trialing', 'past_due'].includes(sub.status)
     );
     logStep("Filtered active subscriptions", { 
-      count: activeSubscriptions.length,  // FIXED: removed .data
+      count: activeSubscriptions.length,
       activeStatuses: activeSubscriptions.map(sub => sub.status)
     });
 
@@ -142,6 +151,7 @@ serve(async (req) => {
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
       subscription_end: subscriptionEnd,
+      has_used_trial: hasUsedTrial, // Track trial usage
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
@@ -156,11 +166,17 @@ serve(async (req) => {
       }, { onConflict: 'user_id' });
     }
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    logStep("Updated database with subscription info", { 
+      subscribed: hasActiveSub, 
+      subscriptionTier,
+      hasUsedTrial 
+    });
+    
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd
+      subscription_end: subscriptionEnd,
+      has_used_trial: hasUsedTrial
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
