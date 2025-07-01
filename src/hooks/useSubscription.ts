@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -111,11 +112,9 @@ export const useSubscription = (userId: string | null) => {
     setLoading(false);
     setIsInitialLoad(false);
     
-    // Check if we need to refresh in the background
-    if (shouldRefreshData(cachedData)) {
-      console.log('🔄 Cache is stale or missing, updating in background');
-      checkSubscriptionStatus(true);
-    }
+    // FORCE A FRESH CHECK - Always refresh to ensure we have the latest data
+    console.log('🔄 Forcing fresh subscription check after database update');
+    checkSubscriptionStatus(true);
   }, [userId]);
 
   const checkSubscriptionStatus = async (isBackgroundUpdate = false) => {
@@ -123,7 +122,7 @@ export const useSubscription = (userId: string | null) => {
 
     // Prevent multiple simultaneous checks
     const now = Date.now();
-    if (now - lastCheckRef.current < 5000) {
+    if (now - lastCheckRef.current < 2000) { // Reduced from 5000 to 2000
       console.log('⏭️ Skipping check - too recent');
       return;
     }
@@ -150,6 +149,8 @@ export const useSubscription = (userId: string | null) => {
         // Don't clear existing data on error
         return;
       }
+
+      console.log('📋 Full subscription response:', data);
 
       if (data.subscribed && data.subscription_tier) {
         console.log('✅ Active subscription found:', data);
@@ -180,7 +181,7 @@ export const useSubscription = (userId: string | null) => {
           });
         }
       } else {
-        console.log('❌ No active subscription found');
+        console.log('❌ No active subscription found, response:', data);
         updateSubscriptionData(
           null, 
           false, 
