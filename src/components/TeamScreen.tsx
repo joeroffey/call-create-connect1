@@ -3,19 +3,22 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, 
-  Plus, 
-  UserPlus, 
   Settings, 
   Crown, 
   Shield, 
   Eye,
   MessageSquare,
   Calendar,
-  FileText
+  FileText,
+  Plus
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useTeams } from '@/hooks/useTeams';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import CreateTeamModal from '@/components/team/CreateTeamModal';
+import InviteMemberModal from '@/components/team/InviteMemberModal';
 
 interface TeamScreenProps {
   user: any;
@@ -25,60 +28,22 @@ interface TeamScreenProps {
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) => {
   const [activeView, setActiveView] = useState<'overview' | 'members' | 'projects' | 'settings'>('overview');
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  
+  const { teams, loading: teamsLoading, createTeam } = useTeams(user?.id);
+  const { members, loading: membersLoading, inviteMember, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
 
-  // Mock data - will be replaced with real data from Supabase
-  const teamData = {
-    name: "Building Crew Alpha",
-    memberCount: 5,
-    sharedProjects: 12,
-    pendingInvites: 2
-  };
-
-  const teamMembers = [
-    { id: 1, name: "John Smith", email: "john@buildcrew.com", role: "Owner", avatar: "JS", status: "online" },
-    { id: 2, name: "Sarah Wilson", email: "sarah@buildcrew.com", role: "Admin", avatar: "SW", status: "online" },
-    { id: 3, name: "Mike Johnson", email: "mike@buildcrew.com", role: "Member", avatar: "MJ", status: "away" },
-    { id: 4, name: "Emma Davis", email: "emma@buildcrew.com", role: "Member", avatar: "ED", status: "offline" },
-    { id: 5, name: "Tom Brown", email: "tom@buildcrew.com", role: "Viewer", avatar: "TB", status: "online" }
-  ];
-
-  const recentActivity = [
-    { type: "comment", user: "Sarah Wilson", action: "commented on", target: "Kitchen Extension Project", time: "2 hours ago" },
-    { type: "task", user: "Mike Johnson", action: "completed task", target: "Foundation Survey", time: "4 hours ago" },
-    { type: "project", user: "Emma Davis", action: "shared project", target: "Bathroom Renovation", time: "1 day ago" },
-    { type: "member", user: "John Smith", action: "invited", target: "Alex Parker", time: "2 days ago" }
-  ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'comment': return <MessageSquare className="w-4 h-4" />;
-      case 'task': return <Calendar className="w-4 h-4" />;
-      case 'project': return <FileText className="w-4 h-4" />;
-      case 'member': return <UserPlus className="w-4 h-4" />;
-      default: return <Users className="w-4 h-4" />;
+  // Select first team by default
+  React.useEffect(() => {
+    if (teams.length > 0 && !selectedTeamId) {
+      setSelectedTeamId(teams[0].id);
     }
-  };
+  }, [teams, selectedTeamId]);
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'Owner': return <Crown className="w-4 h-4 text-yellow-500" />;
-      case 'Admin': return <Shield className="w-4 h-4 text-blue-500" />;
-      case 'Viewer': return <Eye className="w-4 h-4 text-gray-500" />;
-      default: return <Users className="w-4 h-4 text-emerald-500" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'away': return 'bg-yellow-500';
-      case 'offline': return 'bg-gray-500';
-      default: return 'bg-gray-500';
-    }
-  };
+  const selectedTeam = teams.find(team => team.id === selectedTeamId);
 
   // Check if user has team access
-  const hasTeamAccess = subscriptionTier === 'enterprise'; // ProMax required for team features
+  const hasTeamAccess = subscriptionTier === 'enterprise';
 
   if (!hasTeamAccess) {
     return (
@@ -114,6 +79,23 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
     );
   }
 
+  if (teamsLoading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'owner': return <Crown className="w-4 h-4 text-yellow-500" />;
+      case 'admin': return <Shield className="w-4 h-4 text-blue-500" />;
+      case 'viewer': return <Eye className="w-4 h-4 text-gray-500" />;
+      default: return <Users className="w-4 h-4 text-emerald-500" />;
+    }
+  };
+
   const renderOverview = () => (
     <div className="space-y-6">
       {/* Team Stats */}
@@ -123,7 +105,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
             <div className="flex items-center space-x-3">
               <Users className="w-8 h-8 text-emerald-500" />
               <div>
-                <p className="text-2xl font-bold text-white">{teamData.memberCount}</p>
+                <p className="text-2xl font-bold text-white">{members.length}</p>
                 <p className="text-sm text-gray-400">Team Members</p>
               </div>
             </div>
@@ -135,7 +117,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
             <div className="flex items-center space-x-3">
               <FileText className="w-8 h-8 text-blue-500" />
               <div>
-                <p className="text-2xl font-bold text-white">{teamData.sharedProjects}</p>
+                <p className="text-2xl font-bold text-white">0</p>
                 <p className="text-sm text-gray-400">Shared Projects</p>
               </div>
             </div>
@@ -145,10 +127,10 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
         <Card className="bg-gray-900/50 border-gray-800">
           <CardContent className="p-4">
             <div className="flex items-center space-x-3">
-              <UserPlus className="w-8 h-8 text-orange-500" />
+              <Calendar className="w-8 h-8 text-orange-500" />
               <div>
-                <p className="text-2xl font-bold text-white">{teamData.pendingInvites}</p>
-                <p className="text-sm text-gray-400">Pending Invites</p>
+                <p className="text-2xl font-bold text-white">0</p>
+                <p className="text-sm text-gray-400">Active Tasks</p>
               </div>
             </div>
           </CardContent>
@@ -159,8 +141,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
             <div className="flex items-center space-x-3">
               <MessageSquare className="w-8 h-8 text-purple-500" />
               <div>
-                <p className="text-2xl font-bold text-white">24</p>
-                <p className="text-sm text-gray-400">Active Discussions</p>
+                <p className="text-2xl font-bold text-white">0</p>
+                <p className="text-sm text-gray-400">Recent Comments</p>
               </div>
             </div>
           </CardContent>
@@ -173,21 +155,10 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           <CardTitle className="text-white">Recent Team Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
-                <div className="w-8 h-8 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                  {getActivityIcon(activity.type)}
-                </div>
-                <div className="flex-1">
-                  <p className="text-white text-sm">
-                    <span className="font-medium">{activity.user}</span> {activity.action}{' '}
-                    <span className="text-emerald-400">{activity.target}</span>
-                  </p>
-                  <p className="text-gray-400 text-xs">{activity.time}</p>
-                </div>
-              </div>
-            ))}
+          <div className="text-center py-8 text-gray-400">
+            <MessageSquare className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No recent activity to show</p>
+            <p className="text-sm">Team activity will appear here once you start collaborating</p>
           </div>
         </CardContent>
       </Card>
@@ -198,42 +169,63 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-bold text-white">Team Members</h3>
-        <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
-          <UserPlus className="w-4 h-4 mr-2" />
-          Invite Member
-        </Button>
+        <InviteMemberModal onInviteMember={inviteMember} />
       </div>
       
       <div className="grid gap-4">
-        {teamMembers.map((member) => (
+        {members.map((member) => (
           <Card key={member.id} className="bg-gray-900/50 border-gray-800">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-medium">
-                      {member.avatar}
-                    </div>
-                    <div className={`absolute -bottom-1 -right-1 w-3 h-3 ${getStatusColor(member.status)} rounded-full border-2 border-gray-900`}></div>
+                  <div className="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white font-medium">
+                    {member.profiles?.full_name?.substring(0, 2).toUpperCase() || 'UN'}
                   </div>
                   <div>
-                    <p className="text-white font-medium">{member.name}</p>
-                    <p className="text-gray-400 text-sm">{member.email}</p>
+                    <p className="text-white font-medium">{member.profiles?.full_name || 'Unknown User'}</p>
+                    <p className="text-gray-400 text-sm">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Badge variant="outline" className="border-gray-600 text-gray-300">
                     {getRoleIcon(member.role)}
-                    <span className="ml-1">{member.role}</span>
+                    <span className="ml-1 capitalize">{member.role}</span>
                   </Badge>
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
+        
+        {members.length === 0 && (
+          <div className="text-center py-8 text-gray-400">
+            <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No team members yet</p>
+            <p className="text-sm">Invite members to start collaborating</p>
+          </div>
+        )}
       </div>
     </div>
   );
+
+  // If no teams exist, show create team interface
+  if (teams.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center p-8 text-center bg-black">
+        <div className="max-w-md">
+          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Users className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold text-white mb-4">Create Your First Team</h2>
+          <p className="text-gray-400 mb-6">
+            Start collaborating with your building crew by creating a team. 
+            Share projects, assign tasks, and work together efficiently.
+          </p>
+          <CreateTeamModal onCreateTeam={createTeam} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
@@ -250,15 +242,43 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">{teamData.name}</h1>
-                <p className="text-gray-400">{teamData.memberCount} members • {teamData.sharedProjects} shared projects</p>
+                <h1 className="text-2xl font-bold text-white">{selectedTeam?.name || 'Team'}</h1>
+                <p className="text-gray-400">{members.length} members</p>
               </div>
             </div>
-            <Button variant="outline" className="border-gray-600 text-gray-300">
-              <Settings className="w-4 h-4 mr-2" />
-              Team Settings
-            </Button>
+            <div className="flex items-center space-x-2">
+              <CreateTeamModal 
+                onCreateTeam={createTeam}
+                trigger={
+                  <Button variant="outline" className="border-gray-600 text-gray-300">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Team
+                  </Button>
+                }
+              />
+              <Button variant="outline" className="border-gray-600 text-gray-300">
+                <Settings className="w-4 h-4 mr-2" />
+                Settings
+              </Button>
+            </div>
           </div>
+
+          {/* Team Selector */}
+          {teams.length > 1 && (
+            <div className="mb-4">
+              <select
+                value={selectedTeamId || ''}
+                onChange={(e) => setSelectedTeamId(e.target.value)}
+                className="bg-gray-800 border border-gray-600 text-white px-4 py-2 rounded-lg"
+              >
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Navigation Tabs */}
           <div className="flex space-x-1 bg-gray-900/50 p-1 rounded-lg">
@@ -294,7 +314,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           {activeView === 'members' && renderMembers()}
           {activeView === 'projects' && (
             <div className="text-center py-12">
-              <p className="text-gray-400">Team projects view coming soon...</p>
+              <p className="text-gray-400">Team projects management coming soon...</p>
             </div>
           )}
           {activeView === 'settings' && (
