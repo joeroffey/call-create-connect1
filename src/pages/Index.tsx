@@ -186,10 +186,10 @@ const Index = () => {
     setCurrentProjectId(null);
   };
 
-  // Fixed navigation handler
+  // Navigation handler for viewing subscription plans
   const handleViewPlans = () => {
-    console.log('handleViewPlans called - setting active tab to subscription-settings');
-    setActiveTab('subscription-settings');
+    console.log('handleViewPlans called - navigating to subscription plans');
+    setActiveTab('subscription');
   };
 
   if (loading) {
@@ -288,7 +288,7 @@ const Index = () => {
             onNavigateToAccountSettings={() => setActiveTab('account-settings')}
           />
         );
-      case 'subscription-settings':
+      case 'subscription':
         return <SubscriptionScreen user={user} onBack={() => setActiveTab('profile')} />;
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
