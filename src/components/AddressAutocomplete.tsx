@@ -1,8 +1,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, AlertCircle } from 'lucide-react';
+import { MapPin, AlertCircle, Edit3, Search } from 'lucide-react';
 
 interface AddressSuggestion {
   display_name: string;
@@ -30,8 +31,8 @@ const AddressAutocomplete = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
-  const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showManualEntry, setShowManualEntry] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -39,44 +40,55 @@ const AddressAutocomplete = ({
     if (query.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
-      setHasSearched(false);
       setError(null);
       return;
     }
 
     setIsLoading(true);
     setError(null);
-    setHasSearched(true);
     
     try {
-      // Using Nominatim API for address suggestions (free)
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&countrycodes=gb&q=${encodeURIComponent(query)}`
-      );
+      // Try multiple APIs for better coverage
+      const apis = [
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&countrycodes=gb&q=${encodeURIComponent(query)}`,
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&q=${encodeURIComponent(query + ' UK')}`
+      ];
+
+      let allSuggestions: AddressSuggestion[] = [];
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch address suggestions');
+      for (const apiUrl of apis) {
+        try {
+          const response = await fetch(apiUrl);
+          if (response.ok) {
+            const data = await response.json();
+            const formattedSuggestions = data.map((item: any) => ({
+              display_name: item.display_name,
+              place_id: item.place_id,
+              lat: item.lat,
+              lon: item.lon
+            }));
+            allSuggestions = [...allSuggestions, ...formattedSuggestions];
+          }
+        } catch (apiError) {
+          console.warn('API failed:', apiError);
+        }
       }
+
+      // Remove duplicates and limit results
+      const uniqueSuggestions = allSuggestions.filter((item, index, self) => 
+        index === self.findIndex(t => t.place_id === item.place_id)
+      ).slice(0, 8);
       
-      const data = await response.json();
-      
-      const formattedSuggestions = data.map((item: any) => ({
-        display_name: item.display_name,
-        place_id: item.place_id,
-        lat: item.lat,
-        lon: item.lon
-      }));
-      
-      setSuggestions(formattedSuggestions);
-      setShowSuggestions(formattedSuggestions.length > 0);
+      setSuggestions(uniqueSuggestions);
+      setShowSuggestions(uniqueSuggestions.length > 0);
       setActiveSuggestion(-1);
       
-      if (formattedSuggestions.length === 0 && query.length >= 3) {
-        setError('No addresses found. Try a different search or enter manually.');
+      if (uniqueSuggestions.length === 0 && query.length >= 3) {
+        setError('No addresses found. Please try a different search or enter your address manually below.');
       }
     } catch (error) {
       console.error('Error fetching address suggestions:', error);
-      setError('Unable to search addresses. Please check your connection or enter manually.');
+      setError('Unable to search addresses. Please enter your address manually below.');
       setSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -86,13 +98,13 @@ const AddressAutocomplete = ({
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (value.trim()) {
+      if (value.trim() && !showManualEntry) {
         fetchSuggestions(value);
       }
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [value]);
+  }, [value, showManualEntry]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);
@@ -133,15 +145,23 @@ const AddressAutocomplete = ({
   };
 
   const handleBlur = (e: React.FocusEvent) => {
-    // Delay hiding suggestions to allow click events to fire
     setTimeout(() => {
       setShowSuggestions(false);
       setActiveSuggestion(-1);
     }, 200);
   };
 
+  const toggleManualEntry = () => {
+    setShowManualEntry(!showManualEntry);
+    setShowSuggestions(false);
+    setError(null);
+    if (!showManualEntry) {
+      onChange(''); // Clear the field when switching to manual
+    }
+  };
+
   return (
-    <div className="relative">
+    <div className="space-y-3">
       <div className="relative">
         <Input
           ref={inputRef}
@@ -150,9 +170,9 @@ const AddressAutocomplete = ({
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
-          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          onFocus={() => !showManualEntry && suggestions.length > 0 && setShowSuggestions(true)}
           className={className}
-          placeholder={placeholder}
+          placeholder={showManualEntry ? "Enter your full address manually..." : placeholder}
           autoComplete="off"
           autoFocus={autoFocus}
         />
@@ -163,32 +183,54 @@ const AddressAutocomplete = ({
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             />
+          ) : showManualEntry ? (
+            <Edit3 className="w-4 h-4 text-emerald-400/60" />
           ) : (
-            <MapPin className="w-4 h-4 text-emerald-400/60" />
+            <Search className="w-4 h-4 text-emerald-400/60" />
           )}
         </div>
       </div>
+
+      {/* Toggle Button */}
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={toggleManualEntry}
+        className="w-full text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm h-8"
+      >
+        {showManualEntry ? (
+          <>
+            <Search className="w-4 h-4 mr-2" />
+            Switch to address lookup
+          </>
+        ) : (
+          <>
+            <Edit3 className="w-4 h-4 mr-2" />
+            Can't find your address? Enter manually
+          </>
+        )}
+      </Button>
       
       {/* Error message */}
-      {error && (
+      {error && !showManualEntry && (
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-2 mt-2 text-amber-400 text-sm"
+          className="flex items-start space-x-2 text-amber-400 text-sm bg-amber-400/10 p-3 rounded-lg border border-amber-400/20"
         >
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </motion.div>
       )}
       
       <AnimatePresence>
-        {showSuggestions && (
+        {showSuggestions && !showManualEntry && (
           <motion.div
             ref={suggestionsRef}
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-1 bg-gray-800 border border-emerald-500/30 rounded-lg shadow-xl max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full bg-gray-800 border border-emerald-500/30 rounded-lg shadow-xl max-h-64 overflow-y-auto"
           >
             {suggestions.map((suggestion, index) => (
               <motion.div

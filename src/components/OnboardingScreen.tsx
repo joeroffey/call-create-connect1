@@ -1,9 +1,7 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, MapPin, Briefcase, Calendar, ArrowRight, Check, Edit3 } from 'lucide-react';
+import { User, MapPin, Briefcase, Calendar, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -154,46 +152,14 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             </div>
             
             <div className="space-y-4">
-              <Label className="text-emerald-300">Address</Label>
-              
-              {!showManualAddress ? (
-                <div className="space-y-3">
-                  <AddressAutocomplete
-                    value={formData.address}
-                    onChange={(value) => handleInputChange('address', value)}
-                    className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
-                    placeholder="Start typing your address..."
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowManualAddress(true)}
-                    className="flex items-center space-x-2 text-emerald-300 hover:text-emerald-200 text-sm transition-colors"
-                  >
-                    <Edit3 className="w-4 h-4" />
-                    <span>Can't find your address? Enter manually</span>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <Input
-                    type="text"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
-                    placeholder="Enter your full address manually..."
-                    autoFocus
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowManualAddress(false)}
-                    className="flex items-center space-x-2 text-emerald-300 hover:text-emerald-200 text-sm transition-colors"
-                  >
-                    <MapPin className="w-4 h-4" />
-                    <span>Use address lookup instead</span>
-                  </button>
-                </div>
-              )}
+              <Label className="text-emerald-300 text-base font-medium">Address</Label>
+              <AddressAutocomplete
+                value={formData.address}
+                onChange={(value) => handleInputChange('address', value)}
+                className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
+                placeholder="Start typing your address..."
+                autoFocus
+              />
             </div>
           </motion.div>
         );
@@ -212,14 +178,14 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
               <p className="text-gray-400">This helps us provide relevant guidance</p>
             </div>
             <div className="space-y-2">
-              <Label className="text-emerald-300">Occupation</Label>
+              <Label className="text-emerald-300 text-base font-medium">Occupation</Label>
               <select
                 value={formData.occupation}
                 onChange={(e) => handleInputChange('occupation', e.target.value)}
-                className="w-full h-12 px-3 rounded-md bg-gray-800/50 border border-emerald-500/30 text-white focus:border-emerald-400 focus:ring-emerald-400/20 focus:outline-none"
+                className="w-full h-12 px-4 rounded-md bg-gray-800/50 border border-emerald-500/30 text-white focus:border-emerald-400 focus:ring-emerald-400/20 focus:outline-none transition-all duration-200 hover:bg-gray-700/50"
                 autoFocus
               >
-                <option value="">Select your occupation</option>
+                <option value="" className="bg-gray-800">Select your occupation</option>
                 {OCCUPATIONS.map((occupation) => (
                   <option key={occupation} value={occupation} className="bg-gray-800">
                     {occupation}
@@ -244,7 +210,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
               <p className="text-gray-400">This helps us comply with data protection requirements</p>
             </div>
             <div className="space-y-2">
-              <Label className="text-emerald-300">Date of Birth</Label>
+              <Label className="text-emerald-300 text-base font-medium">Date of Birth</Label>
               <DatePicker
                 value={formData.dateOfBirth}
                 onChange={(value) => handleInputChange('dateOfBirth', value)}
