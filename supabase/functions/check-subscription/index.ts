@@ -126,11 +126,15 @@ serve(async (req) => {
         endDate: subscriptionEnd 
       });
       
-      // Determine subscription tier from price amount
+      // Determine subscription tier from price amount - FIXED PRICING THRESHOLDS
       const priceId = subscription.items.data[0].price.id;
       const price = await stripe.prices.retrieve(priceId);
       const amount = price.unit_amount || 0;
       
+      // Updated thresholds to match actual pricing:
+      // Basic (EezyBuild): £14.99 = 1499 pence
+      // Pro: £29.99 = 2999 pence  
+      // Enterprise (ProMax): £59.99 = 5999 pence
       if (amount <= 1499) {
         subscriptionTier = "basic";
       } else if (amount <= 2999) {
