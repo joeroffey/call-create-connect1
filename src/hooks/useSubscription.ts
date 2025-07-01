@@ -152,6 +152,7 @@ export const useSubscription = (userId: string | null) => {
 
   const openCustomerPortal = async () => {
     try {
+      console.log('🏢 Opening customer portal...');
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Not authenticated');
@@ -165,14 +166,15 @@ export const useSubscription = (userId: string | null) => {
 
       if (error) throw error;
 
-      // Open customer portal in a new tab
+      // Open customer portal in a new tab to avoid overlay issues
       if (data.url) {
+        console.log('🔗 Opening customer portal in new tab');
         window.open(data.url, '_blank');
       }
 
       return true;
     } catch (error) {
-      console.error('Error opening customer portal:', error);
+      console.error('💥 Error opening customer portal:', error);
       toast({
         title: "Error",
         description: "Failed to open customer portal",
