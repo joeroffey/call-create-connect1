@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { InAppPurchase2 } from '@capacitor-community/in-app-purchases';
+import { InAppPurchase2 } from '@capacitor-community/in-app-purchase-2';
 import { Capacitor } from '@capacitor/core';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
