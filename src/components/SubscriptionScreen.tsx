@@ -1,13 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Crown, 
   Check, 
-  Users, 
-  Building,
   ArrowLeft,
-  Star
+  Star,
+  Building,
+  Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -18,7 +18,8 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, createCheckoutSession } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createCheckoutSession, openCustomerPortal } = useSubscription(user?.id);
+  const [loading, setLoading] = useState<string | null>(null);
 
   const plans = [
     {
@@ -33,7 +34,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Email support',
         'Chat history'
       ],
-      buttonText: 'Choose EezyBuild',
       planType: 'basic',
       current: hasActiveSubscription && subscription?.plan_type === 'basic'
     },
@@ -45,12 +45,11 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       features: [
         'Everything in EezyBuild',
         'Priority response time',
-        'Advanced building apps',
+        'Advanced building tools',
         'Document upload',
         'Priority support',
         'Extended chat history'
       ],
-      buttonText: 'Choose Pro',
       planType: 'pro',
       popular: true,
       current: hasActiveSubscription && subscription?.plan_type === 'pro'
@@ -70,7 +69,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'White-label options',
         'Dedicated support'
       ],
-      buttonText: 'Choose ProMax',
       planType: 'enterprise',
       enterprise: true,
       current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
@@ -78,11 +76,29 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   ];
 
   const handlePlanSelection = async (planType: string) => {
-    await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+    setLoading(planType);
+    try {
+      await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+    } finally {
+      setLoading(null);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setLoading('manage');
+    try {
+      await openCustomerPortal();
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+    } finally {
+      setLoading(null);
+    }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-black text-white">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
       <div className="px-6 py-8">
         {/* Header */}
         <motion.div
@@ -93,12 +109,12 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           <Button
             onClick={onBack}
             variant="ghost"
-            className="p-2 hover:bg-gray-800 rounded-xl mr-4"
+            className="p-2 hover:bg-gray-800 rounded-xl mr-4 text-white hover:text-white"
           >
-            <ArrowLeft className="w-6 h-6 text-white" />
+            <ArrowLeft className="w-6 h-6" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Choose Your Plan</h1>
+            <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
             <p className="text-gray-400">Professional building regulations assistance</p>
           </div>
         </motion.div>
@@ -111,17 +127,29 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             transition={{ delay: 0.1 }}
             className="bg-gradient-to-r from-emerald-500/20 to-blue-600/20 rounded-2xl p-6 mb-8 border border-emerald-500/30"
           >
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
-                <Crown className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center">
+                  <Crown className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
+                  <p className="text-emerald-300">
+                    You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 
+                                             subscription?.plan_type === 'pro' ? 'Pro' : 'EezyBuild'} plan
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-white">Active Subscription</h3>
-                <p className="text-emerald-300">
-                  You're currently on the {subscription?.plan_type === 'enterprise' ? 'ProMax' : 
-                                           subscription?.plan_type === 'pro' ? 'Pro' : 'EezyBuild'} plan
-                </p>
-              </div>
+              <Button
+                onClick={handleManageSubscription}
+                disabled={loading === 'manage'}
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20"
+              >
+                {loading === 'manage' ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                Manage Subscription
+              </Button>
             </div>
           </motion.div>
         )}
@@ -134,7 +162,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * (index + 1) }}
-              className={`relative rounded-2xl p-6 border ${
+              className={`relative rounded-2xl p-6 border backdrop-blur-sm ${
                 plan.current
                   ? 'border-emerald-500 bg-emerald-500/10'
                   : plan.popular
@@ -171,7 +199,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 <p className="text-gray-400 text-sm">{plan.description}</p>
               </div>
 
-              <ul className="space-y-3 mb-6">
+              <ul className="space-y-3 mb-8">
                 {plan.features.map((feature, featureIndex) => (
                   <li key={featureIndex} className="flex items-center space-x-3">
                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -182,7 +210,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
 
               <Button
                 onClick={() => handlePlanSelection(plan.planType)}
-                disabled={plan.current}
+                disabled={plan.current || loading === plan.planType}
                 className={`w-full h-12 rounded-xl font-medium ${
                   plan.current
                     ? 'bg-emerald-600 text-white cursor-default'
@@ -193,11 +221,35 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                     : 'bg-gray-700 hover:bg-gray-600 text-white'
                 }`}
               >
-                {plan.current ? 'Current Plan' : plan.buttonText}
+                {loading === plan.planType ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                ) : null}
+                {plan.current ? 'Current Plan' : `Choose ${plan.name}`}
               </Button>
             </motion.div>
           ))}
         </div>
+
+        {/* Downgrade/Cancel Information */}
+        {hasActiveSubscription && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-8 text-center"
+          >
+            <p className="text-gray-400 text-sm mb-4">
+              Need to downgrade or cancel your subscription?
+            </p>
+            <Button
+              onClick={handleManageSubscription}
+              variant="ghost"
+              className="text-gray-300 hover:text-white hover:bg-gray-800"
+            >
+              Manage Subscription & Billing
+            </Button>
+          </motion.div>
+        )}
       </div>
     </div>
   );
