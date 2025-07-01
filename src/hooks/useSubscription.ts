@@ -158,18 +158,23 @@ export const useSubscription = (userId: string | null) => {
         throw new Error('Not authenticated');
       }
 
+      console.log('📡 Calling customer-portal function...');
       const { data, error } = await supabase.functions.invoke('customer-portal', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Customer portal error:', error);
+        throw error;
+      }
 
-      // Open in same tab to avoid overlay issues
+      // Force a full page redirect to completely avoid overlay issues
       if (data.url) {
-        console.log('🔗 Redirecting to customer portal');
-        window.location.href = data.url;
+        console.log('🔗 Performing full page redirect to customer portal:', data.url);
+        // Use location.replace to prevent back button issues
+        window.location.replace(data.url);
       }
 
       return true;

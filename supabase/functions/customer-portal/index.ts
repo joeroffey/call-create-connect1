@@ -89,9 +89,9 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
 
-    // Use the origin from request headers for return URL
+    // Use a simple return URL without parameters to avoid any issues
     const origin = req.headers.get("origin") || "https://preview--call-create-connect.lovable.app";
-    const returnUrl = `${origin}/?portal_return=true`;
+    const returnUrl = origin;
     
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: customerId,
@@ -99,7 +99,11 @@ serve(async (req) => {
     });
     logStep("Customer portal session created", { sessionId: portalSession.id, url: portalSession.url });
 
-    return new Response(JSON.stringify({ url: portalSession.url }), {
+    // Return with redirect instruction
+    return new Response(JSON.stringify({ 
+      url: portalSession.url,
+      redirect: true 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
