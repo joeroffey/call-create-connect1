@@ -11,13 +11,14 @@ export const useTeamMembers = (teamId?: string) => {
 
   const fetchMembers = async () => {
     if (!teamId) {
+      console.log('useTeamMembers: No teamId provided');
       setMembers([]);
       setLoading(false);
       return;
     }
     
     try {
-      console.log('Fetching members for team:', teamId);
+      console.log('useTeamMembers: Fetching members for team:', teamId);
       
       const { data, error } = await supabase
         .from('team_members')
@@ -31,9 +32,12 @@ export const useTeamMembers = (teamId?: string) => {
         `)
         .eq('team_id', teamId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('useTeamMembers: Error fetching members:', error);
+        throw error;
+      }
 
-      // Fetch profiles separately to avoid join issues
+      // Fetch profiles separately
       const memberIds = data?.map(member => member.user_id) || [];
       let profilesData = [];
       
@@ -44,7 +48,7 @@ export const useTeamMembers = (teamId?: string) => {
           .in('user_id', memberIds);
         
         if (profilesError) {
-          console.error('Error fetching profiles:', profilesError);
+          console.error('useTeamMembers: Error fetching profiles:', profilesError);
         } else {
           profilesData = profiles || [];
         }
@@ -67,10 +71,10 @@ export const useTeamMembers = (teamId?: string) => {
         };
       });
       
-      console.log('Fetched team members:', typedMembers);
+      console.log('useTeamMembers: Fetched team members:', typedMembers);
       setMembers(typedMembers);
     } catch (error) {
-      console.error('Error fetching team members:', error);
+      console.error('useTeamMembers: Error fetching team members:', error);
       toast({
         title: "Error",
         description: "Failed to load team members",
@@ -101,7 +105,7 @@ export const useTeamMembers = (teamId?: string) => {
         description: `Invitation sent to ${email}`,
       });
     } catch (error) {
-      console.error('Error inviting member:', error);
+      console.error('useTeamMembers: Error inviting member:', error);
       toast({
         title: "Error",
         description: "Failed to send invitation",
@@ -125,7 +129,7 @@ export const useTeamMembers = (teamId?: string) => {
         description: "Member role updated",
       });
     } catch (error) {
-      console.error('Error updating member role:', error);
+      console.error('useTeamMembers: Error updating member role:', error);
       toast({
         title: "Error",
         description: "Failed to update member role",
@@ -149,7 +153,7 @@ export const useTeamMembers = (teamId?: string) => {
         description: "Member removed from team",
       });
     } catch (error) {
-      console.error('Error removing member:', error);
+      console.error('useTeamMembers: Error removing member:', error);
       toast({
         title: "Error",
         description: "Failed to remove member",

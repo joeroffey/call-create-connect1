@@ -33,36 +33,47 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   const { teams, loading: teamsLoading, createTeam } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
 
-  console.log('TeamScreen render - teams:', teams.length, 'selectedTeamId:', selectedTeamId, 'loading:', teamsLoading);
+  console.log('TeamScreen render:', {
+    teamsCount: teams.length,
+    selectedTeamId,
+    teamsLoading,
+    userId: user?.id
+  });
 
   // Select first team by default when teams are loaded
   React.useEffect(() => {
-    console.log('useEffect triggered - teams:', teams.length, 'selectedTeamId:', selectedTeamId);
+    console.log('TeamScreen useEffect - teams changed:', {
+      teamsLength: teams.length,
+      selectedTeamId,
+      firstTeamId: teams[0]?.id
+    });
+    
     if (teams.length > 0 && !selectedTeamId) {
-      console.log('Auto-selecting first team:', teams[0]);
+      console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
     }
   }, [teams, selectedTeamId]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
+  console.log('Selected team:', selectedTeam?.name);
 
   // Check if user has team access
   const hasTeamAccess = subscriptionTier === 'enterprise';
 
   const handleCreateTeam = async (name: string, description?: string) => {
-    console.log('handleCreateTeam called with:', { name, description });
+    console.log('TeamScreen: handleCreateTeam called with:', { name, description });
     try {
       const newTeam = await createTeam(name, description);
-      console.log('Team created result:', newTeam);
+      console.log('TeamScreen: Team created, result:', newTeam);
+      
       if (newTeam) {
-        console.log('Setting newly created team as selected:', newTeam.id);
-        // Set the newly created team as selected immediately
+        console.log('TeamScreen: Setting newly created team as selected:', newTeam.id);
         setSelectedTeamId(newTeam.id);
-        console.log('Team selection updated to:', newTeam.id);
+        console.log('TeamScreen: Team selection updated to:', newTeam.id);
       }
       return newTeam;
     } catch (error) {
-      console.error('Error in handleCreateTeam:', error);
+      console.error('TeamScreen: Error in handleCreateTeam:', error);
       return null;
     }
   };
@@ -102,7 +113,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
   }
 
   if (teamsLoading) {
-    console.log('Teams still loading...');
+    console.log('TeamScreen: Teams still loading...');
     return (
       <div className="flex-1 flex items-center justify-center bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
@@ -231,12 +242,15 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
     </div>
   );
 
-  // Check if we have teams but no selected team - this might be the issue
-  console.log('Render decision - teams:', teams.length, 'selectedTeam:', selectedTeam?.name);
-  
+  console.log('TeamScreen render decision:', {
+    teamsLength: teams.length,
+    selectedTeam: selectedTeam?.name,
+    hasSelectedTeam: !!selectedTeam
+  });
+
   // If no teams exist, show create team interface
   if (teams.length === 0) {
-    console.log('No teams found, showing create team interface');
+    console.log('TeamScreen: No teams found, showing create team interface');
     return (
       <div className="flex-1 flex items-center justify-center p-8 text-center bg-black">
         <div className="max-w-md">
@@ -254,7 +268,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
     );
   }
 
-  console.log('Rendering team dashboard for team:', selectedTeam?.name);
+  console.log('TeamScreen: Rendering team dashboard for team:', selectedTeam?.name);
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">

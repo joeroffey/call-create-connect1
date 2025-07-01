@@ -37,16 +37,28 @@ export const useTeams = (userId?: string) => {
     }
     
     try {
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*')
-        .order('created_at', { ascending: false });
+      console.log('useTeams: Fetching teams for user:', userId);
+      
+      // First get teams where user is a member
+      const { data: memberTeams, error: memberError } = await supabase
+        .from('team_members')
+        .select(`
+          team_id,
+          teams!inner(*)
+        `)
+        .eq('user_id', userId);
 
-      if (error) throw error;
-      console.log('Fetched teams:', data);
-      setTeams(data || []);
+      if (memberError) {
+        console.error('useTeams: Error fetching member teams:', memberError);
+        throw memberError;
+      }
+
+      // Extract teams from the member data
+      const teamsData = memberTeams?.map(mt => mt.teams).filter(Boolean) || [];
+      console.log('useTeams: Fetched teams:', teamsData);
+      setTeams(teamsData);
     } catch (error) {
-      console.error('Error fetching teams:', error);
+      console.error('useTeams: Error fetching teams:', error);
       toast({
         title: "Error",
         description: "Failed to load teams",
@@ -58,12 +70,16 @@ export const useTeams = (userId?: string) => {
   };
 
   const createTeam = async (name: string, description?: string) => {
-    if (!userId) return null;
+    if (!userId) {
+      console.error('useTeams: No userId provided for team creation');
+      return null;
+    }
 
     try {
-      console.log('Creating team:', { name, description, userId });
+      console.log('useTeams: Creating team:', { name, description, userId });
       
-      const { data, error } = await supabase
+      // Create the team
+      const { data: teamData, error: teamError } = await supabase
         .from('teams')
         .insert([{
           name,
@@ -73,35 +89,41 @@ export const useTeams = (userId?: string) => {
         .select()
         .single();
 
-      if (error) throw error;
-      console.log('Team created:', data);
+      if (teamError) {
+        console.error('useTeams: Error creating team:', teamError);
+        throw teamError;
+      }
+
+      console.log('useTeams: Team created:', teamData);
 
       // Add creator as owner to team_members
       const { error: memberError } = await supabase
         .from('team_members')
         .insert([{
-          team_id: data.id,
+          team_id: teamData.id,
           user_id: userId,
           role: 'owner'
         }]);
 
       if (memberError) {
-        console.error('Error adding team member:', memberError);
+        console.error('useTeams: Error adding team member:', memberError);
         throw memberError;
       }
 
-      // Update teams list immediately with the new team
-      setTeams(prevTeams => [data, ...prevTeams]);
+      console.log('useTeams: Team member added successfully');
+
+      // Refresh teams list
+      await fetchTeams();
       
       toast({
         title: "Success",
         description: "Team created successfully",
       });
 
-      console.log('Team creation completed successfully');
-      return data;
+      console.log('useTeams: Team creation completed successfully');
+      return teamData;
     } catch (error) {
-      console.error('Error creating team:', error);
+      console.error('useTeams: Error creating team:', error);
       toast({
         title: "Error",
         description: "Failed to create team",
