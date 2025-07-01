@@ -19,6 +19,8 @@ const ChatInterfaceWithSubscription = ({
 }: ChatInterfaceWithSubscriptionProps) => {
   const { hasActiveSubscription, loading } = useSubscription(user?.id);
 
+  console.log('ChatInterfaceWithSubscription render:', { hasActiveSubscription, loading });
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -28,6 +30,7 @@ const ChatInterfaceWithSubscription = ({
   }
 
   if (!hasActiveSubscription) {
+    console.log('No active subscription - showing subscription prompt');
     return (
       <SubscriptionPrompt
         onViewPlans={onViewPlans}

@@ -9,6 +9,11 @@ interface SubscriptionPromptProps {
 }
 
 const SubscriptionPrompt = ({ onViewPlans }: SubscriptionPromptProps) => {
+  const handleViewPlans = () => {
+    console.log('View plans clicked - navigating to subscription settings');
+    onViewPlans();
+  };
+
   return (
     <div className="flex-1 flex items-center justify-center p-8">
       <motion.div
@@ -31,7 +36,7 @@ const SubscriptionPrompt = ({ onViewPlans }: SubscriptionPromptProps) => {
         </p>
 
         <Button
-          onClick={onViewPlans}
+          onClick={handleViewPlans}
           className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
         >
           <Crown className="w-5 h-5 mr-2" />
