@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen } from 'lucide-react';
@@ -185,6 +186,12 @@ const Index = () => {
     setCurrentProjectId(null);
   };
 
+  // Fixed navigation handler
+  const handleViewPlans = () => {
+    console.log('handleViewPlans called - setting active tab to subscription-settings');
+    setActiveTab('subscription-settings');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex items-center justify-center">
@@ -218,7 +225,7 @@ const Index = () => {
         return (
           <ChatInterfaceWithSubscription 
             user={user} 
-            onViewPlans={() => setActiveTab('subscription-settings')}
+            onViewPlans={handleViewPlans}
             projectId={currentProjectId}
             onChatComplete={handleChatComplete}
           />
@@ -277,7 +284,7 @@ const Index = () => {
         return (
           <ProfileScreen 
             user={user} 
-            onNavigateToSettings={() => setActiveTab('subscription-settings')}
+            onNavigateToSettings={handleViewPlans}
             onNavigateToAccountSettings={() => setActiveTab('account-settings')}
           />
         );
@@ -286,7 +293,7 @@ const Index = () => {
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
-        return <ChatInterfaceWithSubscription user={user} onViewPlans={() => setActiveTab('subscription-settings')} />;
+        return <ChatInterfaceWithSubscription user={user} onViewPlans={handleViewPlans} />;
     }
   };
 
