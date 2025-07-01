@@ -70,11 +70,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
         console.log('TeamScreen: Setting newly created team as selected:', newTeam.id);
         setSelectedTeamId(newTeam.id);
         console.log('TeamScreen: Team selection updated to:', newTeam.id);
+        return newTeam;
       }
       return newTeam;
     } catch (error) {
       console.error('TeamScreen: Error in handleCreateTeam:', error);
-      return null;
+      throw error; // Re-throw to let the modal handle it
     }
   };
 

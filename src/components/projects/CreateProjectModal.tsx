@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createProject } from '@/lib/projects';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ interface CreateProjectModalProps {
   };
   setNewProject: (project: { name: string; description: string; label: string }) => void;
   onCreateProject: () => void;
+  onProjectCreated?: () => void;
 }
 
 const CreateProjectModal = ({
