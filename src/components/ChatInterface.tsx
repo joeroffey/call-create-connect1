@@ -24,6 +24,7 @@ interface ChatInterfaceProps {
   user: any;
   onViewPlans: () => void;
   projectId?: string | null;
+  conversationId?: string | null;
   onChatComplete?: () => void;
 }
 
@@ -32,12 +33,12 @@ const generateId = () => {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
-const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInterfaceProps) => {
+const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatComplete }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessageData[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(conversationId || null);
   const [currentConversationTitle, setCurrentConversationTitle] = useState<string>('');
   const [project, setProject] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -46,6 +47,13 @@ const ChatInterface = ({ user, onViewPlans, projectId, onChatComplete }: ChatInt
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
   const { toast } = useToast()
+
+  // Initialize with conversationId from props if provided
+  useEffect(() => {
+    if (conversationId) {
+      setCurrentConversationId(conversationId);
+    }
+  }, [conversationId]);
 
   // Load project details if projectId is provided
   useEffect(() => {
