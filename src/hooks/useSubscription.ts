@@ -17,7 +17,7 @@ interface CachedSubscriptionData {
   timestamp: number;
 }
 
-const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+const CACHE_DURATION = 5 * 60 * 1000; // Reduced to 5 minutes for better responsiveness
 const STORAGE_KEY = 'subscription_cache';
 
 // Get initial data from localStorage
@@ -51,22 +51,16 @@ export const useSubscription = (userId: string | null) => {
   const [subscription, setSubscription] = useState<Subscription | null>(
     initialCacheData?.subscription || null
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(
     initialCacheData?.hasActiveSubscription || false
   );
   const [hasUsedTrial, setHasUsedTrial] = useState(
     initialCacheData?.hasUsedTrial || false
   );
-  const [isInitialLoad, setIsInitialLoad] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { toast } = useToast();
   const lastCheckRef = useRef<number>(0);
-
-  // Check if we need to refresh data
-  const shouldRefreshData = (cachedData: CachedSubscriptionData | null): boolean => {
-    if (!cachedData) return true;
-    return (Date.now() - cachedData.timestamp) >= CACHE_DURATION;
-  };
 
   // Update cache and state
   const updateSubscriptionData = (
@@ -99,34 +93,31 @@ export const useSubscription = (userId: string | null) => {
       return;
     }
 
-    const cachedData = getInitialCacheData(userId);
+    // Clear any stale cache to force fresh check after database update
+    localStorage.removeItem(`${STORAGE_KEY}_${userId}`);
+    console.log('🧹 Cleared subscription cache to force fresh check');
     
-    // Always set the cached data immediately
-    if (cachedData) {
-      setSubscription(cachedData.subscription);
-      setHasActiveSubscription(cachedData.hasActiveSubscription);
-      setHasUsedTrial(cachedData.hasUsedTrial);
-      console.log('📦 Using cached subscription data immediately');
-    }
-
-    setLoading(false);
-    setIsInitialLoad(false);
-    
-    // FORCE A FRESH CHECK - Always refresh to ensure we have the latest data
-    console.log('🔄 Forcing fresh subscription check after database update');
-    checkSubscriptionStatus(true);
+    // Force immediate fresh check
+    console.log('🔄 Starting immediate subscription check after database migration');
+    checkSubscriptionStatus(false);
   }, [userId]);
 
   const checkSubscriptionStatus = async (isBackgroundUpdate = false) => {
     if (!userId) return;
 
-    // Prevent multiple simultaneous checks
+    // Allow more frequent checks during initial setup
     const now = Date.now();
-    if (now - lastCheckRef.current < 2000) { // Reduced from 5000 to 2000
+    const minInterval = isInitialLoad ? 1000 : 3000;
+    
+    if (now - lastCheckRef.current < minInterval) {
       console.log('⏭️ Skipping check - too recent');
       return;
     }
     lastCheckRef.current = now;
+
+    if (!isBackgroundUpdate) {
+      setLoading(true);
+    }
 
     try {
       console.log('🔍 Checking subscription status for user:', userId);
@@ -134,6 +125,7 @@ export const useSubscription = (userId: string | null) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         console.log('❌ No session found');
+        setLoading(false);
         return;
       }
 
@@ -145,8 +137,8 @@ export const useSubscription = (userId: string | null) => {
       });
 
       if (error) {
-        console.error('❌ Stripe check failed:', error);
-        // Don't clear existing data on error
+        console.error('❌ Subscription check failed:', error);
+        setLoading(false);
         return;
       }
 
@@ -167,6 +159,7 @@ export const useSubscription = (userId: string | null) => {
           data.has_used_trial || false, 
           userId
         );
+        
         console.log('🎯 Subscription state updated:', { 
           hasActiveSubscription: true, 
           tier: data.subscription_tier,
@@ -175,9 +168,9 @@ export const useSubscription = (userId: string | null) => {
         
         if (!isBackgroundUpdate) {
           toast({
-            title: "Subscription Updated!",
-            description: `Your ${data.subscription_tier} plan is active.`,
-            duration: 3000,
+            title: "Subscription Active!",
+            description: `Your ${data.subscription_tier} plan is now active.`,
+            duration: 5000,
           });
         }
       } else {
@@ -188,10 +181,25 @@ export const useSubscription = (userId: string | null) => {
           data.has_used_trial || false, 
           userId
         );
+        
+        if (!isBackgroundUpdate && isInitialLoad) {
+          toast({
+            title: "No Active Subscription",
+            description: "Please select a plan to get started.",
+            duration: 3000,
+          });
+        }
       }
     } catch (error) {
       console.error('💥 Error checking subscription:', error);
-      // Don't clear existing data on error
+      toast({
+        title: "Connection Error",
+        description: "Failed to check subscription status. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
