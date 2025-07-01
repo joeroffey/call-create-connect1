@@ -158,7 +158,7 @@ const Index = () => {
     }
   };
 
-  // Get user's subscription tier - fix the display logic
+  // Get user's subscription tier
   const getSubscriptionTier = () => {
     if (!hasActiveSubscription || !subscription) return 'none';
     return subscription.plan_type;
@@ -298,11 +298,11 @@ const Index = () => {
         }
         return <AdvancedSearchInterface user={user} />;
       case 'apps':
-        if (subscriptionTier !== 'pro' && subscriptionTier !== 'enterprise') {
+        if (subscriptionTier === 'none') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">
             <div>
               <h2 className="text-xl font-bold text-white mb-4">Subscription Required</h2>
-              <p className="text-gray-400 mb-6">Building Tools are available for Pro and ProMax subscribers.</p>
+              <p className="text-gray-400 mb-6">Building Tools are available for EezyBuild, Pro and ProMax subscribers.</p>
               <button 
                 onClick={handleViewPlans}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
@@ -312,7 +312,7 @@ const Index = () => {
             </div>
           </div>;
         }
-        return <AppsScreen user={user} />;
+        return <AppsScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} />;
       case 'projects':
         if (subscriptionTier !== 'enterprise') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">

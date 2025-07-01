@@ -1,14 +1,19 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Calculator, FileText, CheckSquare, Search } from 'lucide-react';
+import { Calculator, FileText, CheckSquare, Search, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const QuickReferenceTools = () => {
+interface QuickReferenceToolsProps {
+  subscriptionTier?: string;
+  onViewPlans?: () => void;
+}
+
+const QuickReferenceTools = ({ subscriptionTier = 'none', onViewPlans }: QuickReferenceToolsProps) => {
   const [regulationCode, setRegulationCode] = useState('');
   const [lookupResult, setLookupResult] = useState<any>(null);
 
@@ -22,26 +27,36 @@ const QuickReferenceTools = () => {
     });
   };
 
-  const quickCalculators = [
-    {
-      id: 'u-value',
-      title: 'U-Value Calculator',
-      description: 'Calculate thermal transmittance for building elements',
-      icon: Calculator
-    },
-    {
-      id: 'fire-escape',
-      title: 'Fire Escape Distance',
-      description: 'Calculate maximum travel distances for fire escape routes',
-      icon: Calculator
-    },
-    {
-      id: 'ventilation',
-      title: 'Ventilation Rate',
-      description: 'Calculate required ventilation rates for different spaces',
-      icon: Calculator
-    }
-  ];
+  // For EezyBuild (basic) subscribers, only show U-Value calculator
+  const quickCalculators = subscriptionTier === 'basic' 
+    ? [
+        {
+          id: 'u-value',
+          title: 'U-Value Calculator',
+          description: 'Calculate thermal transmittance for building elements',
+          icon: Calculator
+        }
+      ]
+    : [
+        {
+          id: 'u-value',
+          title: 'U-Value Calculator',
+          description: 'Calculate thermal transmittance for building elements',
+          icon: Calculator
+        },
+        {
+          id: 'fire-escape',
+          title: 'Fire Escape Distance',
+          description: 'Calculate maximum travel distances for fire escape routes',
+          icon: Calculator
+        },
+        {
+          id: 'ventilation',
+          title: 'Ventilation Rate',
+          description: 'Calculate required ventilation rates for different spaces',
+          icon: Calculator
+        }
+      ];
 
   const complianceChecklists = [
     {
@@ -125,32 +140,56 @@ const QuickReferenceTools = () => {
         </TabsContent>
 
         <TabsContent value="calculators">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {quickCalculators.map((calc) => {
-              const Icon = calc.icon;
-              return (
-                <motion.div
-                  key={calc.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {quickCalculators.map((calc) => {
+                const Icon = calc.icon;
+                return (
+                  <motion.div
+                    key={calc.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-white flex items-center text-lg">
+                          <Icon className="w-5 h-5 mr-2 text-blue-400" />
+                          {calc.title}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-400 text-sm mb-4">{calc.description}</p>
+                        <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700">
+                          Open Calculator
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Upgrade message for EezyBuild subscribers */}
+            {subscriptionTier === 'basic' && onViewPlans && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-lg p-6 text-center"
+              >
+                <Crown className="w-8 h-8 text-blue-400 mx-auto mb-3" />
+                <h3 className="text-white font-semibold mb-2">Want More Tools?</h3>
+                <p className="text-gray-400 mb-4">
+                  Unlock fire escape calculators, ventilation tools, and more with Pro or ProMax
+                </p>
+                <Button 
+                  onClick={onViewPlans}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                 >
-                  <Card className="bg-gray-800/50 border-gray-700 hover:bg-gray-800/70 transition-colors cursor-pointer">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-white flex items-center text-lg">
-                        <Icon className="w-5 h-5 mr-2 text-blue-400" />
-                        {calc.title}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-400 text-sm mb-4">{calc.description}</p>
-                      <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700">
-                        Open Calculator
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
+                  <Crown className="w-4 h-4 mr-2" />
+                  Upgrade Now
+                </Button>
+              </motion.div>
+            )}
           </div>
         </TabsContent>
 
