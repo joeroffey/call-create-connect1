@@ -82,7 +82,7 @@ serve(async (req) => {
       logStep("Database confirms trial already used");
     }
 
-    // Define pricing for each tier
+    // FIXED PRICING - Updated to match the actual pricing structure
     const pricing = {
       basic: { amount: 1499, name: "EezyBuild Basic" }, // £14.99
       pro: { amount: 2999, name: "EezyBuild Pro" }, // £29.99
@@ -90,6 +90,7 @@ serve(async (req) => {
     };
 
     const selectedPlan = pricing[planType as keyof typeof pricing];
+    logStep("Selected plan pricing", { planType, amount: selectedPlan.amount, name: selectedPlan.name });
     
     const sessionConfig: any = {
       customer: customerId,
