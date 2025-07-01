@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, MapPin, Briefcase, Calendar, ArrowRight, Check } from 'lucide-react';
+import { User, MapPin, Briefcase, Calendar, ArrowRight, Check, Edit3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import AddressAutocomplete from './AddressAutocomplete';
+import DatePicker from './DatePicker';
 
 interface OnboardingScreenProps {
   user: any;
@@ -39,6 +40,7 @@ const OCCUPATIONS = [
 const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showManualAddress, setShowManualAddress] = useState(false);
   const [formData, setFormData] = useState({
     address: '',
     occupation: '',
@@ -143,22 +145,55 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             key="step1"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
+            className="space-y-6"
           >
             <div className="text-center mb-8">
               <MapPin className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-2">Where are you located?</h2>
               <p className="text-gray-400">We'll help you with local building regulations</p>
             </div>
-            <div className="space-y-2">
+            
+            <div className="space-y-4">
               <Label className="text-emerald-300">Address</Label>
-              <AddressAutocomplete
-                value={formData.address}
-                onChange={(value) => handleInputChange('address', value)}
-                className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
-                placeholder="Start typing your address..."
-                autoFocus
-              />
+              
+              {!showManualAddress ? (
+                <div className="space-y-3">
+                  <AddressAutocomplete
+                    value={formData.address}
+                    onChange={(value) => handleInputChange('address', value)}
+                    className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
+                    placeholder="Start typing your address..."
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowManualAddress(true)}
+                    className="flex items-center space-x-2 text-emerald-300 hover:text-emerald-200 text-sm transition-colors"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Can't find your address? Enter manually</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Input
+                    type="text"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
+                    placeholder="Enter your full address manually..."
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowManualAddress(false)}
+                    className="flex items-center space-x-2 text-emerald-300 hover:text-emerald-200 text-sm transition-colors"
+                  >
+                    <MapPin className="w-4 h-4" />
+                    <span>Use address lookup instead</span>
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         );
@@ -201,7 +236,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             key="step3"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            className="space-y-4"
+            className="space-y-6"
           >
             <div className="text-center mb-8">
               <Calendar className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
@@ -210,12 +245,10 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
             </div>
             <div className="space-y-2">
               <Label className="text-emerald-300">Date of Birth</Label>
-              <Input
-                type="date"
+              <DatePicker
                 value={formData.dateOfBirth}
-                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                onChange={(value) => handleInputChange('dateOfBirth', value)}
                 className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-12 focus:border-emerald-400 focus:ring-emerald-400/20"
-                autoFocus
               />
             </div>
           </motion.div>

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { MapPin, AlertCircle } from 'lucide-react';
 
 interface AddressSuggestion {
   display_name: string;
@@ -30,6 +30,8 @@ const AddressAutocomplete = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
@@ -37,15 +39,25 @@ const AddressAutocomplete = ({
     if (query.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setHasSearched(false);
+      setError(null);
       return;
     }
 
     setIsLoading(true);
+    setError(null);
+    setHasSearched(true);
+    
     try {
       // Using Nominatim API for address suggestions (free)
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=5&countrycodes=gb&q=${encodeURIComponent(query)}`
+        `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&countrycodes=gb&q=${encodeURIComponent(query)}`
       );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch address suggestions');
+      }
+      
       const data = await response.json();
       
       const formattedSuggestions = data.map((item: any) => ({
@@ -58,8 +70,13 @@ const AddressAutocomplete = ({
       setSuggestions(formattedSuggestions);
       setShowSuggestions(formattedSuggestions.length > 0);
       setActiveSuggestion(-1);
+      
+      if (formattedSuggestions.length === 0 && query.length >= 3) {
+        setError('No addresses found. Try a different search or enter manually.');
+      }
     } catch (error) {
       console.error('Error fetching address suggestions:', error);
+      setError('Unable to search addresses. Please check your connection or enter manually.');
       setSuggestions([]);
       setShowSuggestions(false);
     } finally {
@@ -85,6 +102,7 @@ const AddressAutocomplete = ({
     onChange(suggestion.display_name);
     setShowSuggestions(false);
     setActiveSuggestion(-1);
+    setError(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -124,19 +142,44 @@ const AddressAutocomplete = ({
 
   return (
     <div className="relative">
-      <Input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
-        onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-        className={className}
-        placeholder={placeholder}
-        autoComplete="off"
-        autoFocus={autoFocus}
-      />
+      <div className="relative">
+        <Input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onBlur={handleBlur}
+          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          className={className}
+          placeholder={placeholder}
+          autoComplete="off"
+          autoFocus={autoFocus}
+        />
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+          {isLoading ? (
+            <motion.div
+              className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          ) : (
+            <MapPin className="w-4 h-4 text-emerald-400/60" />
+          )}
+        </div>
+      </div>
+      
+      {/* Error message */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center space-x-2 mt-2 text-amber-400 text-sm"
+        >
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>{error}</span>
+        </motion.div>
+      )}
       
       <AnimatePresence>
         {showSuggestions && (
@@ -145,33 +188,29 @@ const AddressAutocomplete = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto"
+            className="absolute z-50 w-full mt-1 bg-gray-800 border border-emerald-500/30 rounded-lg shadow-xl max-h-64 overflow-y-auto"
           >
-            {isLoading ? (
-              <div className="p-3 text-gray-400 text-sm">
-                Searching addresses...
-              </div>
-            ) : (
-              suggestions.map((suggestion, index) => (
-                <motion.div
-                  key={suggestion.place_id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={`p-3 cursor-pointer text-sm transition-colors ${
-                    index === activeSuggestion
-                      ? 'bg-emerald-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700'
-                  }`}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                >
-                  <div className="flex items-center space-x-2">
-                    <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span className="truncate">{suggestion.display_name}</span>
-                  </div>
-                </motion.div>
-              ))
-            )}
+            {suggestions.map((suggestion, index) => (
+              <motion.div
+                key={suggestion.place_id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.03 }}
+                className={`p-3 cursor-pointer text-sm transition-all duration-150 ${
+                  index === activeSuggestion
+                    ? 'bg-emerald-600 text-white'
+                    : 'text-gray-300 hover:bg-gray-700/50'
+                } ${index === 0 ? 'rounded-t-lg' : ''} ${
+                  index === suggestions.length - 1 ? 'rounded-b-lg' : 'border-b border-gray-700/50'
+                }`}
+                onClick={() => handleSuggestionClick(suggestion)}
+              >
+                <div className="flex items-start space-x-3">
+                  <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{suggestion.display_name}</span>
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
