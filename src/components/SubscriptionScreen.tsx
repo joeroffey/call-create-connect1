@@ -4,7 +4,6 @@ import { motion } from 'framer-motion';
 import { 
   Crown, 
   Check, 
-  Zap, 
   Users, 
   Building,
   ArrowLeft,
@@ -19,7 +18,7 @@ interface SubscriptionScreenProps {
 }
 
 const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
-  const { subscription, hasActiveSubscription, createDemoSubscription, createCheckoutSession } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, createCheckoutSession } = useSubscription(user?.id);
 
   const plans = [
     {
@@ -79,15 +78,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   ];
 
   const handlePlanSelection = async (planType: string) => {
-    // For developer demo, allow creating demo subscriptions
-    if (user?.email === 'josephh.roffey@gmail.com') {
-      if (planType === 'pro') {
-        await createDemoSubscription();
-        return;
-      }
-    }
-    
-    // For all other cases, create Stripe checkout session
     await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
   };
 
@@ -208,34 +198,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             </motion.div>
           ))}
         </div>
-
-        {/* Developer Demo Section */}
-        {user?.email === 'josephh.roffey@gmail.com' && !hasActiveSubscription && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="mt-8 bg-gradient-to-r from-yellow-500/20 to-orange-600/20 rounded-2xl p-6 border border-yellow-500/30"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
-                  <Zap className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Developer Access</h3>
-                  <p className="text-yellow-300">Get a free Pro demo for testing</p>
-                </div>
-              </div>
-              <Button
-                onClick={() => createDemoSubscription()}
-                className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
-              >
-                Activate Demo
-              </Button>
-            </div>
-          </motion.div>
-        )}
       </div>
     </div>
   );

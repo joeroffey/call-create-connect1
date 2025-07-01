@@ -4,8 +4,7 @@ import { motion } from 'framer-motion';
 import { 
   User, 
   Crown, 
-  Settings, 
-  Zap,
+  Settings,
   LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,8 +20,7 @@ interface ProfileScreenProps {
 }
 
 const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
-  const { subscription, hasActiveSubscription, createProMaxDemo, refetch, openCustomerPortal } = useSubscription(user?.id);
-  const [isActivatingDemo, setIsActivatingDemo] = useState(false);
+  const { subscription, hasActiveSubscription, refetch, openCustomerPortal } = useSubscription(user?.id);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showAccountSettings, setShowAccountSettings] = useState(false);
@@ -47,34 +45,9 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
     fetchUserProfile();
   }, [user?.id]);
 
-  const handleActivateProMaxDemo = async () => {
-    setIsActivatingDemo(true);
-    try {
-      await createProMaxDemo();
-      // Refresh subscription status to update the UI
-      await refetch();
-    } finally {
-      setIsActivatingDemo(false);
-    }
-  };
-
-  // Check if this is a demo subscription (local database only)
-  const isDemoSubscription = subscription?.id && !subscription.id.startsWith('stripe-');
-
   const handleManageSubscription = async () => {
     if (hasActiveSubscription) {
-      if (isDemoSubscription) {
-        // For demo subscriptions, show a message and redirect to plans
-        toast({
-          title: "Demo Subscription",
-          description: "This is a demo subscription. To manage a real subscription, please upgrade to a paid plan.",
-          variant: "default"
-        });
-        onNavigateToSettings();
-        return;
-      }
-      
-      // Open Stripe Customer Portal for real subscribers
+      // Open Stripe Customer Portal for subscribers
       try {
         await openCustomerPortal();
       } catch (error) {
@@ -187,7 +160,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                 <h3 className="font-semibold text-white">Subscription Status</h3>
                 <p className="text-sm text-gray-400">
                   {hasActiveSubscription 
-                    ? `${isDemoSubscription ? 'Demo - ' : 'Active - '}${subscription?.plan_type === 'basic' ? 'EezyBuild' : 
+                    ? `Active - ${subscription?.plan_type === 'basic' ? 'EezyBuild' : 
                                    subscription?.plan_type === 'pro' ? 'Pro' : 
                                    subscription?.plan_type === 'enterprise' ? 'ProMax' : 'Unknown'}`
                     : 'No Active Plan'
@@ -206,37 +179,9 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
               size="sm"
               className="text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
             >
-              {hasActiveSubscription 
-                ? (isDemoSubscription ? 'Upgrade Plan' : 'Manage Subscription')
-                : 'Subscribe'
-              }
+              {hasActiveSubscription ? 'Manage Subscription' : 'Subscribe'}
             </Button>
           </div>
-          
-          {/* Developer Demo Button */}
-          {user?.email === 'josephh.roffey@gmail.com' && subscription?.plan_type !== 'enterprise' && (
-            <div className="border-t border-gray-700 pt-4 mt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-full flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Developer Access</p>
-                    <p className="text-xs text-gray-400">Activate ProMax demo for testing</p>
-                  </div>
-                </div>
-                <Button
-                  onClick={handleActivateProMaxDemo}
-                  disabled={isActivatingDemo}
-                  size="sm"
-                  className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white"
-                >
-                  {isActivatingDemo ? 'Activating...' : 'Activate ProMax'}
-                </Button>
-              </div>
-            </div>
-          )}
         </motion.div>
 
         {/* User Information */}
