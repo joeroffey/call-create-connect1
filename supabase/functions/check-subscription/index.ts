@@ -83,53 +83,32 @@ serve(async (req) => {
 
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
-      status: "all",
+      status: "active",
       limit: 1,
     });
-    
-    let hasActiveSub = false;
+    const hasActiveSub = subscriptions.data.length > 0;
     let subscriptionTier = null;
     let subscriptionEnd = null;
-    let subscriptionStatus = null;
-    let trialEnd = null;
 
-    if (subscriptions.data.length > 0) {
+    if (hasActiveSub) {
       const subscription = subscriptions.data[0];
-      const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
+      logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
-      if (isActive) {
-        hasActiveSub = true;
-        subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-        subscriptionStatus = subscription.status;
-        
-        if (subscription.trial_end) {
-          trialEnd = new Date(subscription.trial_end * 1000).toISOString();
-        }
-        
-        logStep("Active subscription found", { 
-          subscriptionId: subscription.id, 
-          status: subscription.status,
-          endDate: subscriptionEnd,
-          trialEnd 
-        });
-        
-        // Determine subscription tier from price amount
-        const priceId = subscription.items.data[0].price.id;
-        const price = await stripe.prices.retrieve(priceId);
-        const amount = price.unit_amount || 0;
-        
-        if (amount <= 1499) {
-          subscriptionTier = "basic";
-        } else if (amount <= 2999) {
-          subscriptionTier = "pro";
-        } else {
-          subscriptionTier = "enterprise";
-        }
-        logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
+      // Determine subscription tier from price amount
+      const priceId = subscription.items.data[0].price.id;
+      const price = await stripe.prices.retrieve(priceId);
+      const amount = price.unit_amount || 0;
+      
+      if (amount <= 1499) {
+        subscriptionTier = "basic";
+      } else if (amount <= 2999) {
+        subscriptionTier = "pro";
+      } else {
+        subscriptionTier = "enterprise";
       }
-    }
-
-    if (!hasActiveSub) {
+      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
+    } else {
       logStep("No active subscription found");
     }
 
@@ -149,24 +128,17 @@ serve(async (req) => {
       await supabaseClient.from("subscriptions").upsert({
         user_id: user.id,
         plan_type: subscriptionTier,
-        status: subscriptionStatus === 'trialing' ? 'active' : subscriptionStatus,
+        status: 'active',
         current_period_end: subscriptionEnd,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
     }
 
-    logStep("Updated database with subscription info", { 
-      subscribed: hasActiveSub, 
-      subscriptionTier, 
-      status: subscriptionStatus 
-    });
-    
+    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,
       subscription_tier: subscriptionTier,
-      subscription_end: subscriptionEnd,
-      status: subscriptionStatus,
-      trial_end: trialEnd
+      subscription_end: subscriptionEnd
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

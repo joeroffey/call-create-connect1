@@ -6,9 +6,8 @@ import { useToast } from '@/hooks/use-toast';
 interface Subscription {
   id: string;
   plan_type: 'basic' | 'pro' | 'enterprise';
-  status: 'active' | 'cancelled' | 'expired' | 'trialing';
+  status: 'active' | 'cancelled' | 'expired';
   current_period_end: string;
-  trial_end?: string;
 }
 
 export const useSubscription = (userId: string | null) => {
@@ -26,14 +25,37 @@ export const useSubscription = (userId: string | null) => {
     try {
       console.log('Checking subscription status for user:', userId);
       
-      // Check Stripe subscription status
+      // First check local database for demo subscriptions
+      const { data: localSub, error: localError } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .single();
+
+      if (localSub && !localError) {
+        console.log('Found local demo subscription:', localSub);
+        const subscriptionData: Subscription = {
+          id: localSub.id,
+          plan_type: localSub.plan_type as 'basic' | 'pro' | 'enterprise',
+          status: localSub.status as 'active' | 'cancelled' | 'expired',
+          current_period_end: localSub.current_period_end
+        };
+        
+        setSubscription(subscriptionData);
+        setHasActiveSubscription(true);
+        setLoading(false);
+        return;
+      }
+
+      // If no local subscription, check Stripe
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         setLoading(false);
         return;
       }
 
-      console.log('Checking Stripe subscription...');
+      console.log('No local subscription found, checking Stripe...');
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -49,9 +71,8 @@ export const useSubscription = (userId: string | null) => {
         const subscriptionData: Subscription = {
           id: 'stripe-sub',
           plan_type: data.subscription_tier,
-          status: data.status || 'active',
-          current_period_end: data.subscription_end,
-          trial_end: data.trial_end
+          status: 'active',
+          current_period_end: data.subscription_end
         };
         
         setSubscription(subscriptionData);
@@ -135,6 +156,174 @@ export const useSubscription = (userId: string | null) => {
     }
   };
 
+  const createDemoSubscription = async () => {
+    if (!userId) return false;
+
+    try {
+      // Create a demo subscription for testing - expires in 30 days
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+
+      // First, try to upsert (update if exists, insert if not)
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: userId,
+          plan_type: 'pro',
+          status: 'active',
+          current_period_end: endDate.toISOString()
+        }, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
+
+      let subscriptionData;
+
+      if (error) {
+        console.error('Upsert failed, trying update:', error);
+        
+        // If upsert fails, try to update existing record
+        const { data: updateData, error: updateError } = await supabase
+          .from('subscriptions')
+          .update({
+            plan_type: 'pro',
+            status: 'active',
+            current_period_end: endDate.toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+        
+        subscriptionData = updateData;
+      } else {
+        subscriptionData = data;
+      }
+
+      const typedSubscription: Subscription = {
+        id: subscriptionData.id,
+        plan_type: subscriptionData.plan_type as 'basic' | 'pro' | 'enterprise',
+        status: subscriptionData.status as 'active' | 'cancelled' | 'expired',
+        current_period_end: subscriptionData.current_period_end
+      };
+
+      setSubscription(typedSubscription);
+      setHasActiveSubscription(true);
+      
+      toast({
+        title: "Demo Subscription Activated",
+        description: "You now have a 30-day demo subscription to test the app!"
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error creating demo subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create demo subscription",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
+  const createProMaxDemo = async () => {
+    if (!userId) return false;
+
+    try {
+      // Get current user session to check email
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.email) {
+        throw new Error('No user session found');
+      }
+
+      // Only allow josephh.roffey@gmail.com to get ProMax demo
+      if (session.user.email !== 'josephh.roffey@gmail.com') {
+        toast({
+          title: "Access Denied",
+          description: "ProMax demo is only available for the developer account",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Create a ProMax demo subscription - expires in 30 days
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + 30);
+
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .upsert({
+          user_id: userId,
+          plan_type: 'enterprise',
+          status: 'active',
+          current_period_end: endDate.toISOString()
+        }, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        })
+        .select()
+        .single();
+
+      let subscriptionData;
+
+      if (error) {
+        console.error('Upsert failed, trying update:', error);
+        
+        const { data: updateData, error: updateError } = await supabase
+          .from('subscriptions')
+          .update({
+            plan_type: 'enterprise',
+            status: 'active',
+            current_period_end: endDate.toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+          .select()
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+        
+        subscriptionData = updateData;
+      } else {
+        subscriptionData = data;
+      }
+
+      const typedSubscription: Subscription = {
+        id: subscriptionData.id,
+        plan_type: subscriptionData.plan_type as 'basic' | 'pro' | 'enterprise',
+        status: subscriptionData.status as 'active' | 'cancelled' | 'expired',
+        current_period_end: subscriptionData.current_period_end
+      };
+
+      setSubscription(typedSubscription);
+      setHasActiveSubscription(true);
+      
+      toast({
+        title: "ProMax Demo Activated!",
+        description: "You now have a 30-day ProMax demo subscription to test all features!"
+      });
+
+      return true;
+    } catch (error) {
+      console.error('Error creating ProMax demo subscription:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create ProMax demo subscription",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
     checkSubscriptionStatus();
   }, [userId]);
@@ -144,6 +333,8 @@ export const useSubscription = (userId: string | null) => {
     loading,
     hasActiveSubscription,
     refetch: checkSubscriptionStatus,
+    createDemoSubscription,
+    createProMaxDemo,
     createCheckoutSession,
     openCustomerPortal
   };
