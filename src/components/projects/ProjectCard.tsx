@@ -217,7 +217,8 @@ const ProjectCard = ({
           </div>
           <div className="space-y-2">
             {project.customer_name && (
-              <div className="text-sm text-gray-300">
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <User className="w-4 h-4 text-blue-400 flex-shrink-0" />
                 <span className="font-medium">{project.customer_name}</span>
               </div>
             )}
