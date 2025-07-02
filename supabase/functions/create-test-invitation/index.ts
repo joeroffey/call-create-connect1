@@ -80,19 +80,26 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Create the invitation link
+    // Create the invitation link with deep link support
     const baseUrl = Deno.env.get("SUPABASE_URL")?.replace('https://srwbgkssoatrhxdrrtff.supabase.co', 'https://preview--call-create-connect.lovable.app');
-    const inviteLink = `${baseUrl}/team-invite?token=${invitation.id}`;
+    const webLink = `${baseUrl}/team-invite?token=${invitation.id}`;
+    const deepLink = `eezybuild://team-invite?token=${invitation.id}`;
+    const universalLink = `https://preview--call-create-connect.lovable.app/team-invite?token=${invitation.id}`;
 
     console.log("✅ Test invitation created:", invitation.id);
-    console.log("🔗 Invitation link:", inviteLink);
+    console.log("🔗 Web link:", webLink);
+    console.log("📱 Deep link:", deepLink);
+    console.log("🌐 Universal link:", universalLink);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         invitationId: invitation.id,
-        inviteLink: inviteLink,
-        message: `Test invitation created for ${email}`
+        webLink: webLink,
+        deepLink: deepLink,
+        universalLink: universalLink,
+        inviteLink: universalLink, // Keep this for backward compatibility
+        message: `Test invitation created for ${email}. Use the deep link (${deepLink}) to open directly in the app, or the universal link (${universalLink}) for web/app fallback.`
       }),
       {
         status: 200,

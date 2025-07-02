@@ -16,6 +16,7 @@ import TeamScreen from '../components/TeamScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
+import { useDeepLinking } from '@/hooks/useDeepLinking';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -30,6 +31,9 @@ const Index = () => {
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
+
+  // Set up deep linking for mobile app
+  useDeepLinking();
 
   useEffect(() => {
     // Check for successful subscription in URL and handle it

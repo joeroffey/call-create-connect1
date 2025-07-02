@@ -18,6 +18,11 @@ const config: CapacitorConfig = {
     },
     Keyboard: {
       resize: 'ionic'
+    },
+    App: {
+      appUrlOpen: {
+        iosCustomScheme: 'eezybuild'
+      }
     }
   }
 };
