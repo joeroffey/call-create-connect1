@@ -186,25 +186,25 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className={`bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all ${dueDateInfo?.urgent ? 'border-l-4 border-l-red-500' : ''}`}>
-                  <CardContent className="p-6">
-                    <div className="space-y-3">
-                      {/* Title on its own line */}
-                      <h4 className="text-lg font-semibold text-white">{task.title}</h4>
+                  <CardContent className="p-8">
+                    <div className="space-y-4">
+                      {/* Title on its own line with more space */}
+                      <h4 className="text-xl font-semibold text-white leading-relaxed">{task.title}</h4>
                       
-                      {/* Project badge, dates, and button on second line */}
+                      {/* Project badge, dates, and button on second line with better spacing */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30">
+                        <div className="flex items-center gap-6">
+                          <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30 px-3 py-1">
                             {task.project_name}
                           </Badge>
-                          <div className="flex items-center gap-4 text-sm">
+                          <div className="flex items-center gap-6 text-sm">
                             {dueDateInfo && (
-                              <div className={`flex items-center gap-1 ${dueDateInfo.color}`}>
+                              <div className={`flex items-center gap-2 ${dueDateInfo.color}`}>
                                 <Calendar className="w-4 h-4" />
                                 {dueDateInfo.text}
                               </div>
                             )}
-                            <div className="flex items-center gap-1 text-gray-400">
+                            <div className="flex items-center gap-2 text-gray-400">
                               <Clock className="w-4 h-4" />
                               Created {new Date(task.created_at).toLocaleDateString()}
                             </div>
@@ -213,8 +213,8 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                         
                         <Button
                           onClick={() => markTaskComplete(task.id)}
-                          size="sm"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          size="default"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2"
                         >
                           <CheckSquare className="w-4 h-4 mr-2" />
                           Complete
@@ -222,7 +222,7 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                       </div>
                       
                       {task.description && (
-                        <p className="text-gray-400 text-sm line-clamp-2">{task.description}</p>
+                        <p className="text-gray-400 text-base leading-relaxed mt-3">{task.description}</p>
                       )}
                     </div>
                   </CardContent>
