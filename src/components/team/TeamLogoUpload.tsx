@@ -46,24 +46,26 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
       console.log('Upload result:', { data, uploadError });
       if (uploadError) throw uploadError;
 
-      // Get public URL
+      // Get public URL with cache busting
       const { data: { publicUrl } } = supabase.storage
         .from('team-logos')
         .getPublicUrl(fileName);
 
-      console.log('Logo upload - public URL:', publicUrl);
+      // Add cache busting parameter to ensure fresh image load
+      const publicUrlWithCacheBust = `${publicUrl}?t=${Date.now()}`;
+      console.log('Logo upload - public URL:', publicUrlWithCacheBust);
 
       // Update team with logo URL
       const { error: updateError } = await supabase
         .from('teams')
-        .update({ logo_url: publicUrl })
+        .update({ logo_url: publicUrlWithCacheBust })
         .eq('id', teamId);
 
       console.log('Logo upload - database update error:', updateError);
 
       if (updateError) throw updateError;
 
-      onLogoUpdate(publicUrl);
+      onLogoUpdate(publicUrlWithCacheBust);
       toast({
         title: "Success",
         description: "Team logo updated successfully",
@@ -144,9 +146,12 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
               src={currentLogoUrl}
               alt="Team logo"
               className="w-full h-full object-cover"
+              onLoad={() => {
+                console.log('Logo image loaded successfully:', currentLogoUrl);
+              }}
               onError={(e) => {
                 console.log('Failed to load logo image:', currentLogoUrl);
-                e.currentTarget.style.display = 'none';
+                console.log('Image error event:', e);
               }}
             />
           </div>
