@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import ProjectDetailsModal from './ProjectDetailsModal';
 
 interface TeamProjectsProps {
   teamId: string;
@@ -21,6 +22,8 @@ const TeamProjects = ({ teamId, members }: TeamProjectsProps) => {
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [projectDetailsOpen, setProjectDetailsOpen] = useState(false);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -118,6 +121,11 @@ const TeamProjects = ({ teamId, members }: TeamProjectsProps) => {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleProjectClick = (project: any) => {
+    setSelectedProject(project);
+    setProjectDetailsOpen(true);
   };
 
   useEffect(() => {
@@ -281,9 +289,10 @@ const TeamProjects = ({ teamId, members }: TeamProjectsProps) => {
               key={project.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="group"
+              className="group cursor-pointer"
+              onClick={() => handleProjectClick(project)}
             >
-              <Card className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all hover:shadow-lg">
+              <Card className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all hover:shadow-lg hover:scale-[1.02]">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -323,6 +332,7 @@ const TeamProjects = ({ teamId, members }: TeamProjectsProps) => {
                       <span className="text-emerald-400 font-medium">
                         {project.project_schedule_of_works?.[0]?.count || 0} tasks
                       </span>
+                      <span className="text-gray-500">→</span>
                     </div>
                   </div>
                 </CardContent>
@@ -331,6 +341,14 @@ const TeamProjects = ({ teamId, members }: TeamProjectsProps) => {
           ))}
         </div>
       )}
+
+      <ProjectDetailsModal
+        isOpen={projectDetailsOpen}
+        onClose={() => setProjectDetailsOpen(false)}
+        project={selectedProject}
+        teamMembers={members}
+        teamId={teamId}
+      />
     </div>
   );
 };
