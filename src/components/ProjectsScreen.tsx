@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -334,8 +334,8 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     );
   }
 
-  // Filter projects based on active filters
-  const filteredProjects = useMemo(() => {
+  // Simple filter function without useMemo to avoid render loops
+  const filterProjects = (projects: Project[]) => {
     return projects.filter(project => {
       // Context filter
       if (filters.context === 'personal' && project.team_id) return false;
@@ -357,7 +357,9 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       
       return true;
     });
-  }, [projects, filters]);
+  };
+
+  const filteredProjects = filterProjects(projects);
 
   console.log('Rendering projects screen with', projects.length, 'total projects,', filteredProjects.length, 'filtered');
 
