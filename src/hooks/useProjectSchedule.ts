@@ -13,6 +13,7 @@ interface ScheduleItem {
   updated_at: string;
   project_id: string;
   user_id: string;
+  assigned_to?: string;
 }
 
 export const useProjectSchedule = (projectId: string | undefined, userId: string | undefined) => {
@@ -88,6 +89,10 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
 
       if (taskInput.due_date) {
         insertData.due_date = taskInput.due_date;
+      }
+
+      if (taskInput.assigned_to) {
+        insertData.assigned_to = taskInput.assigned_to;
       }
 
       const { data: newTask, error } = await supabase

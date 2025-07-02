@@ -55,9 +55,12 @@ const ProjectDetailsModal = ({
   const teamMembersHook = useTeamMembers(project?.team_id);
 
   // Get task assignments for display
-  const getTaskAssignee = (taskId: string) => {
-    // This would require fetching task assignments - for now we'll add this later
-    return null;
+  const getTaskAssignee = (assignedTo: string) => {
+    if (!assignedTo) return 'Unassigned';
+    if (assignedTo === user?.id) return 'Myself';
+    
+    const member = teamMembersHook.members?.find(m => m.user_id === assignedTo);
+    return member?.profiles?.full_name || `User ${assignedTo.slice(0, 8)}`;
   };
 
   const {
@@ -152,6 +155,11 @@ const ProjectDetailsModal = ({
     } else {
       return date.toLocaleDateString();
     }
+  };
+
+  const formatDueDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -388,7 +396,7 @@ const ProjectDetailsModal = ({
                               <SelectContent className="bg-gray-800 border-gray-700">
                                 <SelectItem value="unassigned">Unassigned</SelectItem>
                                 <SelectItem value={user?.id}>Myself</SelectItem>
-                                {teamMembersHook.members?.map((member) => (
+                                {teamMembersHook.members?.filter(member => member.user_id !== user?.id).map((member) => (
                                   <SelectItem key={member.user_id} value={member.user_id}>
                                     {member.profiles?.full_name || `User ${member.user_id.slice(0, 8)}`}
                                   </SelectItem>
@@ -466,16 +474,16 @@ const ProjectDetailsModal = ({
                                 {item.description && (
                                   <p className="text-sm text-gray-400 mt-1 line-clamp-2 ml-7">{item.description}</p>
                                 )}
-                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 ml-7">
+                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 ml-7">
                                    <div className="flex items-center">
                                      <Calendar className="w-3 h-3 mr-1" />
                                      <span>
-                                       {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                       {item.due_date ? formatDueDate(item.due_date) : 'No due date'}
                                      </span>
                                    </div>
                                    <div className="flex items-center">
                                      <User className="w-3 h-3 mr-1" />
-                                     <span>Unassigned</span>
+                                     <span>{getTaskAssignee(item.assigned_to)}</span>
                                    </div>
                                  </div>
                               </div>
