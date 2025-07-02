@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -9,11 +8,9 @@ import {
   Calendar,
   Plus,
   Clock,
-  User,
   FolderOpen,
   Upload,
-  Save,
-  Trash2
+  Save
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -63,10 +60,6 @@ const ProjectDetailsModal = ({
   const projectConversations = conversations.filter(
     (conv: any) => conv.project_id === project?.id
   );
-
-  useEffect(() => {
-    setActiveTab(initialTab);
-  }, [initialTab]);
 
   useEffect(() => {
     setActiveTab(initialTab);
@@ -176,11 +169,11 @@ const ProjectDetailsModal = ({
             </div>
           </div>
 
-          {/* Content Area - Fixed Height Management */}
-          <div className="flex-1 flex flex-col min-h-0">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+          {/* Content Area */}
+          <div className="flex-1 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
               {/* Tabs Header */}
-              <div className="px-6 pt-4 pb-2 flex-shrink-0">
+              <div className="px-6 pt-4 pb-2 border-b border-gray-800/30">
                 <TabsList className="grid w-full grid-cols-3 bg-gray-900/50">
                   <TabsTrigger value="chats" className="flex items-center justify-center space-x-2">
                     <MessageCircle className="w-4 h-4" />
@@ -197,238 +190,249 @@ const ProjectDetailsModal = ({
                 </TabsList>
               </div>
 
-              {/* Tab Content - Flexible Height */}
-              <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
-                <TabsContent value="chats" className="h-full flex flex-col m-0">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
-                    <Button 
-                      onClick={handleStartNewChat}
-                      size="sm"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Start New Chat
-                    </Button>
-                  </div>
-                  
-                  {projectConversations.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center">
-                      <div className="text-center">
-                        <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
-                        <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
-                        <Button 
-                          onClick={handleStartNewChat}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Start New Chat
-                        </Button>
-                      </div>
+              {/* Content Area */}
+              <div className="flex-1 p-6">
+                {/* Conversations Tab */}
+                {activeTab === 'chats' && (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
+                      <Button 
+                        onClick={handleStartNewChat}
+                        size="sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Start New Chat
+                      </Button>
                     </div>
-                  ) : (
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                      {projectConversations.map((conversation: any) => (
-                        <motion.div
-                          key={conversation.id}
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
-                          onClick={() => handleConversationClick(conversation.id)}
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 min-w-0 pr-3">
-                              <h4 className="font-medium text-white mb-1 truncate">
-                                {truncateText(conversation.title, 50)}
-                              </h4>
-                              <div className="flex items-center text-sm text-gray-400">
-                                <Clock className="w-3 h-3 mr-1" />
-                                <span>{formatDate(conversation.updated_at)}</span>
-                              </div>
-                            </div>
-                            <MessageCircle className="w-5 h-5 text-emerald-400" />
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="documents" className="h-full flex flex-col m-0 data-[state=active]:flex">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Project Documents</h3>
-                    <Button 
-                      onClick={handleDocumentUpload}
-                      disabled={documentsHook.isUploading}
-                      size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-                    >
-                      <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
-                      {documentsHook.isUploading ? 'Uploading...' : 'Upload Document'}
-                    </Button>
-                  </div>
-                  {documentsHook.documents.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center">
-                      <div className="text-center">
-                        <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
-                        <p className="text-gray-500 mb-6">Upload documents to share them with your project team</p>
-                        <Button 
-                          onClick={handleDocumentUpload}
-                          disabled={documentsHook.isUploading}
-                          className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-                        >
-                          <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
-                          {documentsHook.isUploading ? 'Uploading...' : 'Upload First Document'}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                      {documentsHook.documents.map((doc: any) => (
-                        <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="min-w-0 flex-1">
-                              <h4 className="font-medium text-white truncate">{doc.file_name}</h4>
-                              <p className="text-sm text-gray-400">
-                                {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
-                              </p>
-                            </div>
-                            <FileText className="w-5 h-5 text-blue-400 ml-3" />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="schedule" className="h-full flex flex-col m-0 data-[state=active]:flex">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
-                    <Button 
-                      onClick={() => setShowAddTask(true)}
-                      size="sm"
-                      className="bg-orange-600 hover:bg-orange-700 text-white"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Task
-                    </Button>
-                  </div>
-
-                  {/* Add Task Form */}
-                  {showAddTask && (
-                    <div className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 mb-4">
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-sm font-medium text-white mb-1 block">Task Title</label>
-                          <Input
-                            value={newTaskTitle}
-                            onChange={(e) => setNewTaskTitle(e.target.value)}
-                            placeholder="Enter task title..."
-                            className="bg-gray-800 border-gray-700 text-white"
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-white mb-1 block">Description (Optional)</label>
-                          <Textarea
-                            value={newTaskDescription}
-                            onChange={(e) => setNewTaskDescription(e.target.value)}
-                            placeholder="Enter task description..."
-                            className="bg-gray-800 border-gray-700 text-white"
-                            rows={2}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-white mb-1 block">Due Date (Optional)</label>
-                          <Input
-                            type="date"
-                            value={newTaskDueDate}
-                            onChange={(e) => setNewTaskDueDate(e.target.value)}
-                            className="bg-gray-800 border-gray-700 text-white"
-                          />
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            onClick={handleAddTask}
-                            disabled={!newTaskTitle.trim() || scheduleHook.saving}
-                            size="sm"
+                    
+                    {projectConversations.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <MessageCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-300 mb-2">No conversations yet</h4>
+                          <p className="text-gray-500 mb-6">Start your first conversation about this project</p>
+                          <Button 
+                            onClick={handleStartNewChat}
                             className="bg-emerald-600 hover:bg-emerald-700 text-white"
                           >
-                            <Save className="w-4 h-4 mr-2" />
-                            {scheduleHook.saving ? 'Creating...' : 'Create Task'}
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setShowAddTask(false);
-                              setNewTaskTitle('');
-                              setNewTaskDescription('');
-                              setNewTaskDueDate('');
-                            }}
-                            variant="outline"
-                            size="sm"
-                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
-                          >
-                            Cancel
+                            <Plus className="w-4 h-4 mr-2" />
+                            Start New Chat
                           </Button>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {scheduleHook.scheduleItems.length === 0 ? (
-                    <div className="flex-1 flex items-center justify-center">
-                      <div className="text-center">
-                        <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                        <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
-                        <p className="text-gray-500 mb-6">Create tasks to organize your project timeline</p>
-                        <Button 
-                          onClick={() => setShowAddTask(true)}
-                          className="bg-orange-600 hover:bg-orange-700 text-white"
-                        >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Create First Task
-                        </Button>
+                    ) : (
+                      <div className="flex-1 overflow-y-auto space-y-3">
+                        {projectConversations.map((conversation: any) => (
+                          <motion.div
+                            key={conversation.id}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/50 transition-all duration-200"
+                            onClick={() => handleConversationClick(conversation.id)}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0 pr-3">
+                                <h4 className="font-medium text-white mb-1 truncate">
+                                  {truncateText(conversation.title, 50)}
+                                </h4>
+                                <div className="flex items-center text-sm text-gray-400">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  <span>{formatDate(conversation.updated_at)}</span>
+                                </div>
+                              </div>
+                              <MessageCircle className="w-5 h-5 text-emerald-400" />
+                            </div>
+                          </motion.div>
+                        ))}
                       </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Documents Tab */}
+                {activeTab === 'documents' && (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-white">Project Documents</h3>
+                      <Button 
+                        onClick={handleDocumentUpload}
+                        disabled={documentsHook.isUploading}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                      >
+                        <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
+                        {documentsHook.isUploading ? 'Uploading...' : 'Upload Document'}
+                      </Button>
                     </div>
-                  ) : (
-                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                       {scheduleHook.scheduleItems.map((item: any) => (
-                         <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                           <div className="flex items-start justify-between">
-                             <div className="min-w-0 flex-1">
-                                 <div className="flex items-center space-x-2">
-                                   <button 
-                                     onClick={() => scheduleHook.toggleTaskCompletion(item.id, item.completed)}
-                                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                       item.completed 
-                                         ? 'bg-green-500 border-green-500' 
-                                         : 'border-gray-500 hover:border-green-500'
-                                     } transition-colors cursor-pointer`}
-                                   >
-                                     {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
-                                   </button>
-                                 <h4 className={`font-medium truncate ${
-                                   item.completed ? 'text-gray-400 line-through' : 'text-white'
-                                 }`}>
-                                   {item.title}
-                                 </h4>
-                               </div>
-                               {item.description && (
-                                 <p className="text-sm text-gray-400 mt-1 line-clamp-2 ml-7">{item.description}</p>
-                               )}
-                               <div className="flex items-center mt-2 text-sm text-gray-500 ml-7">
-                                 <Calendar className="w-3 h-3 mr-1" />
-                                 <span>
-                                   {item.due_date ? formatDate(item.due_date) : 'No due date'}
-                                 </span>
-                               </div>
-                             </div>
-                           </div>
-                         </div>
-                       ))}
-                     </div>
-                  )}
-                </TabsContent>
+                    
+                    {documentsHook.documents.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
+                          <p className="text-gray-500 mb-6">Upload documents to share them with your project team</p>
+                          <Button 
+                            onClick={handleDocumentUpload}
+                            disabled={documentsHook.isUploading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                          >
+                            <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
+                            {documentsHook.isUploading ? 'Uploading...' : 'Upload First Document'}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 overflow-y-auto space-y-3">
+                        {documentsHook.documents.map((doc: any) => (
+                          <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-medium text-white truncate">{doc.file_name}</h4>
+                                <p className="text-sm text-gray-400">
+                                  {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
+                                </p>
+                              </div>
+                              <FileText className="w-5 h-5 text-blue-400 ml-3" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Schedule Tab */}
+                {activeTab === 'schedule' && (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
+                      <Button 
+                        onClick={() => setShowAddTask(true)}
+                        size="sm"
+                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                      >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Task
+                      </Button>
+                    </div>
+
+                    {/* Add Task Form */}
+                    {showAddTask && (
+                      <div className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 mb-4">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Task Title</label>
+                            <Input
+                              value={newTaskTitle}
+                              onChange={(e) => setNewTaskTitle(e.target.value)}
+                              placeholder="Enter task title..."
+                              className="bg-gray-800 border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Description (Optional)</label>
+                            <Textarea
+                              value={newTaskDescription}
+                              onChange={(e) => setNewTaskDescription(e.target.value)}
+                              placeholder="Enter task description..."
+                              className="bg-gray-800 border-gray-700 text-white"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Due Date (Optional)</label>
+                            <Input
+                              type="date"
+                              value={newTaskDueDate}
+                              onChange={(e) => setNewTaskDueDate(e.target.value)}
+                              className="bg-gray-800 border-gray-700 text-white"
+                            />
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              onClick={handleAddTask}
+                              disabled={!newTaskTitle.trim() || scheduleHook.saving}
+                              size="sm"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              <Save className="w-4 h-4 mr-2" />
+                              {scheduleHook.saving ? 'Creating...' : 'Create Task'}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setShowAddTask(false);
+                                setNewTaskTitle('');
+                                setNewTaskDescription('');
+                                setNewTaskDueDate('');
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {scheduleHook.scheduleItems.length === 0 ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                          <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
+                          <p className="text-gray-500 mb-6">Create tasks to organize your project timeline</p>
+                          <Button 
+                            onClick={() => setShowAddTask(true)}
+                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                          >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create First Task
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 overflow-y-auto space-y-3">
+                        {scheduleHook.scheduleItems.map((item: any) => (
+                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center space-x-2">
+                                  <button 
+                                    onClick={() => scheduleHook.toggleTaskCompletion(item.id, item.completed)}
+                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                      item.completed 
+                                        ? 'bg-green-500 border-green-500' 
+                                        : 'border-gray-500 hover:border-green-500'
+                                    } transition-colors cursor-pointer`}
+                                  >
+                                    {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
+                                  </button>
+                                  <h4 className={`font-medium truncate ${
+                                    item.completed ? 'text-gray-400 line-through' : 'text-white'
+                                  }`}>
+                                    {item.title}
+                                  </h4>
+                                </div>
+                                {item.description && (
+                                  <p className="text-sm text-gray-400 mt-1 line-clamp-2 ml-7">{item.description}</p>
+                                )}
+                                <div className="flex items-center mt-2 text-sm text-gray-500 ml-7">
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  <span>
+                                    {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </Tabs>
           </div>
