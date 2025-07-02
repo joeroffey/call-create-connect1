@@ -18,6 +18,7 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
   const uploadLogo = async (file: File) => {
     try {
       setUploading(true);
+      console.log('Starting logo upload for file:', file.name, 'size:', file.size);
 
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -29,17 +30,20 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
         throw new Error('File size must be less than 5MB');
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('User check:', user?.id, 'error:', userError);
       if (!user) throw new Error('Not authenticated');
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${teamId}/logo.${fileExt}`;
+      const fileName = `${teamId}/logo.${fileExt}`;
+      console.log('Upload filename:', fileName);
 
       // Upload file to storage
       const { error: uploadError, data } = await supabase.storage
         .from('team-logos')
         .upload(fileName, file, { upsert: true });
 
+      console.log('Upload result:', { data, uploadError });
       if (uploadError) throw uploadError;
 
       // Get public URL
