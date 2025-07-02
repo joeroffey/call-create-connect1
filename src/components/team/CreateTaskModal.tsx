@@ -137,49 +137,49 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
           New Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-gray-800/95 backdrop-blur-sm border-gray-600 max-w-md text-white shadow-2xl">
+      <DialogContent className="bg-white border-gray-300 max-w-md text-gray-900 shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-white">Create New Task</DialogTitle>
+          <DialogTitle className="text-gray-900">Create New Task</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="task-title" className="text-white">Title</Label>
+            <Label htmlFor="task-title" className="text-gray-900">Title</Label>
             <Input
               id="task-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter task title"
-              className="bg-gray-800 border-gray-600 text-white"
+              className="bg-white border-gray-300 text-gray-900"
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="task-description" className="text-white">Description (Optional)</Label>
+            <Label htmlFor="task-description" className="text-gray-900">Description (Optional)</Label>
             <Textarea
               id="task-description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe the task"
-              className="bg-gray-800 border-gray-600 text-white"
+              className="bg-white border-gray-300 text-gray-900"
               rows={3}
             />
           </div>
 
           <div>
-            <Label htmlFor="task-project" className="text-white">Project</Label>
+            <Label htmlFor="task-project" className="text-gray-900">Project</Label>
             {projects.length === 0 ? (
-              <div className="p-3 bg-gray-800 border border-gray-600 rounded-md text-gray-400 text-sm">
+              <div className="p-3 bg-gray-100 border border-gray-300 rounded-md text-gray-600 text-sm">
                 No projects available. Create a project first to add tasks.
               </div>
             ) : (
               <Select value={projectId} onValueChange={setProjectId} required>
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                   <SelectValue placeholder="Select a project" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectContent className="bg-white border-gray-300">
                   {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id} className="text-white hover:bg-gray-700">
+                    <SelectItem key={project.id} value={project.id} className="text-gray-900 hover:bg-gray-100">
                       {project.name}
                     </SelectItem>
                   ))}
@@ -189,15 +189,15 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
           </div>
 
           <div>
-            <Label htmlFor="task-assignee" className="text-white">Assign To (Optional)</Label>
+            <Label htmlFor="task-assignee" className="text-gray-900">Assign To (Optional)</Label>
             <Select value={assignedTo} onValueChange={setAssignedTo}>
-              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+              <SelectTrigger className="bg-white border-gray-300 text-gray-900">
                 <SelectValue placeholder="Select team member" />
               </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-600">
-                <SelectItem value="" className="text-white hover:bg-gray-700">Unassigned</SelectItem>
+              <SelectContent className="bg-white border-gray-300">
+                <SelectItem value="" className="text-gray-900 hover:bg-gray-100">Unassigned</SelectItem>
                 {members.map((member) => (
-                  <SelectItem key={member.user_id} value={member.user_id} className="text-white hover:bg-gray-700">
+                  <SelectItem key={member.user_id} value={member.user_id} className="text-gray-900 hover:bg-gray-100">
                     {member.profiles?.full_name || 'Unknown User'}
                   </SelectItem>
                 ))}
@@ -206,24 +206,24 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
           </div>
 
           <div>
-            <Label className="text-white">Due Date (Optional)</Label>
+            <Label className="text-gray-900">Due Date (Optional)</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="w-full justify-start text-left font-normal bg-gray-800 border-gray-600 text-white hover:bg-gray-700"
+                  className="w-full justify-start text-left font-normal bg-white border-gray-300 text-gray-900 hover:bg-gray-50"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {dueDate ? format(dueDate, "PPP") : "Pick a date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-600" align="start">
+              <PopoverContent className="w-auto p-0 bg-white border-gray-300" align="start">
                 <Calendar
                   mode="single"
                   selected={dueDate}
                   onSelect={setDueDate}
                   initialFocus
-                  className="bg-gray-800 text-white"
+                  className="bg-white text-gray-900"
                 />
               </PopoverContent>
             </Popover>
@@ -234,7 +234,7 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="border-gray-600 text-gray-300"
+              className="border-gray-300 text-gray-700"
             >
               Cancel
             </Button>
