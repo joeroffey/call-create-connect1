@@ -277,8 +277,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 <div className="flex items-center ml-2 flex-shrink-0">
                   <Badge variant="outline" className="border-gray-600 text-gray-300 px-2 sm:px-3 py-1 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                     {getRoleIcon(member.role)}
-                    <span className="capitalize font-medium hidden sm:inline">{member.role}</span>
-                    <span className="capitalize font-medium sm:hidden">{member.role.substring(0, 3)}</span>
+                    <span className="capitalize font-medium">{member.role}</span>
                   </Badge>
                 </div>
               </div>
