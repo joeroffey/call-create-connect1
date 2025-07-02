@@ -28,25 +28,37 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
 
     setLoading(true);
     try {
-      const query = supabase
+      // First get comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          *,
-          profiles!author_id(full_name)
-        `)
+        .select('*')
         .eq('team_id', teamId)
         .eq('target_type', targetType)
+        .eq('target_id', targetType === 'team' ? teamId : (targetId || ''))
         .order('created_at', { ascending: true });
 
-      if (targetType === 'project' && targetId) {
-        query.eq('target_id', targetId);
-      } else if (targetType === 'team') {
-        query.eq('target_id', teamId);
-      }
+      if (commentsError) throw commentsError;
 
-      const { data, error } = await query;
+      // Then get profiles for all authors
+      const authorIds = [...new Set(commentsData?.map(c => c.author_id) || [])];
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', authorIds);
 
-      if (error) throw error;
+      if (profilesError) throw profilesError;
+
+      // Create profiles lookup
+      const profilesLookup = new Map();
+      profilesData?.forEach(profile => {
+        profilesLookup.set(profile.user_id, profile);
+      });
+
+      // Combine comments with profiles
+      const data = commentsData?.map(comment => ({
+        ...comment,
+        profiles: profilesLookup.get(comment.author_id)
+      }));
 
       // Organize comments into threads
       const commentsMap = new Map();
@@ -88,6 +100,11 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
 
     try {
       const commentTargetId = targetType === 'team' ? teamId : targetId;
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
       
       const { error } = await supabase
         .from('comments')
@@ -97,7 +114,7 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
           target_id: commentTargetId,
           target_type: targetType,
           parent_id: parentId || null,
-          author_id: (await supabase.auth.getUser()).data.user?.id
+          author_id: user.id
         });
 
       if (error) throw error;

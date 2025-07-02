@@ -33,7 +33,6 @@ interface TeamProjectsViewProps {
 }
 
 const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjectsViewProps) => {
-  console.log('TeamProjectsView: Component starting to render');
   const [projects, setProjects] = useState<TeamProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -43,16 +42,12 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   const [showProjectDetails, setShowProjectDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('chats');
   const [filters, setFilters] = useState<ProjectFilters>({
-    context: 'all', // Not used for team projects, but needed for interface
+    context: 'all',
     projectType: 'all',
     status: 'all',
     search: ''
   });
   const { toast } = useToast();
-  
-  
-  console.log('TeamProjectsView render - user:', user?.id, 'teamId:', teamId, 'projects:', projects.length);
-  console.log('TeamProjectsView - filters:', filters);
   
   // Get conversations data with the new helper functions
   const conversationsHook = useConversations(user?.id);
@@ -66,16 +61,13 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     incrementScheduleCount
   } = conversationsHook;
 
-  console.log('TeamProjectsView - conversations loaded:', conversations.length);
-
+  
   const fetchTeamProjects = async () => {
     if (!user?.id || !teamId) {
-      console.log('No user ID or team ID, skipping project fetch');
       setLoading(false);
       return;
     }
     
-    console.log('Fetching team projects for user:', user.id, 'teamId:', teamId);
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -91,16 +83,13 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         .order('updated_at', { ascending: false });
 
       if (error) {
-        console.error('Supabase error fetching team projects:', error);
         throw error;
       }
-      
-      console.log('TeamProjectsView - fetched team projects:', data);
       
       // Process projects to include team name
       const processedProjects = (data || []).map(project => ({
         ...project,
-        team_name: teamName // Use the passed team name for consistency
+        team_name: teamName
       }));
       
       // Sort projects: pinned first, then by updated_at
@@ -111,9 +100,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
       });
       
       setProjects(sortedProjects);
-      console.log('Team projects set successfully:', sortedProjects.length);
     } catch (error) {
-      console.error('Error fetching team projects:', error);
       toast({
         variant: "destructive",
         title: "Error loading team projects",
@@ -125,7 +112,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   };
 
   useEffect(() => {
-    console.log('TeamProjectsView useEffect triggered, user ID:', user?.id, 'teamId:', teamId);
     fetchTeamProjects();
   }, [user?.id, teamId]);
 
@@ -133,7 +119,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   useEffect(() => {
     if (!user?.id || !teamId) return;
 
-    console.log('Setting up real-time subscription for team projects');
     const channel = supabase
       .channel('team-projects-changes')
       .on(
@@ -144,15 +129,13 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
           table: 'projects',
           filter: `team_id=eq.${teamId}`,
         },
-        (payload) => {
-          console.log('Team project change detected:', payload);
+        () => {
           fetchTeamProjects();
         }
       )
       .subscribe();
 
     return () => {
-      console.log('Cleaning up team projects subscription');
       supabase.removeChannel(channel);
     };
   }, [user?.id, teamId]);
@@ -173,7 +156,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
 
       fetchTeamProjects();
     } catch (error: any) {
-      console.error('Error toggling pin:', error);
       toast({
         variant: "destructive",
         title: "Error updating project",
@@ -199,7 +181,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
 
       fetchTeamProjects();
     } catch (error: any) {
-      console.error('Error updating status:', error);
       toast({
         variant: "destructive",
         title: "Error updating status",
@@ -238,7 +219,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
       setShowCreateModal(false);
       fetchTeamProjects();
     } catch (error: any) {
-      console.error('Error creating team project:', error);
       toast({
         variant: "destructive",
         title: "Error creating project",
@@ -248,20 +228,11 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   };
 
   const updateProject = async () => {
-    console.log('updateProject called with:', editingProject);
     if (!editingProject || !editingProject.name.trim()) {
-      console.log('Update cancelled - invalid project data');
       return;
     }
 
     try {
-      console.log('Attempting to update project with data:', {
-        name: editingProject.name.trim(),
-        description: editingProject.description.trim() || null,
-        label: editingProject.label,
-        status: editingProject.status,
-        id: editingProject.id
-      });
       const { error } = await supabase
         .from('projects')
         .update({
@@ -273,11 +244,8 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         .eq('id', editingProject.id);
 
       if (error) {
-        console.error('Supabase update error:', error);
         throw error;
       }
-
-      console.log('Project updated successfully');
 
       toast({
         title: "Project updated successfully",
@@ -287,7 +255,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
       setEditingProject(null);
       fetchTeamProjects();
     } catch (error: any) {
-      console.error('Error updating project:', error);
       toast({
         variant: "destructive",
         title: "Error updating project",
@@ -316,7 +283,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
 
       fetchTeamProjects();
     } catch (error: any) {
-      console.error('Error deleting project:', error);
       toast({
         variant: "destructive",
         title: "Error deleting project",
@@ -326,15 +292,12 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   };
 
   const handleProjectStatsClick = (project: TeamProject, section: string) => {
-    console.log('handleProjectStatsClick called with:', project.name, section);
     setSelectedProject(project);
     setActiveTab(section);
     setShowProjectDetails(true);
-    console.log('Modal should now be open with activeTab:', section);
   };
 
   const handleEditProject = (project: any) => {
-    // Convert the project from ProjectCard format to TeamProject format
     const teamProject: TeamProject = {
       ...project,
       team_id: project.team_id || teamId,
@@ -344,18 +307,14 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   };
 
   const handleStartNewChatFromModal = (projectId: string, conversationId?: string) => {
-    console.log('Starting chat for project:', projectId, 'conversation:', conversationId);
     if (conversationId) {
-      // Open existing conversation
       onStartNewChat(projectId, conversationId);
     } else {
-      // Start new chat for project
       onStartNewChat(projectId);
     }
   };
 
   if (loading || conversationsLoading) {
-    console.log('Team projects loading - projects loading:', loading, 'conversations loading:', conversationsLoading);
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
@@ -381,8 +340,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
       return true;
     });
   }, [projects, filters]);
-
-  console.log('Rendering team projects view with', projects.length, 'total projects,', filteredProjects.length, 'filtered');
 
   return (
     <div className="space-y-6">
@@ -462,7 +419,6 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         project={selectedProject}
         isOpen={showProjectDetails}
         onClose={() => {
-          console.log('Closing ProjectDetailsModal');
           setShowProjectDetails(false);
           setSelectedProject(null);
         }}
