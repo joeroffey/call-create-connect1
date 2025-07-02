@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
 import SubscriptionScreen from '../components/SubscriptionScreen';
@@ -17,6 +18,7 @@ import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
 
 const Index = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -25,7 +27,6 @@ const Index = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
@@ -368,7 +369,7 @@ const Index = () => {
           <div className="flex items-center space-x-4">
             {/* Notifications Bell Icon */}
             <motion.button
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => navigate('/notifications')}
               className="relative p-2 rounded-full bg-gray-800/50 hover:bg-gray-700/50 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -394,32 +395,6 @@ const Index = () => {
         </div>
       </motion.header>
 
-      {/* Notifications Overlay */}
-      <AnimatePresence>
-        {showNotifications && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-20 right-6 z-50 w-96 max-h-96 bg-gray-900/95 backdrop-blur-xl border border-gray-700 rounded-xl shadow-2xl overflow-hidden"
-          >
-            <div className="p-4 border-b border-gray-700">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white">Updates</h3>
-                <button
-                  onClick={() => setShowNotifications(false)}
-                  className="text-gray-400 hover:text-white"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            <div className="max-h-80 overflow-y-auto">
-              <NotificationsScreen />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Main Content - fills space between header and nav with proper mobile spacing */}
       <main className="flex-1 min-h-0 overflow-y-auto pb-24">
