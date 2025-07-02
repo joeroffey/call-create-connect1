@@ -38,6 +38,11 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
 
       if (error) throw error;
       setProjects(data || []);
+      
+      // Auto-select first project if available and none selected
+      if (data && data.length > 0 && !projectId) {
+        setProjectId(data[0].id);
+      }
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
@@ -168,13 +173,20 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
                 <SelectValue placeholder="Select a project" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-600">
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
+                {projects.length === 0 ? (
+                  <SelectItem value="" disabled>No projects available</SelectItem>
+                ) : (
+                  projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
+            {projects.length === 0 && (
+              <p className="text-sm text-gray-400 mt-1">Create a project first to add tasks</p>
+            )}
           </div>
 
           <div>
@@ -229,7 +241,7 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
             </Button>
             <Button
               type="submit"
-              disabled={loading || !title.trim() || !projectId}
+              disabled={loading || !title.trim() || !projectId || projects.length === 0}
               className="bg-emerald-500 hover:bg-emerald-600"
             >
               {loading ? 'Creating...' : 'Create Task'}

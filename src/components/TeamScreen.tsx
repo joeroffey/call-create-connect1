@@ -337,10 +337,26 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
                   </Button>
                 }
               />
-              <Button variant="outline" className="border-gray-600 text-gray-300 hover:border-gray-500">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={() => setActiveView('members')}
+                  variant={activeView === 'members' ? 'default' : 'outline'} 
+                  size="sm"
+                  className="border-gray-600 text-gray-300 hover:border-gray-500"
+                >
+                  <Users className="w-4 h-4 mr-2" />
+                  Members
+                </Button>
+                <Button 
+                  onClick={() => setActiveView('settings')}
+                  variant={activeView === 'settings' ? 'default' : 'outline'}
+                  size="sm" 
+                  className="border-gray-600 text-gray-300 hover:border-gray-500"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
             </div>
           </div>
 
