@@ -12,9 +12,7 @@ interface Comment {
   parent_id: string | null;
   created_at: string;
   updated_at: string;
-  profiles?: {
-    full_name: string | null;
-  };
+  author_name?: string;
   replies?: Comment[];
 }
 
@@ -24,61 +22,55 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
   const { toast } = useToast();
 
   const fetchComments = async () => {
-    if (!teamId) return;
+    if (!teamId) {
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     try {
-      // First get comments
-      const { data: commentsData, error: commentsError } = await supabase
+      const commentTargetId = targetType === 'team' ? teamId : (targetId || '');
+      
+      // Fetch comments with author profiles in one query
+      const { data: commentsData, error } = await supabase
         .from('comments')
-        .select('*')
+        .select(`
+          *,
+          profiles!comments_author_id_fkey(full_name)
+        `)
         .eq('team_id', teamId)
         .eq('target_type', targetType)
-        .eq('target_id', targetType === 'team' ? teamId : (targetId || ''))
+        .eq('target_id', commentTargetId)
         .order('created_at', { ascending: true });
 
-      if (commentsError) throw commentsError;
-
-      // Then get profiles for all authors
-      const authorIds = [...new Set(commentsData?.map(c => c.author_id) || [])];
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', authorIds);
-
-      if (profilesError) throw profilesError;
-
-      // Create profiles lookup
-      const profilesLookup = new Map();
-      profilesData?.forEach(profile => {
-        profilesLookup.set(profile.user_id, profile);
-      });
-
-      // Combine comments with profiles
-      const data = commentsData?.map(comment => ({
-        ...comment,
-        profiles: profilesLookup.get(comment.author_id)
-      }));
+      if (error) throw error;
 
       // Organize comments into threads
-      const commentsMap = new Map();
+      const commentsMap = new Map<string, Comment>();
       const rootComments: Comment[] = [];
 
-      (data || []).forEach((comment: any) => {
-        const commentWithReplies = { ...comment, replies: [] };
-        commentsMap.set(comment.id, commentWithReplies);
+      (commentsData || []).forEach((comment: any) => {
+        const processedComment: Comment = {
+          ...comment,
+          author_name: comment.profiles?.full_name || 'Unknown User',
+          replies: []
+        };
+        
+        commentsMap.set(comment.id, processedComment);
 
         if (!comment.parent_id) {
-          rootComments.push(commentWithReplies);
+          rootComments.push(processedComment);
         }
       });
 
       // Add replies to their parent comments
-      (data || []).forEach((comment: any) => {
+      (commentsData || []).forEach((comment: any) => {
         if (comment.parent_id && commentsMap.has(comment.parent_id)) {
           const parentComment = commentsMap.get(comment.parent_id);
-          const commentWithReplies = commentsMap.get(comment.id);
-          parentComment.replies.push(commentWithReplies);
+          const childComment = commentsMap.get(comment.id);
+          if (parentComment && childComment) {
+            parentComment.replies!.push(childComment);
+          }
         }
       });
 
@@ -99,17 +91,15 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
     if (!teamId) return;
 
     try {
-      const commentTargetId = targetType === 'team' ? teamId : targetId;
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error('User not authenticated');
       
-      if (!user?.id) {
-        throw new Error('User not authenticated');
-      }
+      const commentTargetId = targetType === 'team' ? teamId : targetId;
       
       const { error } = await supabase
         .from('comments')
         .insert({
-          content,
+          content: content.trim(),
           team_id: teamId,
           target_id: commentTargetId,
           target_type: targetType,

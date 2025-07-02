@@ -10,16 +10,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CommentForm from './CommentForm';
-import { supabase } from '@/integrations/supabase/client';
 
 interface Comment {
   id: string;
   content: string;
   author_id: string;
   created_at: string;
-  profiles?: {
-    full_name: string | null;
-  };
+  author_name?: string;
   replies?: Comment[];
 }
 
@@ -78,11 +75,11 @@ const CommentItem = ({ comment, onReply, onDelete, currentUserId, level = 0 }: C
           <div className="flex items-start justify-between mb-3">
             <div className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                {comment.profiles?.full_name?.substring(0, 2).toUpperCase() || 'UN'}
+                {comment.author_name?.substring(0, 2).toUpperCase() || 'UN'}
               </div>
               <div>
                 <p className="text-white font-medium text-sm">
-                  {comment.profiles?.full_name || 'Unknown User'}
+                  {comment.author_name || 'Unknown User'}
                 </p>
                 <p className="text-gray-400 text-xs">
                   {formatTime(comment.created_at)}
