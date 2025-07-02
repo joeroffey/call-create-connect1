@@ -346,12 +346,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="border-gray-600 text-gray-300 hover:border-gray-500">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
-            </div>
           </div>
 
           {/* Team Selector */}
