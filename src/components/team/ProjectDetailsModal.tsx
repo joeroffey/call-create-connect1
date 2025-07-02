@@ -260,13 +260,18 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] bg-white border-gray-300 text-gray-900 p-0 shadow-2xl">
-        <DialogHeader className="p-6 border-b border-gray-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      <div 
+        className="bg-white border border-gray-300 text-gray-900 p-0 shadow-2xl max-w-4xl w-full h-[90vh] rounded-lg overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-2xl text-gray-900 mb-2">{project?.name}</DialogTitle>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">{project?.name}</h2>
               <div className="flex items-center gap-3">
                 <Badge variant="outline" className={getStatusColor(project?.status)}>
                   {project?.status?.replace('-', ' ')}
@@ -293,7 +298,7 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
           {project?.description && (
             <p className="text-gray-600 mt-2">{project.description}</p>
           )}
-        </DialogHeader>
+        </div>
 
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
@@ -470,8 +475,8 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
             </div>
           </Tabs>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
