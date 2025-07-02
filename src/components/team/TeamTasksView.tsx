@@ -187,17 +187,26 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
               >
                 <Card className={`bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all ${dueDateInfo?.urgent ? 'border-l-4 border-l-red-500' : ''}`}>
                   <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-3">
-                          <h4 className="text-lg font-semibold text-white">{task.title}</h4>
-                          <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1 min-w-0">
+                        {/* Single line layout with title and project badge */}
+                        <div className="flex items-center gap-3 mb-3">
+                          <h4 className="text-lg font-semibold text-white truncate flex-1">{task.title}</h4>
+                          <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30 flex-shrink-0">
                             {task.project_name}
                           </Badge>
+                          <Button
+                            onClick={() => markTaskComplete(task.id)}
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white flex-shrink-0"
+                          >
+                            <CheckSquare className="w-4 h-4 mr-2" />
+                            Complete
+                          </Button>
                         </div>
                         
                         {task.description && (
-                          <p className="text-gray-400 text-sm">{task.description}</p>
+                          <p className="text-gray-400 text-sm mb-3 line-clamp-2">{task.description}</p>
                         )}
                         
                         <div className="flex items-center gap-4 text-sm">
@@ -213,16 +222,6 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                           </div>
                         </div>
                       </div>
-                      
-                      <Button
-                        onClick={() => markTaskComplete(task.id)}
-                        variant="outline"
-                        size="sm"
-                        className="border-emerald-600 text-emerald-400 hover:bg-emerald-600 hover:text-white"
-                      >
-                        <CheckSquare className="w-4 h-4 mr-2" />
-                        Complete
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
