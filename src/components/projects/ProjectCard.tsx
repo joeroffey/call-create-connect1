@@ -211,8 +211,7 @@ const ProjectCard = ({
       {/* Customer Details */}
       {(project.customer_name || project.customer_address || project.customer_phone) && (
         <div className="mb-4 p-3 bg-gray-800/30 rounded-lg border border-gray-700/30">
-          <div className="flex items-center gap-2 mb-2">
-            <User className="w-4 h-4 text-blue-400" />
+          <div className="mb-2">
             <span className="text-sm font-medium text-blue-400">Customer Details</span>
           </div>
           <div className="space-y-2">
