@@ -105,22 +105,38 @@ const ProjectDetailsModal = ({
 
   // Task management functionality
   const handleAddTask = async () => {
+    console.log('Creating task with data:', {
+      title: newTaskTitle,
+      description: newTaskDescription,
+      due_date: newTaskDueDate,
+      assigned_to: newTaskAssignedTo,
+      project_id: project?.id,
+      user_id: user?.id
+    });
+    
     if (!newTaskTitle.trim()) return;
 
-    const success = await scheduleHook.createTask({
-      title: newTaskTitle,
-      description: newTaskDescription || undefined,
-      due_date: newTaskDueDate || undefined,
-      assigned_to: newTaskAssignedTo || undefined,
-    });
+    try {
+      const success = await scheduleHook.createTask({
+        title: newTaskTitle,
+        description: newTaskDescription || undefined,
+        due_date: newTaskDueDate || undefined,
+        assigned_to: newTaskAssignedTo || undefined,
+      });
 
-    if (success) {
-      // Reset form and close
-      setNewTaskTitle('');
-      setNewTaskDescription('');
-      setNewTaskDueDate('');
-      setNewTaskAssignedTo('');
-      setShowAddTask(false);
+      if (success) {
+        console.log('Task created successfully');
+        // Reset form and close
+        setNewTaskTitle('');
+        setNewTaskDescription('');
+        setNewTaskDueDate('');
+        setNewTaskAssignedTo('');
+        setShowAddTask(false);
+      } else {
+        console.log('Task creation failed');
+      }
+    } catch (error) {
+      console.error('Error in handleAddTask:', error);
     }
   };
 
@@ -372,11 +388,11 @@ const ProjectDetailsModal = ({
                               <SelectContent className="bg-gray-800 border-gray-700">
                                 <SelectItem value="">Unassigned</SelectItem>
                                 <SelectItem value={user?.id}>Myself</SelectItem>
-                                {teamMembersHook.members.map((member) => (
+                                {teamMembersHook.members?.map((member) => (
                                   <SelectItem key={member.user_id} value={member.user_id}>
                                     {member.profiles?.full_name || `User ${member.user_id.slice(0, 8)}`}
                                   </SelectItem>
-                                ))}
+                                )) || []}
                               </SelectContent>
                             </Select>
                           </div>
