@@ -75,20 +75,32 @@ const TeamInvitePage = () => {
   }, [token]);
 
   const acceptInvitation = async () => {
-    if (!invitation) return;
+    if (!invitation) {
+      console.log('TeamInvitePage: No invitation data available');
+      return;
+    }
+
+    console.log('TeamInvitePage: Accept invitation clicked');
 
     const { data: { user } } = await supabase.auth.getUser();
+    console.log('TeamInvitePage: Current user:', user);
+    
     if (!user) {
+      console.log('TeamInvitePage: User not signed in, showing sign in message');
       toast({
         title: "Please sign in",
         description: "You need to be signed in to accept team invitations",
         variant: "destructive",
       });
+      // Redirect to auth page or show sign in form
+      navigate('/?showAuth=true');
       return;
     }
 
     setAccepting(true);
     try {
+      console.log('TeamInvitePage: Adding user to team...');
+      
       // Add user to team
       const { error: memberError } = await supabase
         .from('team_members')
@@ -99,27 +111,44 @@ const TeamInvitePage = () => {
           invited_by: invitation.invited_by
         });
 
-      if (memberError) throw memberError;
+      console.log('TeamInvitePage: Member insert result:', { memberError });
 
+      if (memberError) {
+        console.error('TeamInvitePage: Error adding member:', memberError);
+        throw memberError;
+      }
+
+      console.log('TeamInvitePage: Marking invitation as accepted...');
+      
       // Mark invitation as accepted
       const { error: inviteError } = await supabase
         .from('team_invitations')
         .update({ accepted_at: new Date().toISOString() })
         .eq('id', invitation.id);
 
-      if (inviteError) throw inviteError;
+      console.log('TeamInvitePage: Invitation update result:', { inviteError });
 
+      if (inviteError) {
+        console.error('TeamInvitePage: Error updating invitation:', inviteError);
+        throw inviteError;
+      }
+
+      console.log('TeamInvitePage: Success! Showing success message');
+      
       toast({
         title: "Welcome to the team!",
         description: `You've successfully joined ${invitation.teams.name}`,
       });
 
-      navigate('/');
+      // Navigate to home page after a short delay
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
     } catch (error: any) {
-      console.error('Error accepting invitation:', error);
+      console.error('TeamInvitePage: Error accepting invitation:', error);
       toast({
         title: "Error",
-        description: "Failed to accept invitation. You might already be a member.",
+        description: error.message || "Failed to accept invitation. You might already be a member.",
         variant: "destructive",
       });
     } finally {
