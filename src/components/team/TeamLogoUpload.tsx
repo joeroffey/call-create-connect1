@@ -144,6 +144,10 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
               src={currentLogoUrl}
               alt="Team logo"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                console.log('Failed to load logo image:', currentLogoUrl);
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center">
@@ -164,12 +168,17 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
             dragActive 
               ? 'border-emerald-500 bg-emerald-500/10' 
               : 'border-gray-600 hover:border-gray-500'
-          }`}
+          } ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
           onDrop={handleDrop}
-          onClick={() => document.getElementById('logo-upload')?.click()}
+          onClick={() => {
+            if (!uploading) {
+              console.log('Logo upload clicked, opening file dialog');
+              document.getElementById('logo-upload')?.click();
+            }
+          }}
         >
           {uploading ? (
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500" />
@@ -183,10 +192,19 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
         id="logo-upload"
         type="file"
         accept="image/*"
-        onChange={handleFileInput}
+        onChange={(e) => {
+          console.log('File input changed:', e.target.files?.[0]?.name);
+          handleFileInput(e);
+        }}
         className="hidden"
         disabled={uploading}
       />
+      
+      {uploading && (
+        <div className="absolute -bottom-6 left-0 text-xs text-gray-400">
+          Uploading...
+        </div>
+      )}
     </div>
   );
 };
