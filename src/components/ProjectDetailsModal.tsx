@@ -171,11 +171,11 @@ const ProjectDetailsModal = ({
             </div>
           </div>
 
-          {/* Content Area - Fixed Height Container */}
-          <div className="flex flex-col h-[calc(90vh-200px)]">
+          {/* Content Area - Better Height Management */}
+          <div className="flex flex-col h-[calc(90vh-140px)] max-h-[600px]">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
               {/* Tabs Header */}
-              <div className="px-6 pt-4 pb-2">
+              <div className="px-6 pt-4 pb-2 flex-shrink-0">
                 <TabsList className="grid w-full grid-cols-3 bg-gray-900/50">
                   <TabsTrigger value="chats" className="flex items-center justify-center space-x-2">
                     <MessageCircle className="w-4 h-4" />
@@ -192,8 +192,8 @@ const ProjectDetailsModal = ({
                 </TabsList>
               </div>
 
-              {/* Tab Content - Scrollable Area */}
-              <div className="flex-1 px-6 pb-4 min-h-0">
+              {/* Tab Content - Flexible Height */}
+              <div className="flex-1 px-6 pb-4 min-h-0 overflow-hidden">
                 <TabsContent value="chats" className="h-full flex flex-col m-0">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
@@ -320,43 +320,55 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                      {scheduleItems.map((item: any) => (
-                        <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="min-w-0 flex-1">
-                              <h4 className="font-medium text-white truncate">{item.title}</h4>
-                              {item.description && (
-                                <p className="text-sm text-gray-400 mt-1 line-clamp-2">{item.description}</p>
-                              )}
-                              <div className="flex items-center mt-2 text-sm text-gray-500">
-                                <Calendar className="w-3 h-3 mr-1" />
-                                <span>
-                                  {item.due_date ? formatDate(item.due_date) : 'No due date'}
-                                </span>
-                              </div>
-                            </div>
-                            <div className={`w-3 h-3 rounded-full ml-3 ${
-                              item.completed ? 'bg-green-500' : 'bg-gray-600'
-                            }`} />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                       {scheduleItems.map((item: any) => (
+                         <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                           <div className="flex items-start justify-between">
+                             <div className="min-w-0 flex-1">
+                               <div className="flex items-center space-x-2">
+                                 <button 
+                                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                     item.completed 
+                                       ? 'bg-green-500 border-green-500' 
+                                       : 'border-gray-500 hover:border-green-500'
+                                   } transition-colors`}
+                                 >
+                                   {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
+                                 </button>
+                                 <h4 className={`font-medium truncate ${
+                                   item.completed ? 'text-gray-400 line-through' : 'text-white'
+                                 }`}>
+                                   {item.title}
+                                 </h4>
+                               </div>
+                               {item.description && (
+                                 <p className="text-sm text-gray-400 mt-1 line-clamp-2 ml-7">{item.description}</p>
+                               )}
+                               <div className="flex items-center mt-2 text-sm text-gray-500 ml-7">
+                                 <Calendar className="w-3 h-3 mr-1" />
+                                 <span>
+                                   {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                 </span>
+                               </div>
+                             </div>
+                           </div>
+                         </div>
+                       ))}
+                     </div>
                   )}
                 </TabsContent>
               </div>
             </Tabs>
           </div>
 
-          {/* Footer */}
-          <div className="p-6 border-t border-gray-800/50 bg-gray-950/95">
+          {/* Footer - Fixed Position */}
+          <div className="flex-shrink-0 p-4 border-t border-gray-800/50 bg-gray-950/95">
             <div className="flex items-center justify-between text-sm text-gray-400">
               <div className="flex items-center space-x-4">
                 <span>Status: <span className="text-white">{project.status}</span></span>
                 <span>Label: <span className="text-white">{project.label}</span></span>
               </div>
-              <span>Last updated: <span className="text-white">{formatDate(project.updated_at)}</span></span>
+              <span>Updated: <span className="text-white">{formatDate(project.updated_at)}</span></span>
             </div>
           </div>
         </motion.div>
