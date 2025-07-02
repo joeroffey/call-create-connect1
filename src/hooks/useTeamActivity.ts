@@ -74,6 +74,24 @@ export const useTeamActivity = (teamId: string | null) => {
     };
 
     fetchTeamActivity();
+
+    // Set up real-time subscription for team activity
+    const channel = supabase
+      .channel(`team-activity-${teamId}-${Date.now()}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'team_activity',
+        filter: `team_id=eq.${teamId}`,
+      }, () => {
+        console.log('Real-time team activity update detected');
+        fetchTeamActivity();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [teamId]);
 
   const addActivity = async (

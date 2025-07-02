@@ -65,13 +65,51 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
       
-      // Add a test activity when team loads
+      // Add some test activities when team loads to demonstrate the 5-activity limit
       setTimeout(() => {
         if (addActivity) {
           addActivity('team_viewed', 'team', teams[0].id, { 
             team_name: teams[0].name,
             action_description: 'Team dashboard viewed'
           });
+          
+          // Add a few more test activities with delays to see them in order
+          setTimeout(() => {
+            addActivity('project_updated', 'project', 'test-project-1', { 
+              project_name: 'Sample House Extension',
+              team_name: teams[0].name
+            });
+          }, 500);
+          
+          setTimeout(() => {
+            addActivity('document_uploaded', 'document', 'test-doc-1', { 
+              document_name: 'Planning Application.pdf',
+              team_name: teams[0].name
+            });
+          }, 1000);
+          
+          setTimeout(() => {
+            addActivity('schedule_updated', 'schedule', 'test-schedule-1', { 
+              task_count: 5,
+              team_name: teams[0].name
+            });
+          }, 1500);
+          
+          setTimeout(() => {
+            addActivity('task_assigned', 'task', 'test-task-1', { 
+              task_title: 'Foundation inspection',
+              assigned_to: 'John Smith',
+              team_name: teams[0].name
+            });
+          }, 2000);
+          
+          setTimeout(() => {
+            addActivity('comment_added', 'comment', 'test-comment-1', { 
+              target_type: 'project',
+              comment_preview: 'Great progress on the foundation work',
+              team_name: teams[0].name
+            });
+          }, 2500);
         }
       }, 1000);
     }
@@ -106,13 +144,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       const newTeam = await createTeam(name, description);
       if (newTeam) {
         setSelectedTeamId(newTeam.id);
-        // Log team creation activity after selecting the team
-        setTimeout(() => {
-          addActivity('team_created', 'team', newTeam.id, { 
-            team_name: name,
-            team_description: description 
-          });
-        }, 500);
         return newTeam;
       }
       return newTeam;

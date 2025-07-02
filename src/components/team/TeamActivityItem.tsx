@@ -33,16 +33,26 @@ const TeamActivityItem = ({ activity }: TeamActivityItemProps) => {
         return <UserPlus className="w-4 h-4 text-blue-400" />;
       case 'team_created':
         return <Users className="w-4 h-4 text-green-400" />;
+      case 'team_viewed':
+        return <Users className="w-4 h-4 text-gray-400" />;
       case 'project_shared':
         return <Share2 className="w-4 h-4 text-blue-400" />;
-      case 'task_completed':
-        return <CheckCircle className="w-4 h-4 text-green-400" />;
-      case 'comment_added':
-        return <MessageSquare className="w-4 h-4 text-purple-400" />;
       case 'project_created':
         return <FileText className="w-4 h-4 text-orange-400" />;
+      case 'project_updated':
+        return <FileText className="w-4 h-4 text-blue-400" />;
+      case 'task_completed':
+        return <CheckCircle className="w-4 h-4 text-green-400" />;
       case 'task_assigned':
         return <Calendar className="w-4 h-4 text-yellow-400" />;
+      case 'comment_added':
+        return <MessageSquare className="w-4 h-4 text-purple-400" />;
+      case 'document_uploaded':
+        return <FileText className="w-4 h-4 text-indigo-400" />;
+      case 'schedule_updated':
+        return <Calendar className="w-4 h-4 text-cyan-400" />;
+      case 'team_settings_updated':
+        return <Users className="w-4 h-4 text-amber-400" />;
       default:
         return <Users className="w-4 h-4 text-gray-400" />;
     }
@@ -57,17 +67,27 @@ const TeamActivityItem = ({ activity }: TeamActivityItemProps) => {
       case 'member_invited':
         return `${userName} invited ${metadata?.email || 'someone'} to the team`;
       case 'team_created':
-        return `${userName} created the team`;
+        return `${userName} created the team "${metadata?.team_name || 'Unknown Team'}"`;
+      case 'team_viewed':
+        return `${userName} viewed the team dashboard`;
       case 'project_shared':
         return `${userName} shared project "${metadata?.project_name || 'Unknown Project'}"`;
       case 'task_completed':
         return `${userName} completed task "${metadata?.task_title || 'Unknown Task'}"`;
+      case 'task_assigned':
+        return `${userName} assigned a task to ${metadata?.assigned_to || 'someone'}`;
       case 'comment_added':
-        return `${userName} added a comment`;
+        return `${userName} added a comment on ${metadata?.target_type || 'item'}`;
       case 'project_created':
         return `${userName} created project "${metadata?.project_name || 'Unknown Project'}"`;
-      case 'task_assigned':
-        return `${userName} assigned a task`;
+      case 'project_updated':
+        return `${userName} updated project "${metadata?.project_name || 'Unknown Project'}"`;
+      case 'document_uploaded':
+        return `${userName} uploaded document "${metadata?.document_name || 'Unknown Document'}"`;
+      case 'schedule_updated':
+        return `${userName} updated schedule of works`;
+      case 'team_settings_updated':
+        return `${userName} updated team settings`;
       default:
         return `${userName} performed an action`;
     }
