@@ -26,6 +26,8 @@ import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
+import { useTeamActivity } from '@/hooks/useTeamActivity';
+import TeamActivityItem from '@/components/team/TeamActivityItem';
 
 interface TeamScreenProps {
   user: any;
@@ -42,6 +44,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
   const teamStats = useTeamStats(selectedTeamId);
+  const { activities, loading: activitiesLoading } = useTeamActivity(selectedTeamId);
 
   console.log('TeamScreen render:', {
     teamsCount: teams.length,
@@ -264,14 +267,27 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             Recent Team Activity
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-8">
-          <div className="text-center text-gray-400">
-            <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-8 h-8 opacity-50" />
+        <CardContent className="p-6">
+          {activitiesLoading ? (
+            <div className="text-center py-8 text-gray-400">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+              <p className="text-sm">Loading activity...</p>
             </div>
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No recent activity</h3>
-            <p className="text-sm">Team activity will appear here once you start collaborating</p>
-          </div>
+          ) : activities.length > 0 ? (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {activities.map((activity) => (
+                <TeamActivityItem key={activity.id} activity={activity} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="w-8 h-8 opacity-50" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-300 mb-2">No recent activity</h3>
+              <p className="text-sm">Team activity will appear here once you start collaborating</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
