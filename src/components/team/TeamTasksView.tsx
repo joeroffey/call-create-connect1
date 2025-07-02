@@ -16,6 +16,8 @@ interface TeamTask {
   project_id: string;
   project_name: string;
   created_at: string;
+  assigned_to: string | null;
+  assigned_to_name: string | null;
 }
 
 interface TeamTasksViewProps {
@@ -43,6 +45,7 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
           completed,
           project_id,
           created_at,
+          assigned_to,
           projects!inner(
             id,
             name,
@@ -56,10 +59,26 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
 
       if (error) throw error;
 
-      const processedTasks = (data || []).map(task => ({
-        ...task,
-        project_name: task.projects?.name || 'Unknown Project'
-      }));
+      // Get assigned user names for tasks that have assignments
+      const assignedUserIds = (data || [])
+        .map(task => task.assigned_to)
+        .filter(Boolean) as string[];
+
+      const { data: profiles } = assignedUserIds.length > 0 
+        ? await supabase
+            .from('profiles')
+            .select('user_id, full_name')
+            .in('user_id', assignedUserIds)
+        : { data: [] };
+
+      const processedTasks = (data || []).map(task => {
+        const assignedProfile = profiles?.find(p => p.user_id === task.assigned_to);
+        return {
+          ...task,
+          project_name: task.projects?.name || 'Unknown Project',
+          assigned_to_name: assignedProfile?.full_name || null
+        };
+      });
 
       setTasks(processedTasks);
     } catch (error) {
@@ -186,43 +205,60 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className={`bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all ${dueDateInfo?.urgent ? 'border-l-4 border-l-red-500' : ''}`}>
-                  <CardContent className="p-10">
-                    <div className="space-y-6">
-                      {/* Title section */}
-                      <div className="flex items-start justify-between">
-                        <h4 className="text-2xl font-semibold text-white leading-relaxed flex-1 pr-4">{task.title}</h4>
+                  <CardContent className="p-4">
+                    <div className="space-y-3">
+                      {/* Row 1: Title + Complete button */}
+                      <div className="flex items-center justify-between gap-4">
+                        <h4 className="text-lg font-semibold text-white truncate flex-1" title={task.title}>
+                          {task.title}
+                        </h4>
                         <Button
                           onClick={() => markTaskComplete(task.id)}
-                          size="lg"
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 flex-shrink-0"
+                          size="sm"
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white flex-shrink-0"
                         >
-                          <CheckSquare className="w-5 h-5 mr-3" />
+                          <CheckSquare className="w-4 h-4 mr-2" />
                           Complete
                         </Button>
                       </div>
                       
-                      {/* Project and metadata section */}
-                      <div className="flex items-center gap-8 flex-wrap">
-                        <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30 px-4 py-2 text-base">
+                      {/* Row 2: Project badge + Due date */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30 px-2 py-1 text-sm">
                           {task.project_name}
                         </Badge>
                         
                         {dueDateInfo && (
-                          <div className={`flex items-center gap-3 ${dueDateInfo.color} text-base`}>
-                            <Calendar className="w-5 h-5" />
+                          <div className={`flex items-center gap-2 ${dueDateInfo.color} text-sm`}>
+                            <Calendar className="w-4 h-4" />
                             <span className="font-medium">{dueDateInfo.text}</span>
                           </div>
                         )}
+                      </div>
+                      
+                      {/* Row 3: Assigned to + Created date */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        {task.assigned_to_name ? (
+                          <Badge variant="outline" className="px-2 py-1 text-sm text-blue-400 border-blue-400/30">
+                            <User className="w-3 h-3 mr-1" />
+                            {task.assigned_to_name}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="px-2 py-1 text-sm text-gray-400 border-gray-400/30">
+                            <User className="w-3 h-3 mr-1" />
+                            Unassigned
+                          </Badge>
+                        )}
                         
-                        <div className="flex items-center gap-3 text-gray-400 text-base">
-                          <Clock className="w-5 h-5" />
+                        <div className="flex items-center gap-2 text-gray-400 text-sm">
+                          <Clock className="w-4 h-4" />
                           <span>Created {new Date(task.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                       
                       {task.description && (
-                        <div className="border-t border-gray-700/50 pt-4">
-                          <p className="text-gray-300 text-base leading-relaxed">{task.description}</p>
+                        <div className="border-t border-gray-700/50 pt-3 mt-3">
+                          <p className="text-gray-300 text-sm leading-relaxed">{task.description}</p>
                         </div>
                       )}
                     </div>
