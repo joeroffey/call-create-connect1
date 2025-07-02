@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/NotificationsPage";
 import TeamInvitePage from "./pages/TeamInvitePage";
+import PasswordResetPage from "./pages/PasswordResetPage";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +19,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/team-invite" element={<TeamInvitePage />} />
+          <Route path="/password-reset" element={<PasswordResetPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
