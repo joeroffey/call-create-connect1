@@ -168,7 +168,7 @@ const ProjectCard = ({
         <div className="relative">
           <button
             onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
+            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 whitespace-nowrap ${getStatusColor(project.status)}`}
           >
             <span>{getStatusLabel(project.status)}</span>
             <ChevronDown className="w-3 h-3" />
@@ -190,12 +190,12 @@ const ProjectCard = ({
             </div>
           )}
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getLabelColor(project.label)}`}>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${getLabelColor(project.label)}`}>
           {project.label}
         </span>
         {project.team_name && (
-          <span className="px-3 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30">
-            Team: {project.team_name}
+          <span className="px-3 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 whitespace-nowrap">
+            {project.team_name}
           </span>
         )}
       </div>
