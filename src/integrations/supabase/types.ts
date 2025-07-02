@@ -218,6 +218,7 @@ export type Database = {
       }
       project_schedule_of_works: {
         Row: {
+          assigned_to: string | null
           completed: boolean
           completed_at: string | null
           created_at: string
@@ -230,6 +231,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          assigned_to?: string | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
@@ -242,6 +244,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          assigned_to?: string | null
           completed?: boolean
           completed_at?: string | null
           created_at?: string
