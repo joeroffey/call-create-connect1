@@ -90,24 +90,59 @@ export const useTeamMembers = (teamId?: string) => {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!user || !session) throw new Error('Not authenticated');
 
-      // For now, just create invitation since we don't have email lookup
-      const { error } = await supabase
-        .from('team_invitations')
-        .insert([{
-          team_id: teamId,
+      // Get team details and user profile for the invitation
+      const { data: team, error: teamError } = await supabase
+        .from('teams')
+        .select('name')
+        .eq('id', teamId)
+        .single();
+
+      if (teamError || !team) {
+        throw new Error('Team not found');
+      }
+
+      // Get inviter's profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      const inviterName = profile?.full_name || user.email?.split('@')[0] || 'Someone';
+
+      console.log('Sending team invitation via edge function...');
+
+      // Call the edge function to send invitation
+      const { data, error } = await supabase.functions.invoke('send-team-invitation', {
+        body: {
+          teamId,
           email,
           role,
-          invited_by: user.id
-        }]);
+          teamName: team.name,
+          inviterName
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to send invitation');
+      }
+
+      console.log('Invitation sent successfully:', data);
 
       toast({
         title: "Success", 
         description: `Invitation sent to ${email}`,
       });
+
+      // Refresh members list to show any updates
+      await fetchMembers();
     } catch (error: any) {
       console.error('useTeamMembers: Error inviting member:', error);
       toast({
