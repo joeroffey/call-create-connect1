@@ -262,22 +262,22 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       
       <div className="grid gap-4">
         {members.map((member) => (
-          <Card key={member.id} className="bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all">
+          <Card key={member.id} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center space-x-4 flex-1">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-semibold text-lg shadow-lg flex-shrink-0">
                     {member.profiles?.full_name?.substring(0, 2).toUpperCase() || 'UN'}
                   </div>
-                  <div>
-                    <p className="text-white font-semibold text-lg">{member.profiles?.full_name || 'Unknown User'}</p>
-                    <p className="text-gray-400">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-semibold text-lg truncate">{member.profiles?.full_name || 'Unknown User'}</p>
+                    <p className="text-gray-400 text-sm">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Badge variant="outline" className="border-gray-600 text-gray-300 px-3 py-1">
+                <div className="flex items-center space-x-3 flex-shrink-0">
+                  <Badge variant="outline" className="border-gray-600 text-gray-300 px-3 py-1 flex items-center gap-2">
                     {getRoleIcon(member.role)}
-                    <span className="ml-2 capitalize font-medium">{member.role}</span>
+                    <span className="capitalize font-medium">{member.role}</span>
                   </Badge>
                 </div>
               </div>
