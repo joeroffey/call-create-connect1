@@ -22,6 +22,7 @@ import InviteMemberModal from '@/components/team/InviteMemberModal';
 import TeamLogoUpload from '@/components/team/TeamLogoUpload';
 import TaskManagement from '@/components/team/TaskManagement';
 import TeamSettings from '@/components/team/TeamSettings';
+import TeamProjects from '@/components/team/TeamProjects';
 
 interface TeamScreenProps {
   user: any;
@@ -30,7 +31,7 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'members' | 'schedule' | 'settings'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
@@ -329,15 +330,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <CreateTeamModal 
-                onCreateTeam={handleCreateTeam}
-                trigger={
-                  <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-                    <Plus className="w-4 h-4 mr-1" />
-                    New Team
-                  </Button>
-                }
-              />
               <Button variant="outline" className="border-gray-600 text-gray-300 hover:border-gray-500">
                 <Settings className="w-4 h-4 mr-2" />
                 Settings
@@ -368,6 +360,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
               <div className="flex gap-2">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
+                  { id: 'projects', label: 'Projects', icon: FileText },
                   { id: 'schedule', label: 'Schedule', icon: Calendar }
                 ].map((tab) => (
                   <button
@@ -408,6 +401,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
             <div className="md:hidden grid grid-cols-2 gap-2">
               {[
                 { id: 'overview', label: 'Overview', icon: FileText },
+                { id: 'projects', label: 'Projects', icon: FileText },
                 { id: 'schedule', label: 'Schedule', icon: Calendar },
                 { id: 'members', label: 'Members', icon: Users },
                 { id: 'settings', label: 'Settings', icon: Settings }
@@ -441,10 +435,14 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           {activeView === 'schedule' && selectedTeamId && (
             <TaskManagement teamId={selectedTeamId} members={members} />
           )}
+          {activeView === 'projects' && selectedTeamId && (
+            <TeamProjects teamId={selectedTeamId} members={members} />
+          )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings
               team={selectedTeam}
               onTeamUpdate={refetchTeams}
+              onCreateTeam={handleCreateTeam}
               onTeamDelete={() => {
                 // Navigate back to overview or handle team deletion
                 setSelectedTeamId(null);

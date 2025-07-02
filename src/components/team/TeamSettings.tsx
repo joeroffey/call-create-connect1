@@ -10,15 +10,17 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import TeamLogoUpload from './TeamLogoUpload';
+import CreateTeamModal from './CreateTeamModal';
 
 interface TeamSettingsProps {
   team: any;
   onTeamUpdate: () => void;
   onTeamDelete: () => void;
+  onCreateTeam: (name: string, description?: string) => Promise<any>;
   isOwner: boolean;
 }
 
-const TeamSettings = ({ team, onTeamUpdate, onTeamDelete, isOwner }: TeamSettingsProps) => {
+const TeamSettings = ({ team, onTeamUpdate, onTeamDelete, onCreateTeam, isOwner }: TeamSettingsProps) => {
   const [name, setName] = useState(team?.name || '');
   const [description, setDescription] = useState(team?.description || '');
   const [loading, setLoading] = useState(false);
@@ -186,6 +188,35 @@ const TeamSettings = ({ team, onTeamUpdate, onTeamDelete, isOwner }: TeamSetting
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-400">0</div>
               <div className="text-sm text-gray-400">Total Activity</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Team Management */}
+      <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700">
+        <CardHeader className="border-b border-gray-700">
+          <CardTitle className="text-white flex items-center gap-2">
+            <Settings className="w-5 h-5" />
+            Team Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div>
+              <h4 className="text-white font-medium mb-2">Create New Team</h4>
+              <p className="text-gray-400 text-sm mb-4">
+                Create additional teams to organize different projects or departments.
+              </p>
+              <CreateTeamModal 
+                onCreateTeam={onCreateTeam}
+                trigger={
+                  <Button className="bg-emerald-500 hover:bg-emerald-600">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Create New Team
+                  </Button>
+                }
+              />
             </div>
           </div>
         </CardContent>
