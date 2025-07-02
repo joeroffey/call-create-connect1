@@ -19,7 +19,7 @@ interface TeamProject {
   customer_phone?: string;
 }
 
-export const useTeamProjects = (teamId: string | null, teamName: string = '') => {
+export const useTeamProjects = (teamId: string | null, teamName: string = '', onActivity?: (action: string, targetType?: string, targetId?: string, metadata?: any) => void) => {
   const [projects, setProjects] = useState<TeamProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
   }) => {
     if (!teamId) throw new Error('No team ID provided');
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('projects')
       .insert([{
         user_id: projectData.user_id,
@@ -93,7 +93,9 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
         customer_name: projectData.customer_name?.trim() || null,
         customer_address: projectData.customer_address?.trim() || null,
         customer_phone: projectData.customer_phone?.trim() || null
-      }]);
+      }])
+      .select()
+      .single();
 
     if (error) throw error;
     
@@ -101,6 +103,15 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
       title: "Team project created successfully",
       description: `${projectData.name} has been added to ${teamName}.`,
     });
+    
+    // Log project creation activity
+    if (onActivity && data) {
+      onActivity('project_created', 'project', data.id, { 
+        project_name: projectData.name,
+        project_type: projectData.label,
+        team_name: teamName
+      });
+    }
     
     fetchTeamProjects();
   };

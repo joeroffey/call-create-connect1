@@ -29,9 +29,10 @@ interface TeamProjectsViewProps {
   teamId: string;
   teamName: string;
   onStartNewChat: (projectId: string, conversationId?: string) => void;
+  onActivity?: (action: string, targetType?: string, targetId?: string, metadata?: any) => void;
 }
 
-const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjectsViewProps) => {
+const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat, onActivity }: TeamProjectsViewProps) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProject, setNewProject] = useState({ 
     name: '', 
@@ -63,7 +64,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     deleteProject,
     togglePinProject,
     handleStatusChange
-  } = useTeamProjects(teamId, teamName);
+  } = useTeamProjects(teamId, teamName, onActivity);
   
   // Use conversations hook with enabled flag - only when we have valid user and team
   const conversationsEnabled = Boolean(user?.id && teamId);

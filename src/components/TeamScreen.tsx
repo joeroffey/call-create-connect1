@@ -64,8 +64,18 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     if (teams.length > 0 && !selectedTeamId) {
       console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
+      
+      // Add a test activity when team loads
+      setTimeout(() => {
+        if (addActivity) {
+          addActivity('team_viewed', 'team', teams[0].id, { 
+            team_name: teams[0].name,
+            action_description: 'Team dashboard viewed'
+          });
+        }
+      }, 1000);
     }
-  }, [teams, selectedTeamId]);
+  }, [teams, selectedTeamId, addActivity]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
   
@@ -529,7 +539,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 user={user} 
                 teamId={selectedTeamId} 
                 teamName={selectedTeam.name}
-                onStartNewChat={onStartNewChat} 
+                onStartNewChat={onStartNewChat}
+                onActivity={addActivity}
               />
             );
           })()}

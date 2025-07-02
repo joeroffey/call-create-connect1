@@ -20,6 +20,7 @@ export const useTeamActivity = (teamId: string | null) => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log('useTeamActivity effect triggered:', { teamId, hasTeamId: !!teamId });
     if (!teamId) return;
 
     const fetchTeamActivity = async () => {
@@ -55,6 +56,13 @@ export const useTeamActivity = (teamId: string | null) => {
           ...activity,
           profiles: profiles?.find(p => p.user_id === activity.user_id) || null
         })) || [];
+
+        console.log('Team activities fetched in main effect:', {
+          teamId,
+          activitiesCount: activitiesWithProfiles.length,
+          activities: activitiesWithProfiles,
+          rawData: data
+        });
 
         setActivities(activitiesWithProfiles);
       } catch (error) {
@@ -123,6 +131,12 @@ export const useTeamActivity = (teamId: string | null) => {
           ...activity,
           profiles: profiles?.find(p => p.user_id === activity.user_id) || null
         }));
+
+        console.log('Team activities fetched:', {
+          teamId,
+          activitiesCount: activitiesWithProfiles.length,
+          activities: activitiesWithProfiles
+        });
 
         setActivities(activitiesWithProfiles);
       }
