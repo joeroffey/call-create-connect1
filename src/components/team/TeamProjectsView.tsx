@@ -238,9 +238,20 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   };
 
   const updateProject = async () => {
-    if (!editingProject || !editingProject.name.trim()) return;
+    console.log('updateProject called with:', editingProject);
+    if (!editingProject || !editingProject.name.trim()) {
+      console.log('Update cancelled - invalid project data');
+      return;
+    }
 
     try {
+      console.log('Attempting to update project with data:', {
+        name: editingProject.name.trim(),
+        description: editingProject.description.trim() || null,
+        label: editingProject.label,
+        status: editingProject.status,
+        id: editingProject.id
+      });
       const { error } = await supabase
         .from('projects')
         .update({
@@ -251,7 +262,12 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         })
         .eq('id', editingProject.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Project updated successfully');
 
       toast({
         title: "Project updated successfully",
