@@ -50,12 +50,18 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   
   // Early return if required props are missing
   if (!user || !teamId || !teamName) {
+    console.log('TeamProjectsView missing props:', { user: !!user, teamId, teamName });
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-white">Loading team information...</div>
+        <div className="text-gray-400 text-sm mt-2">
+          Missing: {!user && 'user '}{!teamId && 'teamId '}{!teamName && 'teamName'}
+        </div>
       </div>
     );
   }
+  
+  console.log('TeamProjectsView props:', { userId: user?.id, teamId, teamName });
   
   // Get conversations data
   const conversationsHook = useConversations(user.id);
@@ -70,19 +76,23 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   } = conversationsHook;
 
   const fetchTeamProjects = async () => {
+    console.log('fetchTeamProjects called with:', { userId: user?.id, teamId });
     if (!user?.id || !teamId) {
+      console.log('fetchTeamProjects early return - missing data');
       setLoading(false);
       return;
     }
     
     setLoading(true);
     try {
+      console.log('Fetching projects for team:', teamId);
       const { data, error } = await supabase
         .from('projects')
         .select('*')
         .eq('team_id', teamId)
         .order('updated_at', { ascending: false });
 
+      console.log('Projects query result:', { data, error });
       if (error) throw error;
       
       const processedProjects = (data || []).map(project => ({
