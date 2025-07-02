@@ -32,6 +32,7 @@ interface ProjectsScreenProps {
 }
 
 const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
+  console.log('ProjectsScreen: Component starting to render');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);

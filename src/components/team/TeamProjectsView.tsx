@@ -33,6 +33,7 @@ interface TeamProjectsViewProps {
 }
 
 const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjectsViewProps) => {
+  console.log('TeamProjectsView: Component starting to render');
   const [projects, setProjects] = useState<TeamProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
