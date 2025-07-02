@@ -18,7 +18,7 @@ export const useTeamMembers = (teamId?: string) => {
     }
     
     try {
-      console.log('useTeamMembers: Fetching members for team:', teamId);
+      console.log('useTeamMembers: Querying team_members for teamId:', teamId);
       
       const { data, error } = await supabase
         .from('team_members')
@@ -37,7 +37,7 @@ export const useTeamMembers = (teamId?: string) => {
         throw error;
       }
 
-      console.log('useTeamMembers: Raw team members data:', data);
+      console.log('useTeamMembers: Raw team members data:', JSON.stringify(data, null, 2));
 
       // Fetch profiles separately with better error handling
       const memberIds = data?.map(member => member.user_id) || [];
