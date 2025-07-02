@@ -22,7 +22,7 @@ import InviteMemberModal from '@/components/team/InviteMemberModal';
 import TeamLogoUpload from '@/components/team/TeamLogoUpload';
 
 import TeamSettings from '@/components/team/TeamSettings';
-import SimpleTeamProjects from '@/components/team/SimpleTeamProjects';
+import BasicTeamWork from '@/components/team/BasicTeamWork';
 
 interface TeamScreenProps {
   user: any;
@@ -433,7 +433,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
           {(activeView === 'projects' || activeView === 'schedule') && selectedTeamId && (
-            <SimpleTeamProjects teamId={selectedTeamId} members={members} />
+            <BasicTeamWork teamId={selectedTeamId} members={members} />
           )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings
