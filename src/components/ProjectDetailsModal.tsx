@@ -121,7 +121,7 @@ const ProjectDetailsModal = ({
         title: newTaskTitle,
         description: newTaskDescription || undefined,
         due_date: newTaskDueDate || undefined,
-        assigned_to: newTaskAssignedTo || undefined,
+        assigned_to: newTaskAssignedTo && newTaskAssignedTo !== 'unassigned' ? newTaskAssignedTo : undefined,
       });
 
       if (success) {
@@ -386,7 +386,7 @@ const ProjectDetailsModal = ({
                                 <SelectValue placeholder="Select team member..." />
                               </SelectTrigger>
                               <SelectContent className="bg-gray-800 border-gray-700">
-                                <SelectItem value="">Unassigned</SelectItem>
+                                <SelectItem value="unassigned">Unassigned</SelectItem>
                                 <SelectItem value={user?.id}>Myself</SelectItem>
                                 {teamMembersHook.members?.map((member) => (
                                   <SelectItem key={member.user_id} value={member.user_id}>
