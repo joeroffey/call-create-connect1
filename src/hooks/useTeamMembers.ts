@@ -37,9 +37,11 @@ export const useTeamMembers = (teamId?: string) => {
         throw error;
       }
 
-      // Fetch profiles separately
+      console.log('useTeamMembers: Raw team members data:', data);
+
+      // Fetch profiles separately with better error handling
       const memberIds = data?.map(member => member.user_id) || [];
-      let profilesData = [];
+      let profilesData: { user_id: string; full_name: string | null }[] = [];
       
       if (memberIds.length > 0) {
         const { data: profiles, error: profilesError } = await supabase
@@ -47,16 +49,22 @@ export const useTeamMembers = (teamId?: string) => {
           .select('user_id, full_name')
           .in('user_id', memberIds);
         
+        console.log('useTeamMembers: Profiles query result:', { profiles, profilesError });
+        
         if (profilesError) {
           console.error('useTeamMembers: Error fetching profiles:', profilesError);
+          // Continue without profiles rather than failing completely
+          profilesData = [];
         } else {
           profilesData = profiles || [];
         }
       }
 
-      // Combine the data
+      // Combine the data with better fallbacks
       const typedMembers: TeamMember[] = (data || []).map(member => {
         const profile = profilesData.find(p => p.user_id === member.user_id);
+        console.log(`useTeamMembers: Mapping member ${member.user_id}, found profile:`, profile);
+        
         return {
           id: member.id,
           team_id: member.team_id,
@@ -64,14 +72,14 @@ export const useTeamMembers = (teamId?: string) => {
           role: member.role as 'owner' | 'admin' | 'member' | 'viewer',
           invited_by: member.invited_by,
           joined_at: member.joined_at,
-          profiles: profile ? {
-            full_name: profile.full_name || '',
-            user_id: profile.user_id
-          } : undefined
+          profiles: {
+            full_name: profile?.full_name || 'Unknown User',
+            user_id: member.user_id
+          }
         };
       });
       
-      console.log('useTeamMembers: Fetched team members:', typedMembers);
+      console.log('useTeamMembers: Final mapped members:', typedMembers);
       setMembers(typedMembers);
     } catch (error) {
       console.error('useTeamMembers: Error fetching team members:', error);
