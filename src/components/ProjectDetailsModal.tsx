@@ -69,23 +69,21 @@ const ProjectDetailsModal = ({
     
     setLoading(true);
     try {
-      // Fetch documents
+      // Fetch documents - RLS will handle access control
       const { data: docsData, error: docsError } = await supabase
         .from('project_documents')
         .select('*')
         .eq('project_id', project.id)
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (docsError) throw docsError;
       setDocuments(docsData || []);
 
-      // Fetch schedule of works
+      // Fetch schedule of works - RLS will handle access control
       const { data: scheduleData, error: scheduleError } = await supabase
         .from('project_schedule_of_works')
         .select('*')
         .eq('project_id', project.id)
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (scheduleError) throw scheduleError;
