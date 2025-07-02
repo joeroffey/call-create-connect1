@@ -200,7 +200,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                       {getPlanDisplayName()} Plan
                     </h3>
                     <p className="text-gray-300 text-base mb-4">
-                      Your premium subscription is active and ready to use
+                      Your premium subscription is active and ready to use. You have full access to all advanced features, priority support, enhanced building tools, and extended chat history. Enjoy unlimited access to our comprehensive building regulations assistance.
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-4">
