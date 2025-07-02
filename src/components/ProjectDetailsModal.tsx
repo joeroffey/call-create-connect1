@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, 
@@ -10,10 +10,15 @@ import {
   Plus,
   Clock,
   User,
-  FolderOpen
+  FolderOpen,
+  Upload,
+  Save,
+  Trash2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -40,6 +45,13 @@ const ProjectDetailsModal = ({
   const [documents, setDocuments] = useState<any[]>([]);
   const [scheduleItems, setScheduleItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [newTaskDescription, setNewTaskDescription] = useState('');
+  const [newTaskDueDate, setNewTaskDueDate] = useState('');
+  const [savingTask, setSavingTask] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const {
@@ -111,6 +123,180 @@ const ProjectDetailsModal = ({
     console.log('Starting new chat for project:', project?.id);
     onStartNewChat(project?.id);
     onClose();
+  };
+
+  // Document upload functionality
+  const handleDocumentUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const uploadDocument = async (file: File) => {
+    if (!project?.id || !user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: "Project and user information required for document upload.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const filePath = `${user.id}/${project.id}/${Date.now()}-${file.name}`;
+      
+      // Upload file to Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('project-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Save document metadata
+      const { error: dbError } = await supabase
+        .from('project_documents')
+        .insert([
+          {
+            project_id: project.id,
+            user_id: user.id,
+            file_name: file.name,
+            file_path: filePath,
+            file_type: file.type,
+            file_size: file.size,
+          }
+        ]);
+
+      if (dbError) throw dbError;
+
+      toast({
+        title: "Document uploaded successfully",
+        description: `${file.name} has been uploaded to your project.`,
+      });
+
+      // Refresh documents list
+      fetchProjectDetails();
+    } catch (error: any) {
+      console.error('Error uploading document:', error);
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: error.message || "Failed to upload document. Please try again.",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Check if it's a supported file type
+      const supportedTypes = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+        'application/pdf',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain', 'text/csv', 'application/json', 'application/xml'
+      ];
+      
+      if (!supportedTypes.includes(file.type)) {
+        toast({
+          variant: "destructive",
+          title: "Unsupported file type",
+          description: "Please upload images, PDFs, Word documents, or text files.",
+        });
+        return;
+      }
+
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "File size must be less than 50MB.",
+        });
+        return;
+      }
+
+      uploadDocument(file);
+    }
+  };
+
+  // Task management functionality
+  const handleAddTask = async () => {
+    if (!newTaskTitle.trim() || !project?.id || !user?.id) return;
+
+    setSavingTask(true);
+    try {
+      const taskData: any = {
+        title: newTaskTitle.trim(),
+        project_id: project.id,
+        user_id: user.id
+      };
+
+      if (newTaskDescription.trim()) {
+        taskData.description = newTaskDescription.trim();
+      }
+
+      if (newTaskDueDate) {
+        taskData.due_date = newTaskDueDate;
+      }
+
+      const { error } = await supabase
+        .from('project_schedule_of_works')
+        .insert([taskData]);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Task created successfully',
+      });
+
+      // Reset form and close
+      setNewTaskTitle('');
+      setNewTaskDescription('');
+      setNewTaskDueDate('');
+      setShowAddTask(false);
+      
+      // Refresh schedule items
+      fetchProjectDetails();
+    } catch (error: any) {
+      console.error('Error creating task:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to create task',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingTask(false);
+    }
+  };
+
+  const toggleTaskCompletion = async (taskId: string, completed: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('project_schedule_of_works')
+        .update({ 
+          completed: !completed,
+          completed_at: !completed ? new Date().toISOString() : null
+        })
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      // Refresh schedule items
+      fetchProjectDetails();
+    } catch (error: any) {
+      console.error('Error toggling task:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update task',
+        variant: 'destructive',
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -254,11 +440,13 @@ const ProjectDetailsModal = ({
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Project Documents</h3>
                     <Button 
+                      onClick={handleDocumentUpload}
+                      disabled={isUploading}
                       size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                      className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Upload Document
+                      <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
+                      {isUploading ? 'Uploading...' : 'Upload Document'}
                     </Button>
                   </div>
                   {documents.length === 0 ? (
@@ -268,10 +456,12 @@ const ProjectDetailsModal = ({
                         <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
                         <p className="text-gray-500 mb-6">Upload documents to share them with your project team</p>
                         <Button 
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={handleDocumentUpload}
+                          disabled={isUploading}
+                          className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                         >
-                          <Plus className="w-4 h-4 mr-2" />
-                          Upload First Document
+                          <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
+                          {isUploading ? 'Uploading...' : 'Upload First Document'}
                         </Button>
                       </div>
                     </div>
@@ -298,6 +488,7 @@ const ProjectDetailsModal = ({
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
                     <Button 
+                      onClick={() => setShowAddTask(true)}
                       size="sm"
                       className="bg-orange-600 hover:bg-orange-700 text-white"
                     >
@@ -305,6 +496,66 @@ const ProjectDetailsModal = ({
                       Add Task
                     </Button>
                   </div>
+
+                  {/* Add Task Form */}
+                  {showAddTask && (
+                    <div className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 mb-4">
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-sm font-medium text-white mb-1 block">Task Title</label>
+                          <Input
+                            value={newTaskTitle}
+                            onChange={(e) => setNewTaskTitle(e.target.value)}
+                            placeholder="Enter task title..."
+                            className="bg-gray-800 border-gray-700 text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-white mb-1 block">Description (Optional)</label>
+                          <Textarea
+                            value={newTaskDescription}
+                            onChange={(e) => setNewTaskDescription(e.target.value)}
+                            placeholder="Enter task description..."
+                            className="bg-gray-800 border-gray-700 text-white"
+                            rows={2}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-white mb-1 block">Due Date (Optional)</label>
+                          <Input
+                            type="date"
+                            value={newTaskDueDate}
+                            onChange={(e) => setNewTaskDueDate(e.target.value)}
+                            className="bg-gray-800 border-gray-700 text-white"
+                          />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            onClick={handleAddTask}
+                            disabled={!newTaskTitle.trim() || savingTask}
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {savingTask ? 'Creating...' : 'Create Task'}
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowAddTask(false);
+                              setNewTaskTitle('');
+                              setNewTaskDescription('');
+                              setNewTaskDueDate('');
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   {scheduleItems.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
@@ -312,6 +563,7 @@ const ProjectDetailsModal = ({
                         <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
                         <p className="text-gray-500 mb-6">Create tasks to organize your project timeline</p>
                         <Button 
+                          onClick={() => setShowAddTask(true)}
                           className="bg-orange-600 hover:bg-orange-700 text-white"
                         >
                           <Plus className="w-4 h-4 mr-2" />
@@ -325,16 +577,17 @@ const ProjectDetailsModal = ({
                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
                            <div className="flex items-start justify-between">
                              <div className="min-w-0 flex-1">
-                               <div className="flex items-center space-x-2">
-                                 <button 
-                                   className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                     item.completed 
-                                       ? 'bg-green-500 border-green-500' 
-                                       : 'border-gray-500 hover:border-green-500'
-                                   } transition-colors`}
-                                 >
-                                   {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
-                                 </button>
+                                <div className="flex items-center space-x-2">
+                                  <button 
+                                    onClick={() => toggleTaskCompletion(item.id, item.completed)}
+                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                      item.completed 
+                                        ? 'bg-green-500 border-green-500' 
+                                        : 'border-gray-500 hover:border-green-500'
+                                    } transition-colors cursor-pointer`}
+                                  >
+                                    {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
+                                  </button>
                                  <h4 className={`font-medium truncate ${
                                    item.completed ? 'text-gray-400 line-through' : 'text-white'
                                  }`}>
@@ -373,6 +626,15 @@ const ProjectDetailsModal = ({
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Hidden file input for document upload */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileSelect}
+        style={{ display: 'none' }}
+        accept="image/*,.pdf,.doc,.docx,.txt,.csv,.json,.xml"
+      />
     </AnimatePresence>
   );
 };
