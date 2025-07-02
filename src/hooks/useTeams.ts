@@ -108,25 +108,6 @@ export const useTeams = (userId?: string) => {
 
       console.log('useTeams: Team member added successfully');
 
-      // Log team creation activity
-      const { error: activityError } = await supabase
-        .from('team_activity')
-        .insert({
-          user_id: userId,
-          team_id: teamData.id,
-          action: 'team_created',
-          target_type: 'team',
-          target_id: teamData.id,
-          metadata: { 
-            team_name: name,
-            team_description: description 
-          }
-        });
-
-      if (activityError) {
-        console.error('useTeams: Error logging team creation activity:', activityError);
-      }
-
       // Refresh teams list
       await fetchTeams();
       

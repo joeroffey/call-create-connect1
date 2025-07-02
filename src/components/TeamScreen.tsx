@@ -26,8 +26,6 @@ import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
-import { useTeamActivity } from '@/hooks/useTeamActivity';
-import TeamActivityItem from '@/components/team/TeamActivityItem';
 
 interface TeamScreenProps {
   user: any;
@@ -44,7 +42,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
   const teamStats = useTeamStats(selectedTeamId);
-  const { activities, loading: activitiesLoading, addActivity } = useTeamActivity(selectedTeamId);
 
   console.log('TeamScreen render:', {
     teamsCount: teams.length,
@@ -64,56 +61,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     if (teams.length > 0 && !selectedTeamId) {
       console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
-      
-      // Add some test activities when team loads to demonstrate the 5-activity limit
-      setTimeout(() => {
-        if (addActivity) {
-          addActivity('team_viewed', 'team', teams[0].id, { 
-            team_name: teams[0].name,
-            action_description: 'Team dashboard viewed'
-          });
-          
-          // Add a few more test activities with delays to see them in order
-          setTimeout(() => {
-            addActivity('project_updated', 'project', 'test-project-1', { 
-              project_name: 'Sample House Extension',
-              team_name: teams[0].name
-            });
-          }, 500);
-          
-          setTimeout(() => {
-            addActivity('document_uploaded', 'document', 'test-doc-1', { 
-              document_name: 'Planning Application.pdf',
-              team_name: teams[0].name
-            });
-          }, 1000);
-          
-          setTimeout(() => {
-            addActivity('schedule_updated', 'schedule', 'test-schedule-1', { 
-              task_count: 5,
-              team_name: teams[0].name
-            });
-          }, 1500);
-          
-          setTimeout(() => {
-            addActivity('task_assigned', 'task', 'test-task-1', { 
-              task_title: 'Foundation inspection',
-              assigned_to: 'John Smith',
-              team_name: teams[0].name
-            });
-          }, 2000);
-          
-          setTimeout(() => {
-            addActivity('comment_added', 'comment', 'test-comment-1', { 
-              target_type: 'project',
-              comment_preview: 'Great progress on the foundation work',
-              team_name: teams[0].name
-            });
-          }, 2500);
-        }
-      }, 1000);
     }
-  }, [teams, selectedTeamId, addActivity]);
+  }, [teams, selectedTeamId]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
   
@@ -315,27 +264,14 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             Recent Team Activity
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
-          {activitiesLoading ? (
-            <div className="text-center py-8 text-gray-400">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
-              <p className="text-sm">Loading activity...</p>
+        <CardContent className="p-8">
+          <div className="text-center text-gray-400">
+            <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 opacity-50" />
             </div>
-          ) : activities.length > 0 ? (
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {activities.map((activity) => (
-                <TeamActivityItem key={activity.id} activity={activity} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-400">
-              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="w-8 h-8 opacity-50" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-300 mb-2">No recent activity</h3>
-              <p className="text-sm">Team activity will appear here once you start collaborating</p>
-            </div>
-          )}
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No recent activity</h3>
+            <p className="text-sm">Team activity will appear here once you start collaborating</p>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -345,17 +281,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-white">Team Members</h3>
-        <InviteMemberModal 
-          onInviteMember={async (email, role) => {
-            await inviteMember(email, role);
-            // Log member invitation activity
-            addActivity('member_invited', 'team_invitation', selectedTeamId, { 
-              email, 
-              role 
-            });
-          }} 
-          onCreateTestInvitation={createTestInvitation} 
-        />
+        <InviteMemberModal onInviteMember={inviteMember} onCreateTestInvitation={createTestInvitation} />
       </div>
       
       <div className="grid gap-4 w-full">
@@ -570,8 +496,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 user={user} 
                 teamId={selectedTeamId} 
                 teamName={selectedTeam.name}
-                onStartNewChat={onStartNewChat}
-                onActivity={addActivity}
+                onStartNewChat={onStartNewChat} 
               />
             );
           })()}
