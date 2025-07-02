@@ -340,7 +340,7 @@ const ProjectDetailsModal = ({
                         onClick={handleDocumentUpload}
                         disabled={documentsHook.isUploading}
                         size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
                       >
                         <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
                         {documentsHook.isUploading ? 'Uploading...' : 'Upload Document'}
@@ -356,7 +356,7 @@ const ProjectDetailsModal = ({
                           <Button 
                             onClick={handleDocumentUpload}
                             disabled={documentsHook.isUploading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
                           >
                             <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
                             {documentsHook.isUploading ? 'Uploading...' : 'Upload First Document'}
