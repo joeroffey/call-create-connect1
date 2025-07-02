@@ -49,21 +49,8 @@ const ProjectDetailsModal = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use dedicated hooks for documents and schedule
-  console.log('ProjectDetailsModal - project:', project?.id, 'user:', user?.id);
   const documentsHook = useProjectDocuments(project?.id, user?.id);
   const scheduleHook = useProjectSchedule(project?.id, user?.id);
-  
-  console.log('Documents hook:', {
-    documents: documentsHook.documents,
-    loading: documentsHook.loading,
-    isUploading: documentsHook.isUploading
-  });
-  
-  console.log('Schedule hook:', {
-    scheduleItems: scheduleHook.scheduleItems,
-    loading: scheduleHook.loading,
-    saving: scheduleHook.saving
-  });
 
   const {
     conversations,
@@ -268,7 +255,7 @@ const ProjectDetailsModal = ({
                   )}
                 </TabsContent>
 
-                <TabsContent value="documents" className="h-full flex flex-col m-0">
+                <TabsContent value="documents" className="h-full flex flex-col m-0 data-[state=active]:flex">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Project Documents</h3>
                     <Button 
@@ -316,7 +303,7 @@ const ProjectDetailsModal = ({
                   )}
                 </TabsContent>
 
-                <TabsContent value="schedule" className="h-full flex flex-col m-0">
+                <TabsContent value="schedule" className="h-full flex flex-col m-0 data-[state=active]:flex">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
                     <Button 
