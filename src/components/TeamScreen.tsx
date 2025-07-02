@@ -37,6 +37,7 @@ interface TeamScreenProps {
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: TeamScreenProps) => {
   const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
   
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
@@ -64,6 +65,14 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   }, [teams, selectedTeamId]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
+  
+  // Update current logo URL when selected team changes
+  React.useEffect(() => {
+    if (selectedTeam) {
+      setCurrentLogoUrl(selectedTeam.logo_url);
+    }
+  }, [selectedTeam]);
+
   console.log('Selected team:', selectedTeam?.name);
 
   // Check if user has team access
@@ -84,6 +93,9 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   };
 
   const handleLogoUpdate = (logoUrl: string | null) => {
+    // Immediately update the local logo state for instant UI feedback
+    setCurrentLogoUrl(logoUrl);
+    // Also refetch to ensure data is in sync
     refetchTeams();
   };
 
@@ -330,7 +342,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             <div className="flex items-center space-x-6">
               <TeamLogoUpload
                 teamId={selectedTeamId!}
-                currentLogoUrl={selectedTeam?.logo_url}
+                currentLogoUrl={currentLogoUrl}
                 onLogoUpdate={handleLogoUpdate}
               />
               <div>
