@@ -137,7 +137,7 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
           New Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-gray-900 border-gray-700 max-w-md text-white">
+      <DialogContent className="bg-gray-800/95 backdrop-blur-sm border-gray-600 max-w-md text-white shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-white">Create New Task</DialogTitle>
         </DialogHeader>

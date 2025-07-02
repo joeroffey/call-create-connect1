@@ -21,6 +21,7 @@ import CreateTeamModal from '@/components/team/CreateTeamModal';
 import InviteMemberModal from '@/components/team/InviteMemberModal';
 import TeamLogoUpload from '@/components/team/TeamLogoUpload';
 import TaskManagement from '@/components/team/TaskManagement';
+import TeamSettings from '@/components/team/TeamSettings';
 
 interface TeamScreenProps {
   user: any;
@@ -440,14 +441,17 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           {activeView === 'schedule' && selectedTeamId && (
             <TaskManagement teamId={selectedTeamId} members={members} />
           )}
-          {activeView === 'settings' && (
-            <div className="text-center py-16">
-              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Settings className="w-8 h-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-300 mb-2">Team Settings</h3>
-              <p className="text-gray-400">Advanced team settings coming soon...</p>
-            </div>
+          {activeView === 'settings' && selectedTeam && (
+            <TeamSettings
+              team={selectedTeam}
+              onTeamUpdate={refetchTeams}
+              onTeamDelete={() => {
+                // Navigate back to overview or handle team deletion
+                setSelectedTeamId(null);
+                refetchTeams();
+              }}
+              isOwner={selectedTeam.owner_id === user?.id}
+            />
           )}
         </motion.div>
       </div>
