@@ -378,7 +378,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'projects', label: 'Projects', icon: FileText },
-                  { id: 'tasks', label: 'Tasks', icon: Calendar },
+                  { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                   { id: 'schedule', label: 'Schedule', icon: Calendar },
                   { id: 'comments', label: 'Comments', icon: MessageSquare }
                 ].map((tab) => (
@@ -421,7 +421,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               {[
                 { id: 'overview', label: 'Overview', icon: FileText },
                 { id: 'projects', label: 'Projects', icon: FileText },
-                { id: 'tasks', label: 'Tasks', icon: Calendar },
+                { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                 { id: 'schedule', label: 'Schedule', icon: Calendar },
                 { id: 'comments', label: 'Comments', icon: MessageSquare },
                 { id: 'members', label: 'Members', icon: Users },
