@@ -49,8 +49,21 @@ const ProjectDetailsModal = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use dedicated hooks for documents and schedule
+  console.log('ProjectDetailsModal - project:', project?.id, 'user:', user?.id);
   const documentsHook = useProjectDocuments(project?.id, user?.id);
   const scheduleHook = useProjectSchedule(project?.id, user?.id);
+  
+  console.log('Documents hook:', {
+    documents: documentsHook.documents,
+    loading: documentsHook.loading,
+    isUploading: documentsHook.isUploading
+  });
+  
+  console.log('Schedule hook:', {
+    scheduleItems: scheduleHook.scheduleItems,
+    loading: scheduleHook.loading,
+    saving: scheduleHook.saving
+  });
 
   const {
     conversations,
