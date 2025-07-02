@@ -178,8 +178,8 @@ const NotificationsScreen = () => {
   const unreadCount = updates.filter(update => !update.isRead).length;
 
   return (
-    <div className="flex-1 flex flex-col bg-transparent text-white">
-      <div className="flex-1 overflow-y-auto px-6 py-8">
+    <div className="h-full bg-transparent text-white overflow-y-auto">
+      <div className="px-6 py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
