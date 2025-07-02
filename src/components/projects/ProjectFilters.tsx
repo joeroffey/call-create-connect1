@@ -46,16 +46,12 @@ const ProjectFiltersComponent = ({
   showContextFilter = false,
   projectCount 
 }: ProjectFiltersComponentProps) => {
-  console.log('ProjectFiltersComponent: Starting render');
-  
   const updateFilter = (key: keyof ProjectFilters, value: string) => {
     const newFilters = { ...filters, [key]: value };
-    console.log('Updating filter:', key, value, newFilters);
     onFiltersChange(newFilters);
   };
 
   const clearFilters = () => {
-    console.log('Clearing filters');
     onFiltersChange({
       context: 'all',
       projectType: 'all',
@@ -63,9 +59,6 @@ const ProjectFiltersComponent = ({
       search: ''
     });
   };
-
-  try {
-    console.log('ProjectFilters rendering with:', { filters, showContextFilter, projectCount });
     
     return (
       <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-4 mb-6">
@@ -140,10 +133,6 @@ const ProjectFiltersComponent = ({
         )}
       </div>
     );
-  } catch (error) {
-    console.error('ProjectFilters render error:', error);
-    return <div className="text-red-500">Filter component error</div>;
-  }
 };
 
 export default ProjectFiltersComponent;

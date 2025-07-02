@@ -72,13 +72,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select(`
-          *,
-          teams!left(
-            id,
-            name
-          )
-        `)
+        .select('*')
         .eq('team_id', teamId)
         .order('updated_at', { ascending: false });
 
@@ -322,23 +316,38 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     );
   }
 
-  // Simplified filtering with useMemo to prevent crashes
+  // Simplified filtering to prevent crashes
   const filteredProjects = useMemo(() => {
-    if (!projects || projects.length === 0) return [];
+    if (!projects) return [];
     
-    return projects.filter(project => {
-      if (filters.projectType !== 'all' && project.label !== filters.projectType) return false;
-      if (filters.status !== 'all' && project.status !== filters.status) return false;
-      
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const nameMatch = project.name?.toLowerCase().includes(searchLower) || false;
-        const descriptionMatch = project.description?.toLowerCase().includes(searchLower) || false;
-        if (!nameMatch && !descriptionMatch) return false;
-      }
-      
-      return true;
-    });
+    try {
+      return projects.filter(project => {
+        // Project type filter
+        if (filters.projectType && filters.projectType !== 'all' && project.label !== filters.projectType) {
+          return false;
+        }
+        
+        // Status filter  
+        if (filters.status && filters.status !== 'all' && project.status !== filters.status) {
+          return false;
+        }
+        
+        // Search filter
+        if (filters.search && filters.search.trim()) {
+          const searchLower = filters.search.toLowerCase();
+          const nameMatch = project.name && project.name.toLowerCase().includes(searchLower);
+          const descriptionMatch = project.description && project.description.toLowerCase().includes(searchLower);
+          if (!nameMatch && !descriptionMatch) {
+            return false;
+          }
+        }
+        
+        return true;
+      });
+    } catch (error) {
+      console.error('Error filtering projects:', error);
+      return projects;
+    }
   }, [projects, filters]);
 
   return (
@@ -394,22 +403,29 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                index={index}
-                conversationCount={getProjectConversationCount(project.id)}
-                documentCount={getProjectDocumentCount(project.id)}
-                scheduleOfWorksCount={getProjectScheduleOfWorksCount(project.id)}
-                onStartNewChat={onStartNewChat}
-                onEdit={handleEditProject}
-                onDelete={deleteProject}
-                onTogglePin={togglePinProject}
-                onProjectStatsClick={handleProjectStatsClick}
-                onStatusChange={handleStatusChange}
-              />
-            ))}
+            {filteredProjects.map((project, index) => {
+              try {
+                return (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    index={index}
+                    conversationCount={getProjectConversationCount(project.id) || 0}
+                    documentCount={getProjectDocumentCount(project.id) || 0}
+                    scheduleOfWorksCount={getProjectScheduleOfWorksCount(project.id) || 0}
+                    onStartNewChat={onStartNewChat}
+                    onEdit={handleEditProject}
+                    onDelete={deleteProject}
+                    onTogglePin={togglePinProject}
+                    onProjectStatsClick={handleProjectStatsClick}
+                    onStatusChange={handleStatusChange}
+                  />
+                );
+              } catch (error) {
+                console.error('Error rendering project card:', error, project);
+                return null;
+              }
+            })}
           </div>
         )}
       </div>
