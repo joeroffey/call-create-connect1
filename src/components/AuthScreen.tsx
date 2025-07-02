@@ -19,7 +19,48 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const { toast } = useToast();
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/`,
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Reset Email Sent",
+          description: "Check your email for password reset instructions",
+        });
+        setShowForgotPassword(false);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,9 +83,16 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
 
         if (error) {
           console.error('AuthScreen: Sign in error:', error);
+          
+          // Provide more helpful error messaging
+          let errorMessage = error.message;
+          if (error.message === "Invalid login credentials") {
+            errorMessage = "Invalid email or password. Please check your credentials and try again.";
+          }
+          
           toast({
             title: "Login Failed",
-            description: error.message,
+            description: errorMessage,
             variant: "destructive",
           });
           return;
@@ -256,6 +304,19 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                   </motion.div>
                 )}
               </button>
+
+              {isLogin && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={loading}
+                    className="text-emerald-400 hover:text-emerald-300 text-sm underline"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
+              )}
             </form>
           </motion.div>
         </div>
