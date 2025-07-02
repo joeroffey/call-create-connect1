@@ -25,7 +25,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("Team invitation request received");
+    console.log("🚀 Team invitation request received");
+    console.log("Request method:", req.method);
+    console.log("Request headers:", Object.fromEntries(req.headers.entries()));
 
     const { teamId, email, role, teamName, inviterName }: TeamInvitationRequest = await req.json();
 
