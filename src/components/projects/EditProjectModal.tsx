@@ -58,13 +58,13 @@ const EditProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md max-h-[90vh] flex flex-col"
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md h-[90vh] flex flex-col"
           >
-            <div className="p-6 pb-4">
+            <div className="p-6 pb-4 flex-shrink-0">
               <h2 className="text-xl font-bold text-white">Edit Project</h2>
             </div>
             
-            <ScrollArea className="flex-1 px-6">
+            <ScrollArea className="flex-1 px-6 h-0">
               <div className="space-y-4 pb-4">
                 <div>
                   <Label htmlFor="edit-name" className="text-sm font-medium text-gray-300 mb-2 block">
@@ -230,7 +230,7 @@ const EditProjectModal = ({
               </div>
             </ScrollArea>
 
-            <div className="p-6 pt-4 border-t border-gray-700/50">
+            <div className="p-6 pt-4 border-t border-gray-700/50 flex-shrink-0">
               <div className="flex space-x-3">
                 <Button
                   onClick={onClose}
