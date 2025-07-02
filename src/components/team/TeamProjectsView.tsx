@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +9,7 @@ import ProjectCard from '../projects/ProjectCard';
 import CreateProjectModal from '../projects/CreateProjectModal';
 import EditProjectModal from '../projects/EditProjectModal';
 import EmptyProjectsState from '../projects/EmptyProjectsState';
+import ProjectFiltersComponent, { ProjectFilters } from '../projects/ProjectFilters';
 
 interface TeamProject {
   id: string;
@@ -40,6 +41,12 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   const [selectedProject, setSelectedProject] = useState<TeamProject | null>(null);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('chats');
+  const [filters, setFilters] = useState<ProjectFilters>({
+    context: 'all', // Not used for team projects, but needed for interface
+    projectType: 'all',
+    status: 'all',
+    search: ''
+  });
   const { toast } = useToast();
   
   console.log('TeamProjectsView render - user:', user?.id, 'teamId:', teamId, 'projects:', projects.length);
@@ -353,7 +360,28 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     );
   }
 
-  console.log('Rendering team projects view with', projects.length, 'projects');
+  // Filter projects based on active filters
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      // Project type filter
+      if (filters.projectType !== 'all' && project.label !== filters.projectType) return false;
+      
+      // Status filter
+      if (filters.status !== 'all' && project.status !== filters.status) return false;
+      
+      // Search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const nameMatch = project.name.toLowerCase().includes(searchLower);
+        const descriptionMatch = project.description?.toLowerCase().includes(searchLower) || false;
+        if (!nameMatch && !descriptionMatch) return false;
+      }
+      
+      return true;
+    });
+  }, [projects, filters]);
+
+  console.log('Rendering team projects view with', projects.length, 'total projects,', filteredProjects.length, 'filtered');
 
   return (
     <div className="space-y-6">
@@ -374,6 +402,14 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         </motion.button>
       </div>
 
+      {/* Project Filters */}
+      <ProjectFiltersComponent
+        filters={filters}
+        onFiltersChange={setFilters}
+        showContextFilter={false}
+        projectCount={filteredProjects.length}
+      />
+
       {/* Projects Grid */}
       <div className="space-y-6">
         {projects.length === 0 ? (
@@ -393,9 +429,14 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
               <span>Create First Team Project</span>
             </motion.button>
           </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-12 bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl">
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No team projects match your filters</h3>
+            <p className="text-sm text-gray-400">Try adjusting your filter criteria or clearing all filters</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, index) => (
+            {filteredProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}
                 project={project}

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,6 +10,7 @@ import ProjectCard from './projects/ProjectCard';
 import CreateProjectModal from './projects/CreateProjectModal';
 import EditProjectModal from './projects/EditProjectModal';
 import EmptyProjectsState from './projects/EmptyProjectsState';
+import ProjectFiltersComponent, { ProjectFilters } from './projects/ProjectFilters';
 
 interface Project {
   id: string;
@@ -39,6 +40,12 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('chats');
+  const [filters, setFilters] = useState<ProjectFilters>({
+    context: 'all',
+    projectType: 'all',
+    status: 'all',
+    search: ''
+  });
   const { toast } = useToast();
   
   console.log('ProjectsScreen render - user:', user?.id, 'projects:', projects.length);
@@ -324,7 +331,32 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     );
   }
 
-  console.log('Rendering projects screen with', projects.length, 'projects');
+  // Filter projects based on active filters
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      // Context filter
+      if (filters.context === 'personal' && project.team_id) return false;
+      if (filters.context === 'team' && !project.team_id) return false;
+      
+      // Project type filter
+      if (filters.projectType !== 'all' && project.label !== filters.projectType) return false;
+      
+      // Status filter
+      if (filters.status !== 'all' && project.status !== filters.status) return false;
+      
+      // Search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const nameMatch = project.name.toLowerCase().includes(searchLower);
+        const descriptionMatch = project.description?.toLowerCase().includes(searchLower) || false;
+        if (!nameMatch && !descriptionMatch) return false;
+      }
+      
+      return true;
+    });
+  }, [projects, filters]);
+
+  console.log('Rendering projects screen with', projects.length, 'total projects,', filteredProjects.length, 'filtered');
 
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-950 via-black to-gray-950 overflow-hidden">
@@ -347,13 +379,28 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         </div>
       </div>
 
+      {/* Project Filters */}
+      <div className="px-6">
+        <ProjectFiltersComponent
+          filters={filters}
+          onFiltersChange={setFilters}
+          showContextFilter={true}
+          projectCount={filteredProjects.length}
+        />
+      </div>
+
       {/* Projects Grid */}
       <div className="flex-1 p-6 overflow-y-auto">
         {projects.length === 0 ? (
           <EmptyProjectsState onCreateProject={() => setShowCreateModal(true)} />
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-12 bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl">
+            <h3 className="text-lg font-medium text-gray-300 mb-2">No projects match your filters</h3>
+            <p className="text-sm text-gray-400">Try adjusting your filter criteria or clearing all filters</p>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project, index) => (
+            {filteredProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}
                 project={project}
