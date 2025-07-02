@@ -24,6 +24,7 @@ import TeamSettings from '@/components/team/TeamSettings';
 import BasicTeamWork from '@/components/team/BasicTeamWork';
 import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
+import TeamCommentsView from '@/components/team/TeamCommentsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 
 interface TeamScreenProps {
@@ -34,7 +35,7 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'settings'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
@@ -213,15 +214,18 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-not-allowed opacity-70">
+        <Card 
+          className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
+          onClick={() => setActiveView('comments')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-purple-500/20 rounded-xl">
                 <MessageSquare className="w-6 h-6 text-purple-400" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">0</p>
-                <p className="text-sm text-gray-400">Recent Comments</p>
+                <p className="text-3xl font-bold text-white">{teamStats.commentCount}</p>
+                <p className="text-sm text-gray-400">Team Comments</p>
               </div>
             </div>
           </CardContent>
@@ -375,7 +379,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'projects', label: 'Projects', icon: FileText },
                   { id: 'tasks', label: 'Tasks', icon: Calendar },
-                  { id: 'schedule', label: 'Schedule', icon: Calendar }
+                  { id: 'schedule', label: 'Schedule', icon: Calendar },
+                  { id: 'comments', label: 'Comments', icon: MessageSquare }
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -418,6 +423,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 { id: 'projects', label: 'Projects', icon: FileText },
                 { id: 'tasks', label: 'Tasks', icon: Calendar },
                 { id: 'schedule', label: 'Schedule', icon: Calendar },
+                { id: 'comments', label: 'Comments', icon: MessageSquare },
                 { id: 'members', label: 'Members', icon: Users },
                 { id: 'settings', label: 'Settings', icon: Settings }
               ].map((tab) => (
@@ -463,6 +469,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           )}
           {activeView === 'schedule' && selectedTeamId && (
             <BasicTeamWork teamId={selectedTeamId} members={members} />
+          )}
+          {activeView === 'comments' && selectedTeamId && selectedTeam && (
+            <TeamCommentsView 
+              teamId={selectedTeamId} 
+              teamName={selectedTeam.name}
+            />
           )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings

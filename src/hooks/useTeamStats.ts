@@ -5,6 +5,7 @@ interface TeamStats {
   memberCount: number;
   projectCount: number;
   activeTaskCount: number;
+  commentCount: number;
   loading: boolean;
 }
 
@@ -13,6 +14,7 @@ export const useTeamStats = (teamId: string | null) => {
     memberCount: 0,
     projectCount: 0,
     activeTaskCount: 0,
+    commentCount: 0,
     loading: true
   });
 
@@ -51,10 +53,21 @@ export const useTeamStats = (teamId: string | null) => {
 
         if (tasksError) throw tasksError;
 
+        // Fetch comment count for the team
+        const { data: comments, error: commentsError } = await supabase
+          .from('comments')
+          .select('id')
+          .eq('team_id', teamId)
+          .eq('target_type', 'team')
+          .eq('target_id', teamId);
+
+        if (commentsError) throw commentsError;
+
         setStats({
           memberCount: members?.length || 0,
           projectCount: projects?.length || 0,
           activeTaskCount: tasks?.length || 0,
+          commentCount: comments?.length || 0,
           loading: false
         });
       } catch (error) {
@@ -95,10 +108,21 @@ export const useTeamStats = (teamId: string | null) => {
       }, fetchStats)
       .subscribe();
 
+    const commentsChannel = supabase
+      .channel('team-comments-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'comments',
+        filter: `team_id=eq.${teamId}`
+      }, fetchStats)
+      .subscribe();
+
     return () => {
       supabase.removeChannel(membersChannel);
       supabase.removeChannel(projectsChannel);
       supabase.removeChannel(tasksChannel);
+      supabase.removeChannel(commentsChannel);
     };
   }, [teamId]);
 
