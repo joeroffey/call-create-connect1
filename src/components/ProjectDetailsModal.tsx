@@ -137,6 +137,10 @@ const ProjectDetailsModal = ({
         setNewTaskDueDate('');
         setNewTaskAssignedTo('');
         setShowAddTask(false);
+        // Refresh project counts immediately
+        if (conversationsHook.fetchProjectCounts) {
+          conversationsHook.fetchProjectCounts();
+        }
       } else {
         console.log('Task creation failed');
       }
@@ -387,7 +391,7 @@ const ProjectDetailsModal = ({
                       <Button 
                         onClick={() => setShowAddTask(true)}
                         size="sm"
-                        className="bg-orange-600 hover:bg-orange-700 text-white"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white"
                       >
                         <Plus className="w-4 h-4 mr-2" />
                         Add Task
@@ -561,7 +565,7 @@ const ProjectDetailsModal = ({
                           <p className="text-gray-500 mb-6">Create tasks to organize your project timeline</p>
                           <Button 
                             onClick={() => setShowAddTask(true)}
-                            className="bg-orange-600 hover:bg-orange-700 text-white"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white"
                           >
                             <Plus className="w-4 h-4 mr-2" />
                             Create First Task
@@ -569,7 +573,7 @@ const ProjectDetailsModal = ({
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 overflow-y-auto space-y-3">
+                      <div className="flex-1 overflow-y-auto space-y-3 max-h-96 custom-scrollbar">
                         {scheduleHook.scheduleItems.map((item: any) => (
                           <div 
                             key={item.id} 
