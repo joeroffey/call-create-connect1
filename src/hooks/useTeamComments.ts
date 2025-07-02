@@ -32,7 +32,7 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
         .from('comments')
         .select(`
           *,
-          profiles:author_id(full_name)
+          profiles!author_id(full_name)
         `)
         .eq('team_id', teamId)
         .eq('target_type', targetType)

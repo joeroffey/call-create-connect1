@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -363,28 +363,24 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     );
   }
 
-  // Simple filter function without useMemo to avoid render loops
-  const filterProjects = (projects: TeamProject[]) => {
+  // Simplified filtering with useMemo to prevent crashes
+  const filteredProjects = useMemo(() => {
+    if (!projects || projects.length === 0) return [];
+    
     return projects.filter(project => {
-      // Project type filter
       if (filters.projectType !== 'all' && project.label !== filters.projectType) return false;
-      
-      // Status filter
       if (filters.status !== 'all' && project.status !== filters.status) return false;
       
-      // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        const nameMatch = project.name.toLowerCase().includes(searchLower);
+        const nameMatch = project.name?.toLowerCase().includes(searchLower) || false;
         const descriptionMatch = project.description?.toLowerCase().includes(searchLower) || false;
         if (!nameMatch && !descriptionMatch) return false;
       }
       
       return true;
     });
-  };
-
-  const filteredProjects = filterProjects(projects);
+  }, [projects, filters]);
 
   console.log('Rendering team projects view with', projects.length, 'total projects,', filteredProjects.length, 'filtered');
 
