@@ -49,8 +49,17 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   });
   const { toast } = useToast();
   
+  // Early return if required props are missing
+  if (!user || !teamId || !teamName) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-white">Loading team information...</div>
+      </div>
+    );
+  }
+  
   // Get conversations data with the new helper functions
-  const conversationsHook = useConversations(user?.id);
+  const conversationsHook = useConversations(user.id);
   const { 
     conversations, 
     getProjectConversationCount, 
