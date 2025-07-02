@@ -336,7 +336,15 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     });
   }, [projects, filters]);
 
+  console.log('TeamProjectsView render state:', { 
+    loading, 
+    conversationsLoading, 
+    projectsLength: projects?.length,
+    filteredProjectsLength: filteredProjects?.length 
+  });
+
   if (loading || conversationsLoading) {
+    console.log('TeamProjectsView showing loading state');
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
