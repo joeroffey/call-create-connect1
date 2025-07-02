@@ -262,51 +262,51 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] bg-gray-900 border-gray-700 text-white p-0">
-        <DialogHeader className="p-6 border-b border-gray-700">
+      <DialogContent className="max-w-4xl h-[90vh] bg-white border-gray-300 text-gray-900 p-0 shadow-2xl">
+        <DialogHeader className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-2xl text-white mb-2">{project?.name}</DialogTitle>
+              <DialogTitle className="text-2xl text-gray-900 mb-2">{project?.name}</DialogTitle>
               <div className="flex items-center gap-3">
                 <Badge variant="outline" className={getStatusColor(project?.status)}>
                   {project?.status?.replace('-', ' ')}
                 </Badge>
                 {project?.label && (
-                  <Badge variant="outline" className="border-gray-600 text-gray-300">
+                  <Badge variant="outline" className="border-gray-400 text-gray-700">
                     {project.label.replace('-', ' ')}
                   </Badge>
                 )}
-                <div className="flex items-center gap-1 text-gray-400 text-sm">
+                <div className="flex items-center gap-1 text-gray-600 text-sm">
                   <Users className="w-4 h-4" />
                   {teamMembers.length} members
                 </div>
-                <div className="flex items-center gap-1 text-gray-400 text-sm">
+                <div className="flex items-center gap-1 text-gray-600 text-sm">
                   <Calendar className="w-4 h-4" />
                   {new Date(project?.created_at).toLocaleDateString()}
                 </div>
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-600 hover:text-gray-900">
               <X className="w-4 h-4" />
             </Button>
           </div>
           {project?.description && (
-            <p className="text-gray-400 mt-2">{project.description}</p>
+            <p className="text-gray-600 mt-2">{project.description}</p>
           )}
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-800 mx-6 mt-4">
-              <TabsTrigger value="tasks" className="text-gray-300 data-[state=active]:text-white">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 mx-6 mt-4">
+              <TabsTrigger value="tasks" className="text-gray-700 data-[state=active]:text-gray-900 data-[state=active]:bg-white">
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 Tasks
               </TabsTrigger>
-              <TabsTrigger value="chat" className="text-gray-300 data-[state=active]:text-white">
+              <TabsTrigger value="chat" className="text-gray-700 data-[state=active]:text-gray-900 data-[state=active]:bg-white">
                 <MessageSquare className="w-4 h-4 mr-2" />
                 AI Chat
               </TabsTrigger>
-              <TabsTrigger value="documents" className="text-gray-300 data-[state=active]:text-white">
+              <TabsTrigger value="documents" className="text-gray-700 data-[state=active]:text-gray-900 data-[state=active]:bg-white">
                 <FileText className="w-4 h-4 mr-2" />
                 Documents
               </TabsTrigger>
@@ -319,23 +319,23 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                     placeholder="Add new task..."
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="bg-white border-gray-300 text-gray-900"
                     onKeyPress={(e) => e.key === 'Enter' && createTask()}
                   />
                   <Select value={newTaskAssignee} onValueChange={setNewTaskAssignee}>
-                    <SelectTrigger className="w-48 bg-gray-800 border-gray-600 text-white">
+                    <SelectTrigger className="w-48 bg-white border-gray-300 text-gray-900">
                       <SelectValue placeholder="Assign to..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-gray-800 border-gray-600">
-                      <SelectItem value="" className="text-white">Unassigned</SelectItem>
+                    <SelectContent className="bg-white border-gray-300">
+                      <SelectItem value="" className="text-gray-900">Unassigned</SelectItem>
                       {teamMembers.map((member) => (
-                        <SelectItem key={member.user_id} value={member.user_id} className="text-white">
+                        <SelectItem key={member.user_id} value={member.user_id} className="text-gray-900">
                           {member.profiles?.full_name || 'Unknown User'}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button onClick={createTask} className="bg-emerald-500 hover:bg-emerald-600">
+                  <Button onClick={createTask} className="bg-emerald-500 hover:bg-emerald-600 text-white">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -343,7 +343,7 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-3">
                     {tasks.map((task) => (
-                      <Card key={task.id} className="bg-gray-800 border-gray-600">
+                      <Card key={task.id} className="bg-gray-50 border-gray-200">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
@@ -351,22 +351,22 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => toggleTaskComplete(task.id, task.completed)}
-                                className={task.completed ? 'text-emerald-400' : 'text-gray-500'}
+                                className={task.completed ? 'text-emerald-600' : 'text-gray-500'}
                               >
                                 <CheckCircle2 className="w-4 h-4" />
                               </Button>
                               <div>
-                                <h4 className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-white'}`}>
+                                <h4 className={`font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
                                   {task.title}
                                 </h4>
                                 {task.task_assignments?.[0] && (
-                                  <p className="text-sm text-gray-400">
+                                  <p className="text-sm text-gray-600">
                                     Assigned to: {task.task_assignments[0].profiles?.full_name || 'Unknown'}
                                   </p>
                                 )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-400">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
                               <Clock className="w-4 h-4" />
                               {new Date(task.created_at).toLocaleDateString()}
                             </div>
@@ -379,7 +379,7 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
               </TabsContent>
 
               <TabsContent value="chat" className="h-full flex flex-col">
-                <ScrollArea className="flex-1 h-[400px] border border-gray-600 rounded-lg p-4 bg-gray-800">
+                <ScrollArea className="flex-1 h-[400px] border border-gray-300 rounded-lg p-4 bg-gray-50">
                   <div className="space-y-4">
                     {chatMessages.map((message) => (
                       <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -387,10 +387,10 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                             message.role === 'user' ? 'bg-emerald-500' : 'bg-blue-500'
                           }`}>
-                            {message.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                            {message.role === 'user' ? <User className="w-4 h-4 text-white" /> : <Bot className="w-4 h-4 text-white" />}
                           </div>
                           <div className={`p-3 rounded-lg ${
-                            message.role === 'user' ? 'bg-emerald-600 text-white' : 'bg-gray-700 text-gray-100'
+                            message.role === 'user' ? 'bg-emerald-500 text-white' : 'bg-gray-200 text-gray-900'
                           }`}>
                             <p className="text-sm">{message.content}</p>
                             <p className="text-xs opacity-70 mt-1">
@@ -408,10 +408,10 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                     placeholder="Ask AI about your project..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    className="bg-gray-800 border-gray-600 text-white"
+                    className="bg-white border-gray-300 text-gray-900"
                     onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
                   />
-                  <Button onClick={sendChatMessage} className="bg-emerald-500 hover:bg-emerald-600">
+                  <Button onClick={sendChatMessage} className="bg-emerald-500 hover:bg-emerald-600 text-white">
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
@@ -422,7 +422,7 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                   <Button
                     onClick={() => document.getElementById('document-upload')?.click()}
                     disabled={uploadingFile}
-                    className="bg-emerald-500 hover:bg-emerald-600"
+                    className="bg-emerald-500 hover:bg-emerald-600 text-white"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {uploadingFile ? 'Uploading...' : 'Upload Document'}
@@ -439,19 +439,19 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                 <ScrollArea className="h-[400px]">
                   <div className="space-y-3">
                     {documents.map((doc) => (
-                      <Card key={doc.id} className="bg-gray-800 border-gray-600">
+                      <Card key={doc.id} className="bg-gray-50 border-gray-200">
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <FileText className="w-8 h-8 text-blue-400" />
+                              <FileText className="w-8 h-8 text-blue-600" />
                               <div>
-                                <h4 className="font-medium text-white">{doc.file_name}</h4>
-                                <p className="text-sm text-gray-400">
+                                <h4 className="font-medium text-gray-900">{doc.file_name}</h4>
+                                <p className="text-sm text-gray-600">
                                   {(doc.file_size / 1024 / 1024).toFixed(2)} MB • {new Date(doc.created_at).toLocaleDateString()}
                                 </p>
                               </div>
                             </div>
-                            <Button variant="ghost" size="sm" className="text-gray-400">
+                            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
                               <Paperclip className="w-4 h-4" />
                             </Button>
                           </div>
@@ -459,7 +459,7 @@ const ProjectDetailsModal = ({ isOpen, onClose, project, teamMembers, teamId }: 
                       </Card>
                     ))}
                     {documents.length === 0 && (
-                      <div className="text-center py-8 text-gray-400">
+                      <div className="text-center py-8 text-gray-600">
                         <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
                         <p>No documents uploaded yet</p>
                       </div>
