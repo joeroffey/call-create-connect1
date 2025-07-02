@@ -386,7 +386,7 @@ const ProjectDetailsModal = ({
                 {/* Schedule Tab */}
                 {activeTab === 'schedule' && (
                   <div className="flex flex-col min-h-0">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center justify-between mb-4 flex-shrink-0">
                       <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
                       <Button 
                         onClick={() => setShowAddTask(true)}
@@ -397,6 +397,8 @@ const ProjectDetailsModal = ({
                         Add Task
                       </Button>
                     </div>
+
+                    <div className="flex-1 overflow-y-auto space-y-4">
 
                     {/* Add Task Form */}
                     {showAddTask && (
@@ -631,6 +633,7 @@ const ProjectDetailsModal = ({
                         ))}
                       </div>
                     )}
+                    </div>
                   </div>
                 )}
               </div>
