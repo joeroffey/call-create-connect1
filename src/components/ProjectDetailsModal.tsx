@@ -251,13 +251,28 @@ const ProjectDetailsModal = ({
                 </TabsContent>
 
                 <TabsContent value="documents" className="h-full flex flex-col m-0">
-                  <h3 className="text-lg font-semibold text-white mb-4">Project Documents</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white">Project Documents</h3>
+                    <Button 
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Upload Document
+                    </Button>
+                  </div>
                   {documents.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
                         <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                         <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
-                        <p className="text-gray-500">Documents will appear here when uploaded to the project</p>
+                        <p className="text-gray-500 mb-6">Upload documents to share them with your project team</p>
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Upload First Document
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -280,13 +295,28 @@ const ProjectDetailsModal = ({
                 </TabsContent>
 
                 <TabsContent value="schedule" className="h-full flex flex-col m-0">
-                  <h3 className="text-lg font-semibold text-white mb-4">Schedule of Works</h3>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
+                    <Button 
+                      size="sm"
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Task
+                    </Button>
+                  </div>
                   {scheduleItems.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
                         <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                         <h4 className="text-lg font-medium text-gray-300 mb-2">No schedule items</h4>
-                        <p className="text-gray-500">Schedule items will appear here when added to the project</p>
+                        <p className="text-gray-500 mb-6">Create tasks to organize your project timeline</p>
+                        <Button 
+                          className="bg-orange-600 hover:bg-orange-700 text-white"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create First Task
+                        </Button>
                       </div>
                     </div>
                   ) : (
