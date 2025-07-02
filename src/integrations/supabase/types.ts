@@ -648,6 +648,7 @@ export type Database = {
           description: string
           owner_id: string
           created_at: string
+          logo_url: string
         }[]
       }
       is_team_member: {
