@@ -43,6 +43,8 @@ const ProjectDetailsModal = ({
 }: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [showEditTask, setShowEditTask] = useState(false);
+  const [editingTask, setEditingTask] = useState<any>(null);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
@@ -160,6 +162,43 @@ const ProjectDetailsModal = ({
   const formatDueDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
+  };
+
+  const formatCreatedDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+  };
+
+  const handleEditTask = (task: any) => {
+    setEditingTask(task);
+    setNewTaskTitle(task.title);
+    setNewTaskDescription(task.description || '');
+    setNewTaskDueDate(task.due_date || '');
+    setNewTaskAssignedTo(task.assigned_to || 'unassigned');
+    setShowEditTask(true);
+  };
+
+  const handleUpdateTask = async () => {
+    if (!editingTask || !newTaskTitle.trim()) return;
+
+    try {
+      await scheduleHook.updateTask(editingTask.id, {
+        title: newTaskTitle,
+        description: newTaskDescription || undefined,
+        due_date: newTaskDueDate || undefined,
+        assigned_to: newTaskAssignedTo && newTaskAssignedTo !== 'unassigned' ? newTaskAssignedTo : undefined,
+      });
+
+      // Reset form and close
+      setNewTaskTitle('');
+      setNewTaskDescription('');
+      setNewTaskDueDate('');
+      setNewTaskAssignedTo('');
+      setShowEditTask(false);
+      setEditingTask(null);
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -358,6 +397,7 @@ const ProjectDetailsModal = ({
                     {/* Add Task Form */}
                     {showAddTask && (
                       <div className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 mb-4">
+                        <h4 className="text-white font-medium mb-3">Add New Task</h4>
                         <div className="space-y-3">
                           <div>
                             <label className="text-sm font-medium text-white mb-1 block">Task Title</label>
@@ -433,6 +473,86 @@ const ProjectDetailsModal = ({
                       </div>
                     )}
 
+                    {/* Edit Task Form */}
+                    {showEditTask && editingTask && (
+                      <div className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 mb-4">
+                        <h4 className="text-white font-medium mb-3">Edit Task</h4>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Task Title</label>
+                            <Input
+                              value={newTaskTitle}
+                              onChange={(e) => setNewTaskTitle(e.target.value)}
+                              placeholder="Enter task title..."
+                              className="bg-gray-800 border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Description (Optional)</label>
+                            <Textarea
+                              value={newTaskDescription}
+                              onChange={(e) => setNewTaskDescription(e.target.value)}
+                              placeholder="Enter task description..."
+                              className="bg-gray-800 border-gray-700 text-white"
+                              rows={2}
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Due Date (Optional)</label>
+                            <Input
+                              type="date"
+                              value={newTaskDueDate}
+                              onChange={(e) => setNewTaskDueDate(e.target.value)}
+                              className="bg-gray-800 border-gray-700 text-white"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Assign To (Optional)</label>
+                            <Select value={newTaskAssignedTo} onValueChange={setNewTaskAssignedTo}>
+                              <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                                <SelectValue placeholder="Select team member..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-800 border-gray-700">
+                                <SelectItem value="unassigned">Unassigned</SelectItem>
+                                <SelectItem value={user?.id}>Myself</SelectItem>
+                                {teamMembersHook.members?.filter(member => member.user_id !== user?.id).map((member) => (
+                                  <SelectItem key={member.user_id} value={member.user_id}>
+                                    {member.profiles?.full_name || `User ${member.user_id.slice(0, 8)}`}
+                                  </SelectItem>
+                                )) || []}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              onClick={handleUpdateTask}
+                              disabled={!newTaskTitle.trim() || scheduleHook.saving}
+                              size="sm"
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                            >
+                              <Save className="w-4 h-4 mr-2" />
+                              {scheduleHook.saving ? 'Updating...' : 'Update Task'}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setShowEditTask(false);
+                                setEditingTask(null);
+                                setNewTaskTitle('');
+                                setNewTaskDescription('');
+                                setNewTaskDueDate('');
+                                setNewTaskAssignedTo('');
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {scheduleHook.scheduleItems.length === 0 ? (
                       <div className="flex-1 flex items-center justify-center">
                         <div className="text-center">
@@ -451,12 +571,19 @@ const ProjectDetailsModal = ({
                     ) : (
                       <div className="flex-1 overflow-y-auto space-y-3">
                         {scheduleHook.scheduleItems.map((item: any) => (
-                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
+                          <div 
+                            key={item.id} 
+                            className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4 cursor-pointer hover:bg-gray-800/30 transition-colors"
+                            onClick={() => handleEditTask(item)}
+                          >
                             <div className="flex items-start justify-between">
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center space-x-2">
                                   <button 
-                                    onClick={() => scheduleHook.toggleTaskCompletion(item.id, item.completed)}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      scheduleHook.toggleTaskCompletion(item.id, item.completed);
+                                    }}
                                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                                       item.completed 
                                         ? 'bg-green-500 border-green-500' 
@@ -474,18 +601,20 @@ const ProjectDetailsModal = ({
                                 {item.description && (
                                   <p className="text-sm text-gray-400 mt-1 line-clamp-2 ml-7">{item.description}</p>
                                 )}
-                                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 ml-7">
-                                   <div className="flex items-center">
-                                     <Calendar className="w-3 h-3 mr-1" />
-                                     <span>
-                                       {item.due_date ? formatDueDate(item.due_date) : 'No due date'}
-                                     </span>
-                                   </div>
-                                   <div className="flex items-center">
-                                     <User className="w-3 h-3 mr-1" />
-                                     <span>{getTaskAssignee(item.assigned_to)}</span>
-                                   </div>
-                                 </div>
+                                <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-gray-500 ml-7">
+                                  <div className="flex items-center">
+                                    <Calendar className="w-3 h-3 mr-1" />
+                                    <span>Created: {formatCreatedDate(item.created_at)}</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Calendar className="w-3 h-3 mr-1" />
+                                    <span>Due: {item.due_date ? formatDueDate(item.due_date) : 'No due date'}</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <User className="w-3 h-3 mr-1" />
+                                    <span>{getTaskAssignee(item.assigned_to)}</span>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
