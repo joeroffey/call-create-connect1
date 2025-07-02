@@ -48,7 +48,9 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   });
   const { toast } = useToast();
   
+  
   console.log('ProjectsScreen render - user:', user?.id, 'projects:', projects.length);
+  console.log('ProjectsScreen - filters:', filters);
   
   // Get conversations data with the new helper functions - using single instance
   const conversationsHook = useConversations(user?.id);

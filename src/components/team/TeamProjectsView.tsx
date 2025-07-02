@@ -49,7 +49,9 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   });
   const { toast } = useToast();
   
+  
   console.log('TeamProjectsView render - user:', user?.id, 'teamId:', teamId, 'projects:', projects.length);
+  console.log('TeamProjectsView - filters:', filters);
   
   // Get conversations data with the new helper functions
   const conversationsHook = useConversations(user?.id);
