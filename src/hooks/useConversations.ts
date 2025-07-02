@@ -114,8 +114,8 @@ export const useConversations = (userId: string | undefined) => {
       channelRef.current = null;
     }
 
-    // Create new channel with unique name
-    const channelName = `conversations-changes-${userId}-${Date.now()}`;
+    // Create new channel with unique name including random number to avoid conflicts
+    const channelName = `conversations-changes-${userId}-${Math.random().toString(36).substr(2, 9)}`;
     const channel = supabase.channel(channelName);
 
     // Configure the channel with all event listeners
@@ -158,15 +158,21 @@ export const useConversations = (userId: string | undefined) => {
           console.log('Schedule of works change detected:', payload);
           fetchProjectCounts();
         }
-      );
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to conversations changes');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to conversations changes');
+        }
+      });
 
-    // Subscribe to the channel
-    channel.subscribe();
     channelRef.current = channel;
 
     // Cleanup function
     return () => {
       if (channelRef.current) {
+        console.log('Cleaning up conversations subscription');
         supabase.removeChannel(channelRef.current);
         channelRef.current = null;
       }
