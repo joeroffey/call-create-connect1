@@ -624,6 +624,10 @@ export type Database = {
           error_message: string
         }[]
       }
+      get_project_task_count: {
+        Args: { project_id: string }
+        Returns: number
+      }
       get_teams_for_user: {
         Args: { p_user_id: string }
         Returns: {

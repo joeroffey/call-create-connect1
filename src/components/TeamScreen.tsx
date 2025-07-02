@@ -20,9 +20,9 @@ import { useTeamMembers } from '@/hooks/useTeamMembers';
 import CreateTeamModal from '@/components/team/CreateTeamModal';
 import InviteMemberModal from '@/components/team/InviteMemberModal';
 import TeamLogoUpload from '@/components/team/TeamLogoUpload';
-import TaskManagement from '@/components/team/TaskManagement';
+
 import TeamSettings from '@/components/team/TeamSettings';
-import TeamProjects from '@/components/team/TeamProjects';
+import SimpleTeamProjects from '@/components/team/SimpleTeamProjects';
 
 interface TeamScreenProps {
   user: any;
@@ -432,11 +432,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
         >
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
-          {activeView === 'schedule' && selectedTeamId && (
-            <TaskManagement teamId={selectedTeamId} members={members} />
-          )}
-          {activeView === 'projects' && selectedTeamId && (
-            <TeamProjects teamId={selectedTeamId} members={members} />
+          {(activeView === 'projects' || activeView === 'schedule') && selectedTeamId && (
+            <SimpleTeamProjects teamId={selectedTeamId} members={members} />
           )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings
