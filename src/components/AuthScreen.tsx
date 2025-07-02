@@ -25,14 +25,23 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
     e.preventDefault();
     setLoading(true);
     
+    console.log('AuthScreen: Starting authentication process');
+    console.log('AuthScreen: isLogin:', isLogin);
+    console.log('AuthScreen: email:', email);
+    
     try {
       if (isLogin) {
+        console.log('AuthScreen: Attempting sign in...');
+        
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
+        console.log('AuthScreen: Sign in result:', { data, error });
+
         if (error) {
+          console.error('AuthScreen: Sign in error:', error);
           toast({
             title: "Login Failed",
             description: error.message,
@@ -42,13 +51,18 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
         }
 
         if (data.user) {
-          setUser({
+          console.log('AuthScreen: Sign in successful, user data:', data.user);
+          
+          const userData = {
             id: data.user.id,
             email: data.user.email,
             name: data.user.user_metadata?.name || email.split('@')[0],
             subscription: 'pro',
             avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`
-          });
+          };
+          
+          console.log('AuthScreen: Setting user data:', userData);
+          setUser(userData);
           onAuth(true);
           
           setTimeout(() => {
@@ -58,6 +72,8 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
               duration: 2000,
             });
           }, 500);
+        } else {
+          console.error('AuthScreen: No user data returned despite no error');
         }
       } else {
         const { data, error } = await supabase.auth.signUp({
