@@ -10,8 +10,11 @@ interface CreateProjectModalProps {
     name: string;
     description: string;
     label: string;
+    customer_name: string;
+    customer_address: string;
+    customer_phone: string;
   };
-  setNewProject: (project: { name: string; description: string; label: string }) => void;
+  setNewProject: (project: { name: string; description: string; label: string; customer_name: string; customer_address: string; customer_phone: string }) => void;
   onCreateProject: () => void;
   onProjectCreated?: () => void;
 }
@@ -86,6 +89,54 @@ const CreateProjectModal = ({
                   <option value="Industrial">Industrial</option>
                   <option value="Infrastructure">Infrastructure</option>
                 </select>
+              </div>
+
+              <div className="border-t border-gray-700/50 pt-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3">Customer Details</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="customer-name" className="block text-sm font-medium text-gray-300 mb-2">
+                      Customer Name
+                    </label>
+                    <input
+                      id="customer-name"
+                      type="text"
+                      value={newProject.customer_name}
+                      onChange={(e) => setNewProject({ ...newProject, customer_name: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="customer-address" className="block text-sm font-medium text-gray-300 mb-2">
+                      Customer Address
+                    </label>
+                    <textarea
+                      id="customer-address"
+                      value={newProject.customer_address}
+                      onChange={(e) => setNewProject({ ...newProject, customer_address: e.target.value })}
+                      rows={2}
+                      className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                      placeholder="Enter customer address"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="customer-phone" className="block text-sm font-medium text-gray-300 mb-2">
+                      Customer Phone
+                    </label>
+                    <input
+                      id="customer-phone"
+                      type="tel"
+                      value={newProject.customer_phone}
+                      onChange={(e) => setNewProject({ ...newProject, customer_phone: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      placeholder="Enter customer phone number"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

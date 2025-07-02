@@ -24,6 +24,9 @@ interface Project {
   pinned?: boolean;
   team_id?: string;
   team_name?: string;
+  customer_name?: string;
+  customer_address?: string;
+  customer_phone?: string;
 }
 
 interface ProjectsScreenProps {
@@ -36,7 +39,14 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', description: '', label: 'Residential' });
+  const [newProject, setNewProject] = useState({ 
+    name: '', 
+    description: '', 
+    label: 'Residential',
+    customer_name: '',
+    customer_address: '',
+    customer_phone: ''
+  });
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
@@ -218,7 +228,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
             name: newProject.name.trim(),
             description: newProject.description.trim() || null,
             label: newProject.label,
-            status: 'planning'
+            status: 'planning',
+            customer_name: newProject.customer_name.trim() || null,
+            customer_address: newProject.customer_address.trim() || null,
+            customer_phone: newProject.customer_phone.trim() || null
           }
         ])
         .select()
@@ -231,7 +244,14 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
         description: `${newProject.name} has been added to your projects.`,
       });
 
-      setNewProject({ name: '', description: '', label: 'Residential' });
+      setNewProject({ 
+        name: '', 
+        description: '', 
+        label: 'Residential',
+        customer_name: '',
+        customer_address: '',
+        customer_phone: ''
+      });
       setShowCreateModal(false);
       fetchProjects();
     } catch (error: any) {
@@ -254,7 +274,10 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           name: editingProject.name.trim(),
           description: editingProject.description.trim() || null,
           label: editingProject.label,
-          status: editingProject.status
+          status: editingProject.status,
+          customer_name: editingProject.customer_name?.trim() || null,
+          customer_address: editingProject.customer_address?.trim() || null,
+          customer_phone: editingProject.customer_phone?.trim() || null
         })
         .eq('id', editingProject.id);
 

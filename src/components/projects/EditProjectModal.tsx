@@ -24,6 +24,9 @@ interface Project {
   pinned?: boolean;
   team_id?: string;
   team_name?: string;
+  customer_name?: string;
+  customer_address?: string;
+  customer_phone?: string;
 }
 
 interface EditProjectModalProps {
@@ -171,6 +174,54 @@ const EditProjectModal = ({
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="border-t border-gray-700/50 pt-4">
+                <h3 className="text-sm font-medium text-gray-300 mb-3">Customer Details</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-customer-name" className="text-sm font-medium text-gray-300 mb-2 block">
+                      Customer Name
+                    </Label>
+                    <Input
+                      id="edit-customer-name"
+                      type="text"
+                      value={editingProject.customer_name || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, customer_name: e.target.value })}
+                      className="w-full bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:ring-emerald-500/20"
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-customer-address" className="text-sm font-medium text-gray-300 mb-2 block">
+                      Customer Address
+                    </Label>
+                    <textarea
+                      id="edit-customer-address"
+                      value={editingProject.customer_address || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, customer_address: e.target.value })}
+                      rows={2}
+                      className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                      placeholder="Enter customer address"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-customer-phone" className="text-sm font-medium text-gray-300 mb-2 block">
+                      Customer Phone
+                    </Label>
+                    <Input
+                      id="edit-customer-phone"
+                      type="tel"
+                      value={editingProject.customer_phone || ''}
+                      onChange={(e) => setEditingProject({ ...editingProject, customer_phone: e.target.value })}
+                      className="w-full bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:ring-emerald-500/20"
+                      placeholder="Enter customer phone number"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

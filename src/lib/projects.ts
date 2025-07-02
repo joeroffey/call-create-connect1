@@ -18,9 +18,15 @@ export async function fetchProjects() {
 export async function createProject({
   name,
   description,
+  customer_name,
+  customer_address,
+  customer_phone,
 }: {
   name: string;
   description?: string;
+  customer_name?: string;
+  customer_address?: string;
+  customer_phone?: string;
 }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('Not authenticated');
@@ -28,7 +34,14 @@ export async function createProject({
   // Insert and select the new row in one go
   const { data: project, error: insertError } = await supabase
     .from('projects')
-    .insert([{ user_id: user.id, name, description }])
+    .insert([{ 
+      user_id: user.id, 
+      name, 
+      description,
+      customer_name,
+      customer_address,
+      customer_phone
+    }])
     .select()
     .single();
 

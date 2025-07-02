@@ -14,6 +14,9 @@ interface TeamProject {
   pinned?: boolean;
   team_id: string;
   team_name: string;
+  customer_name?: string;
+  customer_address?: string;
+  customer_phone?: string;
 }
 
 export const useTeamProjects = (teamId: string | null, teamName: string = '') => {
@@ -67,7 +70,15 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
     }
   };
 
-  const createProject = async (projectData: { name: string; description: string; label: string; user_id: string }) => {
+  const createProject = async (projectData: { 
+    name: string; 
+    description: string; 
+    label: string; 
+    user_id: string;
+    customer_name?: string;
+    customer_address?: string;
+    customer_phone?: string;
+  }) => {
     if (!teamId) throw new Error('No team ID provided');
 
     const { error } = await supabase
@@ -78,7 +89,10 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
         name: projectData.name.trim(),
         description: projectData.description.trim() || null,
         label: projectData.label,
-        status: 'setup'
+        status: 'setup',
+        customer_name: projectData.customer_name?.trim() || null,
+        customer_address: projectData.customer_address?.trim() || null,
+        customer_phone: projectData.customer_phone?.trim() || null
       }]);
 
     if (error) throw error;

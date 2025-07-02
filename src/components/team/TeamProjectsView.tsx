@@ -33,7 +33,14 @@ interface TeamProjectsViewProps {
 
 const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjectsViewProps) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newProject, setNewProject] = useState({ name: '', description: '', label: 'Residential' });
+  const [newProject, setNewProject] = useState({ 
+    name: '', 
+    description: '', 
+    label: 'Residential',
+    customer_name: '',
+    customer_address: '',
+    customer_phone: ''
+  });
   const [editingProject, setEditingProject] = useState<TeamProject | null>(null);
   const [selectedProject, setSelectedProject] = useState<TeamProject | null>(null);
   const [showProjectDetails, setShowProjectDetails] = useState(false);
@@ -115,10 +122,20 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         user_id: user.id,
         name: newProject.name.trim(),
         description: newProject.description.trim(),
-        label: newProject.label
+        label: newProject.label,
+        customer_name: newProject.customer_name.trim() || undefined,
+        customer_address: newProject.customer_address.trim() || undefined,
+        customer_phone: newProject.customer_phone.trim() || undefined
       });
       
-      setNewProject({ name: '', description: '', label: 'Residential' });
+      setNewProject({ 
+        name: '', 
+        description: '', 
+        label: 'Residential',
+        customer_name: '',
+        customer_address: '',
+        customer_phone: ''
+      });
       setShowCreateModal(false);
     } catch (error: any) {
       toast({

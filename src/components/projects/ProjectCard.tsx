@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, Pin, MessageCircle, FileText, Clock, ChevronDown } from 'lucide-react';
+import { Edit, Trash2, Pin, MessageCircle, FileText, Clock, ChevronDown, MapPin, Phone, User } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -15,6 +14,9 @@ interface Project {
   pinned?: boolean;
   team_id?: string;
   team_name?: string;
+  customer_name?: string;
+  customer_address?: string;
+  customer_phone?: string;
 }
 
 interface ProjectCardProps {
@@ -74,6 +76,29 @@ const ProjectCard = ({
       case 'Infrastructure': return 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30';
       default: return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
+  };
+
+  const handleAddressClick = (address: string) => {
+    const encodedAddress = encodeURIComponent(address);
+    // Try to detect mobile device for better map app integration
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+      // For mobile devices, try platform-specific maps
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        window.open(`maps://?q=${encodedAddress}`, '_system');
+      } else {
+        window.open(`geo:0,0?q=${encodedAddress}`, '_system');
+      }
+    } else {
+      // Fallback to Google Maps for desktop
+      window.open(`https://maps.google.com/?q=${encodedAddress}`, '_blank');
+    }
+  };
+
+  const handlePhoneClick = (phone: string) => {
+    window.open(`tel:${phone}`, '_system');
   };
 
   const handleScheduleClick = () => {
@@ -181,6 +206,41 @@ const ProjectCard = ({
           className="fixed inset-0 z-5" 
           onClick={() => setShowStatusDropdown(false)}
         />
+      )}
+
+      {/* Customer Details */}
+      {(project.customer_name || project.customer_address || project.customer_phone) && (
+        <div className="mb-4 p-3 bg-gray-800/30 rounded-lg border border-gray-700/30">
+          <div className="flex items-center gap-2 mb-2">
+            <User className="w-4 h-4 text-blue-400" />
+            <span className="text-sm font-medium text-blue-400">Customer Details</span>
+          </div>
+          <div className="space-y-2">
+            {project.customer_name && (
+              <div className="text-sm text-gray-300">
+                <span className="font-medium">{project.customer_name}</span>
+              </div>
+            )}
+            {project.customer_address && (
+              <button
+                onClick={() => handleAddressClick(project.customer_address!)}
+                className="flex items-start gap-2 text-sm text-gray-300 hover:text-emerald-300 transition-colors text-left group"
+              >
+                <MapPin className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0 group-hover:text-emerald-300" />
+                <span className="underline-offset-2 group-hover:underline">{project.customer_address}</span>
+              </button>
+            )}
+            {project.customer_phone && (
+              <button
+                onClick={() => handlePhoneClick(project.customer_phone!)}
+                className="flex items-center gap-2 text-sm text-gray-300 hover:text-emerald-300 transition-colors group"
+              >
+                <Phone className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
+                <span className="underline-offset-2 group-hover:underline">{project.customer_phone}</span>
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Stats */}
