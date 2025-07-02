@@ -63,17 +63,31 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   
   console.log('TeamProjectsView props:', { userId: user?.id, teamId, teamName });
   
-  // Get conversations data
-  const conversationsHook = useConversations(user.id);
-  const { 
-    conversations, 
-    getProjectConversationCount, 
-    getProjectDocumentCount,
-    getProjectScheduleOfWorksCount,
-    loading: conversationsLoading,
-    incrementDocumentCount,
-    incrementScheduleCount
-  } = conversationsHook;
+  // Get conversations data - make it optional to not block render
+  let conversationsHook;
+  let conversations = [];
+  let getProjectConversationCount = (projectId: string) => 0;
+  let getProjectDocumentCount = (projectId: string) => 0;
+  let getProjectScheduleOfWorksCount = (projectId: string) => 0;
+  let conversationsLoading = false;
+  let incrementDocumentCount = (projectId: string) => {};
+  let incrementScheduleCount = (projectId: string) => {};
+
+  try {
+    conversationsHook = useConversations(user.id);
+    ({
+      conversations, 
+      getProjectConversationCount, 
+      getProjectDocumentCount,
+      getProjectScheduleOfWorksCount,
+      loading: conversationsLoading,
+      incrementDocumentCount,
+      incrementScheduleCount
+    } = conversationsHook);
+  } catch (error) {
+    console.error('Error with conversations hook:', error);
+    conversationsLoading = false;
+  }
 
   const fetchTeamProjects = async () => {
     console.log('fetchTeamProjects called with:', { userId: user?.id, teamId });
@@ -410,9 +424,9 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
                 key={project.id}
                 project={project}
                 index={index}
-                conversationCount={getProjectConversationCount(project.id) || 0}
-                documentCount={getProjectDocumentCount(project.id) || 0}
-                scheduleOfWorksCount={getProjectScheduleOfWorksCount(project.id) || 0}
+                conversationCount={getProjectConversationCount(project.id)}
+                documentCount={getProjectDocumentCount(project.id)}
+                scheduleOfWorksCount={getProjectScheduleOfWorksCount(project.id)}
                 onStartNewChat={onStartNewChat}
                 onEdit={handleEditProject}
                 onDelete={deleteProject}
