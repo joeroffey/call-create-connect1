@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { TeamMember } from './useTeams';
 
 export const useTeamMembers = (teamId?: string) => {
@@ -89,26 +89,30 @@ export const useTeamMembers = (teamId?: string) => {
     if (!teamId) return;
 
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      // For now, just create invitation since we don't have email lookup
       const { error } = await supabase
         .from('team_invitations')
         .insert([{
           team_id: teamId,
           email,
           role,
-          invited_by: (await supabase.auth.getUser()).data.user?.id
+          invited_by: user.id
         }]);
 
       if (error) throw error;
 
       toast({
-        title: "Success",
+        title: "Success", 
         description: `Invitation sent to ${email}`,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('useTeamMembers: Error inviting member:', error);
       toast({
         title: "Error",
-        description: "Failed to send invitation",
+        description: error.message || "Failed to invite member",
         variant: "destructive",
       });
     }

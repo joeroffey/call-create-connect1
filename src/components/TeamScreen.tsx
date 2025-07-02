@@ -362,44 +362,46 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
           )}
 
           {/* Navigation Tabs */}
-          <div className="flex justify-between bg-gray-800/30 backdrop-blur-sm p-2 rounded-xl">
-            <div className="flex gap-2">
-              {[
-                { id: 'overview', label: 'Overview', icon: FileText },
-                { id: 'schedule', label: 'Schedule', icon: Calendar }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveView(tab.id as any)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
-                    activeView === tab.id
-                      ? 'bg-emerald-500 text-white shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              {[
-                { id: 'members', label: 'Members', icon: Users },
-                { id: 'settings', label: 'Settings', icon: Settings }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveView(tab.id as any)}
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
-                    activeView === tab.id
-                      ? 'bg-emerald-500 text-white shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
+          <div className="bg-gray-800/30 backdrop-blur-sm p-2 rounded-xl">
+            <div className="grid grid-cols-2 gap-8">
+              <div className="flex gap-2">
+                {[
+                  { id: 'overview', label: 'Overview', icon: FileText },
+                  { id: 'schedule', label: 'Schedule', icon: Calendar }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveView(tab.id as any)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+                      activeView === tab.id
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                    }`}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 justify-end">
+                {[
+                  { id: 'members', label: 'Members', icon: Users },
+                  { id: 'settings', label: 'Settings', icon: Settings }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveView(tab.id as any)}
+                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
+                      activeView === tab.id
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                    }`}
+                  >
+                    <tab.icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>

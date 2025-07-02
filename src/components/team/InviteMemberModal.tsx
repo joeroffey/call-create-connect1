@@ -67,9 +67,9 @@ const InviteMemberModal = ({ onInviteMember, trigger }: InviteMemberModalProps) 
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-600">
-                <SelectItem value="viewer" className="text-white">Viewer - Can view projects and comments</SelectItem>
-                <SelectItem value="member" className="text-white">Member - Can edit projects and tasks</SelectItem>
-                <SelectItem value="admin" className="text-white">Admin - Can manage team and members</SelectItem>
+                <SelectItem value="viewer" className="text-white hover:bg-gray-700">Viewer - Can view projects and comments</SelectItem>
+                <SelectItem value="member" className="text-white hover:bg-gray-700">Member - Can edit projects and tasks</SelectItem>
+                <SelectItem value="admin" className="text-white hover:bg-gray-700">Admin - Can manage team and members</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -137,7 +137,7 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
           New Task
         </Button>
       </DialogTrigger>
-      <DialogContent className="bg-gray-900 border-gray-700 max-w-md">
+      <DialogContent className="bg-gray-900 border-gray-700 max-w-md text-white">
         <DialogHeader>
           <DialogTitle className="text-white">Create New Task</DialogTitle>
         </DialogHeader>
@@ -179,7 +179,7 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
                 </SelectTrigger>
                 <SelectContent className="bg-gray-800 border-gray-600">
                   {projects.map((project) => (
-                    <SelectItem key={project.id} value={project.id}>
+                    <SelectItem key={project.id} value={project.id} className="text-white hover:bg-gray-700">
                       {project.name}
                     </SelectItem>
                   ))}
@@ -195,9 +195,9 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
                 <SelectValue placeholder="Select team member" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-600">
-                <SelectItem value="">Unassigned</SelectItem>
+                <SelectItem value="" className="text-white hover:bg-gray-700">Unassigned</SelectItem>
                 {members.map((member) => (
-                  <SelectItem key={member.user_id} value={member.user_id}>
+                  <SelectItem key={member.user_id} value={member.user_id} className="text-white hover:bg-gray-700">
                     {member.profiles?.full_name || 'Unknown User'}
                   </SelectItem>
                 ))}
