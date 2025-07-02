@@ -363,7 +363,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
 
           {/* Navigation Tabs */}
           <div className="bg-gray-800/30 backdrop-blur-sm p-2 rounded-xl">
-            <div className="grid grid-cols-2 gap-8">
+            <div className="flex justify-between items-center w-full">
               <div className="flex gap-2">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
@@ -383,7 +383,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
                   </button>
                 ))}
               </div>
-              <div className="flex gap-2 justify-end">
+              <div className="flex gap-2">
                 {[
                   { id: 'members', label: 'Members', icon: Users },
                   { id: 'settings', label: 'Settings', icon: Settings }

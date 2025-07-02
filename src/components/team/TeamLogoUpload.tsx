@@ -47,11 +47,15 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
         .from('team-logos')
         .getPublicUrl(fileName);
 
+      console.log('Logo upload - public URL:', publicUrl);
+
       // Update team with logo URL
       const { error: updateError } = await supabase
         .from('teams')
         .update({ logo_url: publicUrl })
         .eq('id', teamId);
+
+      console.log('Logo upload - database update error:', updateError);
 
       if (updateError) throw updateError;
 
