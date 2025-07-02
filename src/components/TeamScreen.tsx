@@ -453,14 +453,37 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
         >
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
-          {activeView === 'projects' && selectedTeamId && selectedTeam && (
-            <TeamProjectsView 
-              user={user} 
-              teamId={selectedTeamId} 
-              teamName={selectedTeam.name}
-              onStartNewChat={onStartNewChat} 
-            />
-          )}
+          {activeView === 'projects' && (() => {
+            console.log('Projects view - Team data:', { 
+              selectedTeamId, 
+              selectedTeam: selectedTeam?.name,
+              teamsLength: teams.length,
+              activeView 
+            });
+            
+            if (!selectedTeamId || !selectedTeam) {
+              return (
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                    <div className="text-white">Loading team data...</div>
+                    <div className="text-gray-400 text-sm mt-2">
+                      Team ID: {selectedTeamId || 'Missing'} | Team: {selectedTeam?.name || 'Missing'}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            
+            return (
+              <TeamProjectsView 
+                user={user} 
+                teamId={selectedTeamId} 
+                teamName={selectedTeam.name}
+                onStartNewChat={onStartNewChat} 
+              />
+            );
+          })()}
           {activeView === 'tasks' && selectedTeamId && selectedTeam && (
             <TeamTasksView 
               teamId={selectedTeamId} 
