@@ -9,7 +9,7 @@ const NotificationsPage = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
+    <div className="h-screen flex flex-col bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
       {/* Header */}
       <motion.header 
         initial={{ opacity: 0, y: -20 }}
@@ -59,7 +59,7 @@ const NotificationsPage = () => {
       </motion.header>
 
       {/* Main Content */}
-      <div className="h-[calc(100vh-100px)] overflow-hidden">
+      <div className="flex-1 min-h-0">
         <NotificationsScreen />
       </div>
     </div>
