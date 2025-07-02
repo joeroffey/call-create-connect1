@@ -15,6 +15,9 @@ verify_jwt = true
 [functions.customer-portal]
 verify_jwt = true
 
+[functions.create-test-invitation]
+verify_jwt = true
+
 [functions.send-team-invitation]
 verify_jwt = true
 

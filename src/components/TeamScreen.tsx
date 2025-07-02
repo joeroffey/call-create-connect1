@@ -39,7 +39,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
-  const { members, loading: membersLoading, inviteMember, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
+  const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
   const teamStats = useTeamStats(selectedTeamId);
 
   console.log('TeamScreen render:', {
@@ -257,7 +257,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-white">Team Members</h3>
-        <InviteMemberModal onInviteMember={inviteMember} />
+        <InviteMemberModal onInviteMember={inviteMember} onCreateTestInvitation={createTestInvitation} />
       </div>
       
       <div className="grid gap-4">

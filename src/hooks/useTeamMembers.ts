@@ -153,6 +153,52 @@ export const useTeamMembers = (teamId?: string) => {
     }
   };
 
+  const createTestInvitation = async (email: string, role: 'admin' | 'member' | 'viewer' = 'member') => {
+    if (!teamId) return null;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!user || !session) throw new Error('Not authenticated');
+
+      console.log('Creating test invitation link...');
+
+      // Call the edge function to create test invitation
+      const { data, error } = await supabase.functions.invoke('create-test-invitation', {
+        body: {
+          teamId,
+          email,
+          role
+        },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to create test invitation');
+      }
+
+      console.log('Test invitation created successfully:', data);
+
+      toast({
+        title: "Test Invitation Created",
+        description: `Direct link generated for ${email}`,
+      });
+
+      return data.inviteLink;
+    } catch (error: any) {
+      console.error('Error creating test invitation:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create test invitation",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
   const updateMemberRole = async (memberId: string, newRole: 'admin' | 'member' | 'viewer') => {
     try {
       const { error } = await supabase
@@ -209,6 +255,7 @@ export const useTeamMembers = (teamId?: string) => {
     members,
     loading,
     inviteMember,
+    createTestInvitation,
     updateMemberRole,
     removeMember,
     refetch: fetchMembers
