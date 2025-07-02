@@ -31,7 +31,6 @@ export const useConversations = (userId: string | undefined) => {
 
       if (error) throw error;
       
-      console.log('Fetched conversations:', data);
       setConversations(data || []);
     } catch (error) {
       console.error('Error fetching conversations:', error);

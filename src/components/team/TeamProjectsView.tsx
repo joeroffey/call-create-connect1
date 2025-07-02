@@ -316,6 +316,14 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     );
   }
 
+  if (!projects) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-white">Loading projects...</div>
+      </div>
+    );
+  }
+
   // Simplified filtering to prevent crashes
   const filteredProjects = useMemo(() => {
     if (!projects) return [];
