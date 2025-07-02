@@ -20,17 +20,18 @@ import { useTeamMembers } from '@/hooks/useTeamMembers';
 import CreateTeamModal from '@/components/team/CreateTeamModal';
 import InviteMemberModal from '@/components/team/InviteMemberModal';
 import TeamLogoUpload from '@/components/team/TeamLogoUpload';
-
 import TeamSettings from '@/components/team/TeamSettings';
 import BasicTeamWork from '@/components/team/BasicTeamWork';
+import TeamProjectsView from '@/components/team/TeamProjectsView';
 
 interface TeamScreenProps {
   user: any;
   subscriptionTier: string;
   onViewPlans: () => void;
+  onStartNewChat: (projectId: string, conversationId?: string) => void;
 }
 
-const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) => {
+const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: TeamScreenProps) => {
   const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
@@ -432,7 +433,15 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
         >
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
-          {(activeView === 'projects' || activeView === 'schedule') && selectedTeamId && (
+          {activeView === 'projects' && selectedTeamId && selectedTeam && (
+            <TeamProjectsView 
+              user={user} 
+              teamId={selectedTeamId} 
+              teamName={selectedTeam.name}
+              onStartNewChat={onStartNewChat} 
+            />
+          )}
+          {activeView === 'schedule' && selectedTeamId && (
             <BasicTeamWork teamId={selectedTeamId} members={members} />
           )}
           {activeView === 'settings' && selectedTeam && (

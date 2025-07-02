@@ -316,7 +316,7 @@ const Index = () => {
         }
         return <ProjectsScreen user={user} onStartNewChat={handleStartNewChat} />;
       case 'team':
-        return <TeamScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} />;
+        return <TeamScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} onStartNewChat={handleStartNewChat} />;
       case 'profile':
         return (
           <ProfileScreen 
