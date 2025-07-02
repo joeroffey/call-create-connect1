@@ -138,10 +138,16 @@ const EditProjectModal = ({
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 text-white z-[60]">
                     <SelectItem 
-                      value="planning" 
+                      value="setup" 
                       className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
                     >
                       Set-up
+                    </SelectItem>
+                    <SelectItem 
+                      value="planning" 
+                      className="hover:bg-emerald-500/10 focus:bg-emerald-500/10 hover:text-emerald-400 focus:text-emerald-400 cursor-pointer"
+                    >
+                      Planning
                     </SelectItem>
                     <SelectItem 
                       value="in-progress" 
