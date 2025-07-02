@@ -205,7 +205,7 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Card className={`bg-gradient-to-r from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all ${dueDateInfo?.urgent ? 'border-l-4 border-l-red-500' : ''}`}>
-                  <CardContent className="p-3">
+                  <CardContent className="p-3 pb-2">
                     <div className="space-y-2">
                       {/* Row 1: Title only */}
                       <div>
