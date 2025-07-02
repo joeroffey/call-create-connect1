@@ -271,7 +271,7 @@ const ProjectDetailsModal = ({
               </div>
 
               {/* Content Area */}
-              <div className="flex-1 p-6 overflow-y-auto">
+              <div className="flex-1 p-4 overflow-y-auto max-h-[calc(80vh-200px)]">
                 {/* Conversations Tab */}
                 {activeTab === 'chats' && (
                   <div className="h-full flex flex-col">
