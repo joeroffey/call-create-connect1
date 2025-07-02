@@ -260,24 +260,25 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
         <InviteMemberModal onInviteMember={inviteMember} onCreateTestInvitation={createTestInvitation} />
       </div>
       
-      <div className="grid gap-4">
+      <div className="grid gap-4 w-full">
         {members.map((member) => (
-          <Card key={member.id} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center space-x-4 flex-1">
-                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-semibold text-lg shadow-lg flex-shrink-0">
+          <Card key={member.id} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all w-full">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between w-full min-w-0">
+                <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center text-white font-semibold text-sm sm:text-lg shadow-lg flex-shrink-0">
                     {member.profiles?.full_name?.substring(0, 2).toUpperCase() || 'UN'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-semibold text-lg truncate">{member.profiles?.full_name || 'Unknown User'}</p>
-                    <p className="text-gray-400 text-sm">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
+                    <p className="text-white font-semibold text-sm sm:text-lg truncate">{member.profiles?.full_name || 'Unknown User'}</p>
+                    <p className="text-gray-400 text-xs sm:text-sm truncate">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-3 flex-shrink-0">
-                  <Badge variant="outline" className="border-gray-600 text-gray-300 px-3 py-1 flex items-center gap-2">
+                <div className="flex items-center ml-2 flex-shrink-0">
+                  <Badge variant="outline" className="border-gray-600 text-gray-300 px-2 sm:px-3 py-1 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                     {getRoleIcon(member.role)}
-                    <span className="capitalize font-medium">{member.role}</span>
+                    <span className="capitalize font-medium hidden sm:inline">{member.role}</span>
+                    <span className="capitalize font-medium sm:hidden">{member.role.substring(0, 3)}</span>
                   </Badge>
                 </div>
               </div>
@@ -318,8 +319,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-6 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
