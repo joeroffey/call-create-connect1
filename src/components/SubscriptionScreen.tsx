@@ -180,39 +180,40 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           >
             <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
               <CardContent className="p-8">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div className="flex items-center gap-6 flex-1">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                        <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
-                      </div>
-                      <h3 className="text-2xl font-bold text-white mb-3">
-                        {getPlanDisplayName()} Plan
-                      </h3>
-                      <p className="text-gray-300 text-base mb-4">
-                        Your premium subscription is active and ready to use
-                      </p>
-                      
-                      <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="flex items-center gap-3">
-                          <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                          <span className="text-gray-300">
-                            Renews {getSubscriptionExpiration()}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                          <span className="text-emerald-300 font-medium text-base">Active</span>
-                        </div>
-                      </div>
+                {/* Crown icon positioned at top-right */}
+                <div className="absolute top-6 right-6">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                      <Crown className="w-8 h-8 text-white" />
                     </div>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                  <div className="flex-1 pr-20">
+                    <div className="flex items-center gap-3 mb-2">
+                      <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
+                      <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-3">
+                      {getPlanDisplayName()} Plan
+                    </h3>
+                    <p className="text-gray-300 text-base mb-4">
+                      Your premium subscription is active and ready to use
+                    </p>
                     
-                    <div className="relative flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Crown className="w-8 h-8 text-white" />
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <div className="flex items-center gap-3">
+                        <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                        <span className="text-gray-300">
+                          Renews {getSubscriptionExpiration()}
+                        </span>
                       </div>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full animate-pulse"></div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <span className="text-emerald-300 font-medium text-base">Active</span>
+                      </div>
                     </div>
                   </div>
                   
