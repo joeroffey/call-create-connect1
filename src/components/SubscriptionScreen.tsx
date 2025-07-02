@@ -181,7 +181,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
               <CardContent className="p-8">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div className="flex items-start gap-6">
+                  <div className="flex items-center gap-6 flex-1">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
