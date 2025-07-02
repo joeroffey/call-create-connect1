@@ -333,11 +333,11 @@ const ProjectDetailsModal = ({
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-gray-950/95 backdrop-blur-md border border-gray-800/50 rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl overflow-hidden"
+          className="bg-gray-950/95 backdrop-blur-md border border-gray-800/50 rounded-2xl max-w-4xl w-full h-[80vh] shadow-2xl overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-800/50">
+          <div className="p-6 border-b border-gray-800/50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-12 h-12 bg-gray-800 rounded-xl flex items-center justify-center">
@@ -357,8 +357,8 @@ const ProjectDetailsModal = ({
             </div>
           </div>
 
-          {/* Content Area - Better Height Management */}
-          <div className="flex flex-col h-[calc(90vh-140px)] max-h-[600px]">
+          {/* Content Area - Fixed Height Management */}
+          <div className="flex-1 flex flex-col min-h-0">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
               {/* Tabs Header */}
               <div className="px-6 pt-4 pb-2 flex-shrink-0">
@@ -379,7 +379,7 @@ const ProjectDetailsModal = ({
               </div>
 
               {/* Tab Content - Flexible Height */}
-              <div className="flex-1 px-6 pb-4 min-h-0 overflow-hidden">
+              <div className="flex-1 px-6 pb-6 min-h-0 overflow-hidden">
                 <TabsContent value="chats" className="h-full flex flex-col m-0">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Project Conversations</h3>
