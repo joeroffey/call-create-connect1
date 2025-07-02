@@ -23,6 +23,8 @@ import TeamLogoUpload from '@/components/team/TeamLogoUpload';
 import TeamSettings from '@/components/team/TeamSettings';
 import BasicTeamWork from '@/components/team/BasicTeamWork';
 import TeamProjectsView from '@/components/team/TeamProjectsView';
+import TeamTasksView from '@/components/team/TeamTasksView';
+import { useTeamStats } from '@/hooks/useTeamStats';
 
 interface TeamScreenProps {
   user: any;
@@ -32,11 +34,12 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'settings'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
+  const teamStats = useTeamStats(selectedTeamId);
 
   console.log('TeamScreen render:', {
     teamsCount: teams.length,
@@ -159,49 +162,58 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     <div className="space-y-8">
       {/* Team Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+        <Card 
+          className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
+          onClick={() => setActiveView('members')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-emerald-500/20 rounded-xl">
                 <Users className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">{members.length}</p>
+                <p className="text-3xl font-bold text-white">{teamStats.memberCount}</p>
                 <p className="text-sm text-gray-400">Team Members</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+        <Card 
+          className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
+          onClick={() => setActiveView('projects')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-blue-500/20 rounded-xl">
                 <FileText className="w-6 h-6 text-blue-400" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">0</p>
-                <p className="text-sm text-gray-400">Shared Projects</p>
+                <p className="text-3xl font-bold text-white">{teamStats.projectCount}</p>
+                <p className="text-sm text-gray-400">Projects</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+        <Card 
+          className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
+          onClick={() => setActiveView('tasks')}
+        >
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-orange-500/20 rounded-xl">
                 <Calendar className="w-6 h-6 text-orange-400" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-white">0</p>
+                <p className="text-3xl font-bold text-white">{teamStats.activeTaskCount}</p>
                 <p className="text-sm text-gray-400">Active Tasks</p>
               </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all">
+        <Card className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-not-allowed opacity-70">
           <CardContent className="p-6">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-purple-500/20 rounded-xl">
@@ -362,6 +374,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'projects', label: 'Projects', icon: FileText },
+                  { id: 'tasks', label: 'Tasks', icon: Calendar },
                   { id: 'schedule', label: 'Schedule', icon: Calendar }
                 ].map((tab) => (
                   <button
@@ -403,6 +416,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               {[
                 { id: 'overview', label: 'Overview', icon: FileText },
                 { id: 'projects', label: 'Projects', icon: FileText },
+                { id: 'tasks', label: 'Tasks', icon: Calendar },
                 { id: 'schedule', label: 'Schedule', icon: Calendar },
                 { id: 'members', label: 'Members', icon: Users },
                 { id: 'settings', label: 'Settings', icon: Settings }
@@ -439,6 +453,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               teamId={selectedTeamId} 
               teamName={selectedTeam.name}
               onStartNewChat={onStartNewChat} 
+            />
+          )}
+          {activeView === 'tasks' && selectedTeamId && selectedTeam && (
+            <TeamTasksView 
+              teamId={selectedTeamId} 
+              teamName={selectedTeam.name}
             />
           )}
           {activeView === 'schedule' && selectedTeamId && (
