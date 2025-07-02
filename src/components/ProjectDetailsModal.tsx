@@ -10,7 +10,8 @@ import {
   Clock,
   FolderOpen,
   Upload,
-  Save
+  Save,
+  User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -18,6 +19,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useProjectDocuments } from '@/hooks/useProjectDocuments';
 import { useProjectSchedule } from '@/hooks/useProjectSchedule';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -43,11 +46,19 @@ const ProjectDetailsModal = ({
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
+  const [newTaskAssignedTo, setNewTaskAssignedTo] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use dedicated hooks for documents and schedule
   const documentsHook = useProjectDocuments(project?.id, user?.id);
   const scheduleHook = useProjectSchedule(project?.id, user?.id);
+  const teamMembersHook = useTeamMembers(project?.team_id);
+
+  // Get task assignments for display
+  const getTaskAssignee = (taskId: string) => {
+    // This would require fetching task assignments - for now we'll add this later
+    return null;
+  };
 
   const {
     conversations,
@@ -100,6 +111,7 @@ const ProjectDetailsModal = ({
       title: newTaskTitle,
       description: newTaskDescription || undefined,
       due_date: newTaskDueDate || undefined,
+      assigned_to: newTaskAssignedTo || undefined,
     });
 
     if (success) {
@@ -107,6 +119,7 @@ const ProjectDetailsModal = ({
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskDueDate('');
+      setNewTaskAssignedTo('');
       setShowAddTask(false);
     }
   };
@@ -350,6 +363,23 @@ const ProjectDetailsModal = ({
                               className="bg-gray-800 border-gray-700 text-white"
                             />
                           </div>
+                          <div>
+                            <label className="text-sm font-medium text-white mb-1 block">Assign To (Optional)</label>
+                            <Select value={newTaskAssignedTo} onValueChange={setNewTaskAssignedTo}>
+                              <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                                <SelectValue placeholder="Select team member..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-800 border-gray-700">
+                                <SelectItem value="">Unassigned</SelectItem>
+                                <SelectItem value={user?.id}>Myself</SelectItem>
+                                {teamMembersHook.members.map((member) => (
+                                  <SelectItem key={member.user_id} value={member.user_id}>
+                                    {member.profiles?.full_name || `User ${member.user_id.slice(0, 8)}`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                           <div className="flex items-center space-x-2">
                             <Button
                               onClick={handleAddTask}
@@ -366,6 +396,7 @@ const ProjectDetailsModal = ({
                                 setNewTaskTitle('');
                                 setNewTaskDescription('');
                                 setNewTaskDueDate('');
+                                setNewTaskAssignedTo('');
                               }}
                               variant="outline"
                               size="sm"
@@ -419,12 +450,18 @@ const ProjectDetailsModal = ({
                                 {item.description && (
                                   <p className="text-sm text-gray-400 mt-1 line-clamp-2 ml-7">{item.description}</p>
                                 )}
-                                <div className="flex items-center mt-2 text-sm text-gray-500 ml-7">
-                                  <Calendar className="w-3 h-3 mr-1" />
-                                  <span>
-                                    {item.due_date ? formatDate(item.due_date) : 'No due date'}
-                                  </span>
-                                </div>
+                                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 ml-7">
+                                   <div className="flex items-center">
+                                     <Calendar className="w-3 h-3 mr-1" />
+                                     <span>
+                                       {item.due_date ? formatDate(item.due_date) : 'No due date'}
+                                     </span>
+                                   </div>
+                                   <div className="flex items-center">
+                                     <User className="w-3 h-3 mr-1" />
+                                     <span>Unassigned</span>
+                                   </div>
+                                 </div>
                               </div>
                             </div>
                           </div>

@@ -50,10 +50,11 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
     }
   };
 
-  const createTask = async (taskData: {
+  const createTask = async (taskInput: {
     title: string;
     description?: string;
     due_date?: string;
+    assigned_to?: string;
   }) => {
     if (!projectId || !userId) {
       toast({
@@ -64,7 +65,7 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
       return false;
     }
 
-    if (!taskData.title.trim()) {
+    if (!taskInput.title.trim()) {
       toast({
         variant: "destructive",
         title: "Title required",
@@ -76,24 +77,52 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
     setSaving(true);
     try {
       const insertData: any = {
-        title: taskData.title.trim(),
+        title: taskInput.title.trim(),
         project_id: projectId,
         user_id: userId
       };
 
-      if (taskData.description?.trim()) {
-        insertData.description = taskData.description.trim();
+      if (taskInput.description?.trim()) {
+        insertData.description = taskInput.description.trim();
       }
 
-      if (taskData.due_date) {
-        insertData.due_date = taskData.due_date;
+      if (taskInput.due_date) {
+        insertData.due_date = taskInput.due_date;
       }
 
-      const { error } = await supabase
+      const { data: newTask, error } = await supabase
         .from('project_schedule_of_works')
-        .insert([insertData]);
+        .insert([insertData])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // If task is assigned to someone, create task assignment
+      if (taskInput.assigned_to && newTask) {
+        // First get the project's team_id
+        const { data: project } = await supabase
+          .from('projects')
+          .select('team_id')
+          .eq('id', projectId)
+          .single();
+
+        if (project?.team_id) {
+          const { error: assignmentError } = await supabase
+            .from('task_assignments')
+            .insert([{
+              task_id: newTask.id,
+              assigned_to: taskInput.assigned_to,
+              assigned_by: userId,
+              team_id: project.team_id
+            }]);
+
+          if (assignmentError) {
+            console.error('Error creating task assignment:', assignmentError);
+            // Don't fail the task creation if assignment fails
+          }
+        }
+      }
 
       toast({
         title: 'Task created',
