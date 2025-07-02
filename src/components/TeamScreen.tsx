@@ -363,7 +363,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
 
           {/* Navigation Tabs */}
           <div className="bg-gray-800/30 backdrop-blur-sm p-2 rounded-xl">
-            <div className="flex justify-between items-center w-full">
+            <div className="hidden md:flex justify-between items-center w-full">
               <div className="flex gap-2">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
@@ -402,6 +402,28 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans }: TeamScreenProps) =>
                   </button>
                 ))}
               </div>
+            </div>
+            {/* Mobile Navigation */}
+            <div className="md:hidden grid grid-cols-2 gap-2">
+              {[
+                { id: 'overview', label: 'Overview', icon: FileText },
+                { id: 'schedule', label: 'Schedule', icon: Calendar },
+                { id: 'members', label: 'Members', icon: Users },
+                { id: 'settings', label: 'Settings', icon: Settings }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveView(tab.id as any)}
+                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                    activeView === tab.id
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                  }`}
+                >
+                  <tab.icon className="w-4 h-4" />
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
         </motion.div>

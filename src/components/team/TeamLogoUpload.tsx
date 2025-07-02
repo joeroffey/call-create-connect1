@@ -33,7 +33,7 @@ const TeamLogoUpload = ({ teamId, currentLogoUrl, onLogoUpdate }: TeamLogoUpload
       if (!user) throw new Error('Not authenticated');
 
       const fileExt = file.name.split('.').pop();
-      const fileName = `${teamId}/logo.${fileExt}`;
+      const fileName = `logo-${teamId}-${Date.now()}.${fileExt}`;
 
       // Upload file to storage
       const { error: uploadError, data } = await supabase.storage
