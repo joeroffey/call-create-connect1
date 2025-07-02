@@ -19,8 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useProjectDocuments } from '@/hooks/useProjectDocuments';
+import { useProjectSchedule } from '@/hooks/useProjectSchedule';
 
 interface ProjectDetailsModalProps {
   project: any;
@@ -42,17 +42,15 @@ const ProjectDetailsModal = ({
   conversationsHook
 }: ProjectDetailsModalProps) => {
   const [activeTab, setActiveTab] = useState(initialTab);
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [scheduleItems, setScheduleItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
-  const [savingTask, setSavingTask] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+
+  // Use dedicated hooks for documents and schedule
+  const documentsHook = useProjectDocuments(project?.id, user?.id);
+  const scheduleHook = useProjectSchedule(project?.id, user?.id);
 
   const {
     conversations,
@@ -71,47 +69,8 @@ const ProjectDetailsModal = ({
   }, [initialTab]);
 
   useEffect(() => {
-    if (isOpen && project) {
-      fetchProjectDetails();
-    }
-  }, [isOpen, project?.id]);
-
-  const fetchProjectDetails = async () => {
-    if (!project?.id || !user?.id) return;
-    
-    setLoading(true);
-    try {
-      // Fetch documents - RLS will handle access control
-      const { data: docsData, error: docsError } = await supabase
-        .from('project_documents')
-        .select('*')
-        .eq('project_id', project.id)
-        .order('created_at', { ascending: false });
-
-      if (docsError) throw docsError;
-      setDocuments(docsData || []);
-
-      // Fetch schedule of works - RLS will handle access control
-      const { data: scheduleData, error: scheduleError } = await supabase
-        .from('project_schedule_of_works')
-        .select('*')
-        .eq('project_id', project.id)
-        .order('created_at', { ascending: false });
-
-      if (scheduleError) throw scheduleError;
-      setScheduleItems(scheduleData || []);
-
-    } catch (error) {
-      console.error('Error fetching project details:', error);
-      toast({
-        variant: "destructive",
-        title: "Error loading project details",
-        description: "Please try again later.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+    setActiveTab(initialTab);
+  }, [initialTab]);
 
   const handleConversationClick = (conversationId: string) => {
     console.log('Opening conversation:', conversationId, 'for project:', project?.id);
@@ -132,170 +91,30 @@ const ProjectDetailsModal = ({
     }
   };
 
-  const uploadDocument = async (file: File) => {
-    if (!project?.id || !user?.id) {
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: "Project and user information required for document upload.",
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const filePath = `${user.id}/${project.id}/${Date.now()}-${file.name}`;
-      
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('project-documents')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // Save document metadata
-      const { error: dbError } = await supabase
-        .from('project_documents')
-        .insert([
-          {
-            project_id: project.id,
-            user_id: user.id,
-            file_name: file.name,
-            file_path: filePath,
-            file_type: file.type,
-            file_size: file.size,
-          }
-        ]);
-
-      if (dbError) throw dbError;
-
-      toast({
-        title: "Document uploaded successfully",
-        description: `${file.name} has been uploaded to your project.`,
-      });
-
-      // Refresh documents list
-      fetchProjectDetails();
-    } catch (error: any) {
-      console.error('Error uploading document:', error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: error.message || "Failed to upload document. Please try again.",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      
-      // Check if it's a supported file type
-      const supportedTypes = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
-        'application/pdf',
-        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain', 'text/csv', 'application/json', 'application/xml'
-      ];
-      
-      if (!supportedTypes.includes(file.type)) {
-        toast({
-          variant: "destructive",
-          title: "Unsupported file type",
-          description: "Please upload images, PDFs, Word documents, or text files.",
-        });
-        return;
-      }
-
-      // Check file size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "File size must be less than 50MB.",
-        });
-        return;
-      }
-
-      uploadDocument(file);
+      documentsHook.uploadDocument(file);
     }
   };
 
   // Task management functionality
   const handleAddTask = async () => {
-    if (!newTaskTitle.trim() || !project?.id || !user?.id) return;
+    if (!newTaskTitle.trim()) return;
 
-    setSavingTask(true);
-    try {
-      const taskData: any = {
-        title: newTaskTitle.trim(),
-        project_id: project.id,
-        user_id: user.id
-      };
+    const success = await scheduleHook.createTask({
+      title: newTaskTitle,
+      description: newTaskDescription || undefined,
+      due_date: newTaskDueDate || undefined,
+    });
 
-      if (newTaskDescription.trim()) {
-        taskData.description = newTaskDescription.trim();
-      }
-
-      if (newTaskDueDate) {
-        taskData.due_date = newTaskDueDate;
-      }
-
-      const { error } = await supabase
-        .from('project_schedule_of_works')
-        .insert([taskData]);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Success',
-        description: 'Task created successfully',
-      });
-
+    if (success) {
       // Reset form and close
       setNewTaskTitle('');
       setNewTaskDescription('');
       setNewTaskDueDate('');
       setShowAddTask(false);
-      
-      // Refresh schedule items
-      fetchProjectDetails();
-    } catch (error: any) {
-      console.error('Error creating task:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create task',
-        variant: 'destructive',
-      });
-    } finally {
-      setSavingTask(false);
-    }
-  };
-
-  const toggleTaskCompletion = async (taskId: string, completed: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('project_schedule_of_works')
-        .update({ 
-          completed: !completed,
-          completed_at: !completed ? new Date().toISOString() : null
-        })
-        .eq('id', taskId);
-
-      if (error) throw error;
-
-      // Refresh schedule items
-      fetchProjectDetails();
-    } catch (error: any) {
-      console.error('Error toggling task:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to update task',
-        variant: 'destructive',
-      });
     }
   };
 
@@ -441,15 +260,15 @@ const ProjectDetailsModal = ({
                     <h3 className="text-lg font-semibold text-white">Project Documents</h3>
                     <Button 
                       onClick={handleDocumentUpload}
-                      disabled={isUploading}
+                      disabled={documentsHook.isUploading}
                       size="sm"
                       className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                     >
-                      <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
-                      {isUploading ? 'Uploading...' : 'Upload Document'}
+                      <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
+                      {documentsHook.isUploading ? 'Uploading...' : 'Upload Document'}
                     </Button>
                   </div>
-                  {documents.length === 0 ? (
+                  {documentsHook.documents.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
                         <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
@@ -457,17 +276,17 @@ const ProjectDetailsModal = ({
                         <p className="text-gray-500 mb-6">Upload documents to share them with your project team</p>
                         <Button 
                           onClick={handleDocumentUpload}
-                          disabled={isUploading}
+                          disabled={documentsHook.isUploading}
                           className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                         >
-                          <Upload className={`w-4 h-4 mr-2 ${isUploading ? 'animate-pulse' : ''}`} />
-                          {isUploading ? 'Uploading...' : 'Upload First Document'}
+                          <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
+                          {documentsHook.isUploading ? 'Uploading...' : 'Upload First Document'}
                         </Button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                      {documents.map((doc: any) => (
+                      {documentsHook.documents.map((doc: any) => (
                         <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
                           <div className="flex items-center justify-between">
                             <div className="min-w-0 flex-1">
@@ -532,12 +351,12 @@ const ProjectDetailsModal = ({
                         <div className="flex items-center space-x-2">
                           <Button
                             onClick={handleAddTask}
-                            disabled={!newTaskTitle.trim() || savingTask}
+                            disabled={!newTaskTitle.trim() || scheduleHook.saving}
                             size="sm"
                             className="bg-emerald-600 hover:bg-emerald-700 text-white"
                           >
                             <Save className="w-4 h-4 mr-2" />
-                            {savingTask ? 'Creating...' : 'Create Task'}
+                            {scheduleHook.saving ? 'Creating...' : 'Create Task'}
                           </Button>
                           <Button
                             onClick={() => {
@@ -556,7 +375,7 @@ const ProjectDetailsModal = ({
                       </div>
                     </div>
                   )}
-                  {scheduleItems.length === 0 ? (
+                  {scheduleHook.scheduleItems.length === 0 ? (
                     <div className="flex-1 flex items-center justify-center">
                       <div className="text-center">
                         <CheckSquare className="w-12 h-12 text-gray-600 mx-auto mb-4" />
@@ -573,21 +392,21 @@ const ProjectDetailsModal = ({
                     </div>
                   ) : (
                      <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-                       {scheduleItems.map((item: any) => (
+                       {scheduleHook.scheduleItems.map((item: any) => (
                          <div key={item.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
                            <div className="flex items-start justify-between">
                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center space-x-2">
-                                  <button 
-                                    onClick={() => toggleTaskCompletion(item.id, item.completed)}
-                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                                      item.completed 
-                                        ? 'bg-green-500 border-green-500' 
-                                        : 'border-gray-500 hover:border-green-500'
-                                    } transition-colors cursor-pointer`}
-                                  >
-                                    {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
-                                  </button>
+                                 <div className="flex items-center space-x-2">
+                                   <button 
+                                     onClick={() => scheduleHook.toggleTaskCompletion(item.id, item.completed)}
+                                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                                       item.completed 
+                                         ? 'bg-green-500 border-green-500' 
+                                         : 'border-gray-500 hover:border-green-500'
+                                     } transition-colors cursor-pointer`}
+                                   >
+                                     {item.completed && <CheckSquare className="w-3 h-3 text-white" />}
+                                   </button>
                                  <h4 className={`font-medium truncate ${
                                    item.completed ? 'text-gray-400 line-through' : 'text-white'
                                  }`}>
