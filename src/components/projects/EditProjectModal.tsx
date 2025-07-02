@@ -22,6 +22,8 @@ interface Project {
   updated_at: string;
   user_id: string;
   pinned?: boolean;
+  team_id?: string;
+  team_name?: string;
 }
 
 interface EditProjectModalProps {
