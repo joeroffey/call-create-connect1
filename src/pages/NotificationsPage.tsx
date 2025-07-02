@@ -15,7 +15,7 @@ const NotificationsPage = () => {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="glass border-b border-white/5 px-6 py-4"
+        className="glass border-b border-white/5 px-4 sm:px-6 py-4"
       >
         <div className="flex items-center justify-between">
           <motion.div 
@@ -23,7 +23,7 @@ const NotificationsPage = () => {
             whileHover={{ scale: 1.01 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
           >
-            <div className="w-40 h-24 flex items-center">
+            <div className="w-28 h-12 sm:w-32 sm:h-16 flex items-center">
               <img 
                 src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png" 
                 alt="EezyBuild Logo" 
@@ -32,14 +32,15 @@ const NotificationsPage = () => {
             </div>
           </motion.div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="text-gray-300 hover:text-white"
+              className="text-gray-300 hover:text-white text-sm sm:text-base"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Back</span>
+              <span className="sm:hidden">Back</span>
             </Button>
             
             {/* Subscription Badge */}
