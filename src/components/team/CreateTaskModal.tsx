@@ -38,6 +38,11 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
 
       if (error) throw error;
       setProjects(data || []);
+      
+      // Auto-select first project if available
+      if (data && data.length > 0 && !projectId) {
+        setProjectId(data[0].id);
+      }
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
@@ -163,18 +168,24 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
 
           <div>
             <Label htmlFor="task-project" className="text-white">Project</Label>
-            <Select value={projectId} onValueChange={setProjectId} required>
-              <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
-                <SelectValue placeholder="Select a project" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-600">
-                {projects.map((project) => (
-                  <SelectItem key={project.id} value={project.id}>
-                    {project.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {projects.length === 0 ? (
+              <div className="p-3 bg-gray-800 border border-gray-600 rounded-md text-gray-400 text-sm">
+                No projects available. Create a project first to add tasks.
+              </div>
+            ) : (
+              <Select value={projectId} onValueChange={setProjectId} required>
+                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectValue placeholder="Select a project" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-600">
+                  {projects.map((project) => (
+                    <SelectItem key={project.id} value={project.id}>
+                      {project.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div>
@@ -229,7 +240,7 @@ const CreateTaskModal = ({ teamId, members, onTaskCreated }: CreateTaskModalProp
             </Button>
             <Button
               type="submit"
-              disabled={loading || !title.trim() || !projectId}
+              disabled={loading || !title.trim() || !projectId || projects.length === 0}
               className="bg-emerald-500 hover:bg-emerald-600"
             >
               {loading ? 'Creating...' : 'Create Task'}
