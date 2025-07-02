@@ -68,12 +68,22 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   
   // Update current logo URL when selected team changes
   React.useEffect(() => {
+    console.log('Team changed effect:', { 
+      selectedTeam: selectedTeam?.name, 
+      logoUrl: selectedTeam?.logo_url,
+      currentLogoUrl 
+    });
     if (selectedTeam) {
       setCurrentLogoUrl(selectedTeam.logo_url);
+      console.log('Setting current logo URL to:', selectedTeam.logo_url);
     }
   }, [selectedTeam]);
 
-  console.log('Selected team:', selectedTeam?.name);
+  console.log('TeamScreen render:', { 
+    selectedTeam: selectedTeam?.name, 
+    currentLogoUrl,
+    teamLogoUrl: selectedTeam?.logo_url 
+  });
 
   // Check if user has team access
   const hasTeamAccess = subscriptionTier === 'enterprise';
@@ -93,8 +103,10 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   };
 
   const handleLogoUpdate = (logoUrl: string | null) => {
+    console.log('handleLogoUpdate called with:', logoUrl);
     // Immediately update the local logo state for instant UI feedback
     setCurrentLogoUrl(logoUrl);
+    console.log('Updated currentLogoUrl state to:', logoUrl);
     // Also refetch to ensure data is in sync
     refetchTeams();
   };
