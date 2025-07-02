@@ -182,13 +182,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
               <CardContent className="p-8">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                   <div className="flex items-start gap-6">
-                    <div className="relative flex-shrink-0">
-                      <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                        <Crown className="w-8 h-8 text-white" />
-                      </div>
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full animate-pulse"></div>
-                    </div>
-                    
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
@@ -213,6 +206,13 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                           <span className="text-emerald-300 font-medium text-base">Active</span>
                         </div>
                       </div>
+                    </div>
+                    
+                    <div className="relative flex-shrink-0">
+                      <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Crown className="w-8 h-8 text-white" />
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full animate-pulse"></div>
                     </div>
                   </div>
                   
