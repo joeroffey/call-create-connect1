@@ -30,29 +30,57 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
     setLoading(true);
     try {
       const commentTargetId = targetType === 'team' ? teamId : (targetId || '');
+      console.log('Fetching comments for:', { teamId, targetType, commentTargetId });
       
-      // Fetch comments with author profiles in one query
-      const { data: commentsData, error } = await supabase
+      // First, get comments
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          *,
-          profiles!comments_author_id_fkey(full_name)
-        `)
+        .select('*')
         .eq('team_id', teamId)
         .eq('target_type', targetType)
         .eq('target_id', commentTargetId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      console.log('Comments query result:', { commentsData, commentsError });
+      if (commentsError) throw commentsError;
+
+      if (!commentsData || commentsData.length === 0) {
+        console.log('No comments found');
+        setComments([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get unique author IDs
+      const authorIds = [...new Set(commentsData.map(c => c.author_id))];
+      console.log('Author IDs:', authorIds);
+      
+      // Get profiles for all authors
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', authorIds);
+
+      console.log('Profiles query result:', { profilesData, profilesError });
+      if (profilesError) {
+        console.warn('Error fetching profiles:', profilesError);
+      }
+
+      // Create profiles lookup
+      const profilesLookup = new Map();
+      profilesData?.forEach(profile => {
+        profilesLookup.set(profile.user_id, profile);
+      });
 
       // Organize comments into threads
       const commentsMap = new Map<string, Comment>();
       const rootComments: Comment[] = [];
 
-      (commentsData || []).forEach((comment: any) => {
+      commentsData.forEach((comment: any) => {
+        const profile = profilesLookup.get(comment.author_id);
         const processedComment: Comment = {
           ...comment,
-          author_name: comment.profiles?.full_name || 'Unknown User',
+          author_name: profile?.full_name || 'Unknown User',
           replies: []
         };
         
@@ -64,7 +92,7 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
       });
 
       // Add replies to their parent comments
-      (commentsData || []).forEach((comment: any) => {
+      commentsData.forEach((comment: any) => {
         if (comment.parent_id && commentsMap.has(comment.parent_id)) {
           const parentComment = commentsMap.get(comment.parent_id);
           const childComment = commentsMap.get(comment.id);
@@ -74,6 +102,7 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
         }
       });
 
+      console.log('Final processed comments:', rootComments);
       setComments(rootComments);
     } catch (error) {
       console.error('Error fetching comments:', error);
