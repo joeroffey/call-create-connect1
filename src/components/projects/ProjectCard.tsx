@@ -13,6 +13,8 @@ interface Project {
   updated_at: string;
   user_id: string;
   pinned?: boolean;
+  team_id?: string;
+  team_name?: string;
 }
 
 interface ProjectCardProps {
@@ -166,6 +168,11 @@ const ProjectCard = ({
         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getLabelColor(project.label)}`}>
           {project.label}
         </span>
+        {project.team_name && (
+          <span className="px-3 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30">
+            Team: {project.team_name}
+          </span>
+        )}
       </div>
 
       {/* Click outside to close dropdown */}

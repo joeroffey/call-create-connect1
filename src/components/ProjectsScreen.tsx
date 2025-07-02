@@ -21,6 +21,8 @@ interface Project {
   updated_at: string;
   user_id: string;
   pinned?: boolean;
+  team_id?: string;
+  team_name?: string;
 }
 
 interface ProjectsScreenProps {
@@ -68,8 +70,13 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
     try {
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
-        .eq('user_id', user.id)
+        .select(`
+          *,
+          teams!left(
+            id,
+            name
+          )
+        `)
         .order('updated_at', { ascending: false });
 
       if (error) {
@@ -79,8 +86,14 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       
       console.log('ProjectsScreen - fetched projects:', data);
       
+      // Process projects to include team name
+      const processedProjects = (data || []).map(project => ({
+        ...project,
+        team_name: project.teams?.name || null
+      }));
+      
       // Sort projects: pinned first, then by updated_at
-      const sortedProjects = (data || []).sort((a, b) => {
+      const sortedProjects = processedProjects.sort((a, b) => {
         if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
         return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
@@ -118,7 +131,6 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
           event: '*',
           schema: 'public',
           table: 'projects',
-          filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
           console.log('Project change detected:', payload);
