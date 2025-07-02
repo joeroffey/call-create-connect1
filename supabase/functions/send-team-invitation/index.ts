@@ -126,8 +126,9 @@ const handler = async (req: Request): Promise<Response> => {
     const inviteLink = `${Deno.env.get("SUPABASE_URL")?.replace('/supabase.co', '.lovable.app')}/team-invite?token=${invitation.id}`;
 
     // Send invitation email
+    const fromEmail = Deno.env.get("FROM_EMAIL") || "EezyBuild <onboarding@resend.dev>";
     const emailResponse = await resend.emails.send({
-      from: "EezyBuild <onboarding@resend.dev>",
+      from: fromEmail,
       to: [email],
       subject: `You're invited to join ${teamName} on EezyBuild`,
       html: `
