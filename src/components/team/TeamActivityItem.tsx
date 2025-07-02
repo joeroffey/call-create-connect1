@@ -29,6 +29,10 @@ const TeamActivityItem = ({ activity }: TeamActivityItemProps) => {
     switch (action) {
       case 'member_joined':
         return <UserPlus className="w-4 h-4 text-emerald-400" />;
+      case 'member_invited':
+        return <UserPlus className="w-4 h-4 text-blue-400" />;
+      case 'team_created':
+        return <Users className="w-4 h-4 text-green-400" />;
       case 'project_shared':
         return <Share2 className="w-4 h-4 text-blue-400" />;
       case 'task_completed':
@@ -50,6 +54,10 @@ const TeamActivityItem = ({ activity }: TeamActivityItemProps) => {
     switch (action) {
       case 'member_joined':
         return `${userName} joined the team`;
+      case 'member_invited':
+        return `${userName} invited ${metadata?.email || 'someone'} to the team`;
+      case 'team_created':
+        return `${userName} created the team`;
       case 'project_shared':
         return `${userName} shared project "${metadata?.project_name || 'Unknown Project'}"`;
       case 'task_completed':

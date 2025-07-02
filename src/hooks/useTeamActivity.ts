@@ -39,7 +39,7 @@ export const useTeamActivity = (teamId: string | null) => {
           `)
           .eq('team_id', teamId)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .limit(5);
 
         if (error) throw error;
 
@@ -108,7 +108,7 @@ export const useTeamActivity = (teamId: string | null) => {
         `)
         .eq('team_id', teamId)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(5);
 
       if (data) {
         // Fetch user profiles separately

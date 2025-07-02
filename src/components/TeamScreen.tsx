@@ -44,7 +44,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
   const teamStats = useTeamStats(selectedTeamId);
-  const { activities, loading: activitiesLoading } = useTeamActivity(selectedTeamId);
+  const { activities, loading: activitiesLoading, addActivity } = useTeamActivity(selectedTeamId);
 
   console.log('TeamScreen render:', {
     teamsCount: teams.length,
@@ -96,6 +96,13 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       const newTeam = await createTeam(name, description);
       if (newTeam) {
         setSelectedTeamId(newTeam.id);
+        // Log team creation activity after selecting the team
+        setTimeout(() => {
+          addActivity('team_created', 'team', newTeam.id, { 
+            team_name: name,
+            team_description: description 
+          });
+        }, 500);
         return newTeam;
       }
       return newTeam;
@@ -297,7 +304,17 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-2xl font-bold text-white">Team Members</h3>
-        <InviteMemberModal onInviteMember={inviteMember} onCreateTestInvitation={createTestInvitation} />
+        <InviteMemberModal 
+          onInviteMember={async (email, role) => {
+            await inviteMember(email, role);
+            // Log member invitation activity
+            addActivity('member_invited', 'team_invitation', selectedTeamId, { 
+              email, 
+              role 
+            });
+          }} 
+          onCreateTestInvitation={createTestInvitation} 
+        />
       </div>
       
       <div className="grid gap-4 w-full">
