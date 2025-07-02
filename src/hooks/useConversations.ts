@@ -108,66 +108,74 @@ export const useConversations = (userId: string | undefined) => {
   useEffect(() => {
     if (!userId) return;
 
-    // Clean up existing channel if it exists
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    const setupSubscription = async () => {
+      try {
+        // Clean up existing channel if it exists
+        if (channelRef.current) {
+          await supabase.removeChannel(channelRef.current);
+          channelRef.current = null;
+        }
 
-    // Create new channel with unique name including random number to avoid conflicts
-    const channelName = `conversations-changes-${userId}-${Math.random().toString(36).substr(2, 9)}`;
-    const channel = supabase.channel(channelName);
+        // Create new channel with unique name including timestamp to avoid conflicts
+        const channelName = `conversations-${userId}-${Date.now()}`;
+        const channel = supabase.channel(channelName);
 
-    // Configure the channel with all event listeners
-    channel
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'conversations',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Conversation change detected:', payload);
-          fetchConversations();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'project_documents',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Document change detected:', payload);
-          fetchProjectCounts();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'project_schedule_of_works',
-          filter: `user_id=eq.${userId}`,
-        },
-        (payload) => {
-          console.log('Schedule of works change detected:', payload);
-          fetchProjectCounts();
-        }
-      )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to conversations changes');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to conversations changes');
-        }
-      });
+        // Configure the channel with all event listeners
+        channel
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'conversations',
+              filter: `user_id=eq.${userId}`,
+            },
+            (payload) => {
+              console.log('Conversation change detected:', payload);
+              fetchConversations();
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'project_documents',
+              filter: `user_id=eq.${userId}`,
+            },
+            (payload) => {
+              console.log('Document change detected:', payload);
+              fetchProjectCounts();
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'project_schedule_of_works',
+              filter: `user_id=eq.${userId}`,
+            },
+            (payload) => {
+              console.log('Schedule of works change detected:', payload);
+              fetchProjectCounts();
+            }
+          )
+          .subscribe((status) => {
+            if (status === 'SUBSCRIBED') {
+              console.log('Successfully subscribed to conversations changes');
+            } else if (status === 'CHANNEL_ERROR') {
+              console.error('Error subscribing to conversations changes');
+            }
+          });
 
-    channelRef.current = channel;
+        channelRef.current = channel;
+      } catch (error) {
+        console.error('Error setting up conversations subscription:', error);
+      }
+    };
+
+    setupSubscription();
 
     // Cleanup function
     return () => {
