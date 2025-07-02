@@ -20,10 +20,13 @@ const TeamInvitePage = () => {
   useEffect(() => {
     const loadInvitation = async () => {
       if (!token) {
+        console.log('TeamInvitePage: No token provided in URL');
         setError('Invalid invitation link');
         setLoading(false);
         return;
       }
+
+      console.log('TeamInvitePage: Loading invitation with token:', token);
 
       try {
         const { data, error } = await supabase
@@ -35,27 +38,33 @@ const TeamInvitePage = () => {
           .eq('id', token)
           .single();
 
+        console.log('TeamInvitePage: Query result:', { data, error });
+
         if (error || !data) {
+          console.log('TeamInvitePage: Invitation not found or error:', error);
           setError('Invitation not found or expired');
           setLoading(false);
           return;
         }
 
         if (data.accepted_at) {
+          console.log('TeamInvitePage: Invitation already accepted at:', data.accepted_at);
           setError('This invitation has already been used');
           setLoading(false);
           return;
         }
 
         if (new Date(data.expires_at) < new Date()) {
+          console.log('TeamInvitePage: Invitation expired at:', data.expires_at);
           setError('This invitation has expired');
           setLoading(false);
           return;
         }
 
+        console.log('TeamInvitePage: Valid invitation loaded:', data);
         setInvitation(data);
       } catch (error) {
-        console.error('Error loading invitation:', error);
+        console.error('TeamInvitePage: Error loading invitation:', error);
         setError('Failed to load invitation');
       } finally {
         setLoading(false);
