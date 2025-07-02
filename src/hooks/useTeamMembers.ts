@@ -44,12 +44,19 @@ export const useTeamMembers = (teamId?: string) => {
       let profilesData: { user_id: string; full_name: string | null }[] = [];
       
       if (memberIds.length > 0) {
+        console.log('useTeamMembers: Querying profiles for memberIds:', memberIds);
+        
         const { data: profiles, error: profilesError } = await supabase
           .from('profiles')
           .select('user_id, full_name')
           .in('user_id', memberIds);
         
-        console.log('useTeamMembers: Profiles query result:', { profiles, profilesError });
+        console.log('useTeamMembers: Profiles query result:', { 
+          profiles: profiles, 
+          profilesError: profilesError,
+          queriedIds: memberIds,
+          profileCount: profiles?.length || 0
+        });
         
         if (profilesError) {
           console.error('useTeamMembers: Error fetching profiles:', profilesError);
@@ -57,6 +64,7 @@ export const useTeamMembers = (teamId?: string) => {
           profilesData = [];
         } else {
           profilesData = profiles || [];
+          console.log('useTeamMembers: Successfully fetched profiles:', profilesData);
         }
       }
 
