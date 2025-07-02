@@ -385,7 +385,7 @@ const ProjectDetailsModal = ({
 
                 {/* Schedule Tab */}
                 {activeTab === 'schedule' && (
-                  <div className="h-full flex flex-col">
+                  <div className="flex flex-col min-h-0">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-white">Schedule of Works</h3>
                       <Button 
