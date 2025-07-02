@@ -10,18 +10,21 @@ interface Conversation {
   project_id?: string;
 }
 
-export const useConversations = (userId: string | undefined) => {
+export const useConversations = (userId: string | undefined, enabled: boolean = true) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [projectCounts, setProjectCounts] = useState<{[key: string]: {documents: number, scheduleOfWorks: number}}>({});
   const channelRef = useRef<any>(null);
 
   const fetchConversations = async () => {
-    if (!userId) {
+    if (!userId || !enabled) {
       setLoading(false);
       return;
     }
 
+    setError(null);
+    
     try {
       const { data, error } = await supabase
         .from('conversations')
@@ -32,15 +35,16 @@ export const useConversations = (userId: string | undefined) => {
       if (error) throw error;
       
       setConversations(data || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching conversations:', error);
+      setError(error.message || 'Failed to load conversations');
     } finally {
       setLoading(false);
     }
   };
 
   const fetchProjectCounts = async () => {
-    if (!userId) return;
+    if (!userId || !enabled) return;
 
     try {
       // Fetch document counts
@@ -73,8 +77,9 @@ export const useConversations = (userId: string | undefined) => {
       });
 
       setProjectCounts(counts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching project counts:', error);
+      setError(error.message || 'Failed to load project counts');
     }
   };
 
@@ -100,13 +105,15 @@ export const useConversations = (userId: string | undefined) => {
   };
 
   useEffect(() => {
-    fetchConversations();
-    fetchProjectCounts();
-  }, [userId]);
+    if (enabled) {
+      fetchConversations();
+      fetchProjectCounts();
+    }
+  }, [userId, enabled]);
 
   // Set up real-time subscription to conversations - with proper cleanup
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !enabled) return;
 
     const setupSubscription = async () => {
       try {
@@ -117,7 +124,7 @@ export const useConversations = (userId: string | undefined) => {
         }
 
         // Create new channel with unique name including timestamp to avoid conflicts
-        const channelName = `conversations-${userId}-${Date.now()}`;
+        const channelName = `conversations-${userId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const channel = supabase.channel(channelName);
 
         // Configure the channel with all event listeners
@@ -185,7 +192,7 @@ export const useConversations = (userId: string | undefined) => {
         channelRef.current = null;
       }
     };
-  }, [userId]);
+  }, [userId, enabled]);
 
   const refreshConversations = () => {
     fetchConversations();
@@ -209,6 +216,7 @@ export const useConversations = (userId: string | undefined) => {
   return {
     conversations,
     loading,
+    error,
     refreshConversations,
     getProjectConversationCount,
     getProjectDocumentCount,

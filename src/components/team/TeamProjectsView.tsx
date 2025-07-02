@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '../../hooks/useConversations';
+import { useTeamProjects } from '../../hooks/useTeamProjects';
 import { useToast } from "@/hooks/use-toast";
 import ProjectDetailsModal from '../ProjectDetailsModal';
 import ProjectCard from '../projects/ProjectCard';
@@ -32,8 +32,6 @@ interface TeamProjectsViewProps {
 }
 
 const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjectsViewProps) => {
-  const [projects, setProjects] = useState<TeamProject[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProject, setNewProject] = useState({ name: '', description: '', label: 'Residential' });
   const [editingProject, setEditingProject] = useState<TeamProject | null>(null);
@@ -48,176 +46,80 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
   });
   const { toast } = useToast();
   
-  // Early return if required props are missing
-  if (!user || !teamId || !teamName) {
-    console.log('TeamProjectsView missing props:', { user: !!user, teamId, teamName });
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-white">Loading team information...</div>
-        <div className="text-gray-400 text-sm mt-2">
-          Missing: {!user && 'user '}{!teamId && 'teamId '}{!teamName && 'teamName'}
-        </div>
-      </div>
-    );
-  }
+  // Use the new team projects hook
+  const {
+    projects,
+    loading: projectsLoading,
+    error: projectsError,
+    createProject,
+    updateProject,
+    deleteProject,
+    togglePinProject,
+    handleStatusChange
+  } = useTeamProjects(teamId, teamName);
   
-  console.log('TeamProjectsView props:', { userId: user?.id, teamId, teamName });
-  
-  // Get conversations data - always call hook unconditionally
-  const conversationsHook = useConversations(user?.id);
+  // Use conversations hook with enabled flag - only when we have valid user and team
+  const conversationsEnabled = Boolean(user?.id && teamId);
+  const conversationsHook = useConversations(user?.id, conversationsEnabled);
   const { 
     conversations, 
+    loading: conversationsLoading,
+    error: conversationsError,
     getProjectConversationCount, 
     getProjectDocumentCount,
     getProjectScheduleOfWorksCount,
-    loading: conversationsLoading,
     incrementDocumentCount,
     incrementScheduleCount
   } = conversationsHook;
 
-  const fetchTeamProjects = async () => {
-    console.log('fetchTeamProjects called with:', { userId: user?.id, teamId });
-    if (!user?.id || !teamId) {
-      console.log('fetchTeamProjects early return - missing data');
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    try {
-      console.log('Fetching projects for team:', teamId);
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('team_id', teamId)
-        .order('updated_at', { ascending: false });
+  // Early return with proper error handling
+  if (!user?.id || !teamId) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-white text-lg mb-2">Loading team information...</div>
+          <div className="text-gray-400 text-sm">
+            {!user?.id && 'User authentication required'}
+            {!teamId && 'Team ID missing'}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-      console.log('Projects query result:', { data, error });
-      if (error) throw error;
-      
-      const processedProjects = (data || []).map(project => ({
-        ...project,
-        team_name: teamName
-      }));
-      
-      // Sort projects: pinned first, then by updated_at
-      const sortedProjects = processedProjects.sort((a, b) => {
-        if (a.pinned && !b.pinned) return -1;
-        if (!a.pinned && b.pinned) return 1;
-        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-      });
-      
-      setProjects(sortedProjects);
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error loading team projects",
-        description: "Please try again later.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Error state
+  if (projectsError || conversationsError) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 text-lg mb-2">Error loading team projects</div>
+          <div className="text-gray-400 text-sm">
+            {projectsError || conversationsError}
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    fetchTeamProjects();
-  }, [user?.id, teamId]);
-
-  // Set up real-time subscription for team projects
-  useEffect(() => {
-    if (!user?.id || !teamId) return;
-
-    const channel = supabase
-      .channel('team-projects-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'projects',
-        filter: `team_id=eq.${teamId}`,
-      }, () => {
-        fetchTeamProjects();
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, teamId]);
-
-  const togglePinProject = async (projectId: string, currentPinned: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ pinned: !currentPinned })
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      toast({
-        title: !currentPinned ? "Project pinned" : "Project unpinned",
-        description: !currentPinned ? "Project moved to top of list" : "Project unpinned from top",
-      });
-
-      fetchTeamProjects();
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error updating project",
-        description: error.message || "Please try again.",
-      });
-    }
-  };
-
-  const handleStatusChange = async (projectId: string, newStatus: string) => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .update({ status: newStatus })
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      const statusLabel = newStatus === 'setup' ? 'Set-up' : newStatus.replace('-', ' ');
-      toast({
-        title: "Status updated",
-        description: `Project status changed to ${statusLabel}.`,
-      });
-
-      fetchTeamProjects();
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error updating status",
-        description: error.message || "Please try again.",
-      });
-    }
-  };
-
-  const createProject = async () => {
+  const handleCreateProject = async () => {
     if (!user?.id || !newProject.name.trim()) return;
 
     try {
-      const { error } = await supabase
-        .from('projects')
-        .insert([{
-          user_id: user.id,
-          team_id: teamId,
-          name: newProject.name.trim(),
-          description: newProject.description.trim() || null,
-          label: newProject.label,
-          status: 'setup'
-        }]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Team project created successfully",
-        description: `${newProject.name} has been added to ${teamName}.`,
+      await createProject({
+        user_id: user.id,
+        name: newProject.name.trim(),
+        description: newProject.description.trim(),
+        label: newProject.label
       });
-
+      
       setNewProject({ name: '', description: '', label: 'Residential' });
       setShowCreateModal(false);
-      fetchTeamProjects();
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -227,29 +129,18 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     }
   };
 
-  const updateProject = async () => {
+  const handleUpdateProject = async () => {
     if (!editingProject || !editingProject.name.trim()) return;
 
     try {
-      const { error } = await supabase
-        .from('projects')
-        .update({
-          name: editingProject.name.trim(),
-          description: editingProject.description.trim() || null,
-          label: editingProject.label,
-          status: editingProject.status
-        })
-        .eq('id', editingProject.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Project updated successfully",
-        description: `${editingProject.name} has been updated.`,
+      await updateProject(editingProject.id, {
+        name: editingProject.name.trim(),
+        description: editingProject.description.trim() || null,
+        label: editingProject.label,
+        status: editingProject.status
       });
-
+      
       setEditingProject(null);
-      fetchTeamProjects();
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -259,25 +150,13 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     }
   };
 
-  const deleteProject = async (projectId: string, projectName: string) => {
+  const handleDeleteProject = async (projectId: string, projectName: string) => {
     if (!confirm(`Are you sure you want to delete "${projectName}"? This will also delete all associated conversations and documents.`)) {
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Project deleted",
-        description: `${projectName} has been deleted.`,
-      });
-
-      fetchTeamProjects();
+      await deleteProject(projectId, projectName);
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -336,15 +215,9 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     });
   }, [projects, filters]);
 
-  console.log('TeamProjectsView render state:', { 
-    loading, 
-    conversationsLoading, 
-    projectsLength: projects?.length,
-    filteredProjectsLength: filteredProjects?.length 
-  });
+  const loading = projectsLoading || conversationsLoading;
 
-  if (loading || conversationsLoading) {
-    console.log('TeamProjectsView showing loading state');
+  if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
@@ -415,7 +288,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
                 scheduleOfWorksCount={getProjectScheduleOfWorksCount(project.id)}
                 onStartNewChat={onStartNewChat}
                 onEdit={handleEditProject}
-                onDelete={deleteProject}
+                onDelete={handleDeleteProject}
                 onTogglePin={togglePinProject}
                 onProjectStatsClick={handleProjectStatsClick}
                 onStatusChange={handleStatusChange}
@@ -445,7 +318,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
         onClose={() => setShowCreateModal(false)}
         newProject={newProject}
         setNewProject={setNewProject}
-        onCreateProject={createProject}
+        onCreateProject={handleCreateProject}
       />
 
       {/* Edit Project Modal */}
@@ -464,7 +337,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
             setEditingProject(null);
           }
         }}
-        onUpdateProject={updateProject}
+        onUpdateProject={handleUpdateProject}
       />
     </div>
   );
