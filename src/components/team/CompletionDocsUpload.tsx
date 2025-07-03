@@ -27,13 +27,26 @@ const categories = [
 ];
 
 const allowedFileTypes = [
+  // Images
   'image/jpeg',
+  'image/jpg', 
   'image/png',
   'image/gif',
   'image/webp',
-  'application/pdf',
   'image/svg+xml',
   'image/tiff',
+  // Documents
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+  // CAD/Drawing files
+  'application/dxf',
+  'application/dwg',
+  'image/vnd.dwg',
 ];
 
 const maxFileSize = 10 * 1024 * 1024; // 10MB
@@ -56,7 +69,7 @@ export const CompletionDocsUpload = ({
 
   const validateFile = (file: File): string | null => {
     if (!allowedFileTypes.includes(file.type)) {
-      return `${file.name}: Unsupported file type. Please upload images, PDFs, or drawings.`;
+      return `${file.name}: Unsupported file type. Please upload images, PDFs, Word docs, Excel files, or CAD drawings.`;
     }
     if (file.size > maxFileSize) {
       return `${file.name}: File too large. Maximum size is 10MB.`;
@@ -168,12 +181,12 @@ export const CompletionDocsUpload = ({
               Drop files here or click to browse
             </p>
             <p className="text-sm text-muted-foreground mb-4">
-              Supports images, PDFs, and drawings up to 10MB each
+              Supports images, PDFs, Word docs, Excel files, and CAD drawings up to 10MB each
             </p>
             <input
               type="file"
               multiple
-              accept={allowedFileTypes.join(',')}
+              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.dwg,.dxf"
               onChange={(e) => handleFileSelect(e.target.files)}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
