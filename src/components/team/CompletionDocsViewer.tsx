@@ -11,6 +11,7 @@ import { useCompletionDocuments, type CompletionDocument } from '@/hooks/useComp
 interface CompletionDocsViewerProps {
   document: CompletionDocument;
   onClose: () => void;
+  onDocumentDeleted?: () => void;
 }
 
 const categoryLabels = {
@@ -21,7 +22,7 @@ const categoryLabels = {
   'other': 'Other',
 };
 
-export const CompletionDocsViewer = ({ document, onClose }: CompletionDocsViewerProps) => {
+export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: CompletionDocsViewerProps) => {
   const [loading, setLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const { deleteDocument, getDocumentUrl } = useCompletionDocuments(document.project_id);
@@ -53,6 +54,7 @@ export const CompletionDocsViewer = ({ document, onClose }: CompletionDocsViewer
   const handleDelete = async () => {
     try {
       await deleteDocument(document.id);
+      onDocumentDeleted?.(); // Trigger refresh in parent component
       onClose();
     } catch (error) {
       console.error('Delete failed:', error);

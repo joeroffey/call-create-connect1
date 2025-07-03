@@ -252,6 +252,11 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
         <CompletionDocsViewer
           document={selectedDocument}
           onClose={() => setSelectedDocument(null)}
+          onDocumentDeleted={() => {
+            // Refresh both project documents and team document counts
+            refetchProjectDocs();
+            refetchTeamDocs();
+          }}
         />
       )}
     </div>
