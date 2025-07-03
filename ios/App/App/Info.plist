@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Call Create Connect</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	
+	<!-- App Transport Security Configuration -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSExceptionDomains</key>
+		<dict>
+			<!-- Only add your own domains here if absolutely necessary -->
+		</dict>
+	</dict>
+	
+	<!-- Privacy Descriptions (Required for App Store) -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses the camera to take photos for your content creation needs.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app uses the microphone to record audio for your communication features.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app accesses your photo library to select and share images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app saves photos to your photo library when you create content.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses location services to provide location-based features when you're using the app.</string>
+	<key>NSContactsUsageDescription</key>
+	<string>This app accesses your contacts to help you connect with others.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app accesses your calendar to schedule and manage events.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>This app accesses reminders to help you stay organized.</string>
+	
+	<!-- Custom URL Scheme -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.callcreateconnect.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>callcreateconnect</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- iOS Version Requirements -->
+	<key>MinimumOSVersion</key>
+	<string>13.0</string>
+	
+	<!-- Launch Configuration -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	
+	<!-- Device Capabilities -->
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	
+	<!-- Interface Orientations -->
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	
+	<!-- Status Bar Configuration -->
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	
+	<!-- App Store Required Metadata -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	
+	<!-- Scene Configuration for iOS 13+ -->
+	<key>UISceneDelegate</key>
+	<dict>
+		<key>UISceneClassName</key>
+		<string>UIWindowScene</string>
+		<key>UISceneConfigurationName</key>
+		<string>Default Configuration</string>
+		<key>UISceneDelegateClassName</key>
+		<string>SceneDelegate</string>
+	</dict>
+	
+	<!-- Background Modes (if needed) -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-processing</string>
+		<string>background-fetch</string>
+	</array>
+	
+	<!-- Prevent app from being terminated -->
+	<key>UIApplicationExitsOnSuspend</key>
+	<false/>
+	
+	<!-- File Sharing -->
+	<key>UIFileSharingEnabled</key>
+	<false/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
+	
+	<!-- Hardware Features -->
+	<key>UIRequiresFullScreen</key>
+	<false/>
+	
+	<!-- Appearance -->
+	<key>UIUserInterfaceStyle</key>
+	<string>Automatic</string>
+	
+	<!-- Prevent screenshots in app switcher (optional security) -->
+	<key>UIApplicationSupportsMultipleScenes</key>
+	<false/>
+</dict>
+</plist>
