@@ -124,6 +124,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
       fetchDocuments(); // Refresh the list
       return document;
     } catch (err) {
+      console.error('Upload error details:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to upload document';
       toast({
         title: 'Error',
