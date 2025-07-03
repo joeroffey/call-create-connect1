@@ -171,7 +171,7 @@ export const CompletionDocsUpload = ({
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto mx-auto">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden mx-auto">
         <DialogHeader>
           <DialogTitle>Upload Completion Documents</DialogTitle>
         </DialogHeader>
