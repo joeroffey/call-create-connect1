@@ -6,7 +6,7 @@ const config: CapacitorConfig = {
   appName: 'call-create-connect',
   webDir: 'dist',
   server: {
-    url: 'https://5bc45bc5-4965-43ea-9377-7fc2efe6fd86.lovableproject.com?forceHideBadge=true',
+    url: 'https://www.eezybuild.co.uk',
     cleartext: true
   },
   bundledWebRuntime: false,
