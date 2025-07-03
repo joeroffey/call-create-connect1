@@ -1,16 +1,16 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.callcreateconnect.app',
-  appName: 'Call Create Connect',
+  appId: 'com.eezybuild.app',
+  appName: 'EezyBuild',
   webDir: 'dist',
   bundledWebRuntime: false,
   plugins: {
     StatusBar: {
       overlaysWebView: false,
-      backgroundColor: '#ffffff',
-      style: 'Default',
-      androidStyle: 'DEFAULT'
+      backgroundColor: '#000000',
+      style: 'Dark',
+      androidStyle: 'DARK'
     },
     Keyboard: {
       resize: 'native',
@@ -19,23 +19,25 @@ const config: CapacitorConfig = {
     },
     App: {
       appUrlOpen: {
-        iosCustomScheme: 'callcreateconnect'
+        iosCustomScheme: 'eezybuild'
       }
     },
     SplashScreen: {
       launchShowDuration: 2000,
-      backgroundColor: '#ffffff',
-      showSpinner: false,
+      backgroundColor: '#000000',
+      showSpinner: true,
       androidSpinnerStyle: 'large',
       iosSpinnerStyle: 'small',
-      spinnerColor: '#999999',
+      spinnerColor: '#10b981',
       splashFullScreen: true,
-      splashImmersive: true
+      splashImmersive: true,
+      useDialog: false
     },
     Permissions: {
-      camera: 'This app needs camera access to take photos',
-      microphone: 'This app needs microphone access for audio features',
-      notifications: 'This app sends notifications for important updates'
+      camera: 'EezyBuild uses camera access to scan building documents and take photos for project documentation',
+      microphone: 'EezyBuild uses microphone access for voice commands and audio notes',
+      notifications: 'EezyBuild sends notifications for project updates, regulatory changes, and important reminders',
+      location: 'EezyBuild uses location services to provide relevant local building regulations and find nearby professionals'
     },
     Device: {
       androidHideNavigationBar: false
@@ -45,10 +47,13 @@ const config: CapacitorConfig = {
     },
     Haptics: {
       enabled: true
+    },
+    PushNotifications: {
+      presentationOptions: ["badge", "sound", "alert"]
     }
   },
   ios: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000000',
     allowsLinkPreview: false,
     handleApplicationNotifications: true,
     hideLogs: true,
@@ -58,9 +63,23 @@ const config: CapacitorConfig = {
     suppresessIncrementalRendering: false,
     preferredContentMode: 'mobile',
     scrollEnabled: true,
-    minimumFontSize: 12.0
+    minimumFontSize: 12.0,
+    contentInset: 'automatic',
+    webviewStyle: 'light'
+  },
+  android: {
+    backgroundColor: '#000000',
+    allowMixedContent: false,
+    captureInput: true,
+    webContentsDebuggingEnabled: false,
+    appendUserAgent: 'EezyBuild',
+    overrideUserAgent: '',
+    hideLogs: true,
+    useLegacyBridge: false
   },
   server: {
+    androidScheme: 'https',
+    iosScheme: 'capacitor'
   }
 };
 
