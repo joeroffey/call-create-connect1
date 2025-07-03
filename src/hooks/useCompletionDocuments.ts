@@ -70,6 +70,8 @@ export const useCompletionDocuments = (projectId?: string | null) => {
     }
 
     try {
+      console.log('Starting upload process for:', file.name);
+      
       // Get project details to get team_id
       const { data: project, error: projectError } = await supabase
         .from('projects')
@@ -77,6 +79,8 @@ export const useCompletionDocuments = (projectId?: string | null) => {
         .eq('id', projectId)
         .single();
 
+      console.log('Project query result:', { project, projectError });
+      
       if (projectError) throw projectError;
       if (!project?.team_id) {
         throw new Error('Project is not associated with a team');
@@ -87,14 +91,19 @@ export const useCompletionDocuments = (projectId?: string | null) => {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${projectId}/${fileName}`;
 
+      console.log('Attempting storage upload with path:', filePath);
+
       const { error: uploadError } = await supabase.storage
         .from('project-completion-documents')
         .upload(filePath, file);
+
+      console.log('Storage upload result:', { uploadError });
 
       if (uploadError) throw uploadError;
 
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user?.id);
       if (!user) throw new Error('User not authenticated');
 
       // Create document record
