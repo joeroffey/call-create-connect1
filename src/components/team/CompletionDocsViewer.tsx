@@ -109,18 +109,18 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl w-[95vw] max-h-[95vh] overflow-hidden" aria-describedby="document-description">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl w-[95vw] max-h-[95vh] flex flex-col" aria-describedby="document-description">
+          <DialogHeader className="flex-shrink-0">
             <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <DialogTitle className="text-lg sm:text-xl font-semibold pr-8 break-words truncate">
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-base sm:text-lg font-semibold pr-8 break-words line-clamp-2">
                   {document.file_name}
                 </DialogTitle>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
                   <Badge variant="secondary" className="w-fit">
                     {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
                   </Badge>
-                  <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{formatFileSize(document.file_size)}</span>
                     <span className="hidden sm:inline">•</span>
                     <span>{formatDate(document.created_at)}</span>
@@ -130,28 +130,28 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
             </div>
           </DialogHeader>
 
-          <div className="space-y-4 sm:space-y-6 overflow-y-auto flex-1">
+          <div className="flex-1 flex flex-col min-h-0 space-y-4">
             {/* Document Description */}
             {document.description && (
-              <div id="document-description" className="p-3 sm:p-4 bg-muted/50 rounded-lg">
+              <div id="document-description" className="flex-shrink-0 p-3 bg-muted/50 rounded-lg">
                 <h4 className="font-medium text-sm mb-2">Description</h4>
                 <p className="text-sm text-muted-foreground">{document.description}</p>
               </div>
             )}
 
             {/* Document Preview */}
-            <div className="border rounded-lg overflow-hidden">
+            <div className="flex-1 min-h-0 border rounded-lg overflow-hidden">
               {isImage && !imageError ? (
-                <div className="relative bg-muted">
+                <div className="relative bg-muted h-full flex items-center justify-center">
                   <img
                     src={fileUrl}
                     alt={document.file_name}
-                    className="w-full h-auto max-h-[40vh] object-contain mx-auto block"
+                    className="max-w-full max-h-full object-contain"
                     onError={() => setImageError(true)}
                   />
                 </div>
               ) : isPDF ? (
-                <div className="h-[40vh] w-full">
+                <div className="h-full w-full min-h-[300px]">
                   <iframe
                     src={`${fileUrl}#toolbar=1&navpanes=0&scrollbar=1`}
                     className="w-full h-full border-0"
@@ -159,25 +159,27 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
                   />
                 </div>
               ) : (
-                <div className="p-6 sm:p-12 text-center bg-muted/50">
-                  <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
-                    Preview not available
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    This file type cannot be previewed in the browser.
-                  </p>
-                  <Button onClick={handleDownload} disabled={loading} size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Download to view
-                  </Button>
+                <div className="h-full flex items-center justify-center p-6 text-center bg-muted/50">
+                  <div>
+                    <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-base font-medium text-foreground mb-2">
+                      Preview not available
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      This file type cannot be previewed in the browser.
+                    </p>
+                    <Button onClick={handleDownload} disabled={loading} size="sm">
+                      <Download className="w-4 h-4 mr-2" />
+                      Download to view
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Error handling for images */}
             {isImage && imageError && (
-              <Alert>
+              <Alert className="flex-shrink-0">
                 <AlertCircle className="w-4 h-4" />
                 <AlertDescription>
                   Unable to load image preview. You can still download the file to view it.
@@ -186,7 +188,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
             )}
 
             {/* Comments Section */}
-            <div className="border-t pt-4">
+            <div className="flex-shrink-0 border-t pt-4">
               {document?.id && document?.team_id ? (
                 <DocumentComments 
                   documentId={String(document.id)}
@@ -201,8 +203,8 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
             </div>
 
             {/* Actions */}
-            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="flex-shrink-0 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button onClick={handleDownload} disabled={loading} variant="outline" size="sm">
                   <Download className="w-4 h-4 mr-2" />
                   Download
