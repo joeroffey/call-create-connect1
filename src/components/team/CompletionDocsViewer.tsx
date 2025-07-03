@@ -27,6 +27,14 @@ const categoryLabels = {
 };
 
 export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: CompletionDocsViewerProps) => {
+  console.log('CompletionDocsViewer rendering with document:', {
+    id: document?.id,
+    file_name: document?.file_name,
+    team_id: document?.team_id,
+    idType: typeof document?.id,
+    teamIdType: typeof document?.team_id
+  });
+  
   const [loading, setLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);

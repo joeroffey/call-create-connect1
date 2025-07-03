@@ -33,6 +33,7 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
     setLoading(true);
     try {
       console.log('Fetching comments for document:', documentId, 'team:', teamId);
+      console.log('Document ID type:', typeof documentId, 'Team ID type:', typeof teamId);
       
       // Get comments with comprehensive error handling
       const { data: commentsData, error: commentsError } = await supabase
