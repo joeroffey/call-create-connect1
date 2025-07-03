@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useTeamProjects } from '@/hooks/useTeamProjects';
 import { useCompletionDocuments } from '@/hooks/useCompletionDocuments';
+import { useTeamCompletionDocuments } from '@/hooks/useTeamCompletionDocuments';
 import { CompletionDocsUpload } from './CompletionDocsUpload';
 import { CompletionDocsViewer } from './CompletionDocsViewer';
 import { CompletionDocsList } from './CompletionDocsList';
@@ -40,7 +41,8 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
 
   const { projects: teamProjects, loading: projectsLoading } = useTeamProjects(teamId);
-  const { data: completionDocs, isLoading: docsLoading } = useCompletionDocuments(selectedProject);
+  const { data: completionDocs, isLoading: docsLoading, refetch: refetchProjectDocs } = useCompletionDocuments(selectedProject);
+  const { getDocumentCountForProject, refetch: refetchTeamDocs } = useTeamCompletionDocuments(teamId);
 
   // Filter projects to only show team projects (those with team_id)
   const filteredProjects = teamProjects?.filter(project => project.team_id === teamId) || [];
@@ -53,7 +55,7 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
   }) || [];
 
   const getDocumentCounts = (projectId: string) => {
-    return completionDocs?.filter(doc => doc.project_id === projectId).length || 0;
+    return getDocumentCountForProject(projectId);
   };
 
   if (projectsLoading) {
@@ -245,7 +247,9 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
           onClose={() => setShowUpload(false)}
           onUploadComplete={() => {
             setShowUpload(false);
-            // Refresh documents list
+            // Refresh both project documents and team document counts
+            refetchProjectDocs();
+            refetchTeamDocs();
           }}
         />
       )}
