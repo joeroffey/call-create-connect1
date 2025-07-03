@@ -12,6 +12,7 @@ export interface CompletionDocument {
   file_type: string;
   category: string;
   description?: string;
+  display_name?: string;
   uploaded_by: string;
   team_id: string;
   created_at: string;
@@ -59,7 +60,8 @@ export const useCompletionDocuments = (projectId?: string | null) => {
   const uploadDocument = async (
     file: File,
     category: string,
-    description?: string
+    description?: string,
+    displayName?: string
   ): Promise<CompletionDocument | null> => {
     if (!projectId) {
       toast({
@@ -138,6 +140,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
           file_type: file.type,
           category,
           description,
+          display_name: displayName || file.name,
           uploaded_by: user.id,
           team_id: project.team_id,
         })

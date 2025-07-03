@@ -72,7 +72,7 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 w-full overflow-hidden">
       {documents.map((document, index) => {
         const isImage = isImageFile(document.file_type);
         const hasImageError = imageErrors.has(document.id);
@@ -86,12 +86,12 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
             transition={{ delay: index * 0.1 }}
           >
             <Card 
-              className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 hover:border-primary/20"
+              className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 hover:border-primary/20 w-full"
               onClick={() => onViewDocument(document)}
             >
-              <CardContent className="p-0">
+              <CardContent className="p-0 w-full">
                 {/* Thumbnail Area */}
-                <div className="h-48 relative bg-gradient-to-br from-muted/30 to-muted/60">
+                <div className="h-48 relative bg-gradient-to-br from-muted/30 to-muted/60 w-full">
                   {isImage && !hasImageError ? (
                     <img
                       src={documentUrl}
@@ -138,8 +138,8 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
                 {/* Content Area */}
                 <div className="p-4 space-y-3">
                   <div className="space-y-1">
-                    <h4 className="font-medium text-base leading-tight line-clamp-2 text-foreground" title={document.file_name}>
-                      {document.file_name}
+                    <h4 className="font-medium text-base leading-tight line-clamp-2 text-foreground break-words" title={document.display_name || document.file_name}>
+                      {document.display_name || document.file_name}
                     </h4>
                     {isImage && (
                       <p className="text-sm text-muted-foreground">

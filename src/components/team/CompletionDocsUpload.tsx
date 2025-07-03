@@ -58,6 +58,7 @@ export const CompletionDocsUpload = ({
   onUploadComplete,
 }: CompletionDocsUploadProps) => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [documentNames, setDocumentNames] = useState<{ [key: string]: string }>({});
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -89,6 +90,9 @@ export const CompletionDocsUpload = ({
         newErrors.push(error);
       } else {
         newFiles.push(file);
+        // Initialize document name with file name (without extension)
+        const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '');
+        setDocumentNames(prev => ({ ...prev, [file.name]: nameWithoutExt }));
       }
     });
 
@@ -117,7 +121,15 @@ export const CompletionDocsUpload = ({
   );
 
   const removeFile = (index: number) => {
+    const fileName = selectedFiles[index]?.name;
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+    if (fileName) {
+      setDocumentNames(prev => {
+        const newNames = { ...prev };
+        delete newNames[fileName];
+        return newNames;
+      });
+    }
   };
 
   const handleUpload = async () => {
@@ -129,7 +141,8 @@ export const CompletionDocsUpload = ({
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
-        await uploadDocument(file, category, description);
+        const displayName = documentNames[file.name] || file.name;
+        await uploadDocument(file, category, description, displayName);
         setUploadProgress(((i + 1) / selectedFiles.length) * 100);
       }
 
@@ -207,11 +220,11 @@ export const CompletionDocsUpload = ({
             </Alert>
           )}
 
-          {/* Selected Files */}
+          {/* Selected Files with Document Names */}
           {selectedFiles.length > 0 && (
             <div className="space-y-3">
               <Label>Selected Files ({selectedFiles.length})</Label>
-              <div className="max-h-48 overflow-y-auto space-y-2">
+              <div className="max-h-60 overflow-y-auto space-y-3">
                 {selectedFiles.map((file, index) => {
                   const FileIcon = getFileIcon(file.type);
                   return (
@@ -219,27 +232,44 @@ export const CompletionDocsUpload = ({
                       key={index}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="border rounded-lg p-4 space-y-3"
                     >
-                      <div className="flex items-center space-x-3 min-w-0 flex-1">
-                        <FileIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-sm truncate max-w-[200px]" title={file.name}>
-                            {file.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatFileSize(file.size)}
-                          </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3 min-w-0 flex-1">
+                          <FileIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm text-muted-foreground" title={file.name}>
+                              File: {file.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatFileSize(file.size)}
+                            </p>
+                          </div>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeFile(index)}
+                          disabled={uploading}
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFile(index)}
-                        disabled={uploading}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
+                      
+                      {/* Document Name Input */}
+                      <div className="space-y-1">
+                        <Label htmlFor={`doc-name-${index}`} className="text-sm">
+                          Document Name *
+                        </Label>
+                        <Input
+                          id={`doc-name-${index}`}
+                          value={documentNames[file.name] || ''}
+                          onChange={(e) => setDocumentNames(prev => ({ ...prev, [file.name]: e.target.value }))}
+                          placeholder="Enter document name..."
+                          disabled={uploading}
+                          className="w-full"
+                        />
+                      </div>
                     </motion.div>
                   );
                 })}
@@ -295,7 +325,12 @@ export const CompletionDocsUpload = ({
             </Button>
             <Button
               onClick={handleUpload}
-              disabled={selectedFiles.length === 0 || !category || uploading}
+              disabled={
+                selectedFiles.length === 0 || 
+                !category || 
+                uploading ||
+                selectedFiles.some(file => !documentNames[file.name]?.trim())
+              }
             >
               {uploading ? 'Uploading...' : `Upload ${selectedFiles.length} File${selectedFiles.length !== 1 ? 's' : ''}`}
             </Button>

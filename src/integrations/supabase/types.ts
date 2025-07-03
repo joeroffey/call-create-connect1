@@ -177,6 +177,7 @@ export type Database = {
           category: string
           created_at: string
           description: string | null
+          display_name: string | null
           file_name: string
           file_path: string
           file_size: number
@@ -191,6 +192,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          display_name?: string | null
           file_name: string
           file_path: string
           file_size: number
@@ -205,6 +207,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          display_name?: string | null
           file_name?: string
           file_path?: string
           file_size?: number
