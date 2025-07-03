@@ -109,7 +109,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-3xl max-h-[90vh] w-[90vw] overflow-hidden mx-auto" aria-describedby="document-description">
+        <DialogContent className="max-w-4xl w-[95vw] max-h-[95vh] overflow-hidden" aria-describedby="document-description">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -130,7 +130,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
             </div>
           </DialogHeader>
 
-          <div className="space-y-4 sm:space-y-6 overflow-y-auto max-h-[75vh]">
+          <div className="space-y-4 sm:space-y-6 overflow-y-auto flex-1">
             {/* Document Description */}
             {document.description && (
               <div id="document-description" className="p-3 sm:p-4 bg-muted/50 rounded-lg">

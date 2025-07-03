@@ -201,9 +201,6 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
 
     const channelName = `document-comments-${documentId}-${teamId}-${Date.now()}`;
     
-    // Remove any existing channels first
-    supabase.removeAllChannels();
-    
     const channel = supabase
       .channel(channelName)
       .on('postgres_changes', {
@@ -212,6 +209,7 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
         table: 'comments',
         filter: `target_id=eq.${documentId}`
       }, () => {
+        console.log('Real-time comment update received');
         fetchComments();
       })
       .subscribe();
