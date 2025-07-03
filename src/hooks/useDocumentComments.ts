@@ -275,8 +275,9 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
   useEffect(() => {
     if (!documentId || !teamId) return;
 
+    const channelName = `document-comments-${documentId}-${teamId}`;
     const channel = supabase
-      .channel('document-comments-realtime')
+      .channel(channelName)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
