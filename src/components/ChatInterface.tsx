@@ -690,26 +690,26 @@ Would you like me to help you plan any work items or discuss project timeline ma
           )}
 
           {/* Fixed Input Area */}
-          <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
+          <div className="border-t border-gray-800/30 p-3 sm:p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl safe-area-bottom">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 sm:space-x-3">
                 {projectId && (
                   <button
                     onClick={handleDocumentUpload}
                     disabled={isUploading}
-                    className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 sm:p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                     title="Upload Document"
                   >
-                    <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
+                    <Upload className={`w-4 h-4 sm:w-5 sm:h-5 ${isUploading ? 'animate-pulse' : ''}`} />
                   </button>
                 )}
                 {projectId && (
                   <button
                     onClick={handleScheduleOfWorks}
-                    className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
+                    className="p-2 sm:p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 flex-shrink-0"
                     title="Schedule of Works"
                   >
-                    <Clock className="w-5 h-5" />
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                 )}
                 <input
@@ -719,7 +719,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <div className="flex-1 relative flex items-center">
+                <div className="flex-1 relative flex items-center min-w-0">
                   <textarea
                     ref={inputRef}
                     value={newMessage}
@@ -731,16 +731,16 @@ Would you like me to help you plan any work items or discuss project timeline ma
                         ? `Ask about ${project.name}...` 
                         : "Ask me a question..."
                     }
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 rounded-lg sm:rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[44px] sm:min-h-[48px] max-h-[120px]"
                   />
                   <motion.button
                     whileTap={{ scale: 0.95 }}
                     whileHover={{ scale: 1.02 }}
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || isLoading}
-                    className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="absolute right-2 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-md sm:rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </motion.button>
                 </div>
               </div>
