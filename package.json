@@ -30,8 +30,7 @@
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules/.vite",
-    "postinstall": "npx cap sync"
+    "clean": "rm -rf dist node_modules/.vite"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.0",
@@ -114,6 +113,7 @@
     "lovable-tagger": "^1.1.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.11",
+    "terser": "^5.43.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
