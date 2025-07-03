@@ -165,6 +165,7 @@ const DocumentCard = ({
 };
 
 export const CompletionDocsList = ({ documents, loading, onViewDocument }: CompletionDocsListProps) => {
+  console.log('CompletionDocsList rendered with:', { documents: documents?.length, loading });
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
   const [uploaderProfiles, setUploaderProfiles] = useState<Map<string, UploaderProfile>>(new Map());
 
