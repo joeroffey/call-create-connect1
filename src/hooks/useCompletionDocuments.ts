@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -70,8 +71,13 @@ export const useCompletionDocuments = (projectId?: string | null) => {
     }
 
     try {
-      console.log('Starting upload process for:', file.name);
+      console.log('Starting upload process for:', file.name, 'Size:', file.size, 'Type:', file.type);
       
+      // Get current user first
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('Current user:', user?.id, 'User error:', userError);
+      if (!user) throw new Error('User not authenticated');
+
       // Get project details to get team_id
       const { data: project, error: projectError } = await supabase
         .from('projects')
@@ -86,25 +92,40 @@ export const useCompletionDocuments = (projectId?: string | null) => {
         throw new Error('Project is not associated with a team');
       }
 
+      // Check if user is a team member
+      const { data: teamMember, error: teamError } = await supabase
+        .from('team_members')
+        .select('id')
+        .eq('team_id', project.team_id)
+        .eq('user_id', user.id)
+        .single();
+
+      console.log('Team member check:', { teamMember, teamError });
+      if (teamError || !teamMember) {
+        throw new Error('User is not a member of this team');
+      }
+
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${projectId}/${fileName}`;
 
       console.log('Attempting storage upload with path:', filePath);
+      console.log('File details:', { name: file.name, size: file.size, type: file.type });
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('project-completion-documents')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-      console.log('Storage upload result:', { uploadError });
+      console.log('Storage upload result:', { uploadData, uploadError });
 
-      if (uploadError) throw uploadError;
-
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id);
-      if (!user) throw new Error('User not authenticated');
+      if (uploadError) {
+        console.error('Storage upload error details:', uploadError);
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
+      }
 
       // Create document record
       const { data: document, error: createError } = await supabase
@@ -123,7 +144,12 @@ export const useCompletionDocuments = (projectId?: string | null) => {
         .select()
         .single();
 
-      if (createError) throw createError;
+      console.log('Database insert result:', { document, createError });
+
+      if (createError) {
+        console.error('Database insert error:', createError);
+        throw new Error(`Database insert failed: ${createError.message}`);
+      }
 
       toast({
         title: 'Success',
