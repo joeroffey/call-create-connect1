@@ -68,15 +68,15 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
 
   if (!selectedProject) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-6 p-4 md:p-6">
         {/* Header Section */}
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <FileCheck className="w-8 h-8 text-emerald-400" />
+          <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FileCheck className="w-8 h-8 text-primary" />
           </div>
           <div>
-            <h2 className="text-3xl font-bold text-white mb-2">Completion Documents</h2>
-            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Completion Documents</h2>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
               Manage building control documents, certificates, warranties and other completion documents for your team projects
             </p>
           </div>
@@ -85,31 +85,31 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
         {/* Search Section */}
         <div className="max-w-md mx-auto">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               placeholder="Search team projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400 rounded-xl focus:border-emerald-500"
+              className="pl-12 h-12 rounded-xl"
             />
           </div>
         </div>
 
         {/* Projects Grid */}
         {filteredProjects.length === 0 ? (
-          <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 max-w-lg mx-auto">
-            <CardContent className="p-12 text-center">
-              <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Building className="w-8 h-8 text-gray-400" />
+          <Card className="max-w-lg mx-auto">
+            <CardContent className="p-8 md:p-12 text-center">
+              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                <Building className="w-8 h-8 text-muted-foreground" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-3">No Team Projects Found</h3>
-              <p className="text-gray-400">
+              <h3 className="text-xl font-semibold text-foreground mb-3">No Team Projects Found</h3>
+              <p className="text-muted-foreground">
                 Completion documents are only available for team projects. Create a team project first to get started.
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filteredProjects
               .filter(project => 
                 project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -127,37 +127,30 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
                     className="cursor-pointer"
                     onClick={() => setSelectedProject(project.id)}
                   >
-                    <Card className="h-full bg-gradient-to-br from-gray-800/60 to-gray-900/60 border-gray-700 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10">
+                    <Card className="h-full hover:shadow-lg transition-all duration-300">
                       <CardHeader className="pb-3">
                         <div className="flex items-start justify-between mb-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                            <Building className="w-5 h-5 text-white" />
+                          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+                            <Building className="w-5 h-5 text-primary-foreground" />
                           </div>
-                          <Badge 
-                            variant="secondary" 
-                            className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 px-2 py-1"
-                          >
+                          <Badge variant="secondary" className="px-2 py-1">
                             {docCount} docs
                           </Badge>
                         </div>
-                        <CardTitle className="text-lg text-white leading-tight">{project.name}</CardTitle>
+                        <CardTitle className="text-lg leading-tight">{project.name}</CardTitle>
                         {project.description && (
-                          <p className="text-sm text-gray-400 line-clamp-2 mt-2">
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-2">
                             {project.description}
                           </p>
                         )}
                       </CardHeader>
                       <CardContent className="pt-0">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2 text-sm text-gray-400">
-                            <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                            <div className="w-2 h-2 bg-primary rounded-full"></div>
                             <span>Team Project</span>
                           </div>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-                          >
+                          <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
                             View Docs →
                           </Button>
                         </div>
@@ -175,56 +168,56 @@ export const TeamCompletionDocsView = ({ teamId }: TeamCompletionDocsViewProps) 
   const selectedProjectData = filteredProjects.find(p => p.id === selectedProject);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 p-4 md:p-6">
       {/* Header Section */}
-      <div className="space-y-6">
+      <div className="space-y-4">
         <Button
           variant="ghost"
           onClick={() => setSelectedProject(null)}
-          className="text-gray-400 hover:text-white transition-colors flex items-center gap-2"
+          className="flex items-center gap-2 mb-4"
         >
           ← Back to Projects
         </Button>
         
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-4">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-white">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
               {selectedProjectData?.name}
             </h1>
-            <p className="text-gray-400 text-lg">
+            <p className="text-muted-foreground text-sm md:text-base">
               Building control documents, certificates, warranties and important project completion files
             </p>
           </div>
           
           <Button 
             onClick={() => setShowUpload(true)} 
-            className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+            className="w-full sm:w-auto flex items-center gap-2 justify-center"
           >
-            <Upload className="w-5 h-5" />
+            <Upload className="w-4 h-4" />
             <span>Upload Documents</span>
           </Button>
         </div>
       </div>
 
       {/* Search and Filter Section */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <div className="flex flex-col gap-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search documents..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-12 h-12 bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-400 rounded-xl focus:border-emerald-500"
+            className="pl-10"
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full sm:w-56 h-12 bg-gray-800/50 border-gray-700 text-white rounded-xl focus:border-emerald-500">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
-          <SelectContent className="bg-gray-800 border-gray-700">
-            <SelectItem value="all" className="text-white hover:bg-gray-700">All Categories</SelectItem>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
             {Object.entries(categoryLabels).map(([value, label]) => (
-              <SelectItem key={value} value={value} className="text-white hover:bg-gray-700">
+              <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
             ))}
