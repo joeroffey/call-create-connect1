@@ -109,11 +109,11 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-3xl max-h-[90vh] w-[90vw] overflow-hidden">
+        <DialogContent className="max-w-3xl max-h-[90vh] w-[90vw] overflow-hidden mx-auto">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <DialogTitle className="text-lg sm:text-xl font-semibold pr-8 break-words">
+                <DialogTitle className="text-lg sm:text-xl font-semibold pr-8 break-words truncate">
                   {document.file_name}
                 </DialogTitle>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
