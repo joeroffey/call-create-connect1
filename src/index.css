@@ -103,60 +103,38 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
-    margin: 0;
-    padding: 0;
-    /* Mobile web browser compatibility */
     height: 100vh;
     height: 100dvh; /* Dynamic viewport height for mobile */
-    height: 100svh; /* Small viewport height for better mobile web support */
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-height: 100svh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
   }
 
   body {
     overflow-y: hidden;
     overscroll-behavior: none; /* Prevent bounce scrolling on mobile */
     -webkit-overflow-scrolling: touch;
-    /* Better mobile web support */
-    position: relative;
+    position: fixed;
     width: 100%;
     height: 100vh;
     height: 100dvh;
-    height: 100svh;
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-height: 100svh;
   }
 
   #root {
     height: 100vh;
     height: 100dvh;
-    height: 100svh;
-    min-height: 100vh;
-    min-height: 100dvh;
-    min-height: 100svh;
+    max-height: 100vh;
+    max-height: 100dvh;
     overflow: hidden;
-    position: relative;
+    position: fixed;
     width: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* Mobile web specific viewport fixes */
-  @media screen and (max-width: 768px) {
-    html, body {
-      position: relative;
-      height: 100vh;
-      height: 100svh; /* Use small viewport height for mobile browsers */
-      min-height: -webkit-fill-available; /* iOS Safari fix */
-    }
-    
-    #root {
-      height: 100vh;
-      height: 100svh;
-      min-height: -webkit-fill-available;
-    }
+    top: 0;
+    left: 0;
   }
 
   /* PWA Safe Area Support for iOS and Android */
@@ -166,8 +144,6 @@
   
   .safe-area-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    /* Additional mobile web keyboard avoidance */
-    margin-bottom: env(keyboard-inset-height, 0px);
   }
   
   .safe-area-left {
@@ -176,34 +152,6 @@
   
   .safe-area-right {
     padding-right: env(safe-area-inset-right);
-  }
-
-  /* Mobile web specific input handling */
-  @media screen and (max-width: 768px) {
-    .safe-area-bottom {
-      padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
-      margin-bottom: env(keyboard-inset-height, 0px);
-    }
-    
-    /* Prevent zoom on input focus for mobile browsers */
-    input[type="text"],
-    input[type="email"], 
-    input[type="password"],
-    textarea,
-    select {
-      font-size: 16px !important;
-      -webkit-appearance: none;
-      border-radius: 8px;
-    }
-    
-    /* Ensure chat input container is properly positioned on mobile */
-    .chat-input-container {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 50;
-    }
   }
 
   /* Professional scrollbar styling - only for internal components */
