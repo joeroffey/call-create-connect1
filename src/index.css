@@ -103,10 +103,6 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     overflow-x: hidden;
-    height: 100vh;
-    height: 100dvh; /* Dynamic viewport height for mobile */
-    max-height: 100vh;
-    max-height: 100dvh;
     margin: 0;
     padding: 0;
     position: fixed;
@@ -115,26 +111,52 @@
     left: 0;
   }
 
+  /* Environment-aware viewport heights */
+  html, body {
+    height: var(--viewport-height, 100vh);
+    max-height: var(--max-viewport-height, 100vh);
+  }
+
   body {
     overflow-y: hidden;
     overscroll-behavior: none; /* Prevent bounce scrolling on mobile */
     -webkit-overflow-scrolling: touch;
     position: fixed;
     width: 100%;
-    height: 100vh;
-    height: 100dvh;
+    height: var(--viewport-height, 100vh);
   }
 
   #root {
-    height: 100vh;
-    height: 100dvh;
-    max-height: 100vh;
-    max-height: 100dvh;
+    height: var(--viewport-height, 100vh);
+    max-height: var(--max-viewport-height, 100vh);
     overflow: hidden;
     position: fixed;
     width: 100%;
     top: 0;
     left: 0;
+  }
+
+  /* Browser-specific viewport handling */
+  @supports (height: 100svh) {
+    .mobile-browser body,
+    .mobile-browser #root {
+      height: 100svh;
+      max-height: 100svh;
+    }
+  }
+
+  /* Mobile app stable viewport */
+  .mobile-app body,
+  .mobile-app #root {
+    height: 100vh;
+    max-height: 100vh;
+  }
+
+  /* Desktop browser standard viewport */
+  .desktop-browser body,
+  .desktop-browser #root {
+    height: 100vh;
+    max-height: 100vh;
   }
 
   /* PWA Safe Area Support for iOS and Android */
@@ -419,4 +441,74 @@
   left: 0 !important;
   right: 0 !important;
   z-index: 1000 !important;
+}
+
+/* Environment-aware layout classes */
+.chat-interface {
+  height: var(--chat-interface-height, calc(100vh - 80px));
+  overflow-y: auto;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.chat-input-container {
+  position: fixed;
+  bottom: var(--navigation-height, 80px);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  padding: 1rem;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile browser specific fixes */
+.mobile-browser .chat-interface {
+  height: calc(100svh - 140px);
+  padding-bottom: 20px;
+}
+
+.mobile-browser .chat-input-container {
+  position: fixed;
+  bottom: 0;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Mobile app specific layout */
+.mobile-app .chat-interface {
+  height: calc(100vh - 80px);
+}
+
+.mobile-app .chat-input-container {
+  bottom: var(--navigation-height, 80px);
+}
+
+/* Desktop browser layout */
+.desktop-browser .chat-interface {
+  height: calc(100vh - 80px);
+}
+
+.desktop-browser .chat-input-container {
+  position: relative;
+  bottom: auto;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
+/* Keyboard handling for mobile browsers */
+@media screen and (max-height: 500px) {
+  .mobile-browser .chat-interface {
+    height: calc(100svh - 60px);
+  }
+  
+  .mobile-browser .chat-input-container {
+    padding: 0.5rem;
+  }
+}
+
+/* Visual viewport API support */
+@supports (height: 100svh) {
+  .visual-viewport-support .chat-interface {
+    height: calc(100svh - var(--navigation-height, 80px));
+  }
 }

@@ -1,15 +1,29 @@
+import { useEffect, useState } from 'react';
+
 /**
  * Environment Detection Utilities
  * Provides platform-specific environment variables and viewport calculations
  */
 
+// Extend Window interface for Capacitor
+declare global {
+  interface Window {
+    Capacitor?: {
+      getPlatform: () => string;
+    };
+  }
+  interface Navigator {
+    standalone?: boolean;
+  }
+}
+
 // Platform Detection
 export const ENVIRONMENT = {
   // Platform detection
-  IS_BROWSER: typeof window !== 'undefined' && !window.Capacitor,
-  IS_MOBILE_APP: typeof window !== 'undefined' && !!window.Capacitor,
-  IS_IOS_APP: typeof window !== 'undefined' && !!window.Capacitor && window.Capacitor.getPlatform() === 'ios',
-  IS_ANDROID_APP: typeof window !== 'undefined' && !!window.Capacitor && window.Capacitor.getPlatform() === 'android',
+  IS_BROWSER: typeof window !== 'undefined' && !(window as any).Capacitor,
+  IS_MOBILE_APP: typeof window !== 'undefined' && !!(window as any).Capacitor,
+  IS_IOS_APP: typeof window !== 'undefined' && !!(window as any).Capacitor && (window as any).Capacitor.getPlatform() === 'ios',
+  IS_ANDROID_APP: typeof window !== 'undefined' && !!(window as any).Capacitor && (window as any).Capacitor.getPlatform() === 'android',
   
   // Browser-specific detection
   IS_MOBILE_BROWSER: typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
@@ -23,7 +37,7 @@ export const ENVIRONMENT = {
   // PWA detection
   IS_PWA: typeof window !== 'undefined' && (
     window.matchMedia('(display-mode: standalone)').matches ||
-    window.navigator.standalone ||
+    (navigator as any).standalone ||
     document.referrer.includes('android-app://')
   ),
   
@@ -178,9 +192,9 @@ export const initializeViewportCSS = (): void => {
 export const useViewportHeight = () => {
   if (typeof window === 'undefined') return getViewportHeight();
   
-  const [height, setHeight] = React.useState(getViewportHeight());
+  const [height, setHeight] = useState(getViewportHeight());
   
-  React.useEffect(() => {
+  useEffect(() => {
     const updateHeight = () => {
       setHeight(getViewportHeight());
     };
