@@ -16,24 +16,65 @@ interface DocumentCommentsProps {
 }
 
 export const DocumentComments = ({ documentId, teamId, currentUserId }: DocumentCommentsProps) => {
-  // Add safety checks for props
-  if (!documentId || !teamId) {
-    console.warn('DocumentComments: Missing required props', { documentId, teamId });
-    return null;
+  // Enhanced safety checks for props with detailed validation
+  if (!documentId || !teamId || typeof documentId !== 'string' || typeof teamId !== 'string') {
+    console.warn('DocumentComments: Invalid props provided', { 
+      documentId, 
+      teamId, 
+      documentIdType: typeof documentId,
+      teamIdType: typeof teamId 
+    });
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        <p className="text-sm">Comments are not available for this document.</p>
+      </div>
+    );
   }
 
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [isOpen, setIsOpen] = useState(false);
+  const [componentError, setComponentError] = useState<string | null>(null);
   
-  const { comments, commentCount, loading, addComment, deleteComment } = useDocumentComments(documentId, teamId);
+  // Wrap hook in try-catch to prevent component crashes
+  let hookResult;
+  try {
+    hookResult = useDocumentComments(documentId, teamId);
+  } catch (error) {
+    console.error('Error in useDocumentComments hook:', error);
+    setComponentError(error instanceof Error ? error.message : 'Unknown error');
+    hookResult = {
+      comments: [],
+      commentCount: 0,
+      loading: false,
+      addComment: async () => {},
+      deleteComment: async () => {}
+    };
+  }
+  
+  const { comments, commentCount, loading, addComment, deleteComment, error } = hookResult;
+
+  // If there's a component error, show fallback UI
+  if (componentError) {
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        <p className="text-sm">Comments are temporarily unavailable.</p>
+        <p className="text-xs mt-1">Error: {componentError}</p>
+      </div>
+    );
+  }
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;
     
-    await addComment(newComment);
-    setNewComment('');
+    try {
+      await addComment(newComment);
+      setNewComment('');
+    } catch (error) {
+      console.error('Error submitting comment:', error);
+      // Error is already handled in the hook with toast
+    }
   };
 
   const handleSubmitReply = async (parentId: string) => {

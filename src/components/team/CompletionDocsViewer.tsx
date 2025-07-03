@@ -185,21 +185,28 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
               </Alert>
             )}
 
-            {/* Comments Section */}
+            {/* Comments Section - Isolated with comprehensive error handling */}
             <div className="border-t pt-4">
               <ErrorBoundary 
                 context="Document Comments Section"
                 fallback={
                   <div className="p-4 text-center text-muted-foreground">
-                    <p>Comments could not be loaded, but the document is still viewable.</p>
+                    <p className="text-sm mb-2">Comments are temporarily unavailable.</p>
+                    <p className="text-xs">The document is still fully viewable and downloadable.</p>
                   </div>
                 }
               >
-                <DocumentComments 
-                  documentId={document.id}
-                  teamId={document.team_id}
-                  currentUserId={currentUserId}
-                />
+                {document?.id && document?.team_id ? (
+                  <DocumentComments 
+                    documentId={String(document.id)}
+                    teamId={String(document.team_id)}
+                    currentUserId={currentUserId || undefined}
+                  />
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    <p className="text-sm">Comments not available - missing document information.</p>
+                  </div>
+                )}
               </ErrorBoundary>
             </div>
 

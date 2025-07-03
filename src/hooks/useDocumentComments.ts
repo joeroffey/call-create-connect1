@@ -20,38 +20,61 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
   const [comments, setComments] = useState<DocumentComment[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentCount, setCommentCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchComments = async () => {
-    if (!documentId || !teamId) {
+    // Early validation with comprehensive safety checks
+    if (!documentId || !teamId || typeof documentId !== 'string' || typeof teamId !== 'string') {
+      console.warn('Invalid props for useDocumentComments:', { documentId, teamId });
       setComments([]);
       setCommentCount(0);
       setLoading(false);
+      setError(null);
       return;
     }
 
     setLoading(true);
+    setError(null);
+    
     try {
       console.log('Fetching comments for document:', documentId, 'team:', teamId);
-      console.log('Document ID type:', typeof documentId, 'Team ID type:', typeof teamId);
       
-      // Get comments with comprehensive error handling
-      const { data: commentsData, error: commentsError } = await supabase
-        .from('comments')
-        .select('*')
-        .eq('team_id', teamId)
-        .eq('target_type', 'completion_document')
-        .eq('target_id', documentId)
-        .order('created_at', { ascending: true });
+      // Validate IDs are proper UUIDs
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(documentId) || !uuidRegex.test(teamId)) {
+        console.warn('Invalid UUID format for documentId or teamId');
+        setComments([]);
+        setCommentCount(0);
+        setLoading(false);
+        return;
+      }
+      
+      // Get comments with timeout and retry logic
+      let commentsData, commentsError;
+      try {
+        const result = await supabase
+          .from('comments')
+          .select('*')
+          .eq('team_id', teamId)
+          .eq('target_type', 'completion_document')
+          .eq('target_id', documentId)
+          .order('created_at', { ascending: true });
+        
+        commentsData = result.data;
+        commentsError = result.error;
+      } catch (queryError) {
+        console.error('Database query failed:', queryError);
+        throw new Error('Failed to fetch comments from database');
+      }
 
       if (commentsError) {
         console.error('Comments query error:', commentsError);
-        throw commentsError;
+        throw new Error(`Database error: ${commentsError.message}`);
       }
 
-      console.log('Comments data:', commentsData?.length || 0, 'comments found');
-
-      if (!commentsData || commentsData.length === 0) {
+      // Handle empty results safely
+      if (!commentsData || !Array.isArray(commentsData) || commentsData.length === 0) {
         console.log('No comments found, setting empty state');
         setComments([]);
         setCommentCount(0);
@@ -61,61 +84,75 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
 
       setCommentCount(commentsData.length);
 
-      // Get unique author IDs with null check
+      // Get unique author IDs with comprehensive validation
       const authorIds = [...new Set(
         commentsData
-          .map(c => c?.author_id)
-          .filter(id => id != null)
+          .filter(c => c && typeof c === 'object' && c.author_id)
+          .map(c => c.author_id)
+          .filter(id => id && typeof id === 'string' && uuidRegex.test(id))
       )];
       
-      console.log('Fetching profiles for author IDs:', authorIds);
-      
-      // Get profiles for all authors with fallback
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name')
-        .in('user_id', authorIds);
-
-      if (profilesError) {
-        console.error('Profiles query error:', profilesError);
-        // Don't throw, continue with empty profiles
+      if (authorIds.length === 0) {
+        console.log('No valid author IDs found');
+        setComments([]);
+        setCommentCount(0);
+        setLoading(false);
+        return;
       }
-
-      console.log('Profiles data:', profilesData?.length || 0, 'profiles found');
+      
+      // Get profiles with error handling
+      let profilesData = [];
+      try {
+        const profileResult = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', authorIds);
+        
+        if (profileResult.error) {
+          console.error('Profiles query error:', profileResult.error);
+          // Continue without profiles rather than failing
+        } else {
+          profilesData = profileResult.data || [];
+        }
+      } catch (profileError) {
+        console.error('Profile fetch failed:', profileError);
+        // Continue without profiles
+      }
 
       // Create profiles lookup with safety checks
       const profilesLookup = new Map();
-      if (profilesData && Array.isArray(profilesData)) {
+      if (Array.isArray(profilesData)) {
         profilesData.forEach(profile => {
-          if (profile?.user_id) {
+          if (profile && profile.user_id && typeof profile.user_id === 'string') {
             profilesLookup.set(profile.user_id, profile);
           }
         });
       }
 
-      // Organize comments into threads with comprehensive safety checks
+      // Process comments with comprehensive error handling
       const commentsMap = new Map<string, DocumentComment>();
       const rootComments: DocumentComment[] = [];
 
-      commentsData.forEach((comment: any) => {
-        if (!comment?.id) {
-          console.warn('Skipping comment with missing ID:', comment);
-          return;
-        }
-
+      commentsData.forEach((comment: any, index: number) => {
         try {
+          // Validate comment structure
+          if (!comment || typeof comment !== 'object' || !comment.id) {
+            console.warn(`Skipping invalid comment at index ${index}:`, comment);
+            return;
+          }
+
           const profile = profilesLookup.get(comment.author_id);
           const processedComment: DocumentComment = {
-            id: comment.id,
-            content: comment.content || '',
-            author_id: comment.author_id || '',
-            team_id: comment.team_id || '',
-            target_id: comment.target_id || '',
-            target_type: comment.target_type || '',
-            parent_id: comment.parent_id || null,
+            id: String(comment.id),
+            content: String(comment.content || ''),
+            author_id: String(comment.author_id || ''),
+            team_id: String(comment.team_id || teamId),
+            target_id: String(comment.target_id || documentId),
+            target_type: String(comment.target_type || 'completion_document'),
+            parent_id: comment.parent_id ? String(comment.parent_id) : null,
             created_at: comment.created_at || new Date().toISOString(),
             updated_at: comment.updated_at || new Date().toISOString(),
-            author_name: profile?.full_name || 'Unknown User',
+            author_name: (profile && profile.full_name) ? String(profile.full_name) : 'Unknown User',
             replies: []
           };
           
@@ -125,38 +162,44 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
             rootComments.push(processedComment);
           }
         } catch (commentError) {
-          console.error('Error processing comment:', comment.id, commentError);
+          console.error(`Error processing comment at index ${index}:`, commentError);
+          // Continue processing other comments
         }
       });
 
       // Add replies to their parent comments with safety checks
-      commentsData.forEach((comment: any) => {
-        if (!comment?.id || !comment?.parent_id) return;
-        
+      commentsData.forEach((comment: any, index: number) => {
         try {
-          if (commentsMap.has(comment.parent_id)) {
-            const parentComment = commentsMap.get(comment.parent_id);
-            const childComment = commentsMap.get(comment.id);
-            if (parentComment && childComment && parentComment.replies) {
-              parentComment.replies.push(childComment);
-            }
+          if (!comment?.id || !comment?.parent_id) return;
+          
+          const parentComment = commentsMap.get(comment.parent_id);
+          const childComment = commentsMap.get(comment.id);
+          
+          if (parentComment && childComment && Array.isArray(parentComment.replies)) {
+            parentComment.replies.push(childComment);
           }
         } catch (replyError) {
-          console.error('Error processing reply:', comment.id, replyError);
+          console.error(`Error processing reply at index ${index}:`, replyError);
         }
       });
 
-      console.log('Processed comments:', rootComments.length, 'root comments');
+      console.log('Successfully processed comments:', rootComments.length, 'root comments');
       setComments(rootComments);
+      
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       console.error('Critical error fetching document comments:', error);
+      
       // Set safe fallback state
       setComments([]);
       setCommentCount(0);
+      setError(errorMessage);
+      
+      // Show user-friendly error without blocking UI
       toast({
         variant: "destructive",
-        title: "Error loading comments",
-        description: "Comments could not be loaded. The document is still viewable.",
+        title: "Comments temporarily unavailable",
+        description: "The document can still be viewed. Please try refreshing.",
       });
     } finally {
       setLoading(false);
@@ -250,9 +293,10 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
   }, [documentId, teamId]);
 
   return {
-    comments,
-    commentCount,
-    loading,
+    comments: comments || [],
+    commentCount: commentCount || 0,
+    loading: Boolean(loading),
+    error,
     addComment,
     deleteComment,
     refetch: fetchComments
