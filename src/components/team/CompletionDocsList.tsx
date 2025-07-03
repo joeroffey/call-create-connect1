@@ -96,9 +96,10 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
                     <img
                       src={documentUrl}
                       alt={document.file_name}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
                       onError={() => handleImageError(document.id)}
                       loading="lazy"
+                      style={{ transform: 'scale(1.2)' }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
