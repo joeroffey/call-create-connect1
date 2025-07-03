@@ -186,7 +186,7 @@ export const CompletionDocsUpload = ({
             <input
               type="file"
               multiple
-              accept="*/*"
+              accept="image/*,.pdf,.doc,.docx,.txt"
               onChange={(e) => handleFileSelect(e.target.files)}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
