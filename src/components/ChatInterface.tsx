@@ -690,9 +690,9 @@ Would you like me to help you plan any work items or discuss project timeline ma
           )}
 
           {/* Fixed Input Area */}
-          <div className="border-t border-gray-800/30 p-3 sm:p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl safe-area-bottom">
+          <div className="chat-input-container border-t border-gray-800/30 p-3 sm:p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl safe-area-bottom">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="flex items-end space-x-2 sm:space-x-3">
                 {projectId && (
                   <button
                     onClick={handleDocumentUpload}
@@ -719,7 +719,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <div className="flex-1 relative flex items-center min-w-0">
+                <div className="flex-1 relative min-w-0">
                   <textarea
                     ref={inputRef}
                     value={newMessage}

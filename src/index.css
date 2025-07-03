@@ -181,18 +181,28 @@
   /* Mobile web specific input handling */
   @media screen and (max-width: 768px) {
     .safe-area-bottom {
-      padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+      padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
+      margin-bottom: env(keyboard-inset-height, 0px);
     }
     
     /* Prevent zoom on input focus for mobile browsers */
     input[type="text"],
-    input[type="email"],
+    input[type="email"], 
     input[type="password"],
     textarea,
     select {
-      font-size: 16px;
+      font-size: 16px !important;
       -webkit-appearance: none;
-      border-radius: 0;
+      border-radius: 8px;
+    }
+    
+    /* Ensure chat input container is properly positioned on mobile */
+    .chat-input-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
     }
   }
 
