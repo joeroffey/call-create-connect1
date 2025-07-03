@@ -37,33 +37,9 @@ export const DocumentComments = ({ documentId, teamId, currentUserId }: Document
   const [isOpen, setIsOpen] = useState(false);
   const [componentError, setComponentError] = useState<string | null>(null);
   
-  // Wrap hook in try-catch to prevent component crashes
-  let hookResult;
-  try {
-    hookResult = useDocumentComments(documentId, teamId);
-  } catch (error) {
-    console.error('Error in useDocumentComments hook:', error);
-    setComponentError(error instanceof Error ? error.message : 'Unknown error');
-    hookResult = {
-      comments: [],
-      commentCount: 0,
-      loading: false,
-      addComment: async () => {},
-      deleteComment: async () => {}
-    };
-  }
+  const hookResult = useDocumentComments(documentId, teamId);
   
   const { comments, commentCount, loading, addComment, deleteComment, error } = hookResult;
-
-  // If there's a component error, show fallback UI
-  if (componentError) {
-    return (
-      <div className="p-4 text-center text-muted-foreground">
-        <p className="text-sm">Comments are temporarily unavailable.</p>
-        <p className="text-xs mt-1">Error: {componentError}</p>
-      </div>
-    );
-  }
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;

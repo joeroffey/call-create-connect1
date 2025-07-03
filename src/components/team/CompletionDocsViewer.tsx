@@ -109,7 +109,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] w-[95vw] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] w-[90vw] overflow-hidden">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
@@ -130,7 +130,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
             </div>
           </DialogHeader>
 
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4 sm:space-y-6 overflow-y-auto max-h-[75vh]">
             {/* Document Description */}
             {document.description && (
               <div className="p-3 sm:p-4 bg-muted/50 rounded-lg">
@@ -146,12 +146,12 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
                   <img
                     src={fileUrl}
                     alt={document.file_name}
-                    className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mx-auto block"
+                    className="w-full h-auto max-h-[40vh] object-contain mx-auto block"
                     onError={() => setImageError(true)}
                   />
                 </div>
               ) : isPDF ? (
-                <div className="h-[50vh] sm:h-[60vh] w-full">
+                <div className="h-[40vh] w-full">
                   <iframe
                     src={`${fileUrl}#toolbar=1&navpanes=0&scrollbar=1`}
                     className="w-full h-full border-0"
