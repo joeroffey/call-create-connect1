@@ -79,32 +79,31 @@ export const CompletionDocsViewer = ({ document, onClose }: CompletionDocsViewer
 
   return (
     <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] w-[95vw] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <DialogTitle className="text-xl font-semibold pr-8">
+              <DialogTitle className="text-lg sm:text-xl font-semibold pr-8 break-words">
                 {document.file_name}
               </DialogTitle>
-              <div className="flex items-center space-x-4 mt-2">
-                <Badge variant="secondary">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                <Badge variant="secondary" className="w-fit">
                   {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
                 </Badge>
-                <span className="text-sm text-muted-foreground">
-                  {formatFileSize(document.file_size)}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  {formatDate(document.created_at)}
-                </span>
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                  <span>{formatFileSize(document.file_size)}</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>{formatDate(document.created_at)}</span>
+                </div>
               </div>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Document Description */}
           {document.description && (
-            <div className="p-4 bg-muted/50 rounded-lg">
+            <div className="p-3 sm:p-4 bg-muted/50 rounded-lg">
               <h4 className="font-medium text-sm mb-2">Description</h4>
               <p className="text-sm text-muted-foreground">{document.description}</p>
             </div>
@@ -113,32 +112,32 @@ export const CompletionDocsViewer = ({ document, onClose }: CompletionDocsViewer
           {/* Document Preview */}
           <div className="border rounded-lg overflow-hidden">
             {isImage && !imageError ? (
-              <div className="relative">
+              <div className="relative bg-muted">
                 <img
                   src={fileUrl}
                   alt={document.file_name}
-                  className="w-full h-auto max-h-[600px] object-contain bg-muted"
+                  className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mx-auto block"
                   onError={() => setImageError(true)}
                 />
               </div>
             ) : isPDF ? (
-              <div className="h-[600px] w-full">
+              <div className="h-[50vh] sm:h-[60vh] w-full">
                 <iframe
                   src={`${fileUrl}#toolbar=1&navpanes=0&scrollbar=1`}
-                  className="w-full h-full"
+                  className="w-full h-full border-0"
                   title={document.file_name}
                 />
               </div>
             ) : (
-              <div className="p-12 text-center bg-muted/50">
-                <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
+              <div className="p-6 sm:p-12 text-center bg-muted/50">
+                <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
                   Preview not available
                 </h3>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   This file type cannot be previewed in the browser.
                 </p>
-                <Button onClick={handleDownload} disabled={loading}>
+                <Button onClick={handleDownload} disabled={loading} size="sm">
                   <Download className="w-4 h-4 mr-2" />
                   Download to view
                 </Button>
@@ -157,21 +156,12 @@ export const CompletionDocsViewer = ({ document, onClose }: CompletionDocsViewer
           )}
 
           {/* Actions */}
-          <div className="flex justify-between items-center pt-4 border-t">
-            <div className="flex space-x-3">
-              <Button onClick={handleDownload} disabled={loading} variant="outline">
+          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button onClick={handleDownload} disabled={loading} variant="outline" size="sm">
                 <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
-              {(isImage || isPDF) && (
-                <Button
-                  onClick={() => window.open(fileUrl, '_blank')}
-                  variant="outline"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Open in new tab
-                </Button>
-              )}
             </div>
 
             <AlertDialog>
@@ -181,16 +171,19 @@ export const CompletionDocsViewer = ({ document, onClose }: CompletionDocsViewer
                   Delete
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="w-[90vw] max-w-md">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Delete Document</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogDescription className="break-words">
                     Are you sure you want to delete "{document.file_name}"? This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDelete} 
+                    className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
