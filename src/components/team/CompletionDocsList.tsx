@@ -120,7 +120,7 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
                   
                   {/* Category Badge */}
                   <div className="absolute top-3 left-3">
-                    <Badge variant="secondary" className="text-xs bg-background/90 text-foreground shadow-sm border-0">
+                    <Badge variant="default" className="text-xs shadow-sm">
                       {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
                     </Badge>
                   </div>
