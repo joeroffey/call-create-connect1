@@ -10,7 +10,8 @@ import {
   MessageSquare,
   Calendar,
   FileText,
-  Plus
+  Plus,
+  CheckCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ import BasicTeamWork from '@/components/team/BasicTeamWork';
 import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
+import { TeamCompletionDocsView } from '@/components/team/TeamCompletionDocsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 
 interface TeamScreenProps {
@@ -35,7 +37,7 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'settings'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'completion-docs' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
   
@@ -396,6 +398,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'projects', label: 'Projects', icon: FileText },
+                  { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
                   { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                   { id: 'schedule', label: 'Schedule', icon: Calendar },
                   { id: 'comments', label: 'Comments', icon: MessageSquare }
@@ -439,6 +442,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               {[
                 { id: 'overview', label: 'Overview', icon: FileText },
                 { id: 'projects', label: 'Projects', icon: FileText },
+                { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
                 { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                 { id: 'schedule', label: 'Schedule', icon: Calendar },
                 { id: 'comments', label: 'Comments', icon: MessageSquare },
@@ -514,6 +518,9 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               teamId={selectedTeamId} 
               teamName={selectedTeam.name}
             />
+          )}
+          {activeView === 'completion-docs' && selectedTeamId && (
+            <TeamCompletionDocsView teamId={selectedTeamId} />
           )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings
