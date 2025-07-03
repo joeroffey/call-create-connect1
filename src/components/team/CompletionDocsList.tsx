@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Image, Eye, Calendar } from 'lucide-react';
+import { FileText, Image, Eye, Calendar, MessageCircle, User } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { type CompletionDocument } from '@/hooks/useCompletionDocuments';
 import { getCompletionDocumentUrl, formatFileSize, isImageFile, getFileExtension } from '@/utils/documentUtils';
+import { useDocumentComments } from '@/hooks/useDocumentComments';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CompletionDocsListProps {
   documents: CompletionDocument[];
   loading: boolean;
   onViewDocument: (document: CompletionDocument) => void;
+}
+
+interface UploaderProfile {
+  user_id: string;
+  full_name: string | null;
 }
 
 const categoryLabels = {
@@ -23,9 +31,51 @@ const categoryLabels = {
 
 export const CompletionDocsList = ({ documents, loading, onViewDocument }: CompletionDocsListProps) => {
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+  const [uploaderProfiles, setUploaderProfiles] = useState<Map<string, UploaderProfile>>(new Map());
 
   const handleImageError = (documentId: string) => {
     setImageErrors(prev => new Set(prev).add(documentId));
+  };
+
+  // Fetch uploader profiles
+  useEffect(() => {
+    const fetchUploaderProfiles = async () => {
+      if (documents.length === 0) return;
+
+      const uploaderIds = [...new Set(documents.map(doc => doc.uploaded_by))];
+      
+      try {
+        const { data: profiles, error } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', uploaderIds);
+
+        if (error) {
+          console.error('Error fetching uploader profiles:', error);
+          return;
+        }
+
+        const profilesMap = new Map<string, UploaderProfile>();
+        profiles?.forEach(profile => {
+          profilesMap.set(profile.user_id, profile);
+        });
+        
+        setUploaderProfiles(profilesMap);
+      } catch (error) {
+        console.error('Error fetching uploader profiles:', error);
+      }
+    };
+
+    fetchUploaderProfiles();
+  }, [documents]);
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   const formatDate = (dateString: string) => {
@@ -77,18 +127,64 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
         const isImage = isImageFile(document.file_type);
         const hasImageError = imageErrors.has(document.id);
         const documentUrl = getCompletionDocumentUrl(document.file_path);
+        const uploaderProfile = uploaderProfiles.get(document.uploaded_by);
+        const uploaderName = uploaderProfile?.full_name || 'Unknown User';
 
         return (
-          <motion.div
+          <DocumentCard
             key={document.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card 
-              className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 hover:border-primary/20 w-full"
-              onClick={() => onViewDocument(document)}
-            >
+            document={document}
+            isImage={isImage}
+            hasImageError={hasImageError}
+            documentUrl={documentUrl}
+            uploaderName={uploaderName}
+            index={index}
+            onViewDocument={onViewDocument}
+            onImageError={() => handleImageError(document.id)}
+            getInitials={getInitials}
+            formatDate={formatDate}
+          />
+        );
+      })}
+    </div>
+  );
+};
+
+const DocumentCard = ({ 
+  document, 
+  isImage, 
+  hasImageError, 
+  documentUrl, 
+  uploaderName, 
+  index, 
+  onViewDocument, 
+  onImageError, 
+  getInitials,
+  formatDate
+}: {
+  document: CompletionDocument;
+  isImage: boolean;
+  hasImageError: boolean;
+  documentUrl: string;
+  uploaderName: string;
+  index: number;
+  onViewDocument: (doc: CompletionDocument) => void;
+  onImageError: (id: string) => void;
+  getInitials: (name: string) => string;
+  formatDate: (dateString: string) => string;
+}) => {
+  const { commentCount } = useDocumentComments(document.id, document.team_id);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+    >
+      <Card 
+        className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 hover:border-primary/20 w-full"
+        onClick={() => onViewDocument(document)}
+      >
               <CardContent className="p-0 w-full">
                 {/* Thumbnail Area */}
                 <div className="h-48 relative bg-gradient-to-br from-muted/30 to-muted/60 w-full">
@@ -97,7 +193,7 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
                       src={documentUrl}
                       alt={document.file_name}
                       className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
-                      onError={() => handleImageError(document.id)}
+                      onError={() => onImageError(document.id)}
                       loading="lazy"
                       style={{ transform: 'scale(1.2)' }}
                     />
@@ -124,6 +220,14 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
                     <Badge variant="default" className="text-xs shadow-sm">
                       {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
                     </Badge>
+                  </div>
+
+                  {/* User Badge */}
+                  <div className="absolute top-3 right-3">
+                    <div className="flex items-center gap-1 bg-green-500/90 text-white text-xs px-2 py-1 rounded-md shadow-sm">
+                      <User className="w-3 h-3" />
+                      <span className="font-medium">{uploaderName.split(' ')[0]}</span>
+                    </div>
                   </div>
 
                   {/* Overlay on hover */}
@@ -156,9 +260,17 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
                   )}
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/50">
-                    <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{formatDate(document.created_at)}</span>
+                    <div className="flex items-center space-x-3 text-xs text-muted-foreground">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>{formatDate(document.created_at)}</span>
+                      </div>
+                      {commentCount > 0 && (
+                        <div className="flex items-center space-x-1">
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>{commentCount}</span>
+                        </div>
+                      )}
                     </div>
                     <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
                       View →
@@ -169,7 +281,4 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
             </Card>
           </motion.div>
         );
-      })}
-    </div>
-  );
-};
+      };

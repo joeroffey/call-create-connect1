@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, Download, Eye, Trash2, FileText, Image, AlertCircle } from 'lucide-react';
+import { X, Download, Eye, Trash2, FileText, Image, AlertCircle, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useCompletionDocuments, type CompletionDocument } from '@/hooks/useCompletionDocuments';
+import { EditDocumentModal } from './EditDocumentModal';
+import { DocumentComments } from './DocumentComments';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CompletionDocsViewerProps {
   document: CompletionDocument;
@@ -25,7 +28,17 @@ const categoryLabels = {
 export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: CompletionDocsViewerProps) => {
   const [loading, setLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { deleteDocument, getDocumentUrl } = useCompletionDocuments(document.project_id);
+
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUserId(user?.id || null);
+    };
+    getCurrentUser();
+  }, []);
 
   const fileUrl = getDocumentUrl(document.file_path);
   const isImage = document.file_type.startsWith('image/');
@@ -80,120 +93,144 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] w-[95vw] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <DialogTitle className="text-lg sm:text-xl font-semibold pr-8 break-words">
-                {document.file_name}
-              </DialogTitle>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
-                <Badge variant="secondary" className="w-fit">
-                  {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
-                </Badge>
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                  <span>{formatFileSize(document.file_size)}</span>
-                  <span className="hidden sm:inline">•</span>
-                  <span>{formatDate(document.created_at)}</span>
+    <>
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent className="max-w-4xl max-h-[90vh] w-[95vw] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <DialogTitle className="text-lg sm:text-xl font-semibold pr-8 break-words">
+                  {document.file_name}
+                </DialogTitle>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
+                  <Badge variant="secondary" className="w-fit">
+                    {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
+                  </Badge>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                    <span>{formatFileSize(document.file_size)}</span>
+                    <span className="hidden sm:inline">•</span>
+                    <span>{formatDate(document.created_at)}</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
 
-        <div className="space-y-4 sm:space-y-6">
-          {/* Document Description */}
-          {document.description && (
-            <div className="p-3 sm:p-4 bg-muted/50 rounded-lg">
-              <h4 className="font-medium text-sm mb-2">Description</h4>
-              <p className="text-sm text-muted-foreground">{document.description}</p>
-            </div>
-          )}
-
-          {/* Document Preview */}
-          <div className="border rounded-lg overflow-hidden">
-            {isImage && !imageError ? (
-              <div className="relative bg-muted">
-                <img
-                  src={fileUrl}
-                  alt={document.file_name}
-                  className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mx-auto block"
-                  onError={() => setImageError(true)}
-                />
-              </div>
-            ) : isPDF ? (
-              <div className="h-[50vh] sm:h-[60vh] w-full">
-                <iframe
-                  src={`${fileUrl}#toolbar=1&navpanes=0&scrollbar=1`}
-                  className="w-full h-full border-0"
-                  title={document.file_name}
-                />
-              </div>
-            ) : (
-              <div className="p-6 sm:p-12 text-center bg-muted/50">
-                <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
-                  Preview not available
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  This file type cannot be previewed in the browser.
-                </p>
-                <Button onClick={handleDownload} disabled={loading} size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Download to view
-                </Button>
+          <div className="space-y-4 sm:space-y-6">
+            {/* Document Description */}
+            {document.description && (
+              <div className="p-3 sm:p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium text-sm mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground">{document.description}</p>
               </div>
             )}
-          </div>
 
-          {/* Error handling for images */}
-          {isImage && imageError && (
-            <Alert>
-              <AlertCircle className="w-4 h-4" />
-              <AlertDescription>
-                Unable to load image preview. You can still download the file to view it.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button onClick={handleDownload} disabled={loading} variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                Download
-              </Button>
+            {/* Document Preview */}
+            <div className="border rounded-lg overflow-hidden">
+              {isImage && !imageError ? (
+                <div className="relative bg-muted">
+                  <img
+                    src={fileUrl}
+                    alt={document.file_name}
+                    className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain mx-auto block"
+                    onError={() => setImageError(true)}
+                  />
+                </div>
+              ) : isPDF ? (
+                <div className="h-[50vh] sm:h-[60vh] w-full">
+                  <iframe
+                    src={`${fileUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+                    className="w-full h-full border-0"
+                    title={document.file_name}
+                  />
+                </div>
+              ) : (
+                <div className="p-6 sm:p-12 text-center bg-muted/50">
+                  <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
+                    Preview not available
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    This file type cannot be previewed in the browser.
+                  </p>
+                  <Button onClick={handleDownload} disabled={loading} size="sm">
+                    <Download className="w-4 h-4 mr-2" />
+                    Download to view
+                  </Button>
+                </div>
+              )}
             </div>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
+            {/* Error handling for images */}
+            {isImage && imageError && (
+              <Alert>
+                <AlertCircle className="w-4 h-4" />
+                <AlertDescription>
+                  Unable to load image preview. You can still download the file to view it.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Comments Section */}
+            <div className="border-t pt-4">
+              <DocumentComments 
+                documentId={document.id}
+                teamId={document.team_id}
+                currentUserId={currentUserId}
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Button onClick={handleDownload} disabled={loading} variant="outline" size="sm">
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="w-[90vw] max-w-md">
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Document</AlertDialogTitle>
-                  <AlertDialogDescription className="break-words">
-                    Are you sure you want to delete "{document.file_name}"? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                  <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-                  <AlertDialogAction 
-                    onClick={handleDelete} 
-                    className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
+                <Button onClick={() => setShowEditModal(true)} variant="outline" size="sm">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+              </div>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="w-4 h-4 mr-2" />
                     Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="w-[90vw] max-w-md">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Document</AlertDialogTitle>
+                    <AlertDialogDescription className="break-words">
+                      Are you sure you want to delete "{document.file_name}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={handleDelete} 
+                      className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <EditDocumentModal
+          document={document}
+          onClose={() => setShowEditModal(false)}
+          onDocumentUpdated={onDocumentDeleted} // Reuse the refresh callback
+        />
+      )}
+    </>
   );
 };

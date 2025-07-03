@@ -173,6 +173,39 @@ export const useCompletionDocuments = (projectId?: string | null) => {
     }
   };
 
+  const updateDocument = async (
+    documentId: string,
+    updates: {
+      display_name?: string;
+      category?: string;
+      description?: string | null;
+    }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('project_completion_documents')
+        .update(updates)
+        .eq('id', documentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Success',
+        description: 'Document updated successfully',
+      });
+
+      fetchDocuments(); // Refresh the list
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update document';
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      throw err;
+    }
+  };
+
   const deleteDocument = async (documentId: string) => {
     try {
       // Get document details first
@@ -232,6 +265,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
     isLoading,
     error,
     uploadDocument,
+    updateDocument,
     deleteDocument,
     getDocumentUrl,
     refetch: fetchDocuments,
