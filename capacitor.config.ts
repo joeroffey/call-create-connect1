@@ -10,15 +10,6 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   bundledWebRuntime: false,
-  ios: {
-    // iPhone-only configuration
-    scheme: 'eezybuild',
-    contentInset: 'automatic',
-    scrollEnabled: true,
-    allowsLinkPreview: false,
-    // Force iPhone-only deployment target
-    minVersion: '13.0'
-  },
   plugins: {
     StatusBar: {
       overlaysWebView: false,
@@ -26,8 +17,7 @@ const config: CapacitorConfig = {
       style: 'Dark'
     },
     Keyboard: {
-      resize: 'ionic',
-      resizeOnFullScreen: true
+      resize: 'ionic'
     },
     App: {
       appUrlOpen: {

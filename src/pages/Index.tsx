@@ -13,12 +13,10 @@ import ProjectsScreen from '../components/ProjectsScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
 import NotificationsScreen from '../components/NotificationsScreen';
 import TeamScreen from '../components/TeamScreen';
-import MobileBrowserBlock from '../components/MobileBrowserBlock';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDeepLinking } from '@/hooks/useDeepLinking';
-import { usePlatformDetection } from '../hooks/usePlatformDetection';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -36,9 +34,6 @@ const Index = () => {
 
   // Set up deep linking for mobile app
   useDeepLinking();
-
-  // Platform detection
-  const { isMobileBrowser } = usePlatformDetection();
 
   useEffect(() => {
     // Check for successful subscription in URL and handle it
@@ -235,11 +230,6 @@ const Index = () => {
     setActiveTab('subscription');
     console.log('✅ activeTab should now be: subscription');
   };
-
-  // Block mobile browsers
-  if (isMobileBrowser) {
-    return <MobileBrowserBlock />;
-  }
 
   if (loading) {
     return (
