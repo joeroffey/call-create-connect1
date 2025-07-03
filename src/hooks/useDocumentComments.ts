@@ -199,7 +199,11 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
   useEffect(() => {
     if (!documentId || !teamId) return;
 
-      const channelName = `document-comments-${documentId}-${teamId}`;
+    const channelName = `document-comments-${documentId}-${teamId}-${Date.now()}`;
+    
+    // Remove any existing channels first
+    supabase.removeAllChannels();
+    
     const channel = supabase
       .channel(channelName)
       .on('postgres_changes', {
