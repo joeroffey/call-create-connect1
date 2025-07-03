@@ -1,127 +1,186 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { nativeCapabilities } from '@/services/nativeCapabilities';
+import { ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { Style as StatusBarStyle } from '@capacitor/status-bar';
 
 /**
  * React hook for accessing native iOS capabilities
  * Provides a clean interface for using native features in React components
  */
-export const useNativeCapabilities = () => {
-  const [isNativeApp, setIsNativeApp] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
-  const [deviceInfo, setDeviceInfo] = useState<any>(null);
+export interface UseNativeCapabilitiesReturn {
+  // Platform detection
+  isNative: boolean;
+  isIOS: boolean;
+  isAndroid: boolean;
+  isWeb: boolean;
+  
+  // Device info
+  deviceInfo: any | null;
+  deviceId: string | null;
+  batteryInfo: any | null;
+  
+  // Network status
+  networkStatus: any | null;
+  isOnline: boolean;
+  
+  // Methods
+  hapticFeedback: {
+    light: () => Promise<void>;
+    medium: () => Promise<void>;
+    heavy: () => Promise<void>;
+    selection: () => Promise<void>;
+    success: () => Promise<void>;
+    error: () => Promise<void>;
+    warning: () => Promise<void>;
+  };
+  statusBar: {
+    setStyle: (style: StatusBarStyle) => Promise<void>;
+    setBackgroundColor: (color: string) => Promise<void>;
+    hide: () => Promise<void>;
+    show: () => Promise<void>;
+  };
+  splashScreen: {
+    hide: () => Promise<void>;
+    show: () => Promise<void>;
+  };
+  
+  // Lifecycle
+  refreshDeviceInfo: () => Promise<void>;
+  refreshNetworkStatus: () => Promise<void>;
+  initialize: () => Promise<void>;
+}
 
-  useEffect(() => {
-    // Initialize native capabilities
-    const initNative = async () => {
-      try {
-        // Check if running as native app
-        const isNative = !!(window as any).Capacitor;
-        setIsNativeApp(isNative);
+export const useNativeCapabilities = (): UseNativeCapabilitiesReturn => {
+  const [deviceInfo, setDeviceInfo] = useState<any | null>(null);
+  const [deviceId, setDeviceId] = useState<string | null>(null);
+  const [batteryInfo, setBatteryInfo] = useState<any | null>(null);
+  const [networkStatus, setNetworkStatus] = useState<any | null>(null);
+  
+  // Platform detection from service
+  const { isNative, isIOS, isAndroid, isWeb } = nativeCapabilities;
+  
+  // Calculate online status
+  const isOnline = networkStatus?.connected ?? true;
 
-        if (isNative) {
-          // Dynamically import native capabilities to avoid errors in web environment
-          const { nativeCapabilities } = await import('../services/nativeCapabilities');
-          
-          // Get device info
-          const deviceInfo = nativeCapabilities.getDeviceInfo();
-          setDeviceInfo(deviceInfo);
-          setIsIOS(deviceInfo?.platform === 'ios');
-
-          // Check network status
-          const networkStatus = await nativeCapabilities.getNetworkStatus();
-          setIsOnline(networkStatus.connected);
-
-          console.log('Native capabilities initialized in hook');
-        }
-      } catch (error) {
-        console.error('Error initializing native capabilities:', error);
-      }
-    };
-
-    initNative();
+  // Initialize device info on mount
+  const refreshDeviceInfo = useCallback(async () => {
+    try {
+      const [info, id, battery] = await Promise.all([
+        nativeCapabilities.getDeviceInfo(),
+        nativeCapabilities.getDeviceId(),
+        nativeCapabilities.getBatteryInfo()
+      ]);
+      
+      setDeviceInfo(info);
+      setDeviceId(id);
+      setBatteryInfo(battery);
+    } catch (error) {
+      console.warn('Failed to refresh device info:', error);
+    }
   }, []);
 
-  /**
-   * Provide haptic feedback
-   */
-  const hapticFeedback = async (type: 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error') => {
-    if (!isNativeApp || !isIOS) return;
-    
+  // Refresh network status
+  const refreshNetworkStatus = useCallback(async () => {
     try {
-      const { nativeCapabilities } = await import('../services/nativeCapabilities');
-      await nativeCapabilities.hapticFeedback(type);
+      const status = await nativeCapabilities.getNetworkStatus();
+      setNetworkStatus(status);
     } catch (error) {
-      console.error('Error providing haptic feedback:', error);
+      console.warn('Failed to refresh network status:', error);
     }
-  };
+  }, []);
 
-  /**
-   * Set status bar color
-   */
-  const setStatusBarColor = async (color: string, isDark: boolean = false) => {
-    if (!isNativeApp || !isIOS) return;
-    
+  // Initialize native features
+  const initialize = useCallback(async () => {
     try {
-      const { nativeCapabilities } = await import('../services/nativeCapabilities');
-      await nativeCapabilities.setStatusBarColor(color, isDark);
+      await nativeCapabilities.initializeNativeFeatures();
+      await Promise.all([refreshDeviceInfo(), refreshNetworkStatus()]);
     } catch (error) {
-      console.error('Error setting status bar color:', error);
+      console.warn('Failed to initialize native capabilities:', error);
     }
+  }, [refreshDeviceInfo, refreshNetworkStatus]);
+
+  // Haptic feedback methods
+  const hapticFeedback = {
+    light: useCallback(() => nativeCapabilities.hapticImpact(ImpactStyle.Light), []),
+    medium: useCallback(() => nativeCapabilities.hapticImpact(ImpactStyle.Medium), []),
+    heavy: useCallback(() => nativeCapabilities.hapticImpact(ImpactStyle.Heavy), []),
+    selection: useCallback(() => nativeCapabilities.hapticSelection(), []),
+    success: useCallback(() => nativeCapabilities.hapticNotification(NotificationType.Success), []),
+    error: useCallback(() => nativeCapabilities.hapticNotification(NotificationType.Error), []),
+    warning: useCallback(() => nativeCapabilities.hapticNotification(NotificationType.Warning), []),
   };
 
-  /**
-   * Handle button press with native feedback
-   */
-  const handleNativeButtonPress = async (callback: () => void, feedbackType: 'light' | 'medium' | 'heavy' = 'light') => {
-    await hapticFeedback(feedbackType);
-    callback();
+  // Status bar methods
+  const statusBar = {
+    setStyle: useCallback((style: StatusBarStyle) => nativeCapabilities.setStatusBarStyle(style), []),
+    setBackgroundColor: useCallback((color: string) => nativeCapabilities.setStatusBarBackgroundColor(color), []),
+    hide: useCallback(() => nativeCapabilities.hideStatusBar(), []),
+    show: useCallback(() => nativeCapabilities.showStatusBar(), []),
   };
 
-  /**
-   * Handle successful action with native feedback
-   */
-  const handleNativeSuccess = async (callback?: () => void) => {
-    await hapticFeedback('success');
-    if (callback) callback();
+  // Splash screen methods
+  const splashScreen = {
+    hide: useCallback(() => nativeCapabilities.hideSplashScreen(), []),
+    show: useCallback(() => nativeCapabilities.showSplashScreen(), []),
   };
 
-  /**
-   * Handle error with native feedback
-   */
-  const handleNativeError = async (callback?: () => void) => {
-    await hapticFeedback('error');
-    if (callback) callback();
-  };
+  // Set up listeners on mount
+  useEffect(() => {
+    const cleanup: (() => void)[] = [];
 
-  /**
-   * Get app info for display
-   */
-  const getAppInfo = () => {
-    return {
-      isNativeApp,
-      isIOS,
-      isOnline,
-      deviceInfo,
-      platform: deviceInfo?.platform || 'web',
-      model: deviceInfo?.model || 'Unknown',
-      operatingSystem: deviceInfo?.operatingSystem || 'Web',
-      osVersion: deviceInfo?.osVersion || 'Unknown'
+    // Initialize on mount
+    initialize();
+
+    // Set up network status listener
+    if (isNative) {
+      const networkCleanup = nativeCapabilities.addNetworkListener((status) => {
+        setNetworkStatus(status);
+      });
+      cleanup.push(networkCleanup);
+
+      // Set up app state listener
+      const appStateCleanup = nativeCapabilities.addAppStateListener((state) => {
+        if (state.isActive) {
+          // Refresh data when app becomes active
+          refreshDeviceInfo();
+          refreshNetworkStatus();
+        }
+      });
+      cleanup.push(appStateCleanup);
+    }
+
+    // Cleanup listeners on unmount
+    return () => {
+      cleanup.forEach(fn => fn());
     };
-  };
+  }, [initialize, refreshDeviceInfo, refreshNetworkStatus, isNative]);
 
   return {
-    // State
-    isNativeApp,
+    // Platform detection
+    isNative,
     isIOS,
-    isOnline,
-    deviceInfo,
+    isAndroid,
+    isWeb,
     
-    // Actions
+    // Device info
+    deviceInfo,
+    deviceId,
+    batteryInfo,
+    
+    // Network status
+    networkStatus,
+    isOnline,
+    
+    // Methods
     hapticFeedback,
-    setStatusBarColor,
-    handleNativeButtonPress,
-    handleNativeSuccess,
-    handleNativeError,
-    getAppInfo
+    statusBar,
+    splashScreen,
+    
+    // Lifecycle
+    refreshDeviceInfo,
+    refreshNetworkStatus,
+    initialize,
   };
 };
+
+export default useNativeCapabilities;

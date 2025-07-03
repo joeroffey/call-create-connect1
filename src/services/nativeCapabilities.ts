@@ -22,255 +22,336 @@ import {
   Network, 
   ConnectionStatus 
 } from '@capacitor/network';
+import { Capacitor } from '@capacitor/core';
 
-/**
- * Native iOS Capabilities Service
- * Provides native iOS functionality for enhanced user experience
- */
-export class NativeCapabilities {
-  private static instance: NativeCapabilities;
-  private deviceInfo: DeviceInfo | null = null;
+export interface NativeCapabilities {
+  // Haptic feedback
+  hapticImpact: (style?: ImpactStyle) => Promise<void>;
+  hapticNotification: (type?: NotificationType) => Promise<void>;
+  hapticSelection: () => Promise<void>;
+  
+  // Status bar control
+  setStatusBarStyle: (style: StatusBarStyle) => Promise<void>;
+  setStatusBarBackgroundColor: (color: string) => Promise<void>;
+  hideStatusBar: () => Promise<void>;
+  showStatusBar: () => Promise<void>;
+  
+  // App lifecycle
+  addAppStateListener: (callback: (state: any) => void) => () => void;
+  addUrlOpenListener: (callback: (url: string) => void) => () => void;
+  exitApp: () => Promise<void>;
+  
+  // Device info
+  getDeviceInfo: () => Promise<any>;
+  getDeviceId: () => Promise<string>;
+  getBatteryInfo: () => Promise<any>;
+  
+  // Network monitoring
+  getNetworkStatus: () => Promise<any>;
+  addNetworkListener: (callback: (status: any) => void) => () => void;
+  
+  // Splash screen
+  hideSplashScreen: () => Promise<void>;
+  showSplashScreen: () => Promise<void>;
+  
+  // Platform detection
+  isNative: boolean;
+  isIOS: boolean;
+  isAndroid: boolean;
+  isWeb: boolean;
+}
 
-  private constructor() {
-    this.initializeApp();
+class NativeCapabilitiesService implements NativeCapabilities {
+  public readonly isNative: boolean;
+  public readonly isIOS: boolean;
+  public readonly isAndroid: boolean;
+  public readonly isWeb: boolean;
+
+  constructor() {
+    this.isNative = Capacitor.isNativePlatform();
+    this.isIOS = Capacitor.getPlatform() === 'ios';
+    this.isAndroid = Capacitor.getPlatform() === 'android';
+    this.isWeb = Capacitor.getPlatform() === 'web';
   }
 
-  public static getInstance(): NativeCapabilities {
-    if (!NativeCapabilities.instance) {
-      NativeCapabilities.instance = new NativeCapabilities();
-    }
-    return NativeCapabilities.instance;
-  }
-
-  /**
-   * Initialize native app features
-   */
-  private async initializeApp(): Promise<void> {
+  // Haptic Feedback Methods
+  async hapticImpact(style: ImpactStyle = ImpactStyle.Medium): Promise<void> {
+    if (!this.isNative) return;
+    
     try {
-      // Get device information
-      this.deviceInfo = await Device.getInfo();
-      
-      // Configure status bar for iOS
-      if (this.deviceInfo.platform === 'ios') {
-        await this.configureStatusBar();
-      }
-
-      // Hide splash screen after app is loaded
-      await this.hideSplashScreen();
-
-      // Set up deep link handling
-      this.setupDeepLinkHandling();
-
-      // Monitor network status
-      this.setupNetworkMonitoring();
-
-      console.log('Native iOS capabilities initialized successfully');
+      await Haptics.impact({ style });
     } catch (error) {
-      console.error('Error initializing native capabilities:', error);
+      console.warn('Haptic impact failed:', error);
     }
   }
 
-  /**
-   * Configure iOS status bar for native feel
-   */
-  private async configureStatusBar(): Promise<void> {
+  async hapticNotification(type: NotificationType = NotificationType.Success): Promise<void> {
+    if (!this.isNative) return;
+    
     try {
-      await StatusBar.setStyle({ style: StatusBarStyle.Default });
-      await StatusBar.setBackgroundColor({ color: '#ffffff' });
+      await Haptics.notification({ type });
+    } catch (error) {
+      console.warn('Haptic notification failed:', error);
+    }
+  }
+
+  async hapticSelection(): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
+      await Haptics.selectionStart();
+      await Haptics.selectionChanged();
+      await Haptics.selectionEnd();
+    } catch (error) {
+      console.warn('Haptic selection failed:', error);
+    }
+  }
+
+  // Status Bar Methods
+  async setStatusBarStyle(style: StatusBarStyle): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
+      await StatusBar.setStyle({ style });
+    } catch (error) {
+      console.warn('Set status bar style failed:', error);
+    }
+  }
+
+  async setStatusBarBackgroundColor(color: string): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
+      await StatusBar.setBackgroundColor({ color });
+    } catch (error) {
+      console.warn('Set status bar background color failed:', error);
+    }
+  }
+
+  async hideStatusBar(): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
+      await StatusBar.hide();
+    } catch (error) {
+      console.warn('Hide status bar failed:', error);
+    }
+  }
+
+  async showStatusBar(): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
       await StatusBar.show();
     } catch (error) {
-      console.error('Error configuring status bar:', error);
+      console.warn('Show status bar failed:', error);
     }
   }
 
-  /**
-   * Hide splash screen with smooth transition
-   */
-  private async hideSplashScreen(): Promise<void> {
+  // App Lifecycle Methods
+  addAppStateListener(callback: (state: any) => void): () => void {
+    if (!this.isNative) return () => {};
+    
     try {
-      // Add a small delay for better UX
-      setTimeout(async () => {
-        await SplashScreen.hide();
-      }, 2000);
+      const listener = App.addListener('appStateChange', callback);
+      return () => listener.remove();
     } catch (error) {
-      console.error('Error hiding splash screen:', error);
+      console.warn('Add app state listener failed:', error);
+      return () => {};
     }
   }
 
-  /**
-   * Set up deep link handling for iOS
-   */
-  private setupDeepLinkHandling(): void {
-    App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
-      console.log('App opened with URL:', event.url);
-      // Handle deep links here
-      this.handleDeepLink(event.url);
-    });
-
-    App.addListener('appStateChange', ({ isActive }) => {
-      console.log('App state changed. Is active?', isActive);
-      if (isActive) {
-        this.onAppBecomeActive();
-      }
-    });
-  }
-
-  /**
-   * Handle incoming deep links
-   */
-  private handleDeepLink(url: string): void {
+  addUrlOpenListener(callback: (url: string) => void): () => void {
+    if (!this.isNative) return () => {};
+    
     try {
-      const urlObj = new URL(url);
-      const path = urlObj.pathname;
-      
-      // Navigate to appropriate route based on deep link
-      // This would integrate with your React Router
-      console.log('Handling deep link path:', path);
-      
-      // Example: callcreateconnect://profile/123
-      if (path.startsWith('/profile/')) {
-        const profileId = path.split('/')[2];
-        // Navigate to profile page
-        window.location.href = `/profile/${profileId}`;
-      }
+      const listener = App.addListener('appUrlOpen', (data: any) => {
+        callback(data.url);
+      });
+      return () => listener.remove();
     } catch (error) {
-      console.error('Error handling deep link:', error);
+      console.warn('Add URL open listener failed:', error);
+      return () => {};
     }
   }
 
-  /**
-   * Set up network monitoring for better UX
-   */
-  private setupNetworkMonitoring(): void {
-    Network.addListener('networkStatusChange', (status: ConnectionStatus) => {
-      console.log('Network status changed:', status);
-      this.handleNetworkChange(status);
-    });
-  }
-
-  /**
-   * Handle network status changes
-   */
-  private handleNetworkChange(status: ConnectionStatus): void {
-    if (!status.connected) {
-      // Show offline notification
-      this.showOfflineNotification();
-    } else {
-      // Hide offline notification and sync data
-      this.handleOnlineStatus();
-    }
-  }
-
-  /**
-   * Show offline notification to user
-   */
-  private showOfflineNotification(): void {
-    // This would integrate with your notification system
-    console.log('App is offline - showing notification');
-    // You could trigger a toast or banner here
-  }
-
-  /**
-   * Handle when app comes back online
-   */
-  private handleOnlineStatus(): void {
-    console.log('App is back online - syncing data');
-    // Trigger data sync or refresh
-  }
-
-  /**
-   * Called when app becomes active
-   */
-  private onAppBecomeActive(): void {
-    // Refresh data, check for updates, etc.
-    console.log('App became active - refreshing content');
-  }
-
-  /**
-   * Provide haptic feedback for better UX
-   */
-  public async hapticFeedback(type: 'light' | 'medium' | 'heavy' | 'selection' | 'success' | 'warning' | 'error'): Promise<void> {
+  async exitApp(): Promise<void> {
+    if (!this.isNative) return;
+    
     try {
-      if (this.deviceInfo?.platform !== 'ios') return;
-
-      switch (type) {
-        case 'light':
-          await Haptics.impact({ style: ImpactStyle.Light });
-          break;
-        case 'medium':
-          await Haptics.impact({ style: ImpactStyle.Medium });
-          break;
-        case 'heavy':
-          await Haptics.impact({ style: ImpactStyle.Heavy });
-          break;
-        case 'selection':
-          await Haptics.selectionChanged();
-          break;
-        case 'success':
-          await Haptics.notification({ type: NotificationType.Success });
-          break;
-        case 'warning':
-          await Haptics.notification({ type: NotificationType.Warning });
-          break;
-        case 'error':
-          await Haptics.notification({ type: NotificationType.Error });
-          break;
-      }
+      await App.exitApp();
     } catch (error) {
-      console.error('Error providing haptic feedback:', error);
+      console.warn('Exit app failed:', error);
     }
   }
 
-  /**
-   * Get device information
-   */
-  public getDeviceInfo(): DeviceInfo | null {
-    return this.deviceInfo;
-  }
-
-  /**
-   * Check if app is running on iOS
-   */
-  public isIOS(): boolean {
-    return this.deviceInfo?.platform === 'ios';
-  }
-
-  /**
-   * Get network status
-   */
-  public async getNetworkStatus(): Promise<ConnectionStatus> {
-    return await Network.getStatus();
-  }
-
-  /**
-   * Set status bar color dynamically
-   */
-  public async setStatusBarColor(color: string, isDark: boolean = false): Promise<void> {
+  // Device Info Methods
+  async getDeviceInfo(): Promise<any> {
+    if (!this.isNative) {
+      return {
+        model: 'Web Browser',
+        platform: 'web',
+        operatingSystem: 'unknown',
+        osVersion: 'unknown',
+        manufacturer: 'unknown',
+        isVirtual: false,
+        webViewVersion: 'unknown'
+      };
+    }
+    
     try {
-      if (!this.isIOS()) return;
+      return await Device.getInfo();
+    } catch (error) {
+      console.warn('Get device info failed:', error);
+      return null;
+    }
+  }
+
+  async getDeviceId(): Promise<string> {
+    if (!this.isNative) {
+      return 'web-' + Date.now().toString();
+    }
+    
+    try {
+      const result = await Device.getId();
+      return result.identifier || result.uuid || 'unknown';
+    } catch (error) {
+      console.warn('Get device ID failed:', error);
+      return 'unknown';
+    }
+  }
+
+  async getBatteryInfo(): Promise<any> {
+    if (!this.isNative) {
+      return { batteryLevel: -1, isCharging: false };
+    }
+    
+    try {
+      return await Device.getBatteryInfo();
+    } catch (error) {
+      console.warn('Get battery info failed:', error);
+      return { batteryLevel: -1, isCharging: false };
+    }
+  }
+
+  // Network Methods
+  async getNetworkStatus(): Promise<any> {
+    if (!this.isNative) {
+      return {
+        connected: navigator.onLine,
+        connectionType: 'wifi',
+      };
+    }
+    
+    try {
+      return await Network.getStatus();
+    } catch (error) {
+      console.warn('Get network status failed:', error);
+      return { connected: false, connectionType: 'none' };
+    }
+  }
+
+  addNetworkListener(callback: (status: any) => void): () => void {
+    if (!this.isNative) {
+      const handleOnline = () => callback({ connected: true, connectionType: 'wifi' });
+      const handleOffline = () => callback({ connected: false, connectionType: 'none' });
       
-      await StatusBar.setBackgroundColor({ color });
-      await StatusBar.setStyle({ 
-        style: isDark ? StatusBarStyle.Dark : StatusBarStyle.Default 
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+    
+    try {
+      const listener = Network.addListener('networkStatusChange', callback);
+      return () => listener.remove();
+    } catch (error) {
+      console.warn('Add network listener failed:', error);
+      return () => {};
+    }
+  }
+
+  // Splash Screen Methods
+  async hideSplashScreen(): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
+      await SplashScreen.hide();
+    } catch (error) {
+      console.warn('Hide splash screen failed:', error);
+    }
+  }
+
+  async showSplashScreen(): Promise<void> {
+    if (!this.isNative) return;
+    
+    try {
+      await SplashScreen.show({
+        showDuration: 2000,
+        fadeInDuration: 300,
+        fadeOutDuration: 300,
+        autoHide: true,
       });
     } catch (error) {
-      console.error('Error setting status bar color:', error);
+      console.warn('Show splash screen failed:', error);
     }
   }
 
-  /**
-   * Update app badge (iOS only)
-   */
-  public async setAppBadge(count: number): Promise<void> {
+  // Utility Methods
+  async initializeNativeFeatures(): Promise<void> {
+    if (!this.isNative) return;
+
     try {
-      if (!this.isIOS()) return;
-      // This would require additional plugin for badge management
-      console.log('Setting app badge count:', count);
+      // Set appropriate status bar style
+      if (this.isIOS) {
+        await this.setStatusBarStyle(StatusBarStyle.Dark);
+        await this.setStatusBarBackgroundColor('#000000');
+      } else if (this.isAndroid) {
+        await this.setStatusBarStyle(StatusBarStyle.Dark);
+        await this.setStatusBarBackgroundColor('#000000');
+      }
+
+      // Hide splash screen after initialization
+      setTimeout(async () => {
+        await this.hideSplashScreen();
+      }, 1000);
+
     } catch (error) {
-      console.error('Error setting app badge:', error);
+      console.warn('Initialize native features failed:', error);
     }
+  }
+
+  // Convenience methods for common interactions
+  async successFeedback(): Promise<void> {
+    await this.hapticNotification(NotificationType.Success);
+  }
+
+  async errorFeedback(): Promise<void> {
+    await this.hapticNotification(NotificationType.Error);
+  }
+
+  async warningFeedback(): Promise<void> {
+    await this.hapticNotification(NotificationType.Warning);
+  }
+
+  async lightImpact(): Promise<void> {
+    await this.hapticImpact(ImpactStyle.Light);
+  }
+
+  async mediumImpact(): Promise<void> {
+    await this.hapticImpact(ImpactStyle.Medium);
+  }
+
+  async heavyImpact(): Promise<void> {
+    await this.hapticImpact(ImpactStyle.Heavy);
   }
 }
 
 // Export singleton instance
-export const nativeCapabilities = NativeCapabilities.getInstance();
+export const nativeCapabilities = new NativeCapabilitiesService();
+
+// Export for easy importing
+export default nativeCapabilities;
