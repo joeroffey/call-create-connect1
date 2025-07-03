@@ -20,6 +20,7 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [authError, setAuthError] = useState('');
   const { toast } = useToast();
 
   const handleForgotPassword = async () => {
@@ -89,6 +90,9 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
           if (error.message === "Invalid login credentials") {
             errorMessage = "Invalid email or password. Please check your credentials and try again.";
           }
+          
+          // Set the alert state for inline display
+          setAuthError(errorMessage);
           
           toast({
             title: "Login Failed",
@@ -222,6 +226,17 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
               </button>
             </div>
 
+            {/* Error Alert */}
+            {authError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm"
+              >
+                {authError}
+              </motion.div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <motion.div 
@@ -248,7 +263,10 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                   <Input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (authError) setAuthError('');
+                    }}
                     className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-10 pl-10 focus:border-emerald-400 focus:ring-emerald-400/20"
                     placeholder="Enter your email"
                     required
@@ -263,7 +281,10 @@ const AuthScreen = ({ onAuth, setUser }: AuthScreenProps) => {
                   <Input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (authError) setAuthError('');
+                    }}
                     className="bg-gray-800/50 border-emerald-500/30 text-white placeholder-gray-500 h-10 pl-10 pr-10 focus:border-emerald-400 focus:ring-emerald-400/20"
                     placeholder="Enter your password"
                     required
