@@ -35,9 +35,22 @@ export const DocumentComments = ({ documentId, teamId, currentUserId }: Document
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [componentError, setComponentError] = useState<string | null>(null);
   
-  const hookResult = useDocumentComments(documentId, teamId);
+  // Wrap the hook call in a try-catch to prevent crashes
+  let hookResult;
+  try {
+    console.log('DocumentComments: Calling useDocumentComments with:', { documentId, teamId });
+    hookResult = useDocumentComments(documentId, teamId);
+    console.log('DocumentComments: Hook result:', hookResult);
+  } catch (error) {
+    console.error('Error in useDocumentComments hook:', error);
+    return (
+      <div className="p-4 text-center text-muted-foreground">
+        <p className="text-sm">Comments are temporarily unavailable.</p>
+        <p className="text-xs mt-1">Please try refreshing the page.</p>
+      </div>
+    );
+  }
   
   const { comments, commentCount, loading, addComment, deleteComment, error } = hookResult;
 

@@ -24,7 +24,10 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
   const { toast } = useToast();
 
   const fetchComments = async () => {
+    console.log('useDocumentComments: fetchComments called with:', { documentId, teamId });
+    
     if (!documentId || !teamId) {
+      console.log('useDocumentComments: Missing documentId or teamId');
       setComments([]);
       setCommentCount(0);
       setLoading(false);
