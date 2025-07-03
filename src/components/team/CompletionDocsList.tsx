@@ -64,7 +64,18 @@ const DocumentCard = ({
     >
       <Card 
         className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 hover:border-primary/20 w-full"
-        onClick={() => onViewDocument(document)}
+        onClick={() => {
+          try {
+            console.log('Clicking on document:', document.file_name, 'ID:', document.id);
+            if (document && document.id && document.team_id) {
+              onViewDocument(document);
+            } else {
+              console.error('Invalid document data:', document);
+            }
+          } catch (error) {
+            console.error('Error clicking document:', error);
+          }
+        }}
       >
         <CardContent className="p-0 w-full">
           {/* Thumbnail Area */}

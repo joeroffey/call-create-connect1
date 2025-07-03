@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useCompletionDocuments, type CompletionDocument } from '@/hooks/useCompletionDocuments';
 import { EditDocumentModal } from './EditDocumentModal';
 import { DocumentComments } from './DocumentComments';
+import { ErrorBoundary } from './ErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CompletionDocsViewerProps {
@@ -34,8 +35,13 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
 
   useEffect(() => {
     const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setCurrentUserId(user?.id || null);
+      } catch (error) {
+        console.error('Error getting current user:', error);
+        setCurrentUserId(null);
+      }
     };
     getCurrentUser();
   }, []);
@@ -173,11 +179,20 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
 
             {/* Comments Section */}
             <div className="border-t pt-4">
-              <DocumentComments 
-                documentId={document.id}
-                teamId={document.team_id}
-                currentUserId={currentUserId}
-              />
+              <ErrorBoundary 
+                context="Document Comments Section"
+                fallback={
+                  <div className="p-4 text-center text-muted-foreground">
+                    <p>Comments could not be loaded, but the document is still viewable.</p>
+                  </div>
+                }
+              >
+                <DocumentComments 
+                  documentId={document.id}
+                  teamId={document.team_id}
+                  currentUserId={currentUserId}
+                />
+              </ErrorBoundary>
             </div>
 
             {/* Actions */}

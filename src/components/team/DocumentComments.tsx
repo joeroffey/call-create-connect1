@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useDocumentComments } from '@/hooks/useDocumentComments';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ErrorBoundary } from './ErrorBoundary';
 
 interface DocumentCommentsProps {
   documentId: string;
@@ -15,6 +16,12 @@ interface DocumentCommentsProps {
 }
 
 export const DocumentComments = ({ documentId, teamId, currentUserId }: DocumentCommentsProps) => {
+  // Add safety checks for props
+  if (!documentId || !teamId) {
+    console.warn('DocumentComments: Missing required props', { documentId, teamId });
+    return null;
+  }
+
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -38,42 +45,60 @@ export const DocumentComments = ({ documentId, teamId, currentUserId }: Document
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    try {
+      if (!dateString) return 'Unknown date';
+      return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (error) {
+      console.warn('Error formatting date:', dateString, error);
+      return 'Invalid date';
+    }
   };
 
   const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    try {
+      if (!name || typeof name !== 'string') return 'UN';
+      return name
+        .split(' ')
+        .map(n => n?.[0] || '')
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || 'UN';
+    } catch (error) {
+      console.warn('Error getting initials for name:', name, error);
+      return 'UN';
+    }
   };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger asChild>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex items-center gap-2 w-full justify-start"
-        >
-          <MessageCircle className="w-4 h-4" />
-          <span>Comments</span>
-          {commentCount > 0 && (
-            <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
-              {commentCount}
-            </span>
-          )}
-        </Button>
-      </CollapsibleTrigger>
-      
-      <CollapsibleContent className="mt-4">
+    <ErrorBoundary context="Document Comments" fallback={
+      <div className="p-4 text-center text-muted-foreground">
+        <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+        <p>Comments could not be loaded, but the document is still viewable.</p>
+      </div>
+    }>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleTrigger asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-2 w-full justify-start"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>Comments</span>
+            {commentCount > 0 && (
+              <span className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full">
+                {commentCount}
+              </span>
+            )}
+          </Button>
+        </CollapsibleTrigger>
+        
+        <CollapsibleContent className="mt-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg flex items-center gap-2">
@@ -256,5 +281,6 @@ export const DocumentComments = ({ documentId, teamId, currentUserId }: Document
         </Card>
       </CollapsibleContent>
     </Collapsible>
+    </ErrorBoundary>
   );
 };
