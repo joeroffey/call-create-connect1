@@ -1,14 +1,26 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "call-create-connect",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "description": "A native iOS and web application for call, create, and connect functionality",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:ios": "npm run build && npx cap sync ios",
+    "ios:dev": "npm run build:dev && npx cap sync ios && npx cap open ios",
+    "ios:build": "npm run build && npx cap sync ios && npx cap open ios",
+    "ios:sync": "npx cap sync ios",
+    "ios:run": "npx cap run ios",
+    "ios:copy": "npx cap copy ios",
+    "android:dev": "npm run build:dev && npx cap sync android && npx cap open android",
+    "android:build": "npm run build && npx cap sync android && npx cap open android",
+    "capacitor:sync": "npx cap sync",
+    "capacitor:update": "npx cap update",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.0",

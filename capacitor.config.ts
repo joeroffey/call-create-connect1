@@ -1,29 +1,66 @@
-
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.lovable.callcreateconnect',
-  appName: 'call-create-connect',
+  appId: 'com.callcreateconnect.app',
+  appName: 'Call Create Connect',
   webDir: 'dist',
-  server: {
-    url: 'https://www.eezybuild.co.uk',
-    cleartext: true
-  },
   bundledWebRuntime: false,
   plugins: {
     StatusBar: {
       overlaysWebView: false,
-      backgroundColor: '#000000',
-      style: 'Dark'
+      backgroundColor: '#ffffff',
+      style: 'Default',
+      androidStyle: 'DEFAULT'
     },
     Keyboard: {
-      resize: 'ionic'
+      resize: 'native',
+      style: 'dark',
+      resizeOnFullScreen: true
     },
     App: {
       appUrlOpen: {
-        iosCustomScheme: 'eezybuild'
+        iosCustomScheme: 'callcreateconnect'
       }
+    },
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#ffffff',
+      showSpinner: false,
+      androidSpinnerStyle: 'large',
+      iosSpinnerStyle: 'small',
+      spinnerColor: '#999999',
+      splashFullScreen: true,
+      splashImmersive: true
+    },
+    Permissions: {
+      camera: 'This app needs camera access to take photos',
+      microphone: 'This app needs microphone access for audio features',
+      notifications: 'This app sends notifications for important updates'
+    },
+    Device: {
+      androidHideNavigationBar: false
+    },
+    Network: {
+      enabled: true
+    },
+    Haptics: {
+      enabled: true
     }
+  },
+  ios: {
+    backgroundColor: '#ffffff',
+    allowsLinkPreview: false,
+    handleApplicationNotifications: true,
+    hideLogs: true,
+    disallowOverscroll: true,
+    enableViewportScale: false,
+    allowsInlineMediaPlayback: true,
+    suppresessIncrementalRendering: false,
+    preferredContentMode: 'mobile',
+    scrollEnabled: true,
+    minimumFontSize: 12.0
+  },
+  server: {
   }
 };
 
