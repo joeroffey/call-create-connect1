@@ -4,18 +4,27 @@ import Combine
 class SupabaseService: ObservableObject {
     static let shared = SupabaseService()
     
-    // TODO: Replace with your actual Supabase configuration
-    private let supabaseURL = "YOUR_SUPABASE_URL"
-    private let supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY"
+    // Supabase configuration - using centralized Config
+    private let supabaseURL = Config.supabaseURL
+    private let supabaseAnonKey = Config.supabaseAnonKey
     
     private var session: URLSession
     private var currentSession: Session?
     
     private init() {
+        // Validate configuration
+        guard Config.validateSupabaseConfig() else {
+            fatalError("Invalid Supabase configuration. Please check Config.swift")
+        }
+        
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 30
-        config.timeoutIntervalForResource = 60
+        config.timeoutIntervalForRequest = Config.requestTimeout
+        config.timeoutIntervalForResource = Config.resourceTimeout
         self.session = URLSession(configuration: config)
+        
+        if Config.enableLogging {
+            print("SupabaseService initialized with URL: \(supabaseURL)")
+        }
     }
     
     // MARK: - Authentication

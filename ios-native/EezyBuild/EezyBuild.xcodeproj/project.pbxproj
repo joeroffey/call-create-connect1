@@ -19,6 +19,7 @@
 		C1A000019D74E2EA001BC9A5 /* SupabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A000020D74E2EA001BC9A5 /* SupabaseService.swift */; };
 		C1A000021D74E2EA001BC9A5 /* UserManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A000022D74E2EA001BC9A5 /* UserManager.swift */; };
 		C1A000023D74E2EA001BC9A5 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A000024D74E2EA001BC9A5 /* Models.swift */; };
+		C1A000025D74E2EA001BC9A5 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A000026D74E2EA001BC9A5 /* Config.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +36,7 @@
 		C1A000020D74E2EA001BC9A5 /* SupabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SupabaseService.swift; sourceTree = "<group>"; };
 		C1A000022D74E2EA001BC9A5 /* UserManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserManager.swift; sourceTree = "<group>"; };
 		C1A000024D74E2EA001BC9A5 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		C1A000026D74E2EA001BC9A5 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 			children = (
 				C1A000002D74E2EA001BC9A5 /* EezyBuildApp.swift */,
 				C1A000004D74E2EA001BC9A5 /* ContentView.swift */,
+				C1A000026D74E2EA001BC9A5 /* Config.swift */,
 				C1A000029D74E2EA001BC9A5 /* Views */,
 				C1A000030D74E2EA001BC9A5 /* Services */,
 				C1A000031D74E2EA001BC9A5 /* Models */,
@@ -191,6 +194,7 @@
 			files = (
 				C1A000003D74E2EA001BC9A5 /* ContentView.swift in Sources */,
 				C1A000001D74E2EA001BC9A5 /* EezyBuildApp.swift in Sources */,
+				C1A000025D74E2EA001BC9A5 /* Config.swift in Sources */,
 				C1A000009D74E2EA001BC9A5 /* AuthenticationView.swift in Sources */,
 				C1A000011D74E2EA001BC9A5 /* ChatView.swift in Sources */,
 				C1A000013D74E2EA001BC9A5 /* CalculatorsView.swift in Sources */,
