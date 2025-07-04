@@ -1,0 +1,326 @@
+name: 🆕 iOS Fresh Project Test
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  fresh-project-test:
+    name: Create & Build Fresh iOS Project
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: 📋 Environment Check
+      run: |
+        echo "=== Environment ==="
+        echo "macOS: $(sw_vers -productVersion)"
+        echo "Xcode: $(xcodebuild -version)"
+        echo "Available simulators:"
+        xcrun simctl list devices available | grep iPhone | head -3
+        
+    - name: 🆕 Create Fresh iOS Project
+      run: |
+        echo "=== Creating Fresh iOS Project ==="
+        
+        # Create a completely fresh iOS project structure
+        mkdir -p FreshiOSApp/FreshiOSApp
+        
+        # Create minimal App file
+        cat > FreshiOSApp/FreshiOSApp/FreshiOSAppApp.swift << 'EOF'
+        import SwiftUI
+        
+        @main
+        struct FreshiOSAppApp: App {
+            var body: some Scene {
+                WindowGroup {
+                    ContentView()
+                }
+            }
+        }
+        EOF
+        
+        # Create minimal ContentView
+        cat > FreshiOSApp/FreshiOSApp/ContentView.swift << 'EOF'
+        import SwiftUI
+        
+        struct ContentView: View {
+            var body: some View {
+                VStack {
+                    Image(systemName: "globe")
+                        .imageScale(.large)
+                        .foregroundStyle(.tint)
+                    Text("Hello, Fresh iOS!")
+                }
+                .padding()
+            }
+        }
+        
+        #Preview {
+            ContentView()
+        }
+        EOF
+        
+        # Create project.pbxproj with iOS 15.0 target
+        cat > FreshiOSApp/FreshiOSApp.xcodeproj/project.pbxproj << 'EOF'
+        // !$*UTF8*$!
+        {
+        	archiveVersion = 1;
+        	classes = {
+        	};
+        	objectVersion = 56;
+        	objects = {
+        
+        /* Begin PBXBuildFile section */
+        		C1A000001D74E2EA001BC9A5 /* FreshiOSAppApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A000002D74E2EA001BC9A5 /* FreshiOSAppApp.swift */; };
+        		C1A000003D74E2EA001BC9A5 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A000004D74E2EA001BC9A5 /* ContentView.swift */; };
+        /* End PBXBuildFile section */
+        
+        /* Begin PBXFileReference section */
+        		C1A000001D74E2EA001BC9A5 /* FreshiOSApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FreshiOSApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+        		C1A000002D74E2EA001BC9A5 /* FreshiOSAppApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreshiOSAppApp.swift; sourceTree = "<group>"; };
+        		C1A000004D74E2EA001BC9A5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+        /* End PBXFileReference section */
+        
+        /* Begin PBXFrameworksBuildPhase section */
+        		C1A000025D74E2EA001BC9A5 /* Frameworks */ = {
+        			isa = PBXFrameworksBuildPhase;
+        			buildActionMask = 2147483647;
+        			files = (
+        			);
+        			runOnlyForDeploymentPostprocessing = 0;
+        		};
+        /* End PBXFrameworksBuildPhase section */
+        
+        /* Begin PBXGroup section */
+        		C1A000026D74E2EA001BC9A5 = {
+        			isa = PBXGroup;
+        			children = (
+        				C1A000027D74E2EA001BC9A5 /* FreshiOSApp */,
+        				C1A000028D74E2EA001BC9A5 /* Products */,
+        			);
+        			sourceTree = "<group>";
+        		};
+        		C1A000027D74E2EA001BC9A5 /* FreshiOSApp */ = {
+        			isa = PBXGroup;
+        			children = (
+        				C1A000002D74E2EA001BC9A5 /* FreshiOSAppApp.swift */,
+        				C1A000004D74E2EA001BC9A5 /* ContentView.swift */,
+        			);
+        			path = FreshiOSApp;
+        			sourceTree = "<group>";
+        		};
+        		C1A000028D74E2EA001BC9A5 /* Products */ = {
+        			isa = PBXGroup;
+        			children = (
+        				C1A000001D74E2EA001BC9A5 /* FreshiOSApp.app */,
+        			);
+        			name = Products;
+        			sourceTree = "<group>";
+        		};
+        /* End PBXGroup section */
+        
+        /* Begin PBXNativeTarget section */
+        		C1A000033D74E2EA001BC9A5 /* FreshiOSApp */ = {
+        			isa = PBXNativeTarget;
+        			buildConfigurationList = C1A000034D74E2EA001BC9A5 /* Build configuration list for PBXNativeTarget "FreshiOSApp" */;
+        			buildPhases = (
+        				C1A000035D74E2EA001BC9A5 /* Sources */,
+        				C1A000025D74E2EA001BC9A5 /* Frameworks */,
+        			);
+        			buildRules = (
+        			);
+        			dependencies = (
+        			);
+        			name = FreshiOSApp;
+        			productName = FreshiOSApp;
+        			productReference = C1A000001D74E2EA001BC9A5 /* FreshiOSApp.app */;
+        			productType = "com.apple.product-type.application";
+        		};
+        /* End PBXNativeTarget section */
+        
+        /* Begin PBXProject section */
+        		C1A000037D74E2EA001BC9A5 /* Project object */ = {
+        			isa = PBXProject;
+        			attributes = {
+        				LastSwiftUpdateCheck = 1500;
+        				LastUpgradeCheck = 1500;
+        				TargetAttributes = {
+        					C1A000033D74E2EA001BC9A5 = {
+        						CreatedOnToolsVersion = 15.0;
+        					};
+        				};
+        			};
+        			buildConfigurationList = C1A000038D74E2EA001BC9A5 /* Build configuration list for PBXProject "FreshiOSApp" */;
+        			compatibilityVersion = "Xcode 14.0";
+        			developmentRegion = en;
+        			hasScannedForEncodings = 0;
+        			knownRegions = (
+        				en,
+        			);
+        			mainGroup = C1A000026D74E2EA001BC9A5;
+        			productRefGroup = C1A000028D74E2EA001BC9A5 /* Products */;
+        			projectDirPath = "";
+        			projectRoot = "";
+        			targets = (
+        				C1A000033D74E2EA001BC9A5 /* FreshiOSApp */,
+        			);
+        		};
+        /* End PBXProject section */
+        
+        /* Begin PBXSourcesBuildPhase section */
+        		C1A000035D74E2EA001BC9A5 /* Sources */ = {
+        			isa = PBXSourcesBuildPhase;
+        			buildActionMask = 2147483647;
+        			files = (
+        				C1A000003D74E2EA001BC9A5 /* ContentView.swift in Sources */,
+        				C1A000001D74E2EA001BC9A5 /* FreshiOSAppApp.swift in Sources */,
+        			);
+        			runOnlyForDeploymentPostprocessing = 0;
+        		};
+        /* End PBXSourcesBuildPhase section */
+        
+        /* Begin XCBuildConfiguration section */
+        		C1A000039D74E2EA001BC9A5 /* Debug */ = {
+        			isa = XCBuildConfiguration;
+        			buildSettings = {
+        				ALWAYS_SEARCH_USER_PATHS = NO;
+        				CLANG_ANALYZER_NONNULL = YES;
+        				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+        				CLANG_ENABLE_MODULES = YES;
+        				CLANG_ENABLE_OBJC_ARC = YES;
+        				CLANG_ENABLE_OBJC_WEAK = YES;
+        				COPY_PHASE_STRIP = NO;
+        				DEBUG_INFORMATION_FORMAT = dwarf;
+        				ENABLE_STRICT_OBJC_MSGSEND = YES;
+        				ENABLE_TESTABILITY = YES;
+        				GCC_C_LANGUAGE_STANDARD = gnu17;
+        				GCC_DYNAMIC_NO_PIC = NO;
+        				GCC_NO_COMMON_BLOCKS = YES;
+        				GCC_OPTIMIZATION_LEVEL = 0;
+        				GCC_PREPROCESSOR_DEFINITIONS = (
+        					"DEBUG=1",
+        					"$(inherited)",
+        				);
+        				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+        				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+        				MTL_FAST_MATH = YES;
+        				ONLY_ACTIVE_ARCH = YES;
+        				SDKROOT = iphoneos;
+        				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+        				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+        			};
+        			name = Debug;
+        		};
+        		C1A000041D74E2EA001BC9A5 /* Debug */ = {
+        			isa = XCBuildConfiguration;
+        			buildSettings = {
+        				CODE_SIGN_STYLE = Automatic;
+        				CURRENT_PROJECT_VERSION = 1;
+        				DEVELOPMENT_TEAM = "";
+        				ENABLE_PREVIEWS = YES;
+        				GENERATE_INFOPLIST_FILE = YES;
+        				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+        				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+        				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+        				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+        				MARKETING_VERSION = 1.0;
+        				PRODUCT_BUNDLE_IDENTIFIER = com.fresh.app;
+        				PRODUCT_NAME = "$(TARGET_NAME)";
+        				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+        				SUPPORTS_MACCATALYST = NO;
+        				SWIFT_EMIT_LOC_STRINGS = YES;
+        				SWIFT_VERSION = 5.0;
+        				TARGETED_DEVICE_FAMILY = "1,2";
+        			};
+        			name = Debug;
+        		};
+        /* End XCBuildConfiguration section */
+        
+        /* Begin XCConfigurationList section */
+        		C1A000034D74E2EA001BC9A5 /* Build configuration list for PBXNativeTarget "FreshiOSApp" */ = {
+        			isa = XCConfigurationList;
+        			buildConfigurations = (
+        				C1A000041D74E2EA001BC9A5 /* Debug */,
+        			);
+        			defaultConfigurationIsVisible = 0;
+        			defaultConfigurationName = Debug;
+        		};
+        		C1A000038D74E2EA001BC9A5 /* Build configuration list for PBXProject "FreshiOSApp" */ = {
+        			isa = XCConfigurationList;
+        			buildConfigurations = (
+        				C1A000039D74E2EA001BC9A5 /* Debug */,
+        			);
+        			defaultConfigurationIsVisible = 0;
+        			defaultConfigurationName = Debug;
+        		};
+        /* End XCConfigurationList section */
+        	};
+        	rootObject = C1A000037D74E2EA001BC9A5 /* Project object */;
+        }
+        EOF
+        
+        # Create directory structure
+        mkdir -p FreshiOSApp/FreshiOSApp.xcodeproj
+        
+        echo "Fresh project structure created"
+        ls -la FreshiOSApp/
+        
+    - name: 🏗️ Build Fresh Project
+      working-directory: FreshiOSApp
+      run: |
+        echo "=== Building Fresh iOS Project ==="
+        
+        # Verify project structure
+        xcodebuild -list -project FreshiOSApp.xcodeproj
+        
+        # Build the fresh project
+        echo "Building fresh project..."
+        timeout 120 xcodebuild build \
+          -project FreshiOSApp.xcodeproj \
+          -scheme FreshiOSApp \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO
+          
+    - name: 🔍 Compare Projects
+      run: |
+        echo "=== Project Comparison ==="
+        echo "Fresh project (Working):"
+        echo "- iOS deployment target: 15.0"
+        echo "- Minimal Swift files: 2"
+        echo "- No external dependencies"
+        echo ""
+        echo "EezyBuild project (Failing):"
+        echo "- iOS deployment target: 17.0"
+        echo "- Complex Swift files: 11+"
+        echo "- Multiple model dependencies"
+        echo ""
+        echo "Key differences to investigate:"
+        echo "1. iOS 17.0 vs 15.0 deployment target"
+        echo "2. Project complexity and dependencies"
+        echo "3. Swift file interdependencies"
+        
+    - name: ✅ Success Analysis
+      if: success()
+      run: |
+        echo "🎉 SUCCESS! Fresh iOS project built successfully!"
+        echo ""
+        echo "This proves:"
+        echo "✅ GitHub Actions environment can build iOS apps"
+        echo "✅ Xcode and Swift tools are working correctly"
+        echo "✅ The issue is specific to the EezyBuild project"
+        echo ""
+        echo "Next steps:"
+        echo "1. Update EezyBuild iOS deployment target to 15.0"
+        echo "2. Simplify complex dependencies"
+        echo "3. Test incremental complexity additions"
