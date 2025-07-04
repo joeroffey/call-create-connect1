@@ -63,11 +63,11 @@ jobs:
       run: |
         echo "🔨 Building EezyBuild for iOS Simulator..."
         
-        # Use the simplest possible simulator build - just use "generic/platform=iOS Simulator"
+        # Use the same approach that worked in the diagnostic test
         xcodebuild \
           -project EezyBuild.xcodeproj \
           -scheme EezyBuild \
-          -destination "generic/platform=iOS Simulator" \
+          -sdk iphonesimulator \
           -configuration Debug \
           clean build \
           CODE_SIGNING_ALLOWED=NO \
