@@ -1,209 +1,283 @@
 import Foundation
 
-// MARK: - User Models
+// MARK: - User & Authentication Models
 struct User: Codable, Identifiable {
     let id: String
     let email: String
     let name: String?
-    let avatar: String?
-    let subscription: String?
     let createdAt: Date?
+    let updatedAt: Date?
     
-    enum CodingKeys: String, CodingKey {
-        case id, email, name, avatar, subscription
-        case createdAt = "created_at"
+    init(id: String, email: String, name: String? = nil, createdAt: Date? = nil, updatedAt: Date? = nil) {
+        self.id = id
+        self.email = email
+        self.name = name
+        self.createdAt = createdAt ?? Date()
+        self.updatedAt = updatedAt ?? Date()
     }
-}
-
-struct AuthResponse: Codable {
-    let user: User
-    let session: Session
 }
 
 struct Session: Codable {
     let accessToken: String
     let refreshToken: String
-    let expiresAt: Date
+    let expiresIn: Int?
+    let user: User
     
-    enum CodingKeys: String, CodingKey {
-        case accessToken = "access_token"
-        case refreshToken = "refresh_token" 
-        case expiresAt = "expires_at"
+    init(accessToken: String, refreshToken: String, expiresIn: Int? = nil, user: User) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+        self.expiresIn = expiresIn
+        self.user = user
     }
 }
 
-// MARK: - Chat Models
-struct ChatMessage: Codable, Identifiable {
-    let id: String
-    let conversationId: String?
-    let content: String
-    let role: MessageRole
-    let timestamp: Date
-    let projectId: String?
+struct AuthResponse: Codable {
+    let session: Session
+    let user: User
     
-    enum CodingKeys: String, CodingKey {
-        case id, content, role, timestamp
-        case conversationId = "conversation_id"
-        case projectId = "project_id"
-    }
-}
-
-enum MessageRole: String, Codable, CaseIterable {
-    case user = "user"
-    case assistant = "assistant"
-    case system = "system"
-}
-
-struct Conversation: Codable, Identifiable {
-    let id: String
-    let title: String?
-    let userId: String
-    let projectId: String?
-    let createdAt: Date
-    let updatedAt: Date
-    
-    enum CodingKeys: String, CodingKey {
-        case id, title
-        case userId = "user_id"
-        case projectId = "project_id"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
+    init(session: Session, user: User) {
+        self.session = session
+        self.user = user
     }
 }
 
 // MARK: - Project Models
-struct Project: Codable, Identifiable {
-    let id: String
-    let name: String
-    let description: String?
-    let userId: String
-    let address: String?
-    let projectType: String?
-    let status: ProjectStatus
-    let createdAt: Date
-    let updatedAt: Date
-    
-    enum CodingKeys: String, CodingKey {
-        case id, name, description, address, status
-        case userId = "user_id"
-        case projectType = "project_type"
-        case createdAt = "created_at"
-        case updatedAt = "updated_at"
-    }
-}
-
-enum ProjectStatus: String, Codable, CaseIterable {
+enum ProjectStatus: String, CaseIterable, Codable {
     case planning = "planning"
-    case inProgress = "in_progress"
-    case completed = "completed"
+    case active = "active"
     case onHold = "on_hold"
+    case completed = "completed"
+    case cancelled = "cancelled"
     
     var displayName: String {
         switch self {
         case .planning: return "Planning"
-        case .inProgress: return "In Progress"
-        case .completed: return "Completed"
+        case .active: return "Active"
         case .onHold: return "On Hold"
+        case .completed: return "Completed"
+        case .cancelled: return "Cancelled"
         }
     }
 }
 
-// MARK: - Calculator Models
-struct CalculationResult: Codable {
-    let type: CalculationType
-    let inputs: [String: Double]
-    let results: [String: Double]
-    let timestamp: Date
+struct Project: Codable, Identifiable {
+    let id: String
+    let name: String
+    let description: String?
+    let address: String?
+    let projectType: String?
+    let status: ProjectStatus
+    let userId: String?
+    let createdAt: Date
+    let updatedAt: Date
+    
+    init(id: String = UUID().uuidString, 
+         name: String, 
+         description: String? = nil, 
+         address: String? = nil, 
+         projectType: String? = nil, 
+         status: ProjectStatus = .planning, 
+         userId: String? = nil, 
+         createdAt: Date = Date(), 
+         updatedAt: Date = Date()) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.address = address
+        self.projectType = projectType
+        self.status = status
+        self.userId = userId
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
 }
 
-enum CalculationType: String, Codable, CaseIterable {
-    case brick = "brick"
-    case timber = "timber"
-    case roofTiles = "roof_tiles"
-    case volumetric = "volumetric"
+// MARK: - Chat Models
+enum MessageRole: String, Codable, CaseIterable {
+    case user = "user"
+    case assistant = "assistant"
+    case system = "system"
     
     var displayName: String {
         switch self {
-        case .brick: return "Brick Calculator"
-        case .timber: return "Timber Calculator"
-        case .roofTiles: return "Roof Tiles Calculator"
-        case .volumetric: return "Volumetric Calculator"
+        case .user: return "You"
+        case .assistant: return "EezyBuild Assistant"
+        case .system: return "System"
         }
     }
+}
+
+struct ChatMessage: Codable, Identifiable {
+    let id: String
+    let content: String
+    let role: MessageRole
+    let timestamp: Date
+    let conversationId: String?
+    let projectId: String?
+    let userId: String?
     
-    var iconName: String {
-        switch self {
-        case .brick: return "building.2"
-        case .timber: return "tree"
-        case .roofTiles: return "house"
-        case .volumetric: return "cube"
-        }
+    init(id: String = UUID().uuidString,
+         content: String,
+         role: MessageRole,
+         timestamp: Date = Date(),
+         conversationId: String? = nil,
+         projectId: String? = nil,
+         userId: String? = nil) {
+        self.id = id
+        self.content = content
+        self.role = role
+        self.timestamp = timestamp
+        self.conversationId = conversationId
+        self.projectId = projectId
+        self.userId = userId
+    }
+}
+
+struct Conversation: Codable, Identifiable {
+    let id: String
+    let title: String
+    let projectId: String?
+    let userId: String
+    let createdAt: Date
+    let updatedAt: Date
+    let lastMessage: String?
+    
+    init(id: String = UUID().uuidString,
+         title: String,
+         projectId: String? = nil,
+         userId: String,
+         createdAt: Date = Date(),
+         updatedAt: Date = Date(),
+         lastMessage: String? = nil) {
+        self.id = id
+        self.title = title
+        self.projectId = projectId
+        self.userId = userId
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+        self.lastMessage = lastMessage
     }
 }
 
 // MARK: - Subscription Models
-struct Subscription: Codable {
-    let id: String
-    let userId: String
-    let planType: PlanType
-    let status: SubscriptionStatus
-    let currentPeriodStart: Date
-    let currentPeriodEnd: Date
-    
-    enum CodingKeys: String, CodingKey {
-        case id
-        case userId = "user_id"
-        case planType = "plan_type"
-        case status
-        case currentPeriodStart = "current_period_start"
-        case currentPeriodEnd = "current_period_end"
-    }
-}
-
-enum PlanType: String, Codable, CaseIterable {
-    case none = "none"
-    case basic = "basic"
+enum SubscriptionTier: String, Codable, CaseIterable {
+    case free = "free"
     case pro = "pro"
     case enterprise = "enterprise"
     
     var displayName: String {
         switch self {
-        case .none: return "No Plan"
-        case .basic: return "EezyBuild"
+        case .free: return "Free"
         case .pro: return "Pro"
-        case .enterprise: return "ProMax"
+        case .enterprise: return "Enterprise"
         }
     }
     
-    var price: String {
+    var monthlyPrice: String {
         switch self {
-        case .none: return "Free"
-        case .basic: return "£9.99/month"
-        case .pro: return "£19.99/month"
-        case .enterprise: return "£39.99/month"
+        case .free: return "£0"
+        case .pro: return "£9.99"
+        case .enterprise: return "£29.99"
         }
     }
 }
 
-enum SubscriptionStatus: String, Codable {
-    case active = "active"
-    case cancelled = "cancelled"
-    case pastDue = "past_due"
-    case unpaid = "unpaid"
+struct Subscription: Codable, Identifiable {
+    let id: String
+    let userId: String
+    let tier: SubscriptionTier
+    let status: String
+    let currentPeriodStart: Date
+    let currentPeriodEnd: Date
+    let createdAt: Date
+    let updatedAt: Date
+    
+    init(id: String = UUID().uuidString,
+         userId: String,
+         tier: SubscriptionTier = .free,
+         status: String = "active",
+         currentPeriodStart: Date = Date(),
+         currentPeriodEnd: Date = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date(),
+         createdAt: Date = Date(),
+         updatedAt: Date = Date()) {
+        self.id = id
+        self.userId = userId
+        self.tier = tier
+        self.status = status
+        self.currentPeriodStart = currentPeriodStart
+        self.currentPeriodEnd = currentPeriodEnd
+        self.createdAt = createdAt
+        self.updatedAt = updatedAt
+    }
 }
 
 // MARK: - Error Models
-struct APIError: Codable, Error {
+struct APIError: Error, Codable {
     let message: String
-    let code: String?
+    let code: String
     let details: String?
+    
+    init(message: String, code: String, details: String? = nil) {
+        self.message = message
+        self.code = code
+        self.details = details
+    }
 }
 
-// MARK: - API Response Models
-struct APIResponse<T: Codable>: Codable {
-    let data: T?
-    let error: APIError?
-    let message: String?
+// MARK: - View State Models
+enum LoadingState {
+    case idle
+    case loading
+    case loaded
+    case error(String)
+}
+
+// MARK: - Sample Data for Testing
+extension Project {
+    static let sampleProjects: [Project] = [
+        Project(
+            name: "Kitchen Extension",
+            description: "Single storey rear extension to create open plan kitchen/dining area",
+            address: "123 Oak Street, London",
+            projectType: "Extension",
+            status: .active
+        ),
+        Project(
+            name: "Loft Conversion",
+            description: "Convert loft space into two bedrooms with en-suite",
+            address: "456 Elm Avenue, Manchester",
+            projectType: "Conversion",
+            status: .planning
+        ),
+        Project(
+            name: "Garden Office",
+            description: "Detached garden office with electricity and heating",
+            address: "789 Pine Road, Birmingham",
+            projectType: "New Build",
+            status: .completed
+        )
+    ]
+}
+
+extension ChatMessage {
+    static let sampleMessages: [ChatMessage] = [
+        ChatMessage(
+            content: "I'm planning a kitchen extension. What building regulations do I need to consider?",
+            role: .user
+        ),
+        ChatMessage(
+            content: "For a kitchen extension, you'll need to consider several building regulations including structural safety, insulation, ventilation, and drainage. I can help you understand each requirement in detail.",
+            role: .assistant
+        ),
+        ChatMessage(
+            content: "What about planning permission?",
+            role: .user
+        ),
+        ChatMessage(
+            content: "Single storey rear extensions often fall under Permitted Development Rights if they meet certain criteria. The extension should not exceed 6 metres for terraced/semi-detached houses or 8 metres for detached houses.",
+            role: .assistant
+        )
+    ]
 }
 
 // MARK: - Building Regulations Models
