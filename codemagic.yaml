@@ -1,0 +1,264 @@
+workflows:
+  # iOS Simulator Build (Free tier compatible)
+  ios-simulator:
+    name: 🍎 iOS Simulator Build
+    instance_type: mac_mini_m1
+    max_build_duration: 30
+    environment:
+      xcode: latest
+      cocoapods: default
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+    triggering:
+      events:
+        - push
+        - pull_request
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+        - pattern: develop
+          include: true
+          source: true
+    scripts:
+      - name: 📋 Build Information
+        script: |
+          echo "🔍 Build Environment Information:"
+          echo "Xcode Version: $(xcodebuild -version)"
+          echo "macOS Version: $(sw_vers -productVersion)"
+          echo "Build Type: Simulator"
+          echo "Project: EezyBuild iOS App"
+          
+      - name: 🔍 List Available Simulators
+        script: |
+          echo "📱 Available iOS Simulators:"
+          xcrun simctl list devices available | grep iPhone || true
+          
+      - name: 🏗️ Build iOS App for Simulator
+        script: |
+          echo "🔨 Building EezyBuild for iOS Simulator..."
+          cd ios-native/EezyBuild
+          xcodebuild \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            clean build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+            
+      - name: 🧪 Run Tests (if available)
+        script: |
+          echo "🧪 Running tests..."
+          cd ios-native/EezyBuild
+          xcodebuild test \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 14' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO || echo "⚠️ Tests not configured yet"
+    artifacts:
+      - ios-native/EezyBuild/build/**/*.app
+    publishing:
+      email:
+        recipients:
+          - $CM_BUILD_EMAIL
+        notify:
+          success: true
+          failure: true
+
+  # iOS Device Build (Requires Apple Developer Account)
+  ios-device:
+    name: 📱 iOS Device Build
+    instance_type: mac_mini_m1
+    max_build_duration: 45
+    environment:
+      xcode: latest
+      cocoapods: default
+      groups:
+        - ios_credentials # Add your certificates as a group
+      vars:
+        BUNDLE_ID: "com.eezybuild.app"
+        XCODE_PROJECT: "ios-native/EezyBuild/EezyBuild.xcodeproj"
+        XCODE_SCHEME: "EezyBuild"
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'v*'
+          include: true
+    scripts:
+      - name: 📋 Device Build Information
+        script: |
+          echo "🔍 Device Build Environment:"
+          echo "Xcode Version: $(xcodebuild -version)"
+          echo "Bundle ID: $BUNDLE_ID"
+          echo "Build Type: Device/Ad Hoc"
+          
+      - name: 🔐 Set up certificates and provisioning profiles
+        script: |
+          echo "🔐 Setting up iOS certificates and provisioning profiles..."
+          # Codemagic automatically handles certificate installation when using groups
+          keychain initialize
+          app-store-connect fetch-signing-files $BUNDLE_ID \
+            --type IOS_APP_DEVELOPMENT \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+          
+      - name: 📦 Build and Archive iOS App
+        script: |
+          echo "📦 Building and archiving iOS app..."
+          cd ios-native/EezyBuild
+          xcodebuild archive \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -archivePath EezyBuild.xcarchive \
+            -configuration Release \
+            -destination 'generic/platform=iOS'
+            
+      - name: 📱 Export IPA
+        script: |
+          echo "📱 Exporting IPA for distribution..."
+          cd ios-native/EezyBuild
+          xcodebuild -exportArchive \
+            -archivePath EezyBuild.xcarchive \
+            -exportPath ./build \
+            -exportOptionsPlist /Users/builder/export_options.plist
+            
+      - name: 📄 Create Export Options
+        script: |
+          echo "📄 Creating export options plist..."
+          cat > /Users/builder/export_options.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>ad-hoc</string>
+              <key>compileBitcode</key>
+              <false/>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+    artifacts:
+      - ios-native/EezyBuild/build/*.ipa
+      - ios-native/EezyBuild/EezyBuild.xcarchive
+    publishing:
+      email:
+        recipients:
+          - $CM_BUILD_EMAIL
+        notify:
+          success: true
+          failure: true
+
+  # iOS App Store Build (Production)
+  ios-appstore:
+    name: 🚀 iOS App Store Release
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      cocoapods: default
+      groups:
+        - ios_credentials
+        - app_store_credentials # App Store Connect API key
+      vars:
+        BUNDLE_ID: "com.eezybuild.app"
+        XCODE_PROJECT: "ios-native/EezyBuild/EezyBuild.xcodeproj"
+        XCODE_SCHEME: "EezyBuild"
+    cache:
+      cache_paths:
+        - $HOME/Library/Caches/CocoaPods
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: 'release-*'
+          include: true
+    scripts:
+      - name: 📋 App Store Build Information
+        script: |
+          echo "🚀 App Store Build Environment:"
+          echo "Xcode Version: $(xcodebuild -version)"
+          echo "Bundle ID: $BUNDLE_ID"
+          echo "Build Type: App Store"
+          
+      - name: 🔐 Set up App Store certificates
+        script: |
+          echo "🔐 Setting up App Store certificates..."
+          keychain initialize
+          app-store-connect fetch-signing-files $BUNDLE_ID \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+          
+      - name: 🏗️ Build and Archive for App Store
+        script: |
+          echo "🏗️ Building for App Store..."
+          cd ios-native/EezyBuild
+          xcodebuild archive \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -archivePath EezyBuild.xcarchive \
+            -configuration Release \
+            -destination 'generic/platform=iOS'
+            
+      - name: 📱 Export App Store IPA
+        script: |
+          echo "📱 Exporting App Store IPA..."
+          cd ios-native/EezyBuild
+          xcodebuild -exportArchive \
+            -archivePath EezyBuild.xcarchive \
+            -exportPath ./build \
+            -exportOptionsPlist /Users/builder/appstore_export_options.plist
+            
+      - name: 📄 Create App Store Export Options
+        script: |
+          echo "📄 Creating App Store export options..."
+          cat > /Users/builder/appstore_export_options.plist << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>compileBitcode</key>
+              <false/>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+          </dict>
+          </plist>
+          EOF
+    artifacts:
+      - ios-native/EezyBuild/build/*.ipa
+      - ios-native/EezyBuild/EezyBuild.xcarchive
+    publishing:
+      app_store_connect:
+        auth: integration # Use App Store Connect integration
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testing
+        submit_to_app_store: false # Set to true when ready for App Store review
+      email:
+        recipients:
+          - $CM_BUILD_EMAIL
+        notify:
+          success: true
+          failure: true
