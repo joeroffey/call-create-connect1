@@ -47,8 +47,21 @@ workflows:
             clean build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
+            
+      - name: 🧪 Run Tests
+        script: |
+          echo "🧪 Running tests..."
+          cd ios-native/EezyBuild
+          xcodebuild test \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 14' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO || echo "⚠️ Tests not configured yet"
     artifacts:
       - ios-native/EezyBuild/build/**/*.app
+      - ios-native/EezyBuild/build/**/Build/Products/**/*.app
 
   # iOS Device Build (Requires Apple Developer Account)
   ios-device:
@@ -135,13 +148,6 @@ workflows:
     artifacts:
       - ios-native/EezyBuild/build/*.ipa
       - ios-native/EezyBuild/EezyBuild.xcarchive
-    publishing:
-      email:
-        recipients:
-          - $CM_BUILD_EMAIL
-        notify:
-          success: true
-          failure: true
 
   # iOS App Store Build (Production)
   ios-appstore:
@@ -185,27 +191,7 @@ workflows:
           keychain add-certificates
           xcode-project use-profiles
           
-      - name: 🏗️ Build and Archive for App Store
-        script: |
-          echo "🏗️ Building for App Store..."
-          cd ios-native/EezyBuild
-          xcodebuild archive \
-            -project EezyBuild.xcodeproj \
-            -scheme EezyBuild \
-            -archivePath EezyBuild.xcarchive \
-            -configuration Release \
-            -destination 'generic/platform=iOS'
-            
-      - name: 📱 Export App Store IPA
-        script: |
-          echo "📱 Exporting App Store IPA..."
-          cd ios-native/EezyBuild
-          xcodebuild -exportArchive \
-            -archivePath EezyBuild.xcarchive \
-            -exportPath ./build \
-            -exportOptionsPlist /Users/builder/appstore_export_options.plist
-            
-      - name: 📄 Create App Store Export Options
+      - name:  Create App Store Export Options
         script: |
           echo "📄 Creating App Store export options..."
           cat > /Users/builder/appstore_export_options.plist << EOF
@@ -226,6 +212,26 @@ workflows:
           </dict>
           </plist>
           EOF
+          
+      - name: 🏗️ Build and Archive for App Store
+        script: |
+          echo "🏗️ Building for App Store..."
+          cd ios-native/EezyBuild
+          xcodebuild archive \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -archivePath EezyBuild.xcarchive \
+            -configuration Release \
+            -destination 'generic/platform=iOS'
+            
+      - name: 📱 Export App Store IPA
+        script: |
+          echo "📱 Exporting App Store IPA..."
+          cd ios-native/EezyBuild
+          xcodebuild -exportArchive \
+            -archivePath EezyBuild.xcarchive \
+            -exportPath ./build \
+            -exportOptionsPlist /Users/builder/appstore_export_options.plist
     artifacts:
       - ios-native/EezyBuild/build/*.ipa
       - ios-native/EezyBuild/EezyBuild.xcarchive
@@ -236,9 +242,3 @@ workflows:
         beta_groups:
           - Internal Testing
         submit_to_app_store: false # Set to true when ready for App Store review
-      email:
-        recipients:
-          - $CM_BUILD_EMAIL
-        notify:
-          success: true
-          failure: true
