@@ -1,0 +1,78 @@
+name: 🧪 Test iOS Build
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  test-ios:
+    name: Test Basic iOS Build
+    runs-on: macos-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: 📋 Environment Info
+      run: |
+        echo "=== Environment Information ==="
+        echo "Xcode Version: $(xcodebuild -version)"
+        echo "macOS Version: $(sw_vers -productVersion)"
+        echo "Available Xcode versions:"
+        ls /Applications/ | grep Xcode || echo "No Xcode installations found"
+        echo ""
+        
+    - name: 📱 Check Simulators
+      run: |
+        echo "=== Available Simulators ==="
+        xcrun simctl list devices available || echo "Failed to list simulators"
+        echo ""
+        
+    - name: 📂 Check Project Structure
+      run: |
+        echo "=== Project Structure ==="
+        ls -la ios-native/
+        echo ""
+        ls -la ios-native/EezyBuild/
+        echo ""
+        
+    - name: 🔍 Validate Xcode Project
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Xcode Project Validation ==="
+        echo "Checking if project file exists:"
+        ls -la *.xcodeproj || echo "No .xcodeproj found"
+        echo ""
+        echo "Checking project contents:"
+        ls -la EezyBuild.xcodeproj/ || echo "Cannot access project contents"
+        echo ""
+        echo "Listing available schemes:"
+        xcodebuild -list -project EezyBuild.xcodeproj || echo "Failed to list schemes"
+        echo ""
+        
+    - name: 🏗️ Minimal Build Test
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Attempting Minimal Build ==="
+        echo "Testing with absolute minimal settings..."
+        
+        # Try the most basic build possible
+        timeout 300 xcodebuild \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          build-for-testing \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO || echo "Basic build failed"
+          
+    - name: 📊 Build Summary
+      if: always()
+      run: |
+        echo "=== Build Test Summary ==="
+        echo "This test workflow helps diagnose iOS build issues"
+        echo "Check the logs above for any specific error messages"
