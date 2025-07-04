@@ -135,13 +135,6 @@ workflows:
     artifacts:
       - ios-native/EezyBuild/build/*.ipa
       - ios-native/EezyBuild/EezyBuild.xcarchive
-    publishing:
-      email:
-        recipients:
-          - $CM_BUILD_EMAIL
-        notify:
-          success: true
-          failure: true
 
   # iOS App Store Build (Production)
   ios-appstore:
