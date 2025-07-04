@@ -242,3 +242,9 @@ workflows:
         beta_groups:
           - Internal Testing
         submit_to_app_store: false # Set to true when ready for App Store review
+      email:
+        recipients:
+          - $CM_BUILD_EMAIL
+        notify:
+          success: true
+          failure: true
