@@ -88,7 +88,7 @@ jobs:
           PROVISIONING_PROFILE="" || echo "⚠️ Tests not configured yet"
 
     # Device Build Steps (when certificates are available)
-    - name: � Install Certificates and Provisioning Profiles
+    - name: 🔐 Install Certificates and Provisioning Profiles
       if: ${{ contains(github.event.inputs.build_type, 'device') || github.event.inputs.build_type == 'appstore' }}
       env:
         BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
@@ -131,7 +131,7 @@ jobs:
         mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
         cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
           
-    - name: �📦 Archive iOS App for Device
+    - name: 📦 Archive iOS App for Device
       if: ${{ contains(github.event.inputs.build_type, 'device') || github.event.inputs.build_type == 'appstore' }}
       working-directory: ios-native/EezyBuild
       run: |
