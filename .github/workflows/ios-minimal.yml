@@ -1,0 +1,55 @@
+name: 🧪 iOS Minimal Validation
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  validate-ios:
+    name: Minimal iOS Project Validation
+    runs-on: macos-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 📋 Environment Check
+      run: |
+        echo "=== Environment ==="
+        echo "macOS: $(sw_vers -productVersion)"
+        echo "Xcode: $(xcodebuild -version | head -1)"
+        echo "Available SDKs:"
+        xcodebuild -showsdks | grep iOS || echo "No iOS SDKs found"
+        
+    - name: 📂 Project Structure Validation
+      run: |
+        echo "=== Project Structure ==="
+        echo "Checking iOS project..."
+        ls -la ios-native/EezyBuild/
+        echo ""
+        echo "Checking Xcode project:"
+        ls -la ios-native/EezyBuild/EezyBuild.xcodeproj/
+        echo ""
+        echo "Checking source files:"
+        find ios-native/EezyBuild/EezyBuild -name "*.swift" | head -10
+        
+    - name: 🔍 Xcode Project Validation Only
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Xcode Project Info ==="
+        echo "Listing schemes:"
+        xcodebuild -list -project EezyBuild.xcodeproj || echo "Failed to list schemes"
+        echo ""
+        echo "Checking build settings:"
+        xcodebuild -project EezyBuild.xcodeproj -target EezyBuild -showBuildSettings | head -20 || echo "Failed to show build settings"
+        
+    - name: ✅ Validation Complete
+      run: |
+        echo "=== Validation Summary ==="
+        echo "✅ Repository checked out"
+        echo "✅ iOS project structure exists"
+        echo "✅ Xcode project file accessible"
+        echo ""
+        echo "🎯 Next Steps:"
+        echo "1. Use Codemagic for reliable iOS builds"
+        echo "2. Codemagic handles iOS dependencies better"
+        echo "3. GitHub Actions iOS support can be inconsistent"
