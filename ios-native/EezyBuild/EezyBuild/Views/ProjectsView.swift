@@ -229,12 +229,14 @@ struct StatusBadge: View {
         switch status {
         case .planning:
             return .blue
-        case .inProgress:
+        case .active:
             return .orange
         case .completed:
             return .green
         case .onHold:
             return .gray
+        case .cancelled:
+            return .red
         }
     }
 }

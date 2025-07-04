@@ -465,7 +465,7 @@ struct SubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var userManager: UserManager
     
-    let plans: [PlanType] = [.basic, .pro, .enterprise]
+    let plans: [SubscriptionTier] = [.free, .pro, .enterprise]
     
     var body: some View {
         NavigationView {
@@ -493,7 +493,7 @@ struct SubscriptionView: View {
                         ForEach(plans, id: \.self) { plan in
                             PlanCard(
                                 plan: plan,
-                                isCurrentPlan: userManager.subscription?.planType == plan,
+                                isCurrentPlan: userManager.subscription?.tier == plan,
                                 onSelect: {
                                     // TODO: Implement subscription purchase
                                 }
@@ -530,7 +530,7 @@ struct SubscriptionView: View {
 }
 
 struct PlanCard: View {
-    let plan: PlanType
+    let plan: SubscriptionTier
     let isCurrentPlan: Bool
     let onSelect: () -> Void
     
@@ -543,7 +543,7 @@ struct PlanCard: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                     
-                    Text(plan.price)
+                    Text(plan.monthlyPrice)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.green)
@@ -568,16 +568,16 @@ struct PlanCard: View {
             }
             
             if !isCurrentPlan {
-                Button(plan == .basic ? "Downgrade" : "Upgrade") {
+                Button(plan == .free ? "Downgrade" : "Upgrade") {
                     onSelect()
                 }
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundColor(plan == .basic ? .gray : .black)
+                .foregroundColor(plan == .free ? .gray : .black)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
                 .background(
-                    plan == .basic ? Color.gray.opacity(0.2) : 
+                    plan == .free ? Color.gray.opacity(0.2) : 
                     LinearGradient(
                         colors: [.green, Color.green.opacity(0.8)],
                         startPoint: .leading,
@@ -596,14 +596,12 @@ struct PlanCard: View {
         )
     }
     
-    private func planFeatures(for plan: PlanType) -> [String] {
+    private func planFeatures(for plan: SubscriptionTier) -> [String] {
         switch plan {
-        case .none:
+        case .free:
             return ["Basic chat access", "Limited daily queries"]
-        case .basic:
-            return ["Unlimited chat", "Basic calculators", "5 projects"]
         case .pro:
-            return ["Everything in Basic", "Advanced calculators", "Unlimited projects", "Team collaboration"]
+            return ["Unlimited chat", "Basic calculators", "Unlimited projects"]
         case .enterprise:
             return ["Everything in Pro", "Advanced search", "Priority support", "Custom integrations"]
         }

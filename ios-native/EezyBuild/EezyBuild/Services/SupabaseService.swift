@@ -14,13 +14,6 @@ struct SimpleAuthResponse: Codable {
     let refreshToken: String
 }
 
-struct SimpleProject: Codable {
-    let id: String
-    let name: String
-    let description: String?
-    let status: String
-}
-
 struct SimpleAPIError: Error, Codable {
     let message: String
     let code: String
@@ -122,22 +115,58 @@ class SupabaseService: ObservableObject {
         return mockResponse
     }
     
-    // MARK: - Projects API (Simplified)
+    // MARK: - Projects API (Updated to return Project models)
     
-    func getProjects() async throws -> [SimpleProject] {
-        // Return mock data for testing
+    func getProjects() async throws -> [Project] {
+        // Return mock Project data for testing
         return [
-            SimpleProject(id: "1", name: "Sample Project", description: "A test project", status: "active")
+            Project(
+                name: "Kitchen Extension",
+                description: "Single storey rear extension to create open plan kitchen/dining area",
+                address: "123 Oak Street, London",
+                projectType: "Extension",
+                status: .active
+            ),
+            Project(
+                name: "Loft Conversion", 
+                description: "Convert loft space into two bedrooms with en-suite",
+                address: "456 Elm Avenue, Manchester",
+                projectType: "Conversion",
+                status: .planning
+            ),
+            Project(
+                name: "Garden Office",
+                description: "Detached garden office with electricity and heating", 
+                address: "789 Pine Road, Birmingham",
+                projectType: "New Build",
+                status: .completed
+            )
         ]
     }
     
-    func createProject(name: String, description: String?) async throws -> SimpleProject {
+    func createProject(name: String, description: String?, address: String?, projectType: String?) async throws -> Project {
         // Return mock data for testing
-        return SimpleProject(
-            id: UUID().uuidString,
+        return Project(
             name: name,
             description: description,
-            status: "planning"
+            address: address,
+            projectType: projectType,
+            status: .planning
+        )
+    }
+    
+    func updateProject(_ project: Project) async throws -> Project {
+        // For testing, return the same project with updated timestamp
+        return Project(
+            id: project.id,
+            name: project.name,
+            description: project.description,
+            address: project.address,
+            projectType: project.projectType,
+            status: project.status,
+            userId: project.userId,
+            createdAt: project.createdAt,
+            updatedAt: Date()
         )
     }
     

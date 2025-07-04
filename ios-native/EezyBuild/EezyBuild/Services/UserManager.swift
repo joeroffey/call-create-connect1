@@ -26,11 +26,16 @@ class UserManager: ObservableObject {
         do {
             let authResponse = try await supabaseService.signUp(email: email, password: password, name: name)
             
-            // Store session securely
-            try keychain.store(authResponse.session, forKey: "user_session")
+            // Store auth token securely
+            try keychain.store(authResponse.accessToken, forKey: "access_token")
+            try keychain.store(authResponse.refreshToken, forKey: "refresh_token")
             
-            // Update state
-            currentUser = authResponse.user
+            // Create User from SimpleUser
+            currentUser = User(
+                id: authResponse.user.id,
+                email: authResponse.user.email,
+                name: authResponse.user.name
+            )
             isAuthenticated = true
             
             // Load additional user data
@@ -50,11 +55,16 @@ class UserManager: ObservableObject {
         do {
             let authResponse = try await supabaseService.signIn(email: email, password: password)
             
-            // Store session securely
-            try keychain.store(authResponse.session, forKey: "user_session")
+            // Store auth token securely
+            try keychain.store(authResponse.accessToken, forKey: "access_token")
+            try keychain.store(authResponse.refreshToken, forKey: "refresh_token")
             
-            // Update state
-            currentUser = authResponse.user
+            // Create User from SimpleUser
+            currentUser = User(
+                id: authResponse.user.id,
+                email: authResponse.user.email,
+                name: authResponse.user.name
+            )
             isAuthenticated = true
             
             // Load additional user data
@@ -73,8 +83,9 @@ class UserManager: ObservableObject {
         do {
             try await supabaseService.signOut()
             
-            // Clear stored session
-            try keychain.delete(forKey: "user_session")
+            // Clear stored tokens
+            try keychain.delete(forKey: "access_token")
+            try keychain.delete(forKey: "refresh_token")
             
             // Clear state
             currentUser = nil
@@ -90,37 +101,14 @@ class UserManager: ObservableObject {
     
     func checkAuthenticationStatus() {
         Task {
-            // Check for stored session
-            if let storedSession: Session = try? keychain.retrieve(forKey: "user_session") {
-                // Check if session is still valid
-                if storedSession.expiresAt > Date() {
-                    supabaseService.setSession(storedSession)
-                    isAuthenticated = true
+            // Check for stored access token
+            if let _: String = try? keychain.retrieve(forKey: "access_token") {
+                // For now, assume token is valid (simplified)
+                isAuthenticated = supabaseService.isAuthenticated()
+                if isAuthenticated {
                     await loadUserData()
-                } else {
-                    // Try to refresh the session
-                    await refreshSession()
                 }
             }
-        }
-    }
-    
-    private func refreshSession() async {
-        do {
-            let authResponse = try await supabaseService.refreshSession()
-            
-            // Store new session
-            try keychain.store(authResponse.session, forKey: "user_session")
-            
-            // Update state
-            currentUser = authResponse.user
-            isAuthenticated = true
-            
-            await loadUserData()
-            
-        } catch {
-            // Refresh failed, require re-authentication
-            await signOut()
         }
     }
     
@@ -128,8 +116,11 @@ class UserManager: ObservableObject {
     
     func loadUserData() async {
         do {
-            // Load subscription data
-            subscription = try await supabaseService.getSubscription()
+            // Load mock subscription for now
+            subscription = Subscription(
+                userId: currentUser?.id ?? "mock-user",
+                tier: .free
+            )
             
         } catch {
             print("Failed to load user data: \(error)")
@@ -140,11 +131,15 @@ class UserManager: ObservableObject {
         isLoading = true
         errorMessage = nil
         
-        do {
-            let updatedUser = try await supabaseService.updateUserProfile(name: name)
-            currentUser = updatedUser
-        } catch {
-            errorMessage = error.localizedDescription
+        // For simplified version, just update local user
+        if var user = currentUser {
+            currentUser = User(
+                id: user.id,
+                email: user.email,
+                name: name,
+                createdAt: user.createdAt,
+                updatedAt: Date()
+            )
         }
         
         isLoading = false
@@ -154,11 +149,11 @@ class UserManager: ObservableObject {
     
     var hasActiveSubscription: Bool {
         guard let subscription = subscription else { return false }
-        return subscription.status == .active && subscription.currentPeriodEnd > Date()
+        return subscription.status == "active" && subscription.currentPeriodEnd > Date()
     }
     
     var subscriptionDisplayName: String {
-        subscription?.planType.displayName ?? "No Plan"
+        subscription?.tier.displayName ?? "Free"
     }
     
     func canAccessFeature(_ feature: AppFeature) -> Bool {
@@ -168,9 +163,9 @@ class UserManager: ObservableObject {
         case .calculators:
             return hasActiveSubscription
         case .projects:
-            return subscription?.planType == .enterprise || subscription?.planType == .pro
+            return subscription?.tier == .enterprise || subscription?.tier == .pro
         case .advancedSearch:
-            return subscription?.planType == .enterprise
+            return subscription?.tier == .enterprise
         case .team:
             return hasActiveSubscription
         }
