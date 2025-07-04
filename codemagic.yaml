@@ -71,13 +71,6 @@ workflows:
     artifacts:
       - ios-native/EezyBuild/build/**/*.app
       - ios-native/EezyBuild/build/**/Build/Products/**/*.app
-    publishing:
-      email:
-        recipients:
-          - $CM_BUILD_EMAIL
-        notify:
-          success: true
-          failure: true
 
   # iOS Device Build (Simplified - No App Store publishing)
   ios-device:
@@ -198,10 +191,3 @@ workflows:
       - ios-native/EezyBuild/build/*.ipa
       - ios-native/EezyBuild/EezyBuild.xcarchive
       - ios-native/EezyBuild/build/**/*
-    publishing:
-      email:
-        recipients:
-          - $CM_BUILD_EMAIL
-        notify:
-          success: true
-          failure: true
