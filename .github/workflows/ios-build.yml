@@ -63,17 +63,15 @@ jobs:
       run: |
         echo "🔨 Building EezyBuild for iOS Simulator..."
         
-        # Use the same approach that worked in the diagnostic test
-        xcodebuild \
+        # Use EXACT same command that worked in diagnostic test
+        timeout 300 xcodebuild \
           -project EezyBuild.xcodeproj \
           -scheme EezyBuild \
           -sdk iphonesimulator \
           -configuration Debug \
-          clean build \
+          build-for-testing \
           CODE_SIGNING_ALLOWED=NO \
-          CODE_SIGNING_REQUIRED=NO \
-          CODE_SIGN_IDENTITY="" \
-          PROVISIONING_PROFILE=""
+          CODE_SIGNING_REQUIRED=NO
           
     - name: 🧪 Run iOS Tests
       if: ${{ github.event.inputs.build_type == 'simulator' || github.event.inputs.build_type == '' }}

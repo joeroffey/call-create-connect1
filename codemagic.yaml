@@ -47,27 +47,8 @@ workflows:
             clean build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO
-            
-      - name: 🧪 Run Tests (if available)
-        script: |
-          echo "🧪 Running tests..."
-          cd ios-native/EezyBuild
-          xcodebuild test \
-            -project EezyBuild.xcodeproj \
-            -scheme EezyBuild \
-            -sdk iphonesimulator \
-            -destination 'platform=iOS Simulator,name=iPhone 14' \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO || echo "⚠️ Tests not configured yet"
     artifacts:
       - ios-native/EezyBuild/build/**/*.app
-    publishing:
-      email:
-        recipients:
-          - $CM_BUILD_EMAIL
-        notify:
-          success: true
-          failure: true
 
   # iOS Device Build (Requires Apple Developer Account)
   ios-device:
@@ -103,7 +84,6 @@ workflows:
       - name: 🔐 Set up certificates and provisioning profiles
         script: |
           echo "🔐 Setting up iOS certificates and provisioning profiles..."
-          # Codemagic automatically handles certificate installation when using groups
           keychain initialize
           app-store-connect fetch-signing-files $BUNDLE_ID \
             --type IOS_APP_DEVELOPMENT \
@@ -111,26 +91,6 @@ workflows:
           keychain add-certificates
           xcode-project use-profiles
           
-      - name: 📦 Build and Archive iOS App
-        script: |
-          echo "📦 Building and archiving iOS app..."
-          cd ios-native/EezyBuild
-          xcodebuild archive \
-            -project EezyBuild.xcodeproj \
-            -scheme EezyBuild \
-            -archivePath EezyBuild.xcarchive \
-            -configuration Release \
-            -destination 'generic/platform=iOS'
-            
-      - name: 📱 Export IPA
-        script: |
-          echo "📱 Exporting IPA for distribution..."
-          cd ios-native/EezyBuild
-          xcodebuild -exportArchive \
-            -archivePath EezyBuild.xcarchive \
-            -exportPath ./build \
-            -exportOptionsPlist /Users/builder/export_options.plist
-            
       - name: 📄 Create Export Options
         script: |
           echo "📄 Creating export options plist..."
@@ -152,6 +112,26 @@ workflows:
           </dict>
           </plist>
           EOF
+          
+      - name: 📦 Build and Archive iOS App
+        script: |
+          echo "📦 Building and archiving iOS app..."
+          cd ios-native/EezyBuild
+          xcodebuild archive \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -archivePath EezyBuild.xcarchive \
+            -configuration Release \
+            -destination 'generic/platform=iOS'
+            
+      - name: 📱 Export IPA
+        script: |
+          echo "📱 Exporting IPA for distribution..."
+          cd ios-native/EezyBuild
+          xcodebuild -exportArchive \
+            -archivePath EezyBuild.xcarchive \
+            -exportPath ./build \
+            -exportOptionsPlist /Users/builder/export_options.plist
     artifacts:
       - ios-native/EezyBuild/build/*.ipa
       - ios-native/EezyBuild/EezyBuild.xcarchive
