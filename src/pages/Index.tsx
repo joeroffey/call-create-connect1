@@ -73,7 +73,7 @@ const Index = () => {
         console.log('✅ URL cleaned');
       }, 100);
     }
-  }, [hasActiveSubscription, subscription]);
+  }, []); // Remove dependencies to ensure this always runs on URL changes
 
   useEffect(() => {
     // Check for successful subscription in URL and handle it
