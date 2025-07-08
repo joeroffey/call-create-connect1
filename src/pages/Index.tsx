@@ -474,12 +474,11 @@ const Index = () => {
 
 
       {/* Main Content - fills space between header and nav with proper mobile spacing */}
-      <main className="flex-1 min-h-0 overflow-y-auto pb-24">
+      <main ref={mainContentRef} className="flex-1 min-h-0 overflow-y-auto pb-24">
         <div className="w-full max-w-6xl mx-auto px-4">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              ref={mainContentRef}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
