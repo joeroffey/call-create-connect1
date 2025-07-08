@@ -200,6 +200,14 @@ What would you like to discuss about your project?`,
     }
   }, [project, userFirstName]);
 
+  // Update welcome message when userFirstName changes
+  useEffect(() => {
+    if (messages.length === 1 && (messages[0].id === 'welcome' || messages[0].id === 'project-welcome') && !currentConversationId) {
+      const welcomeMsg = projectId ? getProjectWelcomeMessage() : welcomeMessage;
+      setMessages([welcomeMsg]);
+    }
+  }, [userFirstName]);
+
   // Load conversation messages when a conversation is selected
   useEffect(() => {
     if (conversationMessages.length > 0) {
