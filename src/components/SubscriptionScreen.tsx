@@ -81,6 +81,15 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   ];
 
   const handlePlanSelection = async (planType: string) => {
+    console.log('🎯 Plan selection clicked:', { planType, user, isNative });
+    
+    if (!user?.id) {
+      console.error('❌ No user found - cannot create checkout session');
+      // Redirect to login
+      window.location.href = '/';
+      return;
+    }
+    
     setLoading(planType);
     try {
       if (isNative) {
@@ -89,7 +98,9 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         await purchaseProduct(productId);
       } else {
         // Use Stripe on web
-        await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+        console.log('🔄 Calling createCheckoutSession...');
+        const success = await createCheckoutSession(planType as 'basic' | 'pro' | 'enterprise');
+        console.log('✅ Checkout session result:', success);
       }
     } catch (error) {
       console.error('Error with plan selection:', error);

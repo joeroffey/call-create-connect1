@@ -102,8 +102,7 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
           completed, 
           created_at, 
           project_id, 
-          assigned_to,
-          assigned_user:profiles!project_schedule_of_works_assigned_to_fkey(full_name)
+          assigned_to
         `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
@@ -113,13 +112,7 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
         return;
       }
 
-      // Transform the data to include assigned user name
-      const transformedTasks = (data || []).map(task => ({
-        ...task,
-        assigned_user_name: task.assigned_user?.full_name || null
-      }));
-
-      setTasks(transformedTasks);
+      setTasks(data || []);
     } catch (error) {
       console.error('Unexpected error loading tasks:', error);
     }
@@ -501,11 +494,6 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
                               }`}>
                                 {task.title}
                               </span>
-                              {task.assigned_user_name && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
-                                  {task.assigned_user_name}
-                                </span>
-                              )}
                             </div>
                             <div className="flex items-center gap-1 text-xs text-gray-500">
                               <Clock className="w-3 h-3" />

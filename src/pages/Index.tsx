@@ -306,6 +306,8 @@ const Index = () => {
     );
   }
 
+  console.log('🔐 Authentication check:', { isAuthenticated, user, session });
+  
   if (!isAuthenticated) {
     return (
       <AuthScreen
