@@ -243,12 +243,13 @@ const Index = () => {
   const tabs = getAvailableTabs();
 
   // Reset active tab if it's not available in current subscription
+  // BUT allow 'projects' if there's a pending project modal from notification
   useEffect(() => {
     const availableTabIds = tabs.map(tab => tab.id);
-    if (!availableTabIds.includes(activeTab)) {
+    if (!availableTabIds.includes(activeTab) && !(activeTab === 'projects' && pendingProjectModal)) {
       setActiveTab('chat');
     }
-  }, [subscriptionTier, activeTab]);
+  }, [subscriptionTier, activeTab, pendingProjectModal]);
 
   // Scroll to top when tab changes
   useEffect(() => {

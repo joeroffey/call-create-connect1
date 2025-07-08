@@ -52,7 +52,7 @@ export const useTeamActivity = (teamId: string | undefined, enabled: boolean = t
       const activitiesWithUserInfo = (data || []).map(activity => ({
         ...activity,
         user_name: profilesMap.get(activity.user_id)?.full_name || 'Unknown User',
-        user_avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${activity.user_id}`
+        user_avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format&q=80`
       })) as TeamActivity[];
       
       setActivities(activitiesWithUserInfo);
