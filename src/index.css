@@ -221,6 +221,30 @@
     }
   }
 
+  /* Mobile keyboard handling - scroll input into view */
+  .mobile-input-focus {
+    transition: all 0.3s ease-in-out;
+  }
+
+  @media (max-width: 768px) {
+    /* When keyboard is open, ensure inputs are visible */
+    input:focus,
+    textarea:focus {
+      scroll-margin-top: 100px;
+      scroll-margin-bottom: 100px;
+    }
+    
+    /* Smooth scroll behavior for mobile */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Handle viewport height changes on mobile */
+    .mobile-keyboard-adjust {
+      transition: height 0.3s ease;
+    }
+  }
+
   /* Android-specific fixes */
   @media screen and (-webkit-device-pixel-ratio: 2.625) {
     /* Android Chrome address bar handling */

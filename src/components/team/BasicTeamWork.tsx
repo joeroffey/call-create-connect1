@@ -300,14 +300,22 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
           <CardContent className="space-y-4">
             <div>
               <Label htmlFor="project-name" className="text-white">Project Name</Label>
-              <Input
-                id="project-name"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                placeholder="Enter project name"
-                className="bg-gray-700 border-gray-600 text-white mt-1"
-                onKeyPress={(e) => e.key === 'Enter' && createProject()}
-              />
+                  <Input
+                    id="project-name"
+                    value={newProjectName}
+                    onChange={(e) => setNewProjectName(e.target.value)}
+                    placeholder="Enter project name"
+                    className="bg-gray-700 border-gray-600 text-white mt-1 mobile-input-focus"
+                    onKeyPress={(e) => e.key === 'Enter' && createProject()}
+                    onFocus={(e) => {
+                      // Scroll input into view on mobile
+                      if (window.innerWidth <= 768) {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }
+                    }}
+                  />
             </div>
             <div className="flex justify-end space-x-2">
               <Button
@@ -419,8 +427,16 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
                     value={newTaskTitle}
                     onChange={(e) => setNewTaskTitle(e.target.value)}
                     placeholder="Enter task title"
-                    className="bg-gray-700 border-gray-600 text-white"
+                    className="bg-gray-700 border-gray-600 text-white mobile-input-focus"
                     onKeyPress={(e) => e.key === 'Enter' && createTask()}
+                    onFocus={(e) => {
+                      // Scroll input into view on mobile
+                      if (window.innerWidth <= 768) {
+                        setTimeout(() => {
+                          e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+                      }
+                    }}
                   />
                   <div className="flex justify-end space-x-2">
                     <Button

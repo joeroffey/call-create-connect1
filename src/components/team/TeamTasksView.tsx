@@ -232,7 +232,7 @@ const TeamTasksView = ({ teamId, teamName }: TeamTasksViewProps) => {
                       <div className="flex items-end justify-between gap-3">
                         <div className="flex items-center gap-3 flex-wrap">
                           {task.assigned_to_name ? (
-                            <Badge variant="outline" className="px-2 py-1 text-sm text-blue-400 border-blue-400/30">
+                            <Badge className="bg-emerald-600/20 text-emerald-400 border-emerald-600/30 hover:bg-emerald-600/30 px-2 py-1 text-sm">
                               <User className="w-3 h-3 mr-1" />
                               {task.assigned_to_name}
                             </Badge>
