@@ -31,11 +31,27 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First check if this is a team project or personal project
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select('team_id, user_id')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) throw projectError;
+
+      let query = supabase
         .from('project_schedule_of_works')
         .select('*')
-        .eq('project_id', projectId)
-        .order('created_at', { ascending: false });
+        .eq('project_id', projectId);
+
+      // For personal projects (no team_id), filter by user_id
+      // For team projects, show schedule items from all team members
+      if (!project.team_id) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       setScheduleItems(data || []);

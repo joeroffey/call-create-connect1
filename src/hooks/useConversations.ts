@@ -47,39 +47,74 @@ export const useConversations = (userId: string | undefined, enabled: boolean = 
     if (!userId || !enabled) return;
 
     try {
-      // Fetch document counts
-      const { data: documents, error: docError } = await supabase
-        .from('project_documents')
-        .select('project_id')
-        .eq('user_id', userId);
+      // First get all projects the user can access (own projects + team projects)
+      const { data: accessibleProjects, error: projectError } = await supabase
+        .from('projects')
+        .select('id, team_id')
+        .or(`user_id.eq.${userId},team_id.in.(${await getUserTeamIds()})`);
 
-      if (docError) throw docError;
+      if (projectError) throw projectError;
 
-      // Fetch schedule of works counts
-      const { data: scheduleItems, error: scheduleError } = await supabase
-        .from('project_schedule_of_works')
-        .select('project_id')
-        .eq('user_id', userId);
-
-      if (scheduleError) throw scheduleError;
-
-      // Count by project
       const counts: {[key: string]: {documents: number, scheduleOfWorks: number}} = {};
       
-      documents?.forEach(doc => {
-        if (!counts[doc.project_id]) counts[doc.project_id] = { documents: 0, scheduleOfWorks: 0 };
-        counts[doc.project_id].documents++;
-      });
+      for (const project of accessibleProjects || []) {
+        // Initialize count for this project
+        counts[project.id] = { documents: 0, scheduleOfWorks: 0 };
 
-      scheduleItems?.forEach(item => {
-        if (!counts[item.project_id]) counts[item.project_id] = { documents: 0, scheduleOfWorks: 0 };
-        counts[item.project_id].scheduleOfWorks++;
-      });
+        // For team projects, get data from all team members; for personal projects, only current user
+        if (project.team_id) {
+          // Team project - get data from all team members
+          const { data: documents } = await supabase
+            .from('project_documents')
+            .select('id')
+            .eq('project_id', project.id);
+
+          const { data: scheduleItems } = await supabase
+            .from('project_schedule_of_works')
+            .select('id')
+            .eq('project_id', project.id);
+
+          counts[project.id].documents = documents?.length || 0;
+          counts[project.id].scheduleOfWorks = scheduleItems?.length || 0;
+        } else {
+          // Personal project - filter by user_id
+          const { data: documents } = await supabase
+            .from('project_documents')
+            .select('id')
+            .eq('project_id', project.id)
+            .eq('user_id', userId);
+
+          const { data: scheduleItems } = await supabase
+            .from('project_schedule_of_works')
+            .select('id')
+            .eq('project_id', project.id)
+            .eq('user_id', userId);
+
+          counts[project.id].documents = documents?.length || 0;
+          counts[project.id].scheduleOfWorks = scheduleItems?.length || 0;
+        }
+      }
 
       setProjectCounts(counts);
     } catch (error: any) {
       console.error('Error fetching project counts:', error);
       setError(error.message || 'Failed to load project counts');
+    }
+  };
+
+  // Helper function to get user's team IDs
+  const getUserTeamIds = async (): Promise<string> => {
+    try {
+      const { data: teamMembers } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', userId);
+      
+      const teamIds = teamMembers?.map(tm => tm.team_id) || [];
+      return teamIds.length > 0 ? teamIds.join(',') : 'null';
+    } catch (error) {
+      console.error('Error fetching team IDs:', error);
+      return 'null';
     }
   };
 
