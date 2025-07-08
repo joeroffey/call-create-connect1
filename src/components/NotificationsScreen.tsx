@@ -25,9 +25,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useNotifications, type Notification } from '@/hooks/useNotifications';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 
 const NotificationsScreen = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState<any>(null);
   const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -80,6 +82,16 @@ const NotificationsScreen = () => {
     markAsRead(id);
   };
 
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read when clicked
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    
+    // Navigate to the project's schedule/tasks view
+    navigate(`/?project=${notification.project_id}&tab=schedule`);
+  };
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'task_assigned': return <User className="w-4 h-4 text-blue-500" />;
@@ -91,10 +103,10 @@ const NotificationsScreen = () => {
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'task_assigned': return 'bg-blue-50 border-blue-200';
-      case 'document_uploaded': return 'bg-green-50 border-green-200';
-      case 'task_completed': return 'bg-emerald-50 border-emerald-200';
-      default: return 'bg-gray-50 border-gray-200';
+      case 'task_assigned': return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
+      case 'document_uploaded': return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
+      case 'task_completed': return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
+      default: return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
     }
   };
 
@@ -245,9 +257,12 @@ const NotificationsScreen = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card className={`bg-gray-900/50 border-gray-800 hover:bg-gray-900/70 transition-all cursor-pointer ${
-                  !notification.read ? 'ring-2 ring-emerald-500/20' : ''
-                }`}>
+                <Card 
+                  className={`bg-gray-900/50 border-gray-800 hover:bg-gray-900/70 transition-all cursor-pointer ${
+                    !notification.read ? 'ring-2 ring-emerald-500/20' : ''
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -269,7 +284,7 @@ const NotificationsScreen = () => {
                             {notification.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                           </Badge>
                           {notification.metadata?.project_name && (
-                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-400">
+                            <Badge variant="outline" className="text-xs bg-emerald-500/20 border-emerald-500/40 text-emerald-300">
                               {notification.metadata.project_name}
                             </Badge>
                           )}
@@ -291,7 +306,10 @@ const NotificationsScreen = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleMarkAsRead(notification.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsRead(notification.id);
+                          }}
                           className="text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
                         >
                           Mark as Read
