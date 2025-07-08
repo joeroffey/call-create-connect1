@@ -42,6 +42,7 @@ const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatCom
   const [currentConversationTitle, setCurrentConversationTitle] = useState<string>('');
   const [project, setProject] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [userFirstName, setUserFirstName] = useState<string>('');
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,12 +62,53 @@ const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatCom
     }
   }, [conversationId]);
 
+  // Load user's first name from profile
+  useEffect(() => {
+    if (user?.id) {
+      loadUserProfile();
+    }
+  }, [user?.id]);
+
   // Load project details if projectId is provided
   useEffect(() => {
     if (projectId) {
       loadProjectDetails();
     }
   }, [projectId]);
+
+  const loadUserProfile = async () => {
+    if (!user?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Error loading user profile:', error);
+        // Fallback to user email name if profile doesn't exist
+        const emailName = user.email?.split('@')[0] || '';
+        setUserFirstName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
+        return;
+      }
+
+      if (data?.full_name) {
+        // Extract first name from full name
+        const firstName = data.full_name.split(' ')[0];
+        setUserFirstName(firstName);
+      } else {
+        // Fallback to user email name
+        const emailName = user.email?.split('@')[0] || '';
+        setUserFirstName(emailName.charAt(0).toUpperCase() + emailName.slice(1));
+      }
+    } catch (error) {
+      console.error('Error loading user profile:', error);
+      // Use generic greeting if all else fails
+      setUserFirstName('');
+    }
+  };
 
   const loadProjectDetails = async () => {
     if (!projectId) return;
@@ -97,7 +139,7 @@ const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatCom
 
   const welcomeMessage = {
     id: 'welcome',
-    text: `Welcome to EezyBuild! 👋
+    text: `Hi ${userFirstName || 'there'}! Welcome to EezyBuild! 👋
 
 I'm your UK Building Regulations specialist, here to help you navigate construction requirements, planning permissions, and building standards.
 
@@ -119,7 +161,7 @@ Feel free to ask me anything about UK Building Regulations. I'm here to make com
   const getProjectWelcomeMessage = () => {
     return {
       id: 'project-welcome',
-      text: `Welcome to your project chat! 🏗️
+      text: `Hi ${userFirstName || 'there'}! Welcome to your project chat! 🏗️
 
 Here I will take into account previous chats, review your images and documents, and assist with everything involving your project.
 
@@ -148,7 +190,7 @@ What would you like to discuss about your project?`,
       const welcomeMsg = projectId ? getProjectWelcomeMessage() : welcomeMessage;
       setMessages([welcomeMsg]);
     }
-  }, [projectId, project, currentConversationId]);
+  }, [projectId, project, currentConversationId, userFirstName]);
 
   // Update welcome message when project data loads
   useEffect(() => {
@@ -156,7 +198,7 @@ What would you like to discuss about your project?`,
       const updatedWelcomeMsg = getProjectWelcomeMessage();
       setMessages([updatedWelcomeMsg]);
     }
-  }, [project]);
+  }, [project, userFirstName]);
 
   // Load conversation messages when a conversation is selected
   useEffect(() => {
