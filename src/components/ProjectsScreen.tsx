@@ -90,7 +90,17 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
     console.log('Fetching projects for user:', user.id);
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      // First get user's team IDs
+      const { data: teamMembers } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id);
+      
+      const userTeamIds = teamMembers?.map(tm => tm.team_id) || [];
+      console.log('User team IDs:', userTeamIds);
+      
+      // Build query to get both personal projects and team projects
+      let query = supabase
         .from('projects')
         .select(`
           *,
@@ -98,8 +108,18 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
             id,
             name
           )
-        `)
-        .order('updated_at', { ascending: false });
+        `);
+      
+      // Add filter for projects user can access
+      if (userTeamIds.length > 0) {
+        // User has teams - get personal projects OR team projects they're a member of
+        query = query.or(`user_id.eq.${user.id},team_id.in.(${userTeamIds.join(',')})`);
+      } else {
+        // User has no teams - only get personal projects
+        query = query.eq('user_id', user.id);
+      }
+      
+      const { data, error } = await query.order('updated_at', { ascending: false });
 
       if (error) {
         console.error('Supabase error fetching projects:', error);
@@ -107,6 +127,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       }
       
       console.log('ProjectsScreen - fetched projects:', data);
+      console.log('ProjectsScreen - number of projects found:', data?.length || 0);
       
       // Process projects to include team name
       const processedProjects = (data || []).map(project => ({
@@ -123,6 +144,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       
       setProjects(sortedProjects);
       console.log('Projects set successfully:', sortedProjects.length);
+      console.log('Project IDs available:', sortedProjects.map(p => p.id));
     } catch (error) {
       console.error('Error fetching projects:', error);
       toast({

@@ -36,7 +36,7 @@ export const useTeamActivity = (teamId: string | undefined, enabled: boolean = t
         .select('*')
         .eq('team_id', teamId)
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(5);
 
       if (error) throw error;
       
@@ -51,8 +51,7 @@ export const useTeamActivity = (teamId: string | undefined, enabled: boolean = t
       
       const activitiesWithUserInfo = (data || []).map(activity => ({
         ...activity,
-        user_name: profilesMap.get(activity.user_id)?.full_name || 'Unknown User',
-        user_avatar: `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face&auto=format&q=80`
+        user_name: profilesMap.get(activity.user_id)?.full_name || 'Unknown User'
       })) as TeamActivity[];
       
       setActivities(activitiesWithUserInfo);

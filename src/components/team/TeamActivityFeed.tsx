@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { useTeamActivity, type TeamActivity } from '@/hooks/useTeamActivity';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface TeamActivityFeedProps {
   teamId: string;
@@ -183,16 +182,12 @@ const TeamActivityFeed = ({ teamId, className = '' }: TeamActivityFeedProps) => 
                     transition={{ delay: index * 0.05 }}
                     className="flex items-start space-x-3 p-3 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors"
                   >
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={activity.user_avatar} />
-                      <AvatarFallback className="bg-emerald-500/20 text-emerald-300 text-xs">
-                        {activity.user_name?.charAt(0) || 'U'}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                      {getActivityIcon(activity.action)}
+                    </div>
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        {getActivityIcon(activity.action)}
                         <p className="text-sm text-gray-300">
                           <span className="font-medium text-white">{activity.user_name}</span>
                           {' '}
