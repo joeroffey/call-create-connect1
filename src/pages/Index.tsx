@@ -43,20 +43,25 @@ const Index = () => {
     const tab = urlParams.get('tab');
     const projectId = urlParams.get('project');
     const view = urlParams.get('view');
+    const teamId = urlParams.get('team');
     
-    console.log('🔍 URL params check:', { tab, projectId, view, fullUrl: window.location.href });
+    console.log('🔍 URL params check:', { tab, projectId, view, teamId, fullUrl: window.location.href });
     
     if (tab && projectId && view === 'schedule') {
-      console.log('🎯 Notification navigation detected:', { tab, projectId, view });
+      console.log('🎯 Notification navigation detected:', { tab, projectId, view, teamId });
       console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
       
+      // Force set the active tab to projects regardless of subscription 
+      // The projects screen will handle the subscription check
       setActiveTab(tab);
       setPendingProjectModal({ projectId, view });
       
-      // Clean up URL parameters
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, document.title, newUrl);
-      console.log('✅ URL cleaned and state set');
+      // Clean up URL parameters after a short delay to ensure processing
+      setTimeout(() => {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        console.log('✅ URL cleaned and state set');
+      }, 100);
     }
   }, [hasActiveSubscription, subscription]);
 
@@ -337,6 +342,17 @@ const Index = () => {
         }
         return <AppsScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} />;
       case 'projects':
+        // If there's a pending project modal from notification, show it regardless of subscription
+        // This allows users to view their project schedule even without enterprise subscription
+        if (pendingProjectModal && pendingProjectModal.projectId) {
+          return <ProjectsScreen 
+            user={user} 
+            onStartNewChat={handleStartNewChat} 
+            pendingProjectModal={pendingProjectModal}
+            onProjectModalHandled={() => setPendingProjectModal(null)}
+          />;
+        }
+        
         if (subscriptionTier !== 'enterprise') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">
             <div>
