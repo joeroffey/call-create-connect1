@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FileText, Eye, Calendar, MessageCircle, User } from 'lucide-react';
@@ -25,6 +26,14 @@ const categoryLabels = {
   'warranties': 'Warranties',
   'approved-documents': 'Approved Documents',
   'other': 'Other',
+} as const;
+
+const categoryColors = {
+  'building-control': 'bg-blue-500/10 text-blue-600 border-blue-500/20',
+  'certificates': 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+  'warranties': 'bg-purple-500/10 text-purple-600 border-purple-500/20',
+  'approved-documents': 'bg-orange-500/10 text-orange-600 border-orange-500/20',
+  'other': 'bg-gray-500/10 text-gray-600 border-gray-500/20',
 } as const;
 
 const DocumentCard = ({ 
@@ -56,6 +65,10 @@ const DocumentCard = ({
     });
   };
 
+  const getCategoryColor = (category: string) => {
+    return categoryColors[category as keyof typeof categoryColors] || categoryColors.other;
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -63,7 +76,7 @@ const DocumentCard = ({
       transition={{ delay: index * 0.1 }}
     >
       <Card 
-        className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 border-border/50 hover:border-primary/20 w-full"
+        className="group cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 border-0 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:scale-[1.02]"
         onClick={() => {
           try {
             console.log('Clicking on document:', document.file_name, 'ID:', document.id);
@@ -79,27 +92,26 @@ const DocumentCard = ({
       >
         <CardContent className="p-0 w-full">
           {/* Thumbnail Area */}
-          <div className="h-48 relative bg-gradient-to-br from-muted/30 to-muted/60 w-full">
+          <div className="h-56 relative bg-gradient-to-br from-muted/20 to-muted/40 w-full overflow-hidden">
             {isImage && !hasImageError ? (
               <img
                 src={documentUrl}
                 alt={document.file_name}
-                className="w-full h-full object-cover object-center transition-transform duration-300 group-hover:scale-110"
+                className="w-full h-full object-cover object-center transition-all duration-500 group-hover:scale-110"
                 onError={() => onImageError(document.id)}
                 loading="lazy"
-                style={{ transform: 'scale(1.2)' }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center space-y-2">
-                  <div className="w-16 h-16 bg-background/80 rounded-2xl flex items-center justify-center mx-auto shadow-sm">
-                    <FileText className="w-8 h-8 text-muted-foreground" />
+                <div className="text-center space-y-3">
+                  <div className="w-20 h-20 bg-background/90 rounded-3xl flex items-center justify-center mx-auto shadow-lg border border-border/50">
+                    <FileText className="w-10 h-10 text-muted-foreground" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-foreground/80 uppercase tracking-wider">
+                    <p className="text-sm font-semibold text-foreground/90 uppercase tracking-wider">
                       {getFileExtension(document.file_type)}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground font-medium">
                       {formatFileSize(document.file_size)}
                     </p>
                   </div>
@@ -108,64 +120,67 @@ const DocumentCard = ({
             )}
             
             {/* Category Badge */}
-            <div className="absolute top-3 left-3">
-              <Badge variant="default" className="text-xs shadow-sm">
+            <div className="absolute top-4 left-4">
+              <Badge 
+                variant="secondary" 
+                className={`text-xs font-medium shadow-sm border ${getCategoryColor(document.category)}`}
+              >
                 {categoryLabels[document.category as keyof typeof categoryLabels] || document.category}
               </Badge>
             </div>
 
             {/* User Badge */}
-            <div className="absolute top-3 right-3">
-              <div className="flex items-center gap-1 bg-green-500/90 text-white text-xs px-2 py-1 rounded-md shadow-sm">
+            <div className="absolute top-4 right-4">
+              <div className="flex items-center gap-1.5 bg-emerald-500/90 text-white text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm">
                 <User className="w-3 h-3" />
                 <span className="font-medium">{uploaderName.split(' ')[0]}</span>
               </div>
             </div>
 
             {/* Overlay on hover */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="bg-background/90 backdrop-blur-sm rounded-full p-3 shadow-lg">
-                  <Eye className="w-5 h-5 text-foreground" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center">
+              <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                <div className="bg-background/95 backdrop-blur-md rounded-2xl p-4 shadow-xl border border-border/50">
+                  <Eye className="w-6 h-6 text-primary" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Content Area */}
-          <div className="p-4 space-y-3">
-            <div className="space-y-1">
-              <h4 className="font-medium text-base leading-tight line-clamp-2 text-foreground break-words" title={document.display_name || document.file_name}>
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-semibold text-lg leading-tight line-clamp-2 text-foreground break-words" title={document.display_name || document.file_name}>
                 {document.display_name || document.file_name}
               </h4>
               {isImage && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-medium">
                   {formatFileSize(document.file_size)}
                 </p>
               )}
             </div>
 
             {document.description && (
-              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+              <p className="text-sm text-muted-foreground/80 line-clamp-2 leading-relaxed">
                 {document.description}
               </p>
             )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-border/50">
-              <div className="flex items-center space-x-3 text-xs text-muted-foreground">
-                <div className="flex items-center space-x-1">
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>{formatDate(document.created_at)}</span>
+            <div className="flex items-center justify-between pt-3 border-t border-border/30">
+              <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                <div className="flex items-center space-x-1.5">
+                  <Calendar className="w-4 h-4 text-primary/70" />
+                  <span className="font-medium">{formatDate(document.created_at)}</span>
                 </div>
                 {commentCount > 0 && (
-                  <div className="flex items-center space-x-1">
-                    <MessageCircle className="w-3.5 h-3.5" />
-                    <span>{commentCount}</span>
+                  <div className="flex items-center space-x-1.5">
+                    <MessageCircle className="w-4 h-4 text-blue-500/70" />
+                    <span className="font-medium">{commentCount}</span>
                   </div>
                 )}
               </div>
-              <div className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">
-                View →
+              <div className="text-xs text-primary/80 bg-primary/10 px-3 py-1.5 rounded-full font-medium border border-primary/20">
+                View Document
               </div>
             </div>
           </div>
@@ -219,15 +234,15 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
 
   if (loading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
+          <Card key={i} className="animate-pulse border-0 bg-card/30">
             <CardContent className="p-0">
-              <div className="h-48 bg-muted rounded-t-lg"></div>
-              <div className="p-4 space-y-3">
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-                <div className="h-8 bg-muted rounded"></div>
+              <div className="h-56 bg-muted/30 rounded-t-lg"></div>
+              <div className="p-6 space-y-4">
+                <div className="h-5 bg-muted/30 rounded w-3/4"></div>
+                <div className="h-4 bg-muted/30 rounded w-1/2"></div>
+                <div className="h-8 bg-muted/30 rounded"></div>
               </div>
             </CardContent>
           </Card>
@@ -238,14 +253,14 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
 
   if (documents.length === 0) {
     return (
-      <Card className="border-dashed">
-        <CardContent className="p-8 text-center">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-muted-foreground" />
+      <Card className="border-dashed border-2 border-muted/50 bg-card/30">
+        <CardContent className="p-12 text-center">
+          <div className="w-20 h-20 bg-muted/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+            <FileText className="w-10 h-10 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-semibold mb-2">No Documents Found</h3>
-          <p className="text-muted-foreground text-sm">
-            Upload completion documents like building control certificates, warranties, and approved drawings.
+          <h3 className="text-xl font-semibold mb-3 text-foreground">No Documents Found</h3>
+          <p className="text-muted-foreground text-base max-w-md mx-auto leading-relaxed">
+            Upload completion documents like building control certificates, warranties, and approved drawings to get started.
           </p>
         </CardContent>
       </Card>
@@ -253,7 +268,7 @@ export const CompletionDocsList = ({ documents, loading, onViewDocument }: Compl
   }
 
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 w-full overflow-hidden">
+    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 w-full overflow-hidden">
       {documents.map((document, index) => {
         const isImage = isImageFile(document.file_type);
         const hasImageError = imageErrors.has(document.id);
