@@ -28,12 +28,31 @@ const Index = () => {
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
+  const [pendingProjectModal, setPendingProjectModal] = useState<{projectId: string, view: string} | null>(null);
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
 
   // Set up deep linking for mobile app
   useDeepLinking();
+
+  // Handle URL parameters for project navigation from notifications
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    const projectId = urlParams.get('project');
+    const view = urlParams.get('view');
+    
+    if (tab && projectId && view === 'schedule') {
+      console.log('Notification navigation detected:', { tab, projectId, view });
+      setActiveTab(tab);
+      setPendingProjectModal({ projectId, view });
+      
+      // Clean up URL parameters
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, []);
 
   useEffect(() => {
     // Check for successful subscription in URL and handle it
@@ -319,7 +338,12 @@ const Index = () => {
             </div>
           </div>;
         }
-        return <ProjectsScreen user={user} onStartNewChat={handleStartNewChat} />;
+        return <ProjectsScreen 
+          user={user} 
+          onStartNewChat={handleStartNewChat} 
+          pendingProjectModal={pendingProjectModal}
+          onProjectModalHandled={() => setPendingProjectModal(null)}
+        />;
       case 'team':
         return <TeamScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} onStartNewChat={handleStartNewChat} />;
       case 'profile':

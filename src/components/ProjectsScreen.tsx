@@ -32,9 +32,11 @@ interface Project {
 interface ProjectsScreenProps {
   user: any;
   onStartNewChat: (projectId: string, conversationId?: string) => void;
+  pendingProjectModal?: {projectId: string, view: string} | null;
+  onProjectModalHandled?: () => void;
 }
 
-const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
+const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectModalHandled }: ProjectsScreenProps) => {
   console.log('ProjectsScreen: Component starting to render');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -164,6 +166,20 @@ const ProjectsScreen = ({ user, onStartNewChat }: ProjectsScreenProps) => {
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
+
+  // Handle pending project modal from notifications
+  useEffect(() => {
+    if (pendingProjectModal && projects.length > 0) {
+      const project = projects.find(p => p.id === pendingProjectModal.projectId);
+      if (project) {
+        console.log('Opening project modal from notification:', project.name, pendingProjectModal.view);
+        setSelectedProject(project);
+        setActiveTab(pendingProjectModal.view);
+        setShowProjectDetails(true);
+        onProjectModalHandled?.();
+      }
+    }
+  }, [pendingProjectModal, projects, onProjectModalHandled]);
 
   const togglePinProject = async (projectId: string, currentPinned: boolean) => {
     try {

@@ -88,8 +88,9 @@ const NotificationsScreen = () => {
       markAsRead(notification.id);
     }
     
-    // Navigate to the project's schedule/tasks view
-    navigate(`/?project=${notification.project_id}&tab=schedule`);
+    // Navigate to home page, then to projects tab with project and schedule info in URL
+    // This will be handled by the Index page to show the correct project modal and tab
+    navigate(`/?tab=projects&project=${notification.project_id}&view=schedule&team=${notification.team_id}`);
   };
 
   const getNotificationIcon = (type: string) => {
