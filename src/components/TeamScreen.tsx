@@ -31,6 +31,7 @@ import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
 import { TeamCompletionDocsView } from '@/components/team/TeamCompletionDocsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
+import TeamActivityFeed from '@/components/team/TeamActivityFeed';
 
 interface TeamScreenProps {
   user: any;
@@ -274,23 +275,9 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       </div>
 
       {/* Recent Activity */}
-      <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700">
-        <CardHeader className="border-b border-gray-700">
-          <CardTitle className="text-white flex items-center gap-2">
-            <MessageSquare className="w-5 h-5" />
-            Recent Team Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-8">
-          <div className="text-center text-gray-400">
-            <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-8 h-8 opacity-50" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No recent activity</h3>
-            <p className="text-sm">Team activity will appear here once you start collaborating</p>
-          </div>
-        </CardContent>
-      </Card>
+      {selectedTeamId && (
+        <TeamActivityFeed teamId={selectedTeamId} />
+      )}
     </div>
   );
 

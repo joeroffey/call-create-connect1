@@ -84,6 +84,7 @@ const NotificationsScreen = () => {
 
   const handleNotificationClick = (notification: Notification) => {
     console.log('🔔 Notification clicked:', notification);
+    console.log('🔄 Current location before navigation:', window.location.href);
     
     // Mark as read when clicked
     if (!notification.read) {
@@ -93,8 +94,16 @@ const NotificationsScreen = () => {
     // Navigate to home page, then to projects tab with project and schedule info in URL
     // This will be handled by the Index page to show the correct project modal and tab
     const navUrl = `/?tab=projects&project=${notification.project_id}&view=schedule&team=${notification.team_id}`;
-    console.log('🔄 Navigating to:', navUrl);
+    console.log('🎯 Navigation URL being generated:', navUrl);
+    console.log('🏗️ Notification details:', {
+      projectId: notification.project_id,
+      teamId: notification.team_id,
+      type: notification.type,
+      targetType: notification.target_type
+    });
+    
     navigate(navUrl);
+    console.log('✅ Navigation command sent');
   };
 
   const getNotificationIcon = (type: string) => {

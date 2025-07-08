@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDeepLinking } from '@/hooks/useDeepLinking';
+import { useNotifications } from '@/hooks/useNotifications';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -33,6 +34,9 @@ const Index = () => {
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
+  
+  // Get notifications for the red dot
+  const { getUnreadCount } = useNotifications(user?.id, !!user?.id);
 
   // Set up deep linking for mobile app
   useDeepLinking();
@@ -46,21 +50,27 @@ const Index = () => {
     const teamId = urlParams.get('team');
     
     console.log('🔍 URL params check:', { tab, projectId, view, teamId, fullUrl: window.location.href });
+    console.log('🔍 Current activeTab:', activeTab);
+    console.log('🔍 Current pendingProjectModal:', pendingProjectModal);
     
     if (tab && projectId && view === 'schedule') {
       console.log('🎯 Notification navigation detected:', { tab, projectId, view, teamId });
       console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
+      console.log('🔄 About to set activeTab to:', tab);
+      console.log('🔄 About to set pendingProjectModal to:', { projectId, view });
       
       // Force set the active tab to projects regardless of subscription 
       // The projects screen will handle the subscription check
       setActiveTab(tab);
       setPendingProjectModal({ projectId, view });
       
+      console.log('✅ State updated - activeTab and pendingProjectModal set');
+      
       // Clean up URL parameters after a short delay to ensure processing
       setTimeout(() => {
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
-        console.log('✅ URL cleaned and state set');
+        console.log('✅ URL cleaned');
       }, 100);
     }
   }, [hasActiveSubscription, subscription]);
@@ -468,8 +478,14 @@ const Index = () => {
               whileTap={{ scale: 0.95 }}
             >
               <Bell className="w-5 h-5 text-gray-300" />
-              {/* Notification badge - you can add logic to show unread count */}
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              {/* Show red dot only when there are unread notifications */}
+              {getUnreadCount() > 0 && (
+                <div className="absolute -top-1 -right-1 min-w-[20px] h-5 bg-red-500 rounded-full flex items-center justify-center">
+                  <span className="text-xs text-white font-medium px-1">
+                    {getUnreadCount() > 9 ? '9+' : getUnreadCount()}
+                  </span>
+                </div>
+              )}
             </motion.button>
 
             {/* Subscription Badge */}
