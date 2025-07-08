@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +29,7 @@ const Index = () => {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [pendingProjectModal, setPendingProjectModal] = useState<{projectId: string, view: string} | null>(null);
+  const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
@@ -233,6 +234,13 @@ const Index = () => {
       setActiveTab('chat');
     }
   }, [subscriptionTier, activeTab]);
+
+  // Scroll to top when tab changes
+  useEffect(() => {
+    if (mainContentRef.current) {
+      mainContentRef.current.scrollTo(0, 0);
+    }
+  }, [activeTab]);
 
   const handleStartNewChat = (projectId: string, conversationId?: string) => {
     console.log('Starting new chat for project:', projectId, 'conversation:', conversationId);
@@ -471,6 +479,7 @@ const Index = () => {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
+              ref={mainContentRef}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
