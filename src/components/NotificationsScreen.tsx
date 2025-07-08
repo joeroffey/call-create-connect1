@@ -91,15 +91,24 @@ const NotificationsScreen = () => {
       markAsRead(notification.id);
     }
     
-    // Navigate to home page, then to projects tab with project and schedule info in URL
-    // This will be handled by the Index page to show the correct project modal and tab
-    const navUrl = `/?tab=projects&project=${notification.project_id}&view=schedule&team=${notification.team_id}`;
+    // Navigate based on notification type
+    let navUrl: string;
+    
+    if (notification.type === 'task_assigned') {
+      // For task assignments, navigate to TEAM tab with schedule view
+      navUrl = `/?tab=team&view=schedule&team=${notification.team_id}&project=${notification.project_id}`;
+    } else {
+      // For other notification types, navigate to projects tab
+      navUrl = `/?tab=projects&project=${notification.project_id}&view=schedule&team=${notification.team_id}`;
+    }
+    
     console.log('🎯 Navigation URL being generated:', navUrl);
     console.log('🏗️ Notification details:', {
       projectId: notification.project_id,
       teamId: notification.team_id,
       type: notification.type,
-      targetType: notification.target_type
+      targetType: notification.target_type,
+      navigatingToTab: notification.type === 'task_assigned' ? 'team' : 'projects'
     });
     
     navigate(navUrl);

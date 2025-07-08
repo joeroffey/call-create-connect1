@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -96,6 +96,39 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       console.log('Setting current logo URL to:', selectedTeam.logo_url);
     }
   }, [selectedTeam]);
+
+  // Handle URL parameters for navigation (e.g., from notifications)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const view = urlParams.get('view');
+    const teamId = urlParams.get('team');
+    
+    console.log('🔍 TeamScreen URL params check:', { view, teamId, currentSelectedTeamId: selectedTeamId });
+    
+    // If there's a view parameter and we're on the team tab, set the active view
+    if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'completion-docs', 'settings'].includes(view)) {
+      console.log('🎯 Setting activeView from URL parameter:', view);
+      setActiveView(view as any);
+    }
+    
+    // If there's a specific team ID in the URL and it exists in our teams, select it
+    if (teamId && teams.length > 0) {
+      const teamExists = teams.find(team => team.id === teamId);
+      if (teamExists && selectedTeamId !== teamId) {
+        console.log('🎯 Setting selectedTeamId from URL parameter:', teamId);
+        setSelectedTeamId(teamId);
+      }
+    }
+    
+    // Clean up URL parameters after processing
+    if (view || teamId) {
+      setTimeout(() => {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
+        console.log('✅ TeamScreen URL cleaned');
+      }, 100);
+    }
+  }, [teams, selectedTeamId]); // Depend on teams and selectedTeamId to ensure we can process team selection
 
   console.log('TeamScreen render:', {
     selectedTeam: selectedTeam?.name,

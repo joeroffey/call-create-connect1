@@ -53,8 +53,9 @@ const Index = () => {
     console.log('🔍 Current activeTab:', activeTab);
     console.log('🔍 Current pendingProjectModal:', pendingProjectModal);
     
-    if (tab && projectId && view === 'schedule') {
-      console.log('🎯 Notification navigation detected:', { tab, projectId, view, teamId });
+    // Handle project navigation (existing logic)
+    if (tab === 'projects' && projectId && view === 'schedule') {
+      console.log('🎯 Project notification navigation detected:', { tab, projectId, view, teamId });
       console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
       console.log('🔄 About to set activeTab to:', tab);
       console.log('🔄 About to set pendingProjectModal to:', { projectId, view });
@@ -72,6 +73,20 @@ const Index = () => {
         window.history.replaceState({}, document.title, newUrl);
         console.log('✅ URL cleaned');
       }, 100);
+    }
+    
+    // Handle team navigation (new logic for task assignment notifications)
+    if (tab === 'team' && view && teamId) {
+      console.log('🎯 Team notification navigation detected:', { tab, view, teamId, projectId });
+      console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
+      console.log('🔄 About to set activeTab to:', tab);
+      
+      // Set the active tab to team - URL parameters will be handled by TeamScreen
+      setActiveTab(tab);
+      
+      console.log('✅ State updated - activeTab set to team');
+      
+      // Don't clean up URL parameters here - let TeamScreen handle them
     }
   }, []); // Remove dependencies to ensure this always runs on URL changes
 
