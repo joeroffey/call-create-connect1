@@ -43,16 +43,21 @@ const Index = () => {
     const projectId = urlParams.get('project');
     const view = urlParams.get('view');
     
+    console.log('🔍 URL params check:', { tab, projectId, view, fullUrl: window.location.href });
+    
     if (tab && projectId && view === 'schedule') {
-      console.log('Notification navigation detected:', { tab, projectId, view });
+      console.log('🎯 Notification navigation detected:', { tab, projectId, view });
+      console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
+      
       setActiveTab(tab);
       setPendingProjectModal({ projectId, view });
       
       // Clean up URL parameters
       const newUrl = window.location.pathname;
       window.history.replaceState({}, document.title, newUrl);
+      console.log('✅ URL cleaned and state set');
     }
-  }, []);
+  }, [hasActiveSubscription, subscription]);
 
   useEffect(() => {
     // Check for successful subscription in URL and handle it

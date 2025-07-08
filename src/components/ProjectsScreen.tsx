@@ -169,14 +169,24 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
 
   // Handle pending project modal from notifications
   useEffect(() => {
+    console.log('📋 ProjectsScreen: Checking pending modal:', { 
+      pendingProjectModal, 
+      projectsCount: projects.length,
+      projectIds: projects.map(p => p.id)
+    });
+    
     if (pendingProjectModal && projects.length > 0) {
       const project = projects.find(p => p.id === pendingProjectModal.projectId);
+      console.log('🔍 Looking for project:', pendingProjectModal.projectId, 'found:', project?.name);
+      
       if (project) {
-        console.log('Opening project modal from notification:', project.name, pendingProjectModal.view);
+        console.log('✅ Opening project modal from notification:', project.name, pendingProjectModal.view);
         setSelectedProject(project);
         setActiveTab(pendingProjectModal.view);
         setShowProjectDetails(true);
         onProjectModalHandled?.();
+      } else {
+        console.log('❌ Project not found in projects list');
       }
     }
   }, [pendingProjectModal, projects, onProjectModalHandled]);
