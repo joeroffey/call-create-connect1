@@ -26,10 +26,11 @@ export const useConversations = (userId: string | undefined, enabled: boolean = 
     setError(null);
     
     try {
+      // With the updated RLS policy, we can now fetch all conversations
+      // that the user has access to (both personal and team project conversations)
       const { data, error } = await supabase
         .from('conversations')
         .select('id, title, created_at, updated_at, project_id')
-        .eq('user_id', userId)
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
@@ -170,7 +171,7 @@ export const useConversations = (userId: string | undefined, enabled: boolean = 
               event: '*',
               schema: 'public',
               table: 'conversations',
-              filter: `user_id=eq.${userId}`,
+              // No filter - RLS will handle access control
             },
             (payload) => {
               console.log('Conversation change detected:', payload);
@@ -183,7 +184,7 @@ export const useConversations = (userId: string | undefined, enabled: boolean = 
               event: '*',
               schema: 'public',
               table: 'project_documents',
-              filter: `user_id=eq.${userId}`,
+              // No filter - RLS will handle access control
             },
             (payload) => {
               console.log('Document change detected:', payload);
@@ -196,7 +197,7 @@ export const useConversations = (userId: string | undefined, enabled: boolean = 
               event: '*',
               schema: 'public',
               table: 'project_schedule_of_works',
-              filter: `user_id=eq.${userId}`,
+              // No filter - RLS will handle access control
             },
             (payload) => {
               console.log('Schedule of works change detected:', payload);
