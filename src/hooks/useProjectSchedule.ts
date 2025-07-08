@@ -119,7 +119,7 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
 
       if (error) throw error;
 
-      // If task is assigned to someone, create task assignment
+      // If task is assigned to someone, create task assignment and notification
       if (taskInput.assigned_to && newTask) {
         // First get the project's team_id
         const { data: project } = await supabase
@@ -129,6 +129,7 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
           .single();
 
         if (project?.team_id) {
+          // Create task assignment
           const { error: assignmentError } = await supabase
             .from('task_assignments')
             .insert([{
@@ -141,6 +142,21 @@ export const useProjectSchedule = (projectId: string | undefined, userId: string
           if (assignmentError) {
             console.error('Error creating task assignment:', assignmentError);
             // Don't fail the task creation if assignment fails
+          }
+
+          // Create notification for task assignment
+          try {
+            await supabase.rpc('create_task_assignment_notification', {
+              p_task_id: newTask.id,
+              p_assigned_to: taskInput.assigned_to,
+              p_assigned_by: userId,
+              p_project_id: projectId,
+              p_team_id: project.team_id,
+              p_task_title: taskInput.title
+            });
+          } catch (notificationError) {
+            console.error('Error creating task assignment notification:', notificationError);
+            // Don't fail the task creation if notification fails
           }
         }
       }

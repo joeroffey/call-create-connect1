@@ -13,169 +13,109 @@ import {
   Factory,
   AlertTriangle,
   Info,
-  CheckCircle
+  CheckCircle,
+  FileText,
+  User,
+  CheckCheck
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useNotifications, type Notification } from '@/hooks/useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
-interface BuildingRegulationUpdate {
-  id: string;
-  title: string;
-  description: string;
-  effectiveDate: string;
-  publishedDate: string;
-  categories: Array<'residential' | 'commercial' | 'industrial' | 'mixed-use'>;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  sections: string[];
-  isRead: boolean;
-}
-
-// Mock data - in real app this would come from your database
-const mockUpdates: BuildingRegulationUpdate[] = [
-  {
-    id: '1',
-    title: 'Fire Safety Requirements Update - Part B',
-    description: 'New requirements for fire safety systems in residential buildings over 18 metres. Enhanced sprinkler system specifications and evacuation route standards.',
-    effectiveDate: '2024-04-01',
-    publishedDate: '2024-01-15',
-    categories: ['residential'],
-    severity: 'high',
-    sections: ['Part B - Fire Safety', 'Section 2.3 - Sprinkler Systems'],
-    isRead: false
-  },
-  {
-    id: '2',
-    title: 'Accessibility Standards - Part M Amendment',
-    description: 'Updated accessibility requirements for commercial buildings including new lift specifications and accessible parking provisions.',
-    effectiveDate: '2024-03-15',
-    publishedDate: '2024-01-10',
-    categories: ['commercial', 'mixed-use'],
-    severity: 'medium',
-    sections: ['Part M - Access', 'Section 4.2 - Lifts'],
-    isRead: true
-  },
-  {
-    id: '3',
-    title: 'Energy Efficiency Standards - Part L Updates',
-    description: 'Revised thermal performance standards for new constructions. Updated U-values and air permeability requirements.',
-    effectiveDate: '2024-05-01',
-    publishedDate: '2024-02-01',
-    categories: ['residential', 'commercial', 'industrial'],
-    severity: 'medium',
-    sections: ['Part L - Conservation of Fuel and Power'],
-    isRead: false
-  },
-  {
-    id: '4',
-    title: 'Critical Safety Update - Structural Requirements',
-    description: 'Emergency update to structural requirements following recent safety assessments. Immediate compliance required for all new applications.',
-    effectiveDate: '2024-02-15',
-    publishedDate: '2024-02-10',
-    categories: ['residential', 'commercial', 'industrial', 'mixed-use'],
-    severity: 'critical',
-    sections: ['Part A - Structure', 'Part B - Fire Safety'],
-    isRead: false
-  }
-];
 
 const NotificationsScreen = () => {
-  const [updates, setUpdates] = useState<BuildingRegulationUpdate[]>(mockUpdates);
-  const [filteredUpdates, setFilteredUpdates] = useState<BuildingRegulationUpdate[]>(mockUpdates);
+  const [user, setUser] = useState<any>(null);
+  const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
+  // Get current user
   useEffect(() => {
-    let filtered = updates;
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getCurrentUser();
+  }, []);
+
+  const { 
+    notifications, 
+    loading, 
+    error, 
+    markAsRead, 
+    markAllAsRead, 
+    getUnreadCount 
+  } = useNotifications(user?.id, !!user);
+
+  useEffect(() => {
+    let filtered = notifications;
 
     // Search filter
     if (searchTerm) {
-      filtered = filtered.filter(update =>
-        update.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        update.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        update.sections.some(section => section.toLowerCase().includes(searchTerm.toLowerCase()))
+      filtered = filtered.filter(notification =>
+        notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        notification.message.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Category filter
-    if (categoryFilter !== 'all') {
-      filtered = filtered.filter(update =>
-        update.categories.includes(categoryFilter as any)
-      );
-    }
-
-    // Severity filter
-    if (severityFilter !== 'all') {
-      filtered = filtered.filter(update => update.severity === severityFilter);
+    // Type filter
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(notification => notification.type === typeFilter);
     }
 
     // Unread filter
     if (showUnreadOnly) {
-      filtered = filtered.filter(update => !update.isRead);
+      filtered = filtered.filter(notification => !notification.read);
     }
 
-    setFilteredUpdates(filtered);
-  }, [updates, searchTerm, categoryFilter, severityFilter, showUnreadOnly]);
+    setFilteredNotifications(filtered);
+  }, [notifications, searchTerm, typeFilter, showUnreadOnly]);
 
-  const markAsRead = (id: string) => {
-    setUpdates(prev => prev.map(update =>
-      update.id === id ? { ...update, isRead: true } : update
-    ));
+  const handleMarkAsRead = (id: string) => {
+    markAsRead(id);
   };
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'residential': return <Home className="w-3 h-3" />;
-      case 'commercial': return <Building className="w-3 h-3" />;
-      case 'industrial': return <Factory className="w-3 h-3" />;
-      case 'mixed-use': return <Building className="w-3 h-3" />;
-      default: return <Building className="w-3 h-3" />;
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'task_assigned': return <User className="w-4 h-4 text-blue-500" />;
+      case 'document_uploaded': return <FileText className="w-4 h-4 text-green-500" />;
+      case 'task_completed': return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+      default: return <Bell className="w-4 h-4 text-gray-500" />;
     }
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'residential': return 'bg-green-100 text-green-800 border-green-200';
-      case 'commercial': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'industrial': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'mixed-use': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
-
-  const getSeverityIcon = (severity: string) => {
-    switch (severity) {
-      case 'critical': return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      case 'high': return <AlertTriangle className="w-4 h-4 text-orange-500" />;
-      case 'medium': return <Info className="w-4 h-4 text-yellow-500" />;
-      case 'low': return <CheckCircle className="w-4 h-4 text-green-500" />;
-      default: return <Info className="w-4 h-4 text-gray-500" />;
-    }
-  };
-
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return 'bg-red-50 border-red-200';
-      case 'high': return 'bg-orange-50 border-orange-200';
-      case 'medium': return 'bg-yellow-50 border-yellow-200';
-      case 'low': return 'bg-green-50 border-green-200';
+  const getNotificationColor = (type: string) => {
+    switch (type) {
+      case 'task_assigned': return 'bg-blue-50 border-blue-200';
+      case 'document_uploaded': return 'bg-green-50 border-green-200';
+      case 'task_completed': return 'bg-emerald-50 border-emerald-200';
       default: return 'bg-gray-50 border-gray-200';
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-GB', {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
+    
+    return date.toLocaleDateString('en-GB', {
       day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+      month: 'short',
+      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
     });
   };
 
-  const unreadCount = updates.filter(update => !update.isRead).length;
+  const unreadCount = getUnreadCount();
 
   return (
     <div className="h-full bg-transparent text-white overflow-y-auto">
@@ -191,19 +131,32 @@ const NotificationsScreen = () => {
               <Bell className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Building Regulation Updates</h1>
-              <p className="text-gray-400">Stay informed about the latest regulatory changes</p>
+              <h1 className="text-2xl font-bold text-white">Notifications</h1>
+              <p className="text-gray-400">Stay informed about your team project activities</p>
             </div>
           </div>
           
-          {unreadCount > 0 && (
-            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
-              <p className="text-red-300 text-sm">
-                <AlertTriangle className="w-4 h-4 inline mr-2" />
-                You have {unreadCount} unread regulation update{unreadCount !== 1 ? 's' : ''}
-              </p>
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            {unreadCount > 0 && (
+              <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3 flex-1 mr-4">
+                <p className="text-red-300 text-sm">
+                  <AlertTriangle className="w-4 h-4 inline mr-2" />
+                  You have {unreadCount} unread notification{unreadCount !== 1 ? 's' : ''}
+                </p>
+              </div>
+            )}
+            {unreadCount > 0 && (
+              <Button
+                onClick={markAllAsRead}
+                variant="outline"
+                size="sm"
+                className="text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
+              >
+                <CheckCheck className="w-4 h-4 mr-2" />
+                Mark All Read
+              </Button>
+            )}
+          </div>
         </motion.div>
 
         {/* Filters */}
@@ -226,29 +179,15 @@ const NotificationsScreen = () => {
               </div>
             </div>
             
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
               <SelectTrigger className="w-full lg:w-48 bg-gray-800/50 border-gray-700 text-white">
-                <SelectValue placeholder="All Categories" />
+                <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="residential">Residential</SelectItem>
-                <SelectItem value="commercial">Commercial</SelectItem>
-                <SelectItem value="industrial">Industrial</SelectItem>
-                <SelectItem value="mixed-use">Mixed Use</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={severityFilter} onValueChange={setSeverityFilter}>
-              <SelectTrigger className="w-full lg:w-48 bg-gray-800/50 border-gray-700 text-white">
-                <SelectValue placeholder="All Severities" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-800 border-gray-700">
-                <SelectItem value="all">All Severities</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="task_assigned">Task Assignments</SelectItem>
+                <SelectItem value="document_uploaded">Document Uploads</SelectItem>
+                <SelectItem value="task_completed">Task Completions</SelectItem>
               </SelectContent>
             </Select>
 
@@ -263,99 +202,101 @@ const NotificationsScreen = () => {
           </div>
         </motion.div>
 
-        {/* Updates List */}
+        {/* Notifications List */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
           className="space-y-4"
         >
-          {filteredUpdates.length === 0 ? (
+          {loading ? (
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardContent className="p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+                <p className="text-gray-400">Loading notifications...</p>
+              </CardContent>
+            </Card>
+          ) : error ? (
+            <Card className="bg-gray-900/50 border-gray-800">
+              <CardContent className="p-8 text-center">
+                <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-white mb-2">Error Loading Notifications</h3>
+                <p className="text-gray-400">{error}</p>
+              </CardContent>
+            </Card>
+          ) : filteredNotifications.length === 0 ? (
             <Card className="bg-gray-900/50 border-gray-800">
               <CardContent className="p-8 text-center">
                 <Bell className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-white mb-2">No Updates Found</h3>
-                <p className="text-gray-400">Try adjusting your filters to see more updates.</p>
+                <h3 className="text-lg font-semibold text-white mb-2">No Notifications Found</h3>
+                <p className="text-gray-400">
+                  {notifications.length === 0 
+                    ? "You don't have any notifications yet. Join a team and start collaborating!"
+                    : "Try adjusting your filters to see more notifications."
+                  }
+                </p>
               </CardContent>
             </Card>
           ) : (
-            filteredUpdates.map((update, index) => (
+            filteredNotifications.map((notification, index) => (
               <motion.div
-                key={update.id}
+                key={notification.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
                 <Card className={`bg-gray-900/50 border-gray-800 hover:bg-gray-900/70 transition-all cursor-pointer ${
-                  !update.isRead ? 'ring-2 ring-emerald-500/20' : ''
+                  !notification.read ? 'ring-2 ring-emerald-500/20' : ''
                 }`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2 mb-2">
-                          {getSeverityIcon(update.severity)}
-                          <CardTitle className={`text-lg ${!update.isRead ? 'text-white' : 'text-gray-300'}`}>
-                            {update.title}
+                          {getNotificationIcon(notification.type)}
+                          <CardTitle className={`text-lg ${!notification.read ? 'text-white' : 'text-gray-300'}`}>
+                            {notification.title}
                           </CardTitle>
-                          {!update.isRead && (
+                          {!notification.read && (
                             <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
                           )}
                         </div>
                         
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {update.categories.map((category) => (
-                            <Badge
-                              key={category}
-                              variant="outline"
-                              className={`${getCategoryColor(category)} border text-xs`}
-                            >
-                              {getCategoryIcon(category)}
-                              <span className="ml-1 capitalize">{category.replace('-', ' ')}</span>
+                          <Badge
+                            variant="outline"
+                            className={`${getNotificationColor(notification.type)} border text-xs`}
+                          >
+                            {notification.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </Badge>
+                          {notification.metadata?.project_name && (
+                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-400">
+                              {notification.metadata.project_name}
                             </Badge>
-                          ))}
+                          )}
                         </div>
                       </div>
                     </div>
                   </CardHeader>
                   
                   <CardContent className="pt-0">
-                    <p className="text-gray-400 mb-4 line-clamp-2">{update.description}</p>
+                    <p className="text-gray-400 mb-4">{notification.message}</p>
                     
                     <div className="flex flex-col space-y-3 lg:flex-row lg:space-y-0 lg:items-center lg:justify-between">
-                      <div className="flex flex-col space-y-2 lg:flex-row lg:space-y-0 lg:space-x-6">
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Calendar className="w-4 h-4 mr-2" />
-                          <span>Effective: {formatDate(update.effectiveDate)}</span>
-                        </div>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <Clock className="w-4 h-4 mr-2" />
-                          <span>Published: {formatDate(update.publishedDate)}</span>
-                        </div>
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Clock className="w-4 h-4 mr-2" />
+                        <span>{formatDate(notification.created_at)}</span>
                       </div>
                       
-                      {!update.isRead && (
+                      {!notification.read && (
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => markAsRead(update.id)}
+                          onClick={() => handleMarkAsRead(notification.id)}
                           className="text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
                         >
                           Mark as Read
                         </Button>
                       )}
-                    </div>
-                    
-                    <div className="mt-3 pt-3 border-t border-gray-800">
-                      <div className="flex items-center space-x-2">
-                        <Tag className="w-4 h-4 text-gray-500" />
-                        <div className="flex flex-wrap gap-1">
-                          {update.sections.map((section, idx) => (
-                            <span key={idx} className="text-xs text-gray-500 bg-gray-800/50 px-2 py-1 rounded">
-                              {section}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>

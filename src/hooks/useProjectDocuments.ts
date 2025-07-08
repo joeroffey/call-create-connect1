@@ -114,7 +114,7 @@ export const useProjectDocuments = (projectId: string | undefined, userId: strin
       if (uploadError) throw uploadError;
 
       // Save document metadata
-      const { error: dbError } = await supabase
+      const { data: newDocument, error: dbError } = await supabase
         .from('project_documents')
         .insert([
           {
@@ -125,9 +125,33 @@ export const useProjectDocuments = (projectId: string | undefined, userId: strin
             file_type: file.type,
             file_size: file.size,
           }
-        ]);
+        ])
+        .select()
+        .single();
 
       if (dbError) throw dbError;
+
+      // Create notifications for team project document uploads
+      try {
+        const { data: project } = await supabase
+          .from('projects')
+          .select('team_id')
+          .eq('id', projectId)
+          .single();
+
+        if (project?.team_id && newDocument) {
+          await supabase.rpc('create_document_upload_notification', {
+            p_document_id: newDocument.id,
+            p_uploader_id: userId,
+            p_project_id: projectId,
+            p_team_id: project.team_id,
+            p_file_name: file.name
+          });
+        }
+      } catch (notificationError) {
+        console.error('Error creating document upload notification:', notificationError);
+        // Don't fail the upload if notification fails
+      }
 
       toast({
         title: "Document uploaded successfully",

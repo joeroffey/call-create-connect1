@@ -132,6 +132,66 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          metadata: Json | null
+          project_id: string
+          read: boolean
+          target_id: string | null
+          target_type: string | null
+          team_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          metadata?: Json | null
+          project_id: string
+          read?: boolean
+          target_id?: string | null
+          target_type?: string | null
+          team_id: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          metadata?: Json | null
+          project_id?: string
+          read?: boolean
+          target_id?: string | null
+          target_type?: string | null
+          team_id?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -692,6 +752,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_document_upload_notification: {
+        Args: {
+          p_document_id: string
+          p_uploader_id: string
+          p_project_id: string
+          p_team_id: string
+          p_file_name: string
+        }
+        Returns: boolean
+      }
+      create_task_assignment_notification: {
+        Args: {
+          p_task_id: string
+          p_assigned_to: string
+          p_assigned_by: string
+          p_project_id: string
+          p_team_id: string
+          p_task_title: string
+        }
+        Returns: boolean
+      }
       fetch_building_regs_updates: {
         Args: Record<PropertyKey, never>
         Returns: {
