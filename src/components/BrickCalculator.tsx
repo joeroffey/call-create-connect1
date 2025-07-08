@@ -90,13 +90,13 @@ const BrickCalculator = ({ onBack }: BrickCalculatorProps) => {
   };
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
+    <div className="h-full rounded-xl bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-4"
+          className="flex flex-wrap items-center gap-4"
         >
           <Button
             variant="ghost"
@@ -112,7 +112,7 @@ const BrickCalculator = ({ onBack }: BrickCalculatorProps) => {
               <Building2 className="w-5 h-5 text-red-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">UK Brick Calculator</h1>
+              <h1 className="text-1xl md:text-2xl font-bold text-white">UK Brick Calculator</h1>
               <p className="text-gray-400 text-sm">Calculate brick quantities and masonry materials</p>
             </div>
           </div>

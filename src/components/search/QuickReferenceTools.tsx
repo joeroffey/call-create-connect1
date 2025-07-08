@@ -82,10 +82,10 @@ const QuickReferenceTools = ({ subscriptionTier = 'none', onViewPlans }: QuickRe
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <Tabs defaultValue="lookup" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-800 mb-6">
-          <TabsTrigger value="lookup" className="data-[state=active]:bg-gray-700">Regulation Lookup</TabsTrigger>
-          <TabsTrigger value="calculators" className="data-[state=active]:bg-gray-700">Calculators</TabsTrigger>
-          <TabsTrigger value="checklists" className="data-[state=active]:bg-gray-700">Checklists</TabsTrigger>
+        <TabsList className="grid advnc-srch-quick-tool-tb grid-cols-3 gap-4 bg-gray-800 mb-6">
+          <TabsTrigger value="lookup" className="data-[state=active]:bg-gray-800 tab">Regulation Lookup</TabsTrigger>
+          <TabsTrigger value="calculators" className="data-[state=active]:bg-gray-800 tab  ms-6 px-4">Calculators</TabsTrigger>
+          <TabsTrigger value="checklists" className="data-[state=active]:bg-gray-800 tab">Checklists</TabsTrigger>
         </TabsList>
 
         <TabsContent value="lookup">
@@ -97,7 +97,7 @@ const QuickReferenceTools = ({ subscriptionTier = 'none', onViewPlans }: QuickRe
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex space-x-3">
+              <div className="flex flex-wrap md:space-x-3">
                 <div className="flex-1">
                   <Label htmlFor="reg-code" className="text-white">Regulation Code or Reference</Label>
                   <Input
@@ -105,13 +105,13 @@ const QuickReferenceTools = ({ subscriptionTier = 'none', onViewPlans }: QuickRe
                     placeholder="e.g., Part B, B1, A1/2, etc."
                     value={regulationCode}
                     onChange={(e) => setRegulationCode(e.target.value)}
-                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
+                    className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 mt-2"
                   />
                 </div>
                 <Button
                   onClick={handleRegulationLookup}
                   disabled={!regulationCode.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 mt-6"
+                  className="w-full md:w-auto bg-blue-600 lookup-search-btn hover:bg-blue-700 mt-8"
                 >
                   Lookup
                 </Button>

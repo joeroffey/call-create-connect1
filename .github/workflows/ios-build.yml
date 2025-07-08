@@ -1,0 +1,321 @@
+name: 🍎 Build iOS App
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'ios-native/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'ios-native/**'
+  workflow_dispatch: # Allow manual triggers
+    inputs:
+      build_type:
+        description: 'Build Type'
+        required: true
+        default: 'simulator'
+        type: choice
+        options:
+        - simulator
+        - device-development
+        - device-adhoc
+        - appstore
+      export_ipa:
+        description: 'Export IPA file'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  XCODE_VERSION: "latest-stable"
+
+jobs:
+  build-ios:
+    name: Build EezyBuild iOS App
+    runs-on: macos-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: 📋 Display Build Information
+      run: |
+        echo "🔍 Build Environment Information:"
+        echo "Xcode Version: $(xcodebuild -version)"
+        echo "Build Type: ${{ github.event.inputs.build_type || 'simulator' }}"
+        echo "Export IPA: ${{ github.event.inputs.export_ipa || 'false' }}"
+        echo "Runner: ${{ runner.os }} ${{ runner.arch }}"
+        
+    - name: 🔍 List Available Simulators
+      run: |
+        echo "📱 Available simulators:"
+        xcrun simctl list devices available | grep iPhone || true
+      
+    - name: 🏗️ Build iOS App (Simulator)
+      if: ${{ github.event.inputs.build_type == 'simulator' || github.event.inputs.build_type == '' }}
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "🔨 Building EezyBuild for iOS Simulator..."
+        
+        # Use EXACT same command that worked in diagnostic test
+        timeout 300 xcodebuild \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          build-for-testing \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO
+          
+    - name: 🧪 Run iOS Tests
+      if: ${{ github.event.inputs.build_type == 'simulator' || github.event.inputs.build_type == '' }}
+      working-directory: ios-native/EezyBuild
+      continue-on-error: true
+      run: |
+        echo "🧪 Running tests on simulator..."
+        echo "⚠️ Tests skipped - will configure in next iteration"
+
+    # Device Build Steps (when certificates are available)
+    - name: 🔐 Install Certificates and Provisioning Profiles
+      if: ${{ contains(github.event.inputs.build_type, 'device') || github.event.inputs.build_type == 'appstore' }}
+      env:
+        BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+        P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+        KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      run: |
+        # Check if certificates are available
+        if [ -z "$BUILD_CERTIFICATE_BASE64" ]; then
+          echo "❌ BUILD_CERTIFICATE_BASE64 secret not found"
+          echo "To build for devices, you need to add the following secrets to your repository:"
+          echo "- BUILD_CERTIFICATE_BASE64 (your .p12 certificate)"
+          echo "- P12_PASSWORD (password for the .p12 file)"
+          echo "- BUILD_PROVISION_PROFILE_BASE64 (your provisioning profile)"
+          echo "- KEYCHAIN_PASSWORD (password for keychain)"
+          exit 1
+        fi
+        
+        echo "🔐 Setting up certificates and provisioning profiles..."
+        
+        # Create variables
+        CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+        PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
+        KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+        # Import certificate and provisioning profile from secrets
+        echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+        echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode --output $PP_PATH
+
+        # Create temporary keychain
+        security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+        security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+        # Import certificate to keychain
+        security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+        security list-keychain -d user -s $KEYCHAIN_PATH
+
+        # Apply provisioning profile
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+          
+    - name: 📦 Archive iOS App for Device
+      if: ${{ contains(github.event.inputs.build_type, 'device') || github.event.inputs.build_type == 'appstore' }}
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "📦 Creating archive for device..."
+        xcodebuild archive \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -archivePath EezyBuild.xcarchive \
+          -configuration Release \
+          -destination "generic/platform=iOS"
+          
+    - name: 📱 Export IPA
+      if: ${{ (contains(github.event.inputs.build_type, 'device') || github.event.inputs.build_type == 'appstore') && github.event.inputs.export_ipa == 'true' }}
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "📱 Exporting IPA..."
+        
+        # Determine export method based on build type
+        case "${{ github.event.inputs.build_type }}" in
+          "device-development")
+            export_method="development"
+            ;;
+          "device-adhoc")
+            export_method="ad-hoc"
+            ;;
+          "appstore")
+            export_method="app-store"
+            ;;
+          *)
+            export_method="development"
+            ;;
+        esac
+        
+        # Create export options plist
+        cat > ExportOptions.plist << EOF
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+        <plist version="1.0">
+        <dict>
+            <key>method</key>
+            <string>$export_method</string>
+            <key>compileBitcode</key>
+            <false/>
+            <key>stripSwiftSymbols</key>
+            <true/>
+            <key>uploadBitcode</key>
+            <false/>
+            <key>uploadSymbols</key>
+            <true/>
+        </dict>
+        </plist>
+        EOF
+        
+        # Export IPA
+        xcodebuild -exportArchive \
+          -archivePath EezyBuild.xcarchive \
+          -exportPath ./Export \
+          -exportOptionsPlist ExportOptions.plist
+          
+    - name: 🎯 Prepare Build Artifacts
+      run: |
+        echo "🎯 Preparing artifacts..."
+        mkdir -p build-artifacts
+        
+        # Create build info
+        cat > build-artifacts/build-info.txt << EOF
+        EezyBuild iOS Build Information
+        ==============================
+        
+        Build Date: $(date)
+        Commit: ${{ github.sha }}
+        Branch: ${{ github.ref_name }}
+        Build Type: ${{ github.event.inputs.build_type || 'simulator' }}
+        Export IPA: ${{ github.event.inputs.export_ipa || 'false' }}
+        Workflow Run: ${{ github.run_number }}
+        Xcode Version: $(xcodebuild -version | head -n1)
+        
+        Files included in this artifact:
+        EOF
+        
+        # Copy simulator build products (if available)
+        if [ -d "ios-native/EezyBuild/build" ]; then
+          echo "- Simulator build products" >> build-artifacts/build-info.txt
+        fi
+        
+        # Copy IPA files (if available)
+        if [ -d "ios-native/EezyBuild/Export" ]; then
+          cp -r ios-native/EezyBuild/Export/* build-artifacts/ 2>/dev/null || true
+          ls ios-native/EezyBuild/Export/*.ipa 2>/dev/null && echo "- IPA file for device installation" >> build-artifacts/build-info.txt
+        fi
+        
+        # Copy archive info (if available)
+        if [ -d "ios-native/EezyBuild/EezyBuild.xcarchive" ]; then
+          echo "- iOS Archive (.xcarchive)" >> build-artifacts/build-info.txt
+          # Create archive summary
+          echo "" >> build-artifacts/build-info.txt
+          echo "Archive Summary:" >> build-artifacts/build-info.txt
+          if [ -f "ios-native/EezyBuild/EezyBuild.xcarchive/Info.plist" ]; then
+            /usr/libexec/PlistBuddy -c "Print ApplicationProperties" ios-native/EezyBuild/EezyBuild.xcarchive/Info.plist 2>/dev/null || echo "Archive created successfully" >> build-artifacts/build-info.txt
+          fi
+        fi
+        
+        # List all files in artifacts
+        echo "" >> build-artifacts/build-info.txt
+        echo "Artifact Contents:" >> build-artifacts/build-info.txt
+        ls -la build-artifacts/ >> build-artifacts/build-info.txt
+        
+    - name: 📤 Upload Build Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: EezyBuild-iOS-${{ github.event.inputs.build_type || 'simulator' }}-${{ github.run_number }}
+        path: build-artifacts/
+        retention-days: 30
+        
+    - name: 🧹 Cleanup Keychain
+      if: ${{ always() && (contains(github.event.inputs.build_type, 'device') || github.event.inputs.build_type == 'appstore') }}
+      run: |
+        if [ -f "$RUNNER_TEMP/app-signing.keychain-db" ]; then
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+        fi
+        
+    - name: 📊 Build Summary
+      run: |
+        echo "## 🍎 iOS Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Status**: ✅ Build Completed" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Type**: ${{ github.event.inputs.build_type || 'simulator' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Export IPA**: ${{ github.event.inputs.export_ipa || 'false' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Xcode Version**: $(xcodebuild -version | head -n1)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Number**: ${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📥 Download Build Artifacts" >> $GITHUB_STEP_SUMMARY
+        echo "Check the **Artifacts** section below to download:" >> $GITHUB_STEP_SUMMARY
+        echo "- Build information and logs" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ github.event.inputs.export_ipa }}" == "true" ]; then
+          echo "- IPA file (if build was successful)" >> $GITHUB_STEP_SUMMARY
+        fi
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔐 For Device Builds" >> $GITHUB_STEP_SUMMARY
+        echo "To build IPAs that run on real devices, you need:" >> $GITHUB_STEP_SUMMARY
+        echo "1. **Apple Developer Account** ($99/year)" >> $GITHUB_STEP_SUMMARY
+        echo "2. **iOS Distribution Certificate** (added as repository secret)" >> $GITHUB_STEP_SUMMARY
+        echo "3. **Provisioning Profile** (added as repository secret)" >> $GITHUB_STEP_SUMMARY
+        echo "4. **Manual workflow trigger** with device build type" >> $GITHUB_STEP_SUMMARY
+
+  # TestFlight deployment job (when certificates are configured)
+  deploy-testflight:
+    name: 🚀 Deploy to TestFlight
+    runs-on: macos-latest
+    needs: build-ios
+    if: ${{ github.event.inputs.build_type == 'appstore' && success() }}
+    
+    steps:
+    - name: 📥 Download Build Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: EezyBuild-iOS-appstore-${{ github.run_number }}
+        path: ./artifacts
+        
+    - name: 🚀 Upload to TestFlight
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+        APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+      run: |
+        if [ -z "$APP_STORE_CONNECT_API_KEY_BASE64" ]; then
+          echo "❌ App Store Connect API key not configured"
+          echo "Add the following secrets for TestFlight deployment:"
+          echo "- APP_STORE_CONNECT_API_KEY_ID"
+          echo "- APP_STORE_CONNECT_API_ISSUER_ID"
+          echo "- APP_STORE_CONNECT_API_KEY_BASE64"
+          exit 1
+        fi
+        
+        echo "🚀 Uploading to TestFlight..."
+        # Set up API key
+        mkdir -p ~/.private_keys
+        echo -n "$APP_STORE_CONNECT_API_KEY_BASE64" | base64 --decode > ~/.private_keys/AuthKey_$APP_STORE_CONNECT_API_KEY_ID.p8
+        
+        # Find IPA file
+        IPA_FILE=$(find ./artifacts -name "*.ipa" | head -n1)
+        if [ -z "$IPA_FILE" ]; then
+          echo "❌ No IPA file found in artifacts"
+          exit 1
+        fi
+        
+        echo "📱 Uploading: $IPA_FILE"
+        xcrun altool --upload-app \
+          --type ios \
+          --file "$IPA_FILE" \
+          --apiKey $APP_STORE_CONNECT_API_KEY_ID \
+          --apiIssuer $APP_STORE_CONNECT_API_ISSUER_ID

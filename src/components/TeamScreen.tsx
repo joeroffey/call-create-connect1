@@ -1,18 +1,21 @@
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, 
-  Settings, 
-  Crown, 
-  Shield, 
+import {
+  Users,
+  Settings,
+  Crown,
+  Shield,
   Eye,
   MessageSquare,
   Calendar,
   FileText,
   Plus,
-  CheckCircle
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -40,7 +43,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'completion-docs' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
-  
+
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
   const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
   const teamStats = useTeamStats(selectedTeamId);
@@ -52,6 +55,18 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     userId: user?.id
   });
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollTabs = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const scrollAmount = 200;
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
   // Select first team by default when teams are loaded
   React.useEffect(() => {
     console.log('TeamScreen useEffect - teams changed:', {
@@ -59,7 +74,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
       selectedTeamId,
       firstTeamId: teams[0]?.id
     });
-    
+
     if (teams.length > 0 && !selectedTeamId) {
       console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
@@ -67,13 +82,13 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
   }, [teams, selectedTeamId]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
-  
+
   // Update current logo URL when selected team changes
   React.useEffect(() => {
-    console.log('Team changed effect:', { 
-      selectedTeam: selectedTeam?.name, 
+    console.log('Team changed effect:', {
+      selectedTeam: selectedTeam?.name,
       logoUrl: selectedTeam?.logo_url,
-      currentLogoUrl 
+      currentLogoUrl
     });
     if (selectedTeam) {
       setCurrentLogoUrl(selectedTeam.logo_url);
@@ -81,10 +96,10 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     }
   }, [selectedTeam]);
 
-  console.log('TeamScreen render:', { 
-    selectedTeam: selectedTeam?.name, 
+  console.log('TeamScreen render:', {
+    selectedTeam: selectedTeam?.name,
     currentLogoUrl,
-    teamLogoUrl: selectedTeam?.logo_url 
+    teamLogoUrl: selectedTeam?.logo_url
   });
 
   // Check if user has team access
@@ -122,7 +137,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           </div>
           <h2 className="text-3xl font-bold text-white mb-6">Team Collaboration</h2>
           <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-            Unlock powerful team features with EezyBuild ProMax. Create teams, manage schedules, 
+            Unlock powerful team features with EezyBuild ProMax. Create teams, manage schedules,
             assign tasks, and collaborate seamlessly with your team members.
           </p>
           <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-700 p-6 mb-8">
@@ -154,7 +169,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               </div>
             </div>
           </div>
-          <Button 
+          <Button
             onClick={onViewPlans}
             className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all transform hover:scale-105 shadow-xl text-lg font-semibold"
           >
@@ -189,7 +204,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     <div className="space-y-8">
       {/* Team Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card 
+        <Card
           className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
           onClick={() => setActiveView('members')}
         >
@@ -205,8 +220,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             </div>
           </CardContent>
         </Card>
-        
-        <Card 
+
+        <Card
           className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
           onClick={() => setActiveView('projects')}
         >
@@ -222,8 +237,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             </div>
           </CardContent>
         </Card>
-        
-        <Card 
+
+        <Card
           className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
           onClick={() => setActiveView('tasks')}
         >
@@ -239,8 +254,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             </div>
           </CardContent>
         </Card>
-        
-        <Card 
+
+        <Card
           className="bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105"
           onClick={() => setActiveView('comments')}
         >
@@ -285,7 +300,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
         <h3 className="text-2xl font-bold text-white">Team Members</h3>
         <InviteMemberModal onInviteMember={inviteMember} onCreateTestInvitation={createTestInvitation} />
       </div>
-      
+
       <div className="grid gap-4 w-full">
         {members.map((member) => (
           <Card key={member.id} className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all w-full">
@@ -310,7 +325,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             </CardContent>
           </Card>
         ))}
-        
+
         {members.length === 0 && (
           <div className="text-center py-12 text-gray-400">
             <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -334,7 +349,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           </div>
           <h2 className="text-3xl font-bold text-white mb-6">Create Your First Team</h2>
           <p className="text-gray-300 mb-8 text-lg leading-relaxed">
-            Start collaborating with your team members by creating a team. 
+            Start collaborating with your team members by creating a team.
             Share projects, assign tasks, and work together efficiently.
           </p>
           <CreateTeamModal onCreateTeam={handleCreateTeam} />
@@ -392,77 +407,96 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           )}
 
           {/* Navigation Tabs */}
-          <div className="bg-gray-800/30 backdrop-blur-sm p-2 rounded-xl">
-            <div className="hidden md:flex justify-between items-center w-full">
-              <div className="flex gap-2">
+          <div className='flex items-center'>
+            <button
+              onClick={() => scrollTabs("left")}
+              className="p-2 team-tabs-arrow rounded-full bg-gray-800/50 hover:bg-gray-700 z-10"
+            >
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </button>
+            <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide teampage-tabs px-4">            {/* Left Arrow */}
+
+              <div className="flex justify-between items-center w-full">
+                <div className="flex gap-2">
+                  {[
+                    { id: 'overview', label: 'Overview', icon: FileText },
+                    { id: 'projects', label: 'Projects', icon: FileText },
+                    { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+                    { id: 'tasks', label: 'Active Tasks', icon: Calendar },
+                    { id: 'schedule', label: 'Schedule', icon: Calendar },
+                    { id: 'comments', label: 'Comments', icon: MessageSquare }
+                  ].map((tab) => (
+                    <button
+                      style={{
+                        width: tab.label === 'Completion Docs' ? '175px' : tab.label === 'Active Tasks' ? '145px' : undefined
+                      }}
+                      key={tab.id}
+                      onClick={() => setActiveView(tab.id as any)}
+                      className={`flex w-full sm:w-fit items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeView === tab.id
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                        }`}
+                    >
+                      <tab.icon className="w-4 h-4" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'members', label: 'Members', icon: Users },
+                    { id: 'settings', label: 'Settings', icon: Settings }
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveView(tab.id as any)}
+                      className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${activeView === tab.id
+                        ? 'bg-emerald-500 text-white shadow-lg'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                        }`}
+                    >
+                      <tab.icon className="w-4 h-4" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile Navigation */}
+              {/* <div className="md:hidden grid grid-cols-2 gap-2">
                 {[
                   { id: 'overview', label: 'Overview', icon: FileText },
                   { id: 'projects', label: 'Projects', icon: FileText },
                   { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
                   { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                   { id: 'schedule', label: 'Schedule', icon: Calendar },
-                  { id: 'comments', label: 'Comments', icon: MessageSquare }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveView(tab.id as any)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
-                      activeView === tab.id
-                        ? 'bg-emerald-500 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                    }`}
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                {[
+                  { id: 'comments', label: 'Comments', icon: MessageSquare },
                   { id: 'members', label: 'Members', icon: Users },
                   { id: 'settings', label: 'Settings', icon: Settings }
                 ].map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveView(tab.id as any)}
-                    className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${
-                      activeView === tab.id
-                        ? 'bg-emerald-500 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                    }`}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeView === tab.id
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                      }`}
                   >
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
                   </button>
                 ))}
-              </div>
+              </div> */}
+
             </div>
-            {/* Mobile Navigation */}
-            <div className="md:hidden grid grid-cols-2 gap-2">
-              {[
-                { id: 'overview', label: 'Overview', icon: FileText },
-                { id: 'projects', label: 'Projects', icon: FileText },
-                { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
-                { id: 'tasks', label: 'Active Tasks', icon: Calendar },
-                { id: 'schedule', label: 'Schedule', icon: Calendar },
-                { id: 'comments', label: 'Comments', icon: MessageSquare },
-                { id: 'members', label: 'Members', icon: Users },
-                { id: 'settings', label: 'Settings', icon: Settings }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveView(tab.id as any)}
-                  className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                    activeView === tab.id
-                      ? 'bg-emerald-500 text-white shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={() => scrollTabs("right")}
+              className="p-2 team-tabs-arrow rounded-full bg-gray-800/50 hover:bg-gray-700 z-10"
+            >
+              <ChevronRight className="w-4 h-4 text-white" />
+            </button>
           </div>
         </motion.div>
 
@@ -476,13 +510,13 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
           {activeView === 'projects' && (() => {
-            console.log('Projects view check:', { 
-              activeView, 
-              selectedTeamId, 
+            console.log('Projects view check:', {
+              activeView,
+              selectedTeamId,
               selectedTeam: selectedTeam?.name,
-              hasUser: !!user 
+              hasUser: !!user
             });
-            
+
             if (!selectedTeamId || !selectedTeam) {
               console.log('Missing team data for projects view');
               return (
@@ -494,19 +528,19 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 </div>
               );
             }
-            
+
             return (
-              <TeamProjectsView 
-                user={user} 
-                teamId={selectedTeamId} 
+              <TeamProjectsView
+                user={user}
+                teamId={selectedTeamId}
                 teamName={selectedTeam.name}
-                onStartNewChat={onStartNewChat} 
+                onStartNewChat={onStartNewChat}
               />
             );
           })()}
           {activeView === 'tasks' && selectedTeamId && selectedTeam && (
-            <TeamTasksView 
-              teamId={selectedTeamId} 
+            <TeamTasksView
+              teamId={selectedTeamId}
               teamName={selectedTeam.name}
             />
           )}
@@ -514,8 +548,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             <BasicTeamWork teamId={selectedTeamId} members={members} />
           )}
           {activeView === 'comments' && selectedTeamId && selectedTeam && (
-            <TeamCommentsView 
-              teamId={selectedTeamId} 
+            <TeamCommentsView
+              teamId={selectedTeamId}
               teamName={selectedTeam.name}
             />
           )}

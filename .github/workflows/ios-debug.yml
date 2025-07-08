@@ -1,0 +1,140 @@
+name: 🔍 iOS Build Debug
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  debug-ios-build:
+    name: Debug iOS Build Step by Step
+    runs-on: macos-latest
+    
+    steps:
+    - name: 📥 Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: ✅ Step 1 - Environment (Known to work)
+      run: |
+        echo "=== Step 1: Environment Check ==="
+        echo "✅ This should work (passed in minimal validation)"
+        echo "macOS: $(sw_vers -productVersion)"
+        echo "Xcode: $(xcodebuild -version | head -1)"
+        echo "Available SDKs:"
+        xcodebuild -showsdks | grep iOS
+        
+    - name: ✅ Step 2 - Project Structure (Known to work)
+      run: |
+        echo "=== Step 2: Project Structure ==="
+        echo "✅ This should work (passed in minimal validation)"
+        ls -la ios-native/EezyBuild/
+        ls -la ios-native/EezyBuild/EezyBuild.xcodeproj/
+        find ios-native/EezyBuild/EezyBuild -name "*.swift" | wc -l
+        echo "Swift files found: $(find ios-native/EezyBuild/EezyBuild -name "*.swift" | wc -l)"
+        
+    - name: ✅ Step 3 - Xcode Project Info (Known to work)
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Step 3: Xcode Project Info ==="
+        echo "✅ This should work (passed in minimal validation)"
+        xcodebuild -list -project EezyBuild.xcodeproj
+        echo ""
+        echo "Build settings preview:"
+        xcodebuild -project EezyBuild.xcodeproj -target EezyBuild -showBuildSettings | head -10
+        
+    - name: 🔍 Step 4 - Swift Syntax Check
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Step 4: Swift Syntax Validation ==="
+        echo "🔍 Testing if Swift files have syntax errors..."
+        
+        # Check each Swift file for syntax errors
+        for swift_file in $(find EezyBuild -name "*.swift"); do
+          echo "Checking: $swift_file"
+          xcrun swift -frontend -parse "$swift_file" -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) || echo "❌ Syntax error in $swift_file"
+        done
+        
+    - name: 🔍 Step 5 - Basic Build Validation
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Step 5: Basic Build Validation ==="
+        echo "🔍 Testing basic xcodebuild without actual compilation..."
+        
+        # Try to validate build settings without building
+        xcodebuild \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          -dry-run \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO || echo "❌ Build validation failed"
+        
+    - name: 🔍 Step 6 - Dependency Check
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Step 6: Check for Missing Dependencies ==="
+        echo "🔍 Looking for potential dependency issues..."
+        
+        # Check if there are any Package.swift or Podfile dependencies
+        if [ -f "Package.swift" ]; then
+          echo "📦 Found Package.swift - checking Swift Package dependencies"
+          cat Package.swift
+        fi
+        
+        if [ -f "Podfile" ]; then
+          echo "📦 Found Podfile - checking CocoaPods dependencies"
+          cat Podfile
+        fi
+        
+        # Check for any .framework or .xcframework references
+        grep -r "framework\|xcframework" EezyBuild.xcodeproj/ || echo "No external frameworks found"
+        
+    - name: 🔍 Step 7 - Minimal Swift Compilation
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Step 7: Test Individual Swift File Compilation ==="
+        echo "🔍 Testing if individual Swift files can compile..."
+        
+        # Try to compile the main app file first
+        echo "Testing EezyBuildApp.swift compilation:"
+        xcrun swiftc -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) \
+          -target arm64-apple-ios17.0-simulator \
+          -parse-as-library \
+          EezyBuild/EezyBuildApp.swift || echo "❌ EezyBuildApp.swift compilation failed"
+        
+    - name: 🔍 Step 8 - Incremental Build Test
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Step 8: Incremental Build Test ==="
+        echo "🔍 Testing actual xcodebuild with timeout..."
+        
+        # Try the actual build with a timeout to prevent hanging
+        timeout 120 xcodebuild \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          build-for-testing \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          SWIFT_COMPILATION_MODE=singlefile \
+          GCC_OPTIMIZATION_LEVEL=0 || echo "❌ Incremental build failed or timed out"
+        
+    - name: 📊 Debug Summary
+      if: always()
+      run: |
+        echo "=== Debug Summary ==="
+        echo "This workflow tests each step progressively to identify where the build fails."
+        echo ""
+        echo "Expected Results:"
+        echo "✅ Steps 1-3: Should pass (environment and project structure)"
+        echo "🔍 Steps 4-8: May reveal where the actual problem occurs"
+        echo ""
+        echo "Common Issues to Look For:"
+        echo "- Swift syntax errors in Step 4"
+        echo "- Missing dependencies in Step 6"
+        echo "- Compilation failures in Step 7-8"

@@ -101,13 +101,13 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
   ];
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
+    <div className="h-full rounded-xl bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-4"
+          className="flex flex-wrap items-center gap-4"
         >
           <Button
             variant="ghost"
@@ -123,7 +123,7 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
               <BookOpen className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">UK Timber Guide</h1>
+              <h1 className="text-1xl md:text-2xl font-bold text-white">UK Timber Guide</h1>
               <p className="text-gray-400 text-sm">Complete reference for timber construction in the UK</p>
             </div>
           </div>
@@ -142,15 +142,24 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
 
         {/* Guide Content */}
         <Tabs defaultValue="species" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800">
-            <TabsTrigger value="species" className="data-[state=active]:bg-gray-700">Species</TabsTrigger>
-            <TabsTrigger value="grades" className="data-[state=active]:bg-gray-700">Grades</TabsTrigger>
-            <TabsTrigger value="regulations" className="data-[state=active]:bg-gray-700">Regulations</TabsTrigger>
-            <TabsTrigger value="sizes" className="data-[state=active]:bg-gray-700">Sizes</TabsTrigger>
+          <TabsList className="w-full h-full flex flex-wrap md:grid md:grid-cols-4 gap-2 bg-gray-800 p-2 rounded-lg">
+            <TabsTrigger value="species" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Species
+            </TabsTrigger>
+            <TabsTrigger value="grades" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Grades
+            </TabsTrigger>
+            <TabsTrigger value="regulations" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Regulations
+            </TabsTrigger>
+            <TabsTrigger value="sizes" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Sizes
+            </TabsTrigger>
           </TabsList>
 
+
           <TabsContent value="species">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               {timberSpecies.map((timber, index) => (
                 <Card key={index} className="bg-gray-800/50 border-gray-700">
                   <CardHeader>
@@ -181,7 +190,7 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
           </TabsContent>
 
           <TabsContent value="grades">
-            <div className="grid gap-4">
+            <div className="grid gap-4 mt-4">
               {timberGrades.map((grade, index) => (
                 <Card key={index} className="bg-gray-800/50 border-gray-700">
                   <CardHeader>
@@ -213,7 +222,7 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
           </TabsContent>
 
           <TabsContent value="regulations">
-            <div className="grid gap-4">
+            <div className="grid gap-4 mt-4">
               {regulations.map((reg, index) => (
                 <Card key={index} className="bg-gray-800/50 border-gray-700">
                   <CardHeader>
@@ -236,7 +245,7 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
           </TabsContent>
 
           <TabsContent value="sizes">
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 mt-4 md:grid-cols-3">
               {standardSizes.map((category, index) => (
                 <Card key={index} className="bg-gray-800/50 border-gray-700">
                   <CardHeader>

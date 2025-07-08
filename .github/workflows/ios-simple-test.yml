@@ -1,0 +1,69 @@
+name: 🚀 iOS Simple Compilation Test
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  simple-compile-test:
+    name: Simple iOS Compilation Test
+    runs-on: macos-latest
+    timeout-minutes: 15
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: 📋 Environment Info
+      run: |
+        echo "=== Environment ==="
+        echo "macOS: $(sw_vers -productVersion)"
+        echo "Xcode: $(xcodebuild -version | head -1)"
+        echo "Swift: $(swift --version | head -1)"
+        
+    - name: 🏗️ Simple Build Test
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Testing iOS Build ==="
+        echo "Attempt 1: Clean and build for simulator"
+        
+        xcodebuild clean \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -configuration Debug
+          
+        timeout 300 xcodebuild build \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          -destination 'platform=iOS Simulator,name=iPhone 15' \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          SWIFT_COMPILATION_MODE=singlefile \
+          GCC_OPTIMIZATION_LEVEL=0 \
+          SWIFT_OPTIMIZATION_LEVEL=-Onone \
+          DEBUG_INFORMATION_FORMAT=dwarf \
+          ENABLE_TESTING_SEARCH_PATHS=NO
+          
+    - name: ✅ Success Report
+      if: success()
+      run: |
+        echo "🎉 SUCCESS! iOS app compiled successfully!"
+        echo "✅ Simplified models and service worked"
+        echo "✅ No external dependencies causing issues"
+        
+    - name: ❌ Failure Analysis
+      if: failure()
+      run: |
+        echo "❌ Build failed even with simplified code"
+        echo "This suggests a deeper Xcode project or environment issue"
+        echo ""
+        echo "Next troubleshooting steps:"
+        echo "1. Check Xcode project settings"
+        echo "2. Verify iOS deployment target"
+        echo "3. Check for hidden compilation issues"

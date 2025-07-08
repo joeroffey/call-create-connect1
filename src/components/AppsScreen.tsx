@@ -125,41 +125,42 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
   }
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
+    <div className="h-full bg-gradient-to-br  rounded-xl from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6 min-h-full">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
-            Construction Tools
-          </h1>
-          <p className="text-gray-400">
-            Professional tools to help with your building projects
-          </p>
-        </motion.div>
+       <div className='flex items-center justify-between flex-wrap gap-6 pb-6'>
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
+              Construction Tools
+            </h1>
+            <p className="text-gray-400">
+              Professional tools to help with your building projects
+            </p>
+          </motion.div>
 
-        {/* Category Filter */}
-        {availableApps.length > 0 && (
-          <div className="flex justify-center space-x-2 mb-6">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category 
-                  ? "bg-emerald-600 hover:bg-emerald-700" 
-                  : "border-gray-600 text-gray-300 hover:bg-gray-700"
-                }
-              >
-                {category}
-              </Button>
-            ))}
-          </div>
-        )}
+          {/* Category Filter */}
+          {availableApps.length > 0 && (
+            <div className="flex justify-center mx-auto md:mx-0 space-x-2 mb-6">
+              {categories.map((category) => (
+                <Button
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(category)}
+                  className={selectedCategory === category 
+                    ? "bg-emerald-600 hover:bg-emerald-700" 
+                    : "border-gray-600 text-gray-300 hover:bg-gray-700"
+                  }
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+          )}
+       </div>
 
         {/* Available Apps Grid */}
         {filteredApps.length > 0 && (

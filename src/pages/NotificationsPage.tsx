@@ -60,8 +60,8 @@ const NotificationsPage = () => {
       </motion.header>
 
       {/* Main Content */}
-      <div className="flex-1 min-h-0">
-        <NotificationsScreen />
+      <div className="flex-1 min-h-0 w-full max-w-6xl mx-auto px-4">
+          <NotificationsScreen />
       </div>
     </div>
   );

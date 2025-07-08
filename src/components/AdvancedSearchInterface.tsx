@@ -47,7 +47,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
 
   const handleSearch = async (query: SearchQuery) => {
     console.log('Starting search with query:', query);
-    
+
     if (!query.text.trim()) {
       toast({
         title: "Search Error",
@@ -87,7 +87,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       // Build search message incorporating filters
       let searchMessage = query.text;
       const filters = [];
-      
+
       if (query.part) {
         filters.push(`focusing on ${query.part}`);
       }
@@ -97,7 +97,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       if (query.topic) {
         filters.push(`related to ${query.topic}`);
       }
-      
+
       if (filters.length > 0) {
         searchMessage += ` (${filters.join(', ')})`;
       }
@@ -106,7 +106,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
 
       // Call the building regulations chat function
       const { data, error } = await supabase.functions.invoke('building-regulations-chat', {
-        body: { 
+        body: {
           message: searchMessage,
           projectContext: null // No specific project context for search
         }
@@ -128,10 +128,10 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       const aiResponse = data.response;
       const images = data.images || []; // Get images from response
       const mockResults = parseResponseToResults(aiResponse, query, images);
-      
+
       console.log('Parsed results with images:', mockResults);
       setSearchResults(mockResults);
-      
+
       toast({
         title: "Search Complete",
         description: `Found ${mockResults.length} result${mockResults.length !== 1 ? 's' : ''} ${images.length > 0 ? `with ${images.length} image${images.length > 1 ? 's' : ''}` : ''}`,
@@ -139,9 +139,9 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
 
     } catch (error) {
       console.error('Search error:', error);
-      
+
       let errorMessage = 'Unable to perform search at this time.';
-      
+
       if (error.message?.includes('fetch')) {
         errorMessage = 'Network error - please check your connection and try again.';
       } else if (error.message?.includes('auth')) {
@@ -149,13 +149,13 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       } else if (error.message?.includes('function')) {
         errorMessage = 'Search service unavailable - please try again later.';
       }
-      
+
       toast({
         title: "Search Error",
         description: errorMessage,
         variant: "destructive"
       });
-      
+
       // Show error results
       setSearchResults([{
         id: 'error-1',
@@ -173,27 +173,27 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
   // Helper function to parse AI response into structured results
   const parseResponseToResults = (response: string, query: SearchQuery, images: any[] = []): SearchResult[] => {
     console.log('Parsing response for query:', query, 'with images:', images);
-    
+
     const results: SearchResult[] = [];
-    
+
     // Convert images to the expected format
     const formattedImages = images.map((img, index) => ({
       url: img.url || img.image_url || img.src || '',
       title: img.title || img.alt || `Building Regulation Image ${index + 1}`,
       source: img.source || 'UK Building Regulations'
     })).filter(img => img.url); // Only include images with valid URLs
-    
+
     // Try to identify different parts or sections in the response
     const sections = response.split(/(?:Part [A-P]|Section \d+|(?:\d+\.){1,2}\d+)/g);
     const matches = response.match(/Part [A-P]|Section \d+|(?:\d+\.){1,2}\d+/g) || [];
-    
+
     if (sections.length > 1 && matches.length > 0) {
       // Multiple parts/sections mentioned
       sections.forEach((section, index) => {
         if (section.trim() && index > 0) {
           const partOrSection = matches[index - 1];
           const content = section.trim();
-          
+
           if (content.length > 50) { // Only include substantial content
             results.push({
               id: `result-${index}`,
@@ -208,13 +208,13 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
         }
       });
     }
-    
+
     // If no structured sections found, create a single comprehensive result
     if (results.length === 0) {
-      const title = query.part ? 
-        `Building Regulations - ${query.part}` : 
+      const title = query.part ?
+        `Building Regulations - ${query.part}` :
         `Building Regulations: ${query.text}`;
-        
+
       results.push({
         id: 'result-1',
         title: title,
@@ -251,62 +251,89 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
     <div className="flex-1 bg-black text-white">
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="border-b border-gray-800 p-4">
-          <div className="flex items-center justify-between">
+        <div className="border-b border-gray-800 py-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
             <div>
-              <h1 className="text-2xl font-bold text-white mb-2">Advanced Search</h1>
-              <p className="text-gray-400">Search through UK Building Regulations with advanced filters and tools</p>
+              <h1 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
+                Advanced Search
+              </h1>
+              <p className="text-gray-400 text-sm md:text-base">
+                Search through UK Building Regulations with advanced filters and tools
+              </p>
             </div>
+
             {!showFilters && searchResults.length > 0 && (
               <Button
                 variant="outline"
                 onClick={handleBackToFilters}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white w-full md:w-auto"
               >
                 <ChevronLeft className="w-4 h-4 mr-2" />
                 Back to Filters
               </Button>
             )}
           </div>
+
         </div>
 
         {/* Main Content */}
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue="search" className="h-full flex flex-col">
-            <TabsList className="bg-gray-900 border-b border-gray-800 rounded-none w-full justify-start px-4">
-              <TabsTrigger value="search" className="data-[state=active]:bg-gray-800">Search</TabsTrigger>
-              <TabsTrigger value="tools" className="data-[state=active]:bg-gray-800">Quick Tools</TabsTrigger>
-              <TabsTrigger value="history" className="data-[state=active]:bg-gray-800">History & Favorites</TabsTrigger>
+            <TabsList className="bg-gray-900 border-b border-gray-800 rounded-none w-full px-4 overflow-x-auto flex gap-2 scrollbar-hide">
+              <TabsTrigger value="search" className="flex-shrink-0 data-[state=active]:bg-gray-800">Search</TabsTrigger>
+              <TabsTrigger value="tools" className="flex-shrink-0 data-[state=active]:bg-gray-800">Quick Tools</TabsTrigger>
+              <TabsTrigger value="history" className="flex-shrink-0 data-[state=active]:bg-gray-800">History & Favorites</TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="search" className="flex-1 m-0">
               {showFilters ? (
-                <ResizablePanelGroup direction="horizontal" className="h-full">
-                  {/* Search Filters Sidebar */}
-                  <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
-                    <div className="h-full border-r border-gray-800 bg-gray-900/50">
-                      <SearchFilters 
+                <div className="h-full">
+                  <div className="md:hidden h-full flex flex-col">
+                    {/* Mobile stacked layout */}
+                    <div className="h-[40%] border-b border-gray-800 bg-gray-900/50 overflow-auto">
+                      <SearchFilters
                         onSearch={handleSearch}
                         isSearching={isSearching}
                       />
                     </div>
-                  </ResizablePanel>
+                    <div className="flex-1 overflow-auto">
+                      <SearchResults
+                        results={searchResults}
+                        isSearching={isSearching}
+                        query={searchQuery}
+                        favorites={favorites}
+                        onToggleFavorite={toggleFavorite}
+                      />
+                    </div>
+                  </div>
 
-                  <ResizableHandle withHandle />
-
-                  {/* Search Results */}
-                  <ResizablePanel defaultSize={50} minSize={30}>
-                    <SearchResults
-                      results={searchResults}
-                      isSearching={isSearching}
-                      query={searchQuery}
-                      favorites={favorites}
-                      onToggleFavorite={toggleFavorite}
-                    />
-                  </ResizablePanel>
-                </ResizablePanelGroup>
+                  <div className="hidden md:block h-full">
+                    {/* Desktop side-by-side layout */}
+                    <ResizablePanelGroup direction="horizontal" className="h-full">
+                      <ResizablePanel defaultSize={50} minSize={30} maxSize={70}>
+                        <div className="h-full border-r border-gray-800 bg-gray-900/50">
+                          <SearchFilters
+                            onSearch={handleSearch}
+                            isSearching={isSearching}
+                          />
+                        </div>
+                      </ResizablePanel>
+                      <ResizableHandle withHandle />
+                      <ResizablePanel defaultSize={50} minSize={30}>
+                        <SearchResults
+                          results={searchResults}
+                          isSearching={isSearching}
+                          query={searchQuery}
+                          favorites={favorites}
+                          onToggleFavorite={toggleFavorite}
+                        />
+                      </ResizablePanel>
+                    </ResizablePanelGroup>
+                  </div>
+                </div>
               ) : (
-                // Full screen results
+                // Fullscreen results
                 <SearchResults
                   results={searchResults}
                   isSearching={isSearching}
@@ -315,6 +342,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
                   onToggleFavorite={toggleFavorite}
                 />
               )}
+
             </TabsContent>
 
             <TabsContent value="tools" className="flex-1 m-0">

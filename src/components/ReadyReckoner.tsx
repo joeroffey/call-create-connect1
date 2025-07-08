@@ -67,7 +67,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
   };
 
   const quickCalculations = [
-    { 
+    {
       title: 'Concrete Volume to Bags',
       formula: 'Volume (m³) × 7 = Cement bags needed',
       example: '1m³ concrete = 7 bags cement'
@@ -90,13 +90,13 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
   ];
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
+    <div className="h-full rounded-xl bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-4"
+          className="flex flex-wrap items-center gap-4"
         >
           <Button
             variant="ghost"
@@ -112,7 +112,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
               <Building2 className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Ready Reckoner</h1>
+              <h1 className="text-1xl md:text-2xl font-bold text-white">Ready Reckoner</h1>
               <p className="text-gray-400 text-sm">Quick reference for construction calculations</p>
             </div>
           </div>
@@ -120,16 +120,25 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
 
         {/* Reference Tabs */}
         <Tabs defaultValue="conversions" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800">
-            <TabsTrigger value="conversions" className="data-[state=active]:bg-gray-700">Conversions</TabsTrigger>
-            <TabsTrigger value="materials" className="data-[state=active]:bg-gray-700">Materials</TabsTrigger>
-            <TabsTrigger value="sizes" className="data-[state=active]:bg-gray-700">Sizes</TabsTrigger>
-            <TabsTrigger value="formulas" className="data-[state=active]:bg-gray-700">Formulas</TabsTrigger>
+          <TabsList className="w-full h-full flex flex-wrap md:grid md:grid-cols-4 gap-2 bg-gray-800 p-2 rounded-lg">
+            <TabsTrigger value="conversions" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Conversions
+            </TabsTrigger>
+            <TabsTrigger value="materials" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Materials
+            </TabsTrigger>
+            <TabsTrigger value="sizes" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Sizes
+            </TabsTrigger>
+            <TabsTrigger value="formulas" className="flex-1 md:flex-none data-[state=active]:bg-gray-700">
+              Formulas
+            </TabsTrigger>
           </TabsList>
+
 
           {/* Unit Conversions */}
           <TabsContent value="conversions">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -150,7 +159,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
                       className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant={activeConverter === 'length' ? 'default' : 'outline'}
@@ -192,7 +201,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
                       ))}
                     </div>
                   )}
-                  
+
                   {activeConverter === 'area' && (
                     <div className="space-y-2">
                       {Object.entries(areaConversions).map(([unit, value]) => (
@@ -203,7 +212,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
                       ))}
                     </div>
                   )}
-                  
+
                   {activeConverter === 'weight' && (
                     <div className="space-y-2">
                       {Object.entries(weightConversions).map(([unit, value]) => (
@@ -221,7 +230,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
 
           {/* Material Properties */}
           <TabsContent value="materials">
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-gray-800/50 mt-4 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Weight className="w-5 h-5 mr-2 text-green-400" />
@@ -247,7 +256,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
 
           {/* Standard Sizes */}
           <TabsContent value="sizes">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -296,7 +305,7 @@ const ReadyReckoner = ({ onBack }: ReadyReckonerProps) => {
 
           {/* Quick Formulas */}
           <TabsContent value="formulas">
-            <Card className="bg-gray-800/50 border-gray-700">
+            <Card className="bg-gray-800/50 mt-4 border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
                   <Calculator className="w-5 h-5 mr-2 text-purple-400" />

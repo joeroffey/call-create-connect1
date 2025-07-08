@@ -48,6 +48,12 @@ const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatCom
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
   const { toast } = useToast()
 
+  // Sidebar Default open in PC Browser
+  useEffect(() => {
+    const isDesktop = window.innerWidth >= 1024; // 1024px and up is usually considered desktop (Tailwind `lg`)
+    setIsSidebarOpen(isDesktop);
+  }, []);
+
   // Initialize with conversationId from props if provided
   useEffect(() => {
     if (conversationId) {
@@ -64,7 +70,7 @@ const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatCom
 
   const loadProjectDetails = async () => {
     if (!projectId) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('projects')
@@ -205,7 +211,7 @@ What would you like to discuss about your project?`,
       if (projectId) {
         try {
           console.log(`Updating project ${projectId} timestamp after creating conversation`);
-          
+
           // Update the project's updated_at timestamp to reflect activity
           const { error: updateError } = await supabase
             .from('projects')
@@ -216,13 +222,13 @@ What would you like to discuss about your project?`,
             console.error('Error updating project timestamp:', updateError);
           } else {
             console.log(`Successfully updated project ${projectId} timestamp`);
-            
+
             // Also log the conversation count for this project
             const { count, error: countError } = await supabase
               .from('conversations')
               .select('*', { count: 'exact', head: true })
               .eq('project_id', projectId);
-            
+
             if (countError) {
               console.error('Error getting conversation count:', countError);
             } else {
@@ -288,14 +294,20 @@ What would you like to discuss about your project?`,
 
   const handleSelectConversation = async (conversationId: string) => {
     console.log('Selecting conversation:', conversationId);
-    
+
     // Immediately close sidebar and set the conversation
-    setIsSidebarOpen(false);
+    const isDesktop = window.innerWidth >= 1024; // 1024px and up is usually considered desktop (Tailwind `lg`)
+
+    if (isDesktop) {
+      setIsSidebarOpen(true);
+    } else {
+      setIsSidebarOpen(false);
+    }
     setCurrentConversationId(conversationId);
-    
+
     // Clear current messages while loading
     setMessages([]);
-    
+
     // Load conversation title
     try {
       const { data, error } = await supabase
@@ -353,7 +365,7 @@ What would you like to discuss about your project?`,
     try {
       // FIXED: Only include project context if we have both projectId and user
       const requestBody: any = { message: messageText };
-      
+
       if (projectId && project && user?.id) {
         // Fetch project documents to provide context to AI
         const { data: projectDocuments, error: docError } = await supabase
@@ -451,12 +463,12 @@ What would you like to discuss about your project?`,
       }
     } catch (error: any) {
       console.error('Error sending message:', error);
-      
+
       let errorMessage = "There was a problem with the server. Please try again later.";
       if (error.message.includes('Security violation')) {
         errorMessage = "Security error detected. Please contact support immediately.";
       }
-      
+
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
@@ -494,7 +506,7 @@ What would you like to discuss about your project?`,
     try {
       // SECURITY FIX: Create secure file path with proper project isolation
       const filePath = `${user.id}/${projectId}/${Date.now()}-${file.name}`;
-      
+
       console.log(`Uploading document to secure path: ${filePath} for project ${projectId} and user ${user.id}`);
 
       // Upload file to Supabase Storage
@@ -542,7 +554,7 @@ What would you like to discuss about your project?`,
     const files = event.target.files;
     if (files && files.length > 0) {
       const file = files[0];
-      
+
       // Check if it's a supported file type
       const supportedTypes = [
         'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
@@ -598,18 +610,18 @@ What would you like to discuss about your project?`,
       if (error) throw error;
 
       const itemCount = scheduleItems?.length || 0;
-      
+
       // Create a message about the project's schedule of works
       const scheduleMessage = `**Project Schedule of Works Summary**
 
 You currently have **${itemCount}** work item${itemCount !== 1 ? 's' : ''} in your schedule of works.
 
-${itemCount > 0 ? 
-  `Here are your work items:\n${scheduleItems.map((item, index) => 
-    `${index + 1}. **${item.title}** ${item.completed ? '✅' : '⏳'}\n   ${item.description || 'No description'}\n   ${item.due_date ? `Due: ${new Date(item.due_date).toLocaleDateString()}` : 'No due date'}`
-  ).join('\n\n')}` : 
-  'No work items have been created yet.'
-}
+${itemCount > 0 ?
+          `Here are your work items:\n${scheduleItems.map((item, index) =>
+            `${index + 1}. **${item.title}** ${item.completed ? '✅' : '⏳'}\n   ${item.description || 'No description'}\n   ${item.due_date ? `Due: ${new Date(item.due_date).toLocaleDateString()}` : 'No due date'}`
+          ).join('\n\n')}` :
+          'No work items have been created yet.'
+        }
 
 You can manage your project schedule of works by going to the Projects page and clicking on this project to view details.
 
@@ -635,9 +647,10 @@ Would you like me to help you plan any work items or discuss project timeline ma
   };
 
   return (
-    <div className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
+    <div
+      className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
       {/* Header */}
-      <ChatHeader 
+      <ChatHeader
         title={projectId && project ? project.name : ""}
         subtitle={projectId && project ? `Building regulations assistance for ${project.name}` : ""}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -649,9 +662,9 @@ Would you like me to help you plan any work items or discuss project timeline ma
 
       {/* Main Chat Area */}
       <div className="flex-1 flex min-h-0">
-        <ChatSidebar 
-          isOpen={isSidebarOpen} 
-          onClose={() => setIsSidebarOpen(false)} 
+        <ChatSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
           onViewPlans={onViewPlans}
           user={user}
           onSelectConversation={handleSelectConversation}
@@ -660,93 +673,98 @@ Would you like me to help you plan any work items or discuss project timeline ma
         />
 
         <div className="flex flex-col flex-1 min-w-0">
-          {/* Chat Messages */}
-          <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
-            {messages.map((message) => (
-              <ChatMessage key={message.id} message={message} isProjectChat={!!projectId} />
-            ))}
-            {isLoading && (
-              <ChatMessage
-                message={{
-                  id: 'loading',
-                  text: 'Thinking...',
-                  sender: 'assistant',
-                  timestamp: new Date(),
-                }}
-                isProjectChat={!!projectId}
-              />
-            )}
-          </div>
-
-          {/* Image Gallery */}
-          {relatedImages.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="px-4 pb-4"
-            >
-              <ImageGallery images={relatedImages} />
-            </motion.div>
-          )}
-
-          {/* Fixed Input Area */}
-          <div className="border-t border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-center space-x-3">
-                {projectId && (
-                  <button
-                    onClick={handleDocumentUpload}
-                    disabled={isUploading}
-                    className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Upload Document"
-                  >
-                    <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
-                  </button>
-                )}
-                {projectId && (
-                  <button
-                    onClick={handleScheduleOfWorks}
-                    className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
-                    title="Schedule of Works"
-                  >
-                    <Clock className="w-5 h-5" />
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.csv,.md"
-                  onChange={handleFileSelect}
-                  className="hidden"
+          <div className='relative w-full'>
+            {/* Chat Messages */}
+            <div ref={chatContainerRef} className="flex-1 p-4 pb-32 overflow-y-auto">
+              {messages.map((message) => (
+                <ChatMessage key={message.id} message={message} isProjectChat={!!projectId} />
+              ))}
+              {isLoading && (
+                <ChatMessage
+                  message={{
+                    id: 'loading',
+                    text: 'Thinking...',
+                    sender: 'assistant',
+                    timestamp: new Date(),
+                  }}
+                  isProjectChat={!!projectId}
                 />
-                <div className="flex-1 relative flex items-center">
-                  <textarea
-                    ref={inputRef}
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    rows={1}
-                    placeholder={
-                      projectId && project 
-                        ? `Ask about ${project.name}...` 
-                        : "Ask me a question..."
-                    }
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
+              )}
+            </div>
+
+            {/* Image Gallery */}
+            {relatedImages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="px-4 pb-4"
+              >
+                <ImageGallery images={relatedImages} />
+              </motion.div>
+            )}
+
+            {/* Fixed Input Area */}
+            {/* 🔥 Floating Chat Input */}
+            <div id='floating-chatinput' className="fixed mx-auto border rounded-full border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl z-50">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center space-x-3">
+                  {projectId && (
+                    <button
+                      onClick={handleDocumentUpload}
+                      disabled={isUploading}
+                      className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Upload Document"
+                    >
+                      <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
+                    </button>
+                  )}
+                  {projectId && (
+                    <button
+                      onClick={handleScheduleOfWorks}
+                      className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
+                      title="Schedule of Works"
+                    >
+                      <Clock className="w-5 h-5" />
+                    </button>
+                  )}
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileSelect}
                   />
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    whileHover={{ scale: 1.02 }}
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || isLoading}
-                    className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    <Send className="w-4 h-4" />
-                  </motion.button>
+
+                  <div className="flex-1 relative flex items-center">
+                    <textarea
+                      ref={inputRef}
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      rows={1}
+                      placeholder={
+                        projectId && project
+                          ? `Ask about ${project.name}...`
+                          : "Ask me a question..."
+                      }
+                      className="w-full px-4 py-3 pr-12 rounded-full bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
+                    />
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || isLoading}
+                      className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-full p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                      <Send className="w-4 h-4" />
+                    </motion.button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

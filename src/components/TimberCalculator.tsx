@@ -95,13 +95,13 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
   const roofingResults = calculateRoofing();
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
+    <div className="h-full bg-gradient-to-br rounded-xl from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
       <div className="p-6 space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-4"
+          className="flex flex-wrap items-center gap-4"
         >
           <Button
             variant="ghost"
@@ -117,7 +117,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
               <Ruler className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Timber Calculator</h1>
+              <h1 className="text-1xl md:text-2xl font-bold text-white">Timber Calculator</h1>
               <p className="text-gray-400 text-sm">Calculate timber requirements for construction</p>
             </div>
           </div>
@@ -133,7 +133,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
 
           {/* Flooring Calculator */}
           <TabsContent value="flooring">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -248,7 +248,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
 
           {/* Framing Calculator */}
           <TabsContent value="framing">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -346,7 +346,7 @@ const TimberCalculator = ({ onBack }: TimberCalculatorProps) => {
 
           {/* Roofing Calculator */}
           <TabsContent value="roofing">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">

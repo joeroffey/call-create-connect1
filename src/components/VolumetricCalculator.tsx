@@ -78,13 +78,13 @@ const VolumetricCalculator = ({ onBack }: VolumetricCalculatorProps) => {
   const concreteMaterials = calculateConcreteMaterials(concreteVolume);
 
   return (
-    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto">
+    <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-y-auto  rounded-xl">
       <div className="p-6 space-y-6">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center space-x-4"
+          className="flex flex-wrap items-center gap-4"
         >
           <Button
             variant="ghost"
@@ -100,7 +100,7 @@ const VolumetricCalculator = ({ onBack }: VolumetricCalculatorProps) => {
               <Calculator className="w-5 h-5 text-blue-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">Volumetric Calculator</h1>
+              <h1 className="text-1xl md:text-2xl font-bold text-white">Volumetric Calculator</h1>
               <p className="text-gray-400 text-sm">Calculate volumes for building construction</p>
             </div>
           </div>
@@ -116,7 +116,7 @@ const VolumetricCalculator = ({ onBack }: VolumetricCalculatorProps) => {
 
           {/* Concrete Calculator */}
           <TabsContent value="concrete">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -207,7 +207,7 @@ const VolumetricCalculator = ({ onBack }: VolumetricCalculatorProps) => {
 
           {/* Excavation Calculator */}
           <TabsContent value="excavation">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">
@@ -298,7 +298,7 @@ const VolumetricCalculator = ({ onBack }: VolumetricCalculatorProps) => {
 
           {/* Cylindrical Calculator */}
           <TabsContent value="cylindrical">
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 mt-4 md:grid-cols-2">
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>
                   <CardTitle className="text-white flex items-center">

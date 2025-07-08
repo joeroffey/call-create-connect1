@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  User, 
-  Crown, 
+import {
+  User,
+  Crown,
   Settings,
   LogOut,
   Shield,
@@ -68,7 +68,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       // Clear any cached data and redirect
       window.location.href = '/';
     } catch (error: any) {
@@ -100,7 +100,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
     if (!hasActiveSubscription || !subscription?.current_period_end) {
       return 'N/A';
     }
-    
+
     return new Date(subscription.current_period_end).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -110,7 +110,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
 
   const getPlanDisplayName = () => {
     if (!hasActiveSubscription || !subscription) return 'No Plan';
-    
+
     switch (subscription.plan_type) {
       case 'basic':
         return 'EezyBuild';
@@ -133,8 +133,8 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
 
   if (showAccountSettings) {
     return (
-      <AccountSettingsScreen 
-        user={user} 
+      <AccountSettingsScreen
+        user={user}
         onBack={handleBackFromAccountSettings}
       />
     );
@@ -147,14 +147,16 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left mb-8 gap-4"
         >
-          <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-24 h-24 bg-gradient-to-br from-emerald-500 to-blue-600 rounded-full flex items-center justify-center mx-auto sm:mx-0">
             <User className="w-12 h-12 text-white" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">{userProfile?.full_name || user?.name || 'User'}</h1>
-          <p className="text-gray-400">{user?.email}</p>
-          <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
+          <div>
+            <h1 className="text-2xl font-bold mb-2">{userProfile?.full_name || user?.name || 'User'}</h1>
+            <p className="text-gray-400">{user?.email}</p>
+            <p className="text-sm text-gray-500 mt-1">Member since {getMemberSinceDate()}</p>
+          </div>
         </motion.div>
 
         {/* Subscription Status - Always visible immediately */}
@@ -167,15 +169,15 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
           {hasActiveSubscription ? (
             <Card className="relative overflow-hidden border border-emerald-500/30 bg-gradient-to-br from-emerald-950/50 via-gray-900/80 to-emerald-950/30 backdrop-blur-xl">
               <CardContent className="p-8">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                <div className="flex  flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                   <div className="flex items-start gap-6">
-                    <div className="relative flex-shrink-0">
+                    <div className="relative subs-icon-profile flex-shrink-0">
                       <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                         <Crown className="w-8 h-8 text-white" />
                       </div>
                       <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full animate-pulse"></div>
                     </div>
-                    
+
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
@@ -187,7 +189,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                       <p className="text-gray-300 text-base mb-4">
                         Your premium subscription is active and ready to use
                       </p>
-                      
+
                       <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex items-center gap-3">
                           <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
@@ -202,7 +204,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex-shrink-0">
                     <Button
                       onClick={handleManageSubscription}
@@ -256,7 +258,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
                 <p className="text-white">{userProfile?.full_name || 'Not provided'}</p>
               </div>
             </div>
-            
+
             {userProfile?.occupation && (
               <div className="flex items-center space-x-3 p-3 bg-gray-800/50 rounded-lg">
                 <User className="w-5 h-5 text-emerald-400" />
@@ -279,12 +281,12 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
           <Button
             onClick={handleAccountSettings}
             variant="outline"
-            className="w-full h-12 bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-white"
+            className="w-full h-12 bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-white hover:text-white"
           >
             <Settings className="w-5 h-5 mr-3" />
             Account Settings
           </Button>
-          
+
           <Button
             onClick={handleSignOut}
             disabled={isSigningOut}

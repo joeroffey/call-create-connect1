@@ -1,0 +1,152 @@
+name: 🧪 iOS Minimal Hello World Test
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  minimal-swift-test:
+    name: Test Raw Swift Compilation
+    runs-on: macos-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 📥 Checkout
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: latest-stable
+        
+    - name: 📋 Environment Check
+      run: |
+        echo "=== Environment Details ==="
+        echo "macOS: $(sw_vers -productVersion)"
+        echo "Xcode: $(xcodebuild -version)"
+        echo "Swift: $(swift --version)"
+        echo "Available SDKs:"
+        xcodebuild -showsdks | grep iOS
+        
+    - name: 🧪 Test 1: Hello World Swift Compilation
+      run: |
+        echo "=== Test 1: Basic Swift Compilation ==="
+        
+        # Create a minimal Swift file
+        cat > hello.swift << 'EOF'
+        import Foundation
+        
+        struct HelloWorld {
+            let message = "Hello from iOS!"
+            
+            func greet() {
+                print(message)
+            }
+        }
+        
+        let hello = HelloWorld()
+        hello.greet()
+        EOF
+        
+        # Test direct Swift compilation
+        echo "Testing direct Swift compilation..."
+        swiftc hello.swift -o hello
+        ./hello
+        
+    - name: 🧪 Test 2: SwiftUI Compilation Test
+      run: |
+        echo "=== Test 2: SwiftUI Compilation ==="
+        
+        # Create minimal SwiftUI file
+        cat > minimal_ui.swift << 'EOF'
+        import SwiftUI
+        import Foundation
+        
+        struct ContentView: View {
+            var body: some View {
+                Text("Hello iOS!")
+                    .padding()
+            }
+        }
+        
+        @main
+        struct MinimalApp: App {
+            var body: some Scene {
+                WindowGroup {
+                    ContentView()
+                }
+            }
+        }
+        EOF
+        
+        # Test SwiftUI compilation for iOS
+        echo "Testing SwiftUI compilation for iOS simulator..."
+        xcrun swiftc \
+          -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) \
+          -target arm64-apple-ios15.0-simulator \
+          minimal_ui.swift \
+          -o minimal_ui_ios
+          
+    - name: 🧪 Test 3: Single File from Project
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Test 3: Single Project File Compilation ==="
+        
+        # Test compiling just the main app file
+        echo "Testing EezyBuildApp.swift compilation..."
+        xcrun swiftc \
+          -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) \
+          -target arm64-apple-ios15.0-simulator \
+          -parse-as-library \
+          EezyBuild/EezyBuildApp.swift || echo "❌ Single file compilation failed"
+          
+    - name: 🧪 Test 4: Project Structure Validation
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Test 4: Project Structure Validation ==="
+        
+        # Test if Xcode can read the project
+        echo "Testing Xcode project structure..."
+        xcodebuild -list -project EezyBuild.xcodeproj
+        
+        # Check deployment target
+        echo ""
+        echo "Checking deployment target..."
+        grep -A5 -B5 "IPHONEOS_DEPLOYMENT_TARGET" EezyBuild.xcodeproj/project.pbxproj
+        
+    - name: 🧪 Test 5: Xcode Build with Lower iOS Target
+      working-directory: ios-native/EezyBuild
+      run: |
+        echo "=== Test 5: Build with Lower iOS Target ==="
+        
+        # Try building with iOS 15.0 instead of 17.0
+        echo "Testing with iOS 15.0 deployment target..."
+        timeout 120 xcodebuild build \
+          -project EezyBuild.xcodeproj \
+          -scheme EezyBuild \
+          -sdk iphonesimulator \
+          -configuration Debug \
+          -destination 'platform=iOS Simulator,name=iPhone 14' \
+          IPHONEOS_DEPLOYMENT_TARGET=15.0 \
+          CODE_SIGNING_ALLOWED=NO \
+          CODE_SIGNING_REQUIRED=NO \
+          SWIFT_COMPILATION_MODE=singlefile \
+          GCC_OPTIMIZATION_LEVEL=0 \
+          SWIFT_OPTIMIZATION_LEVEL=-Onone || echo "❌ Build with iOS 15.0 failed"
+          
+    - name: 📊 Test Results Summary
+      if: always()
+      run: |
+        echo "=== Test Results Summary ==="
+        echo "This workflow tests different levels of Swift/iOS compilation:"
+        echo ""
+        echo "1. ✅ Raw Swift compilation (if passed)"
+        echo "2. ✅ SwiftUI compilation (if passed)"  
+        echo "3. 🔍 Single project file compilation"
+        echo "4. 🔍 Xcode project structure validation"
+        echo "5. 🔍 Build with different iOS deployment target"
+        echo ""
+        echo "This will help identify if the issue is:"
+        echo "- Swift compiler environment problems"
+        echo "- SwiftUI framework issues" 
+        echo "- Xcode project configuration problems"
+        echo "- iOS deployment target compatibility"

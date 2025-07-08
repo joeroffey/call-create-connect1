@@ -8,6 +8,11 @@
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
+#floating-chatinput{
+  width: 790px !important;
+  bottom: 5px;
+}
+
 @layer base {
   :root {
     --background: 222.2 84% 4.9%;
@@ -495,6 +500,8 @@
   margin-top: auto;
 }
 
+
+
 /* Keyboard handling for mobile browsers */
 @media screen and (max-height: 500px) {
   .mobile-browser .chat-interface {
@@ -510,5 +517,38 @@
 @supports (height: 100svh) {
   .visual-viewport-support .chat-interface {
     height: calc(100svh - var(--navigation-height, 80px));
+  }
+}
+
+
+/* CHat textinput mobile browser handling. */
+@media screen and (max-width: 500px) {
+  
+  #floating-chatinput{
+    width: 350px !important;
+    bottom: 85px !important;
+  }
+  .advnc-srch-quick-tool-tb{
+    width: 100%;
+    overflow-y: auto;
+  }
+  .advnc-srch-quick-tool-tb .tab{
+    position: relative;
+    left: 35px;
+  }
+  .lookup-search-btn{
+    margin-top: 15px;
+  }
+  .team-tabs-arrow{
+    display: none !important;
+  }
+  .teampage-tabs{
+    padding: 0 !important;
+  }
+  .subs-icon-profile{
+    display: none !important;
+  }
+  .hover-active-none{
+    background-color: rgba(255, 255, 255, 0) !important;
   }
 }

@@ -34,7 +34,7 @@ const ChatHeader = ({
     <motion.div 
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass border-b border-white/5 px-4 py-3 flex items-center justify-between"
+      className={`glass border-b border-white/5 px-4 py-3 flex items-center justify-between ${isProjectChat && 'flex-wrap gap-4'}`}
     >
       <div className="flex items-center space-x-3">
         <motion.button
@@ -61,7 +61,7 @@ const ChatHeader = ({
         whileTap={{ scale: 0.95 }}
         whileHover={{ scale: 1.02 }}
         onClick={handleNewChat}
-        className="flex items-center space-x-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg transition-all duration-200 text-sm font-medium"
+        className={`flex items-center space-x-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg transition-all duration-200 text-sm font-medium ${isProjectChat  && 'w-full md:w-auto justify-center mt-2 md:mt-0'}`}
       >
         {isProjectChat ? (
           <>
