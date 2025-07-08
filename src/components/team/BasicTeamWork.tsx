@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,6 +27,8 @@ interface Task {
   completed: boolean;
   created_at: string;
   project_id: string;
+  assigned_to?: string;
+  assigned_user_name?: string;
 }
 
 const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
@@ -93,7 +96,15 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
     try {
       const { data, error } = await supabase
         .from('project_schedule_of_works')
-        .select('id, title, completed, created_at, project_id')
+        .select(`
+          id, 
+          title, 
+          completed, 
+          created_at, 
+          project_id, 
+          assigned_to,
+          assigned_user:profiles!project_schedule_of_works_assigned_to_fkey(full_name)
+        `)
         .eq('project_id', projectId)
         .order('created_at', { ascending: false });
 
@@ -102,7 +113,13 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
         return;
       }
 
-      setTasks(data || []);
+      // Transform the data to include assigned user name
+      const transformedTasks = (data || []).map(task => ({
+        ...task,
+        assigned_user_name: task.assigned_user?.full_name || null
+      }));
+
+      setTasks(transformedTasks);
     } catch (error) {
       console.error('Unexpected error loading tasks:', error);
     }
@@ -476,14 +493,21 @@ const BasicTeamWork = ({ teamId, members }: BasicTeamWorkProps) => {
                             <CheckCircle2 className="w-4 h-4" />
                           </Button>
                           <div className="flex-1">
-                            <span className={`text-sm ${
-                              task.completed 
-                                ? 'line-through text-gray-500' 
-                                : 'text-white'
-                            }`}>
-                              {task.title}
-                            </span>
-                            <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`text-sm ${
+                                task.completed 
+                                  ? 'line-through text-gray-500' 
+                                  : 'text-white'
+                              }`}>
+                                {task.title}
+                              </span>
+                              {task.assigned_user_name && (
+                                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs bg-emerald-500/20 border border-emerald-500/40 text-emerald-300">
+                                  {task.assigned_user_name}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-gray-500">
                               <Clock className="w-3 h-3" />
                               {new Date(task.created_at).toLocaleDateString()}
                             </div>
