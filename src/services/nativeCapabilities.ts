@@ -1,3 +1,4 @@
+
 import { 
   StatusBar, 
   Style as StatusBarStyle 
@@ -153,8 +154,17 @@ class NativeCapabilitiesService implements NativeCapabilities {
     if (!this.isNative) return () => {};
     
     try {
-      const listener = App.addListener('appStateChange', callback);
-      return () => listener.remove();
+      let listenerHandle: any = null;
+      
+      App.addListener('appStateChange', callback).then(handle => {
+        listenerHandle = handle;
+      });
+      
+      return () => {
+        if (listenerHandle) {
+          listenerHandle.remove();
+        }
+      };
     } catch (error) {
       console.warn('Add app state listener failed:', error);
       return () => {};
@@ -165,10 +175,19 @@ class NativeCapabilitiesService implements NativeCapabilities {
     if (!this.isNative) return () => {};
     
     try {
-      const listener = App.addListener('appUrlOpen', (data: any) => {
+      let listenerHandle: any = null;
+      
+      App.addListener('appUrlOpen', (data: any) => {
         callback(data.url);
+      }).then(handle => {
+        listenerHandle = handle;
       });
-      return () => listener.remove();
+      
+      return () => {
+        if (listenerHandle) {
+          listenerHandle.remove();
+        }
+      };
     } catch (error) {
       console.warn('Add URL open listener failed:', error);
       return () => {};
@@ -214,7 +233,7 @@ class NativeCapabilitiesService implements NativeCapabilities {
     
     try {
       const result = await Device.getId();
-      return result.identifier || result.uuid || 'unknown';
+      return result.identifier || 'unknown';
     } catch (error) {
       console.warn('Get device ID failed:', error);
       return 'unknown';
@@ -266,8 +285,17 @@ class NativeCapabilitiesService implements NativeCapabilities {
     }
     
     try {
-      const listener = Network.addListener('networkStatusChange', callback);
-      return () => listener.remove();
+      let listenerHandle: any = null;
+      
+      Network.addListener('networkStatusChange', callback).then(handle => {
+        listenerHandle = handle;
+      });
+      
+      return () => {
+        if (listenerHandle) {
+          listenerHandle.remove();
+        }
+      };
     } catch (error) {
       console.warn('Add network listener failed:', error);
       return () => {};
