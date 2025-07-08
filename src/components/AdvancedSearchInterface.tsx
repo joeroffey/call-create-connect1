@@ -251,13 +251,18 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
     <div className="flex-1 bg-black text-white">
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="border-b border-gray-800 py-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
-            <div>
-              <h1 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2">
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="glass border-b border-white/10 px-6 py-8"
+        >
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <h1 className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
                 Advanced Search
               </h1>
-              <p className="text-gray-400 text-sm md:text-base">
+              <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                 Search through UK Building Regulations with advanced filters and tools
               </p>
             </div>
@@ -273,17 +278,38 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
               </Button>
             )}
           </div>
-
-        </div>
+        </motion.div>
 
         {/* Main Content */}
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue="search" className="h-full flex flex-col">
-            <TabsList className="bg-gray-900 border-b border-gray-800 rounded-none w-full px-4 overflow-x-auto flex gap-2 scrollbar-hide">
-              <TabsTrigger value="search" className="flex-shrink-0 data-[state=active]:bg-gray-800">Search</TabsTrigger>
-              <TabsTrigger value="tools" className="flex-shrink-0 data-[state=active]:bg-gray-800">Quick Tools</TabsTrigger>
-              <TabsTrigger value="history" className="flex-shrink-0 data-[state=active]:bg-gray-800">History & Favorites</TabsTrigger>
-            </TabsList>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="glass border-b border-white/10"
+            >
+              <TabsList className="bg-transparent border-none rounded-none w-full px-6 py-2 overflow-x-auto flex gap-1 scrollbar-hide justify-start">
+                <TabsTrigger 
+                  value="search" 
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-emerald-300 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-300 data-[state=active]:border data-[state=active]:border-emerald-500/30 transition-all duration-200"
+                >
+                  Search
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="tools" 
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-emerald-300 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-300 data-[state=active]:border data-[state=active]:border-emerald-500/30 transition-all duration-200"
+                >
+                  Quick Tools
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="history" 
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-emerald-300 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-300 data-[state=active]:border data-[state=active]:border-emerald-500/30 transition-all duration-200"
+                >
+                  History & Favorites
+                </TabsTrigger>
+              </TabsList>
+            </motion.div>
 
 
             <TabsContent value="search" className="flex-1 m-0">
