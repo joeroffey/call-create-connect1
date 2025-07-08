@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Trash2, Pin, MessageCircle, FileText, Clock, ChevronDown, MapPin, Phone, User } from 'lucide-react';
@@ -163,12 +164,12 @@ const ProjectCard = ({
         </div>
       </div>
 
-      {/* Status and Label */}
-      <div className="flex items-center space-x-2 mb-4">
+      {/* Status and Label - Improved responsive layout */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="relative">
           <button
             onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 whitespace-nowrap ${getStatusColor(project.status)}`}
+            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
           >
             <span>{getStatusLabel(project.status)}</span>
             <ChevronDown className="w-3 h-3" />
@@ -190,11 +191,13 @@ const ProjectCard = ({
             </div>
           )}
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border whitespace-nowrap ${getLabelColor(project.label)}`}>
+        
+        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getLabelColor(project.label)}`}>
           {project.label}
         </span>
+        
         {project.team_name && (
-          <span className="px-3 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 whitespace-nowrap">
+          <span className="px-3 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 max-w-full truncate">
             {project.team_name}
           </span>
         )}
