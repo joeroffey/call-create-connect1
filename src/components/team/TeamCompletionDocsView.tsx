@@ -204,8 +204,9 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
       <div className="container mx-auto px-6 py-6">
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="space-y-4">
+            {/* Back Button */}
+            <div>
               <Button
                 variant="ghost"
                 size="sm"
@@ -220,17 +221,19 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">
-                  {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  {currentFolderId ? 'Folder contents' : 'Project documents and folders'}
-                </p>
-              </div>
             </div>
 
+            {/* Title Section */}
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold tracking-tight">
+                {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
+              </h1>
+              <p className="text-muted-foreground">
+                {currentFolderId ? 'Folder contents' : 'Project documents and folders'}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
             <div className="flex items-center gap-3">
               {canCreateFolders && (
                 <Button
