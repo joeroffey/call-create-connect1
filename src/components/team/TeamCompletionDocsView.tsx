@@ -484,6 +484,10 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
           isOpen={!!selectedDocument}
           document={selectedDocument}
           onClose={() => setSelectedDocument(null)}
+          onDelete={() => {
+            refetch();
+            setSelectedDocument(null);
+          }}
         />
       )}
 
