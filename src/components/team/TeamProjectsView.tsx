@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, Users } from 'lucide-react';
 import { useConversations } from '../../hooks/useConversations';
 import { useTeamProjects } from '../../hooks/useTeamProjects';
 import { useToast } from "@/hooks/use-toast";
@@ -9,6 +9,7 @@ import ProjectCard from '../projects/ProjectCard';
 import CreateProjectModal from '../projects/CreateProjectModal';
 import EditProjectModal from '../projects/EditProjectModal';
 import ProjectFiltersComponent, { ProjectFilters } from '../projects/ProjectFilters';
+import { ProjectAccessModal } from './ProjectAccessModal';
 
 interface TeamProject {
   id: string;
@@ -51,6 +52,8 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
     status: 'all',
     search: ''
   });
+  const [showProjectAccessModal, setShowProjectAccessModal] = useState(false);
+  const [selectedProjectForAccess, setSelectedProjectForAccess] = useState<TeamProject | null>(null);
   const { toast } = useToast();
   
   // Use the new team projects hook
@@ -309,6 +312,15 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
                 onTogglePin={togglePinProject}
                 onProjectStatsClick={handleProjectStatsClick}
                 onStatusChange={handleStatusChange}
+                onManageAccess={(project) => {
+                  const teamProject: TeamProject = {
+                    ...project,
+                    team_id: project.team_id || teamId,
+                    team_name: project.team_name || teamName
+                  };
+                  setSelectedProjectForAccess(teamProject);
+                  setShowProjectAccessModal(true);
+                }}
               />
             ))}
           </div>
@@ -355,6 +367,18 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
           }
         }}
         onUpdateProject={handleUpdateProject}
+      />
+
+      {/* Project Access Modal */}
+      <ProjectAccessModal
+        isOpen={showProjectAccessModal}
+        onClose={() => {
+          setShowProjectAccessModal(false);
+          setSelectedProjectForAccess(null);
+        }}
+        projectId={selectedProjectForAccess?.id || ''}
+        teamId={teamId}
+        projectName={selectedProjectForAccess?.name || 'Project'}
       />
     </div>
   );

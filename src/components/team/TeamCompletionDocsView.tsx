@@ -14,7 +14,7 @@ import { useProjectPermissions } from '@/hooks/useProjectPermissions';
 import { CompletionDocsUpload } from './CompletionDocsUpload';
 import { CompletionDocsViewer } from './CompletionDocsViewer';
 import { CompletionDocsList } from './CompletionDocsList';
-import { ProjectAccessModal } from './ProjectAccessModal';
+
 import { FolderAccessModal } from './FolderAccessModal';
 import { CreateFolderModal } from './CreateFolderModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,7 +47,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<any>(null);
-  const [showAccessModal, setShowAccessModal] = useState(false);
+  
   const [showFolderAccessModal, setShowFolderAccessModal] = useState(false);
   const [selectedFolderForAccess, setSelectedFolderForAccess] = useState<string | null>(null);
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
@@ -246,16 +246,6 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                 </Button>
               )}
               
-              {canManageAccess && (
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAccessModal(true)}
-                  className="flex items-center gap-2 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20"
-                >
-                  <Users className="h-4 w-4" />
-                  Project Access
-                </Button>
-              )}
               
               <Button
                 onClick={() => setShowUploadModal(true)}
@@ -497,13 +487,6 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
         />
       )}
 
-      <ProjectAccessModal
-        isOpen={showAccessModal}
-        onClose={() => setShowAccessModal(false)}
-        projectId={selectedProject || ''}
-        teamId={teamId}
-        projectName={selectedProjectData?.name || ''}
-      />
 
       <FolderAccessModal
         isOpen={showFolderAccessModal}

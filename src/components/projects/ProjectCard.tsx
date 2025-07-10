@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Edit, Trash2, Pin, MessageCircle, FileText, Clock, ChevronDown, MapPin, Phone, User } from 'lucide-react';
+import { Edit, Trash2, Pin, MessageCircle, FileText, Clock, ChevronDown, MapPin, Phone, User, Users } from 'lucide-react';
 
 interface Project {
   id: string;
@@ -32,6 +32,7 @@ interface ProjectCardProps {
   onTogglePin: (projectId: string, currentPinned: boolean) => void;
   onProjectStatsClick: (project: Project, section: string) => void;
   onStatusChange: (projectId: string, newStatus: string) => void;
+  onManageAccess?: (project: Project) => void;
 }
 
 const ProjectCard = ({
@@ -45,7 +46,8 @@ const ProjectCard = ({
   onDelete,
   onTogglePin,
   onProjectStatsClick,
-  onStatusChange
+  onStatusChange,
+  onManageAccess
 }: ProjectCardProps) => {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
@@ -288,6 +290,15 @@ const ProjectCard = ({
         >
           Start Chat
         </button>
+        {project.team_id && onManageAccess && (
+          <button
+            onClick={() => onManageAccess(project)}
+            className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg transition-all duration-200"
+            title="Manage Project Access"
+          >
+            <Users className="w-4 h-4" />
+          </button>
+        )}
         <button
           onClick={() => onEdit(project)}
           className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 border border-gray-700/50 rounded-lg transition-all duration-200"
