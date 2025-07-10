@@ -56,6 +56,7 @@ interface AnalysisResult {
 }
 
 const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
+  console.log('DrawingScaler component loaded');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [pageSize, setPageSize] = useState('');
