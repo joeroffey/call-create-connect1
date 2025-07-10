@@ -10,6 +10,7 @@ import ReadyReckoner from './ReadyReckoner';
 import TimberGuide from './TimberGuide';
 import RoofTilesCalculator from './RoofTilesCalculator';
 import BrickCalculator from './BrickCalculator';
+import DrawingScaler from './DrawingScaler';
 
 interface AppsScreenProps {
   user: any;
@@ -68,6 +69,14 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
       icon: '🧱',
       category: 'Calculators',
       minTier: 'pro'
+    },
+    {
+      id: 'drawing-scaler',
+      title: 'Drawing Scaler',
+      description: 'AI-powered precision measurement tool for architectural drawings. Upload PDFs or images and get instant real-world measurements.',
+      icon: '📐',
+      category: 'AI Tools',
+      minTier: 'enterprise'
     }
   ];
 
@@ -122,6 +131,10 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
 
   if (activeApp === 'brick-calculator') {
     return <BrickCalculator onBack={() => setActiveApp(null)} />;
+  }
+
+  if (activeApp === 'drawing-scaler') {
+    return <DrawingScaler onBack={() => setActiveApp(null)} />;
   }
 
   return (
