@@ -1,6 +1,5 @@
-import React from 'react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from 'recharts';
-import { format, parseISO, differenceInDays, startOfWeek, endOfWeek, addWeeks } from 'date-fns';
+import React, { useState } from 'react';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { ProjectPhase } from '@/hooks/useProjectPlan';
 
 interface GanttChartProps {
@@ -8,135 +7,18 @@ interface GanttChartProps {
   onPhaseClick?: (phase: ProjectPhase) => void;
 }
 
-interface GanttData {
-  phase_name: string;
-  start: number;
-  duration: number;
-  startOffset: number;
-  endPosition: number;
-  color: string;
-  status: string;
+interface SimpleGanttData {
   phase: ProjectPhase;
-  value: number;
+  startDays: number;
+  duration: number;
+  leftPercent: number;
+  widthPercent: number;
 }
-
-// ErrorBoundary component specifically for chart rendering
-interface ChartErrorBoundaryProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-}
-
-interface ChartErrorBoundaryState {
-  hasError: boolean;
-  error?: Error;
-}
-
-class ChartErrorBoundary extends React.Component<ChartErrorBoundaryProps, ChartErrorBoundaryState> {
-  constructor(props: ChartErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error): ChartErrorBoundaryState {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Chart rendering error caught by boundary:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-          <div className="text-center">
-            <p className="text-muted-foreground">Chart display error</p>
-            <button 
-              onClick={() => this.setState({ hasError: false })}
-              className="mt-2 text-sm text-primary hover:underline"
-            >
-              Try again
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    return this.props.children;
-  }
-}
-
-// Ultra-aggressive data sanitization function
-const sanitizeValue = (value: any, fallback: number = 0): number => {
-  // Handle null, undefined, or empty values
-  if (value === null || value === undefined || value === '' || value === 'null' || value === 'undefined') {
-    return fallback;
-  }
-  
-  // Convert to number
-  let num: number;
-  if (typeof value === 'string') {
-    // Remove any non-numeric characters except decimal point and minus
-    const cleaned = value.replace(/[^0-9.-]/g, '');
-    num = parseFloat(cleaned);
-  } else {
-    num = Number(value);
-  }
-  
-  // Comprehensive validation
-  if (!Number.isFinite(num) || isNaN(num) || typeof num !== 'number') {
-    return fallback;
-  }
-  
-  // Ensure it's a positive integer (for chart data)
-  const result = Math.max(0, Math.floor(Math.abs(num)));
-  
-  // Final safety check
-  return Number.isFinite(result) && !isNaN(result) ? result : fallback;
-};
-
-// Ultra-comprehensive data validation function
-const validateChartData = (data: GanttData[]): GanttData[] => {
-  if (!Array.isArray(data)) return [];
-  
-  return data.filter(item => {
-    // Ensure all required properties exist and are valid
-    if (!item || typeof item !== 'object') return false;
-    if (!item.phase_name || typeof item.phase_name !== 'string') return false;
-    if (!item.color || typeof item.color !== 'string') return false;
-    if (!item.status || typeof item.status !== 'string') return false;
-    if (!item.phase || typeof item.phase !== 'object') return false;
-    
-    return true;
-  }).map(item => {
-    // Sanitize ALL numerical values aggressively
-    const sanitizedStart = sanitizeValue(item.start, 0);
-    const sanitizedDuration = sanitizeValue(item.duration, 1);
-    const sanitizedStartOffset = sanitizeValue(item.startOffset, 0);
-    const sanitizedEndPosition = sanitizeValue(item.endPosition, 1);
-    const sanitizedValue = sanitizeValue(item.value, 1);
-    
-    // Ensure minimum viable values
-    const safeDuration = Math.max(1, sanitizedDuration);
-    const safeValue = Math.max(1, sanitizedValue);
-    
-    return {
-      ...item,
-      start: sanitizedStart,
-      duration: safeDuration,
-      startOffset: sanitizedStartOffset,
-      endPosition: sanitizedEndPosition,
-      value: safeValue,
-      // Ensure color is valid
-      color: item.color && item.color.length > 0 ? item.color : '#3b82f6',
-      // Ensure status is valid
-      status: item.status || 'not_started'
-    };
-  });
-};
 
 export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) => {
-  // Early validation - must have phases with valid data
+  const [hoveredPhase, setHoveredPhase] = useState<string | null>(null);
+
+  // Early validation
   if (!phases || phases.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
@@ -145,21 +27,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     );
   }
 
-  // Filter and validate phases with comprehensive checks
+  // Filter valid phases
   const validPhases = phases.filter(phase => {
-    if (!phase || typeof phase !== 'object') return false;
-    if (!phase.start_date || !phase.end_date || !phase.phase_name) return false;
-    
-    // Validate dates can be parsed
+    if (!phase?.start_date || !phase?.end_date || !phase?.phase_name) return false;
     const startTime = Date.parse(phase.start_date);
     const endTime = Date.parse(phase.end_date);
-    
-    if (isNaN(startTime) || isNaN(endTime)) return false;
-    if (startTime > endTime) return false; // End must be after start
-    
-    return true;
+    return !isNaN(startTime) && !isNaN(endTime) && startTime <= endTime;
   });
-  
+
   if (validPhases.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
@@ -168,254 +43,155 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     );
   }
 
-  // Safe date calculations with multiple fallbacks
-  let projectStart: Date;
-  let projectEnd: Date;
-  let timelineStart: Date;
-  let timelineEnd: Date;
-  let timelineDuration: number;
+  // Calculate project timeline
+  const allDates = validPhases.flatMap(phase => [
+    parseISO(phase.start_date),
+    parseISO(phase.end_date)
+  ]);
 
-  try {
-    const allDates = validPhases.flatMap(phase => {
-      const start = parseISO(phase.start_date);
-      const end = parseISO(phase.end_date);
-      return [start, end];
-    });
+  const projectStart = new Date(Math.min(...allDates.map(d => d.getTime())));
+  const projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
+  const totalDays = differenceInDays(projectEnd, projectStart) + 1;
 
-    projectStart = new Date(Math.min(...allDates.map(d => d.getTime())));
-    projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
+  // Create simple Gantt data
+  const ganttData: SimpleGanttData[] = validPhases.map(phase => {
+    const phaseStart = parseISO(phase.start_date);
+    const phaseEnd = parseISO(phase.end_date);
+    const startDays = differenceInDays(phaseStart, projectStart);
+    const duration = differenceInDays(phaseEnd, phaseStart) + 1;
     
-    // Validate calculated dates
-    if (isNaN(projectStart.getTime()) || isNaN(projectEnd.getTime())) {
-      throw new Error('Invalid project dates');
+    const leftPercent = (startDays / totalDays) * 100;
+    const widthPercent = (duration / totalDays) * 100;
+
+    return {
+      phase,
+      startDays,
+      duration,
+      leftPercent: Math.max(0, leftPercent),
+      widthPercent: Math.max(1, widthPercent)
+    };
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-500';
+      case 'in_progress': return 'bg-blue-500';
+      case 'delayed': return 'bg-red-500';
+      default: return 'bg-gray-500';
     }
-
-    timelineStart = startOfWeek(projectStart);
-    timelineEnd = endOfWeek(projectEnd);
-    
-    // Validate timeline dates
-    if (isNaN(timelineStart.getTime()) || isNaN(timelineEnd.getTime())) {
-      throw new Error('Invalid timeline dates');
-    }
-
-    timelineDuration = differenceInDays(timelineEnd, timelineStart);
-    
-    // Validate duration
-    if (isNaN(timelineDuration) || timelineDuration <= 0) {
-      throw new Error('Invalid timeline duration');
-    }
-  } catch (error) {
-    console.error('Date calculation error:', error);
-    return (
-      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-        <p className="text-muted-foreground">Unable to calculate project timeline</p>
-      </div>
-    );
-  }
-
-  // Create chart data with absolute safety guarantees
-  const ganttData: GanttData[] = [];
-  
-  for (const phase of validPhases) {
-    try {
-      const phaseStart = parseISO(phase.start_date);
-      const phaseEnd = parseISO(phase.end_date);
-      
-      const startOffset = differenceInDays(phaseStart, timelineStart);
-      const duration = differenceInDays(phaseEnd, phaseStart) + 1;
-      
-      // Multiple layers of sanitization
-      const safeStart = sanitizeValue(startOffset, 0);
-      const safeDuration = sanitizeValue(duration, 1);
-      
-      // Only add if all values are definitely valid and safe for Recharts
-      if (safeStart >= 0 && safeDuration > 0) {
-        ganttData.push({
-          phase_name: String(phase.phase_name).slice(0, 50), // Limit length
-          start: safeStart,
-          duration: safeDuration,
-          startOffset: safeStart, // For positioning the bar
-          endPosition: safeStart + safeDuration, // For stacked approach
-          color: phase.color || '#3b82f6',
-          status: phase.status || 'not_started',
-          phase,
-          // Simple bar data for basic chart
-          value: safeDuration, // Alternative data key
-        });
-      }
-    } catch (error) {
-      console.warn('Skipping invalid phase:', phase.phase_name, error);
-      // Skip this phase instead of crashing
-    }
-  }
-
-  // Validate and sanitize chart data
-  const validatedData = validateChartData(ganttData);
-
-  // Final safety check
-  if (validatedData.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-        <p className="text-muted-foreground">No valid chart data available</p>
-      </div>
-    );
-  }
-
-  // Safe chart configuration with validated values
-  const safeHeight = sanitizeValue(Math.max(300, Math.min(800, validatedData.length * 60)), 300);
-  
-  // Ultra-robust domain calculation to prevent any NaN values
-  let domainMax = 1; // Safe default
-  
-  // Calculate domain from actual data if timeline calculation fails
-  const maxEndPosition = validatedData.reduce((max, item) => {
-    const endPos = sanitizeValue(item.endPosition, 0);
-    return Math.max(max, endPos);
-  }, 1);
-  
-  const maxDuration = validatedData.reduce((max, item) => {
-    const duration = sanitizeValue(item.duration, 0);
-    return Math.max(max, duration);
-  }, 1);
-  
-  // Use timeline duration if valid, otherwise use data-derived values
-  if (Number.isFinite(timelineDuration) && timelineDuration > 0) {
-    const flooredDuration = Math.floor(timelineDuration);
-    if (Number.isFinite(flooredDuration) && flooredDuration > 0) {
-      domainMax = Math.max(1, flooredDuration);
-    }
-  } else {
-    // Fall back to data-derived maximum
-    domainMax = Math.max(1, maxEndPosition, maxDuration, 10); // At least 10 for visibility
-  }
-  
-  // Quadruple check domain values are absolutely safe for Recharts
-  const safeDomainMin = sanitizeValue(0, 0);
-  const safeDomainMax = sanitizeValue(domainMax, 10);
-  const safeDomain = [safeDomainMin, Math.max(safeDomainMax, safeDomainMin + 1)];
-
-
-  
-  // Final verification that domain values are valid numbers
-  if (safeDomain[0] < 0 || safeDomain[1] <= 0 || safeDomain[1] <= safeDomain[0]) {
-    return (
-      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-        <p className="text-muted-foreground">Invalid chart domain</p>
-      </div>
-    );
-  }
-
-  // Generate timeline labels
-  const timelineLabels: string[] = [];
-  let currentWeek = timelineStart;
-  while (currentWeek <= timelineEnd) {
-    timelineLabels.push(format(currentWeek, 'MMM dd'));
-    currentWeek = addWeeks(currentWeek, 1);
-  }
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload as GanttData;
-      const phase = data.phase;
-      
-      return (
-        <div className="bg-background border border-border rounded-lg p-3 shadow-lg">
-          <h4 className="font-semibold text-foreground">{phase.phase_name}</h4>
-          <p className="text-sm text-muted-foreground mt-1">
-            {format(parseISO(phase.start_date), 'MMM dd, yyyy')} - {format(parseISO(phase.end_date), 'MMM dd, yyyy')}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Duration: {data.duration} day{data.duration !== 1 ? 's' : ''}
-          </p>
-          <p className="text-sm text-muted-foreground capitalize">
-            Status: {phase.status.replace('_', ' ')}
-          </p>
-          {phase.description && (
-            <p className="text-sm text-muted-foreground mt-1">{phase.description}</p>
-          )}
-        </div>
-      );
-    }
-    return null;
   };
 
   const getStatusOpacity = (status: string) => {
     switch (status) {
-      case 'completed': return 1;
-      case 'in_progress': return 0.8;
-      case 'delayed': return 0.9;
-      default: return 0.6;
+      case 'completed': return 'opacity-100';
+      case 'in_progress': return 'opacity-80';
+      case 'delayed': return 'opacity-90';
+      default: return 'opacity-60';
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground">Project Timeline</h3>
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-primary rounded opacity-60"></div>
+            <div className="w-3 h-3 bg-gray-500 rounded opacity-60"></div>
             <span className="text-muted-foreground">Not Started</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-warning rounded opacity-80"></div>
+            <div className="w-3 h-3 bg-blue-500 rounded opacity-80"></div>
             <span className="text-muted-foreground">In Progress</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-success rounded"></div>
+            <div className="w-3 h-3 bg-green-500 rounded"></div>
             <span className="text-muted-foreground">Completed</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-destructive rounded opacity-90"></div>
+            <div className="w-3 h-3 bg-red-500 rounded opacity-90"></div>
             <span className="text-muted-foreground">Delayed</span>
           </div>
         </div>
       </div>
 
-      <div className="border border-border rounded-lg p-4 bg-card overflow-x-auto">
-        <ResponsiveContainer width="100%" height={safeHeight}>
-          <BarChart
-            data={validatedData}
-            layout="horizontal"
-            margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
-          >
-            <XAxis 
-              type="number" 
-              domain={safeDomain}
-              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
-            />
-            <YAxis 
-              type="category" 
-              dataKey="phase_name"
-              width={120}
-              tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar 
-              dataKey="value" 
-              fill="#3b82f6"
-              onClick={(data) => onPhaseClick?.(data.phase)}
-              cursor="pointer"
-              radius={[0, 4, 4, 0]}
-              minPointSize={5}
-            >
-              {validatedData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.color}
-                  fillOpacity={getStatusOpacity(entry.status)}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      {/* Simple Gantt Chart */}
+      <div className="border border-border rounded-lg p-4 bg-card">
+        <div className="space-y-3">
+          {/* Timeline header */}
+          <div className="flex justify-between text-xs text-muted-foreground border-b pb-2">
+            <span>{format(projectStart, 'MMM dd, yyyy')}</span>
+            <span>{format(projectEnd, 'MMM dd, yyyy')}</span>
+          </div>
+
+          {/* Phase rows */}
+          <div className="space-y-2">
+            {ganttData.map((item, index) => (
+              <div key={item.phase.id} className="space-y-1">
+                {/* Phase name */}
+                <div className="text-sm font-medium text-foreground">
+                  {item.phase.phase_name}
+                </div>
+                
+                {/* Timeline bar */}
+                <div className="relative h-8 bg-muted rounded">
+                  <div
+                    className={`absolute top-0 h-full rounded cursor-pointer transition-all duration-200 ${getStatusColor(item.phase.status)} ${getStatusOpacity(item.phase.status)} hover:opacity-100`}
+                    style={{
+                      left: `${item.leftPercent}%`,
+                      width: `${item.widthPercent}%`,
+                      backgroundColor: item.phase.color || undefined
+                    }}
+                    onClick={() => onPhaseClick?.(item.phase)}
+                    onMouseEnter={() => setHoveredPhase(item.phase.id)}
+                    onMouseLeave={() => setHoveredPhase(null)}
+                  >
+                    {/* Duration label inside bar if wide enough */}
+                    {item.widthPercent > 15 && (
+                      <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
+                        {item.duration} day{item.duration !== 1 ? 's' : ''}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Tooltip */}
+                  {hoveredPhase === item.phase.id && (
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 z-10">
+                      <div className="bg-background border border-border rounded-lg p-3 shadow-lg min-w-48">
+                        <h4 className="font-semibold text-foreground">{item.phase.phase_name}</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {format(parseISO(item.phase.start_date), 'MMM dd, yyyy')} - {format(parseISO(item.phase.end_date), 'MMM dd, yyyy')}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Duration: {item.duration} day{item.duration !== 1 ? 's' : ''}
+                        </p>
+                        <p className="text-sm text-muted-foreground capitalize">
+                          Status: {item.phase.status.replace('_', ' ')}
+                        </p>
+                        {item.phase.description && (
+                          <p className="text-sm text-muted-foreground mt-1">{item.phase.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Phase details */}
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{format(parseISO(item.phase.start_date), 'MMM dd')}</span>
+                  <span className="capitalize">{item.phase.status.replace('_', ' ')}</span>
+                  <span>{format(parseISO(item.phase.end_date), 'MMM dd')}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
+      {/* Project summary */}
       <div className="text-xs text-muted-foreground">
         Timeline: {format(projectStart, 'MMM dd, yyyy')} - {format(projectEnd, 'MMM dd, yyyy')}
-        {' '}({Math.max(1, differenceInDays(projectEnd, projectStart) + 1)} days)
+        {' '}({totalDays} days) • {validPhases.length} phases
       </div>
     </div>
   );
