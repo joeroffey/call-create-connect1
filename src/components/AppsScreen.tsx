@@ -76,7 +76,7 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
       description: 'AI-powered precision measurement tool for architectural drawings. Upload PDFs or images and get instant real-world measurements.',
       icon: '📐',
       category: 'AI Tools',
-      minTier: 'enterprise'
+      minTier: 'basic'
     }
   ];
 
