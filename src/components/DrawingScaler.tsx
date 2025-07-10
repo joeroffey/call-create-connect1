@@ -124,6 +124,8 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
   };
 
   const analyzeDrawing = async () => {
+    console.log('Starting analysis with:', { uploadedFile: uploadedFile?.name, pageSize, scale });
+    
     if (!uploadedFile || !pageSize || !scale) {
       toast({
         title: "Missing Information",
@@ -148,6 +150,8 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
 
       const base64 = await fileToBase64(uploadedFile);
 
+      console.log('Calling edge function with data:', { pageSize, scale, unit: 'mm' });
+
       const { data, error } = await supabase.functions.invoke('analyze-drawing-scale', {
         body: { 
           image: base64,
@@ -160,8 +164,11 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
         },
       });
 
+      console.log('Edge function response:', { data, error });
+
       if (error) throw error;
 
+      console.log('Setting analysis result:', data);
       setAnalysisResult(data);
       
       toast({
