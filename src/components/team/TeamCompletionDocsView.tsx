@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Search, Upload, Plus, Folder, Shield, Settings, Users, Calendar, Files, MoreVertical, FolderOpen } from 'lucide-react';
+import { ArrowLeft, Search, Upload, Plus, Folder, Shield, Settings, Users, Calendar, Files, MoreVertical, FolderOpen, FolderPlus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { CompletionDocsViewer } from './CompletionDocsViewer';
 import { CompletionDocsList } from './CompletionDocsList';
 import { ProjectAccessModal } from './ProjectAccessModal';
 import { FolderAccessModal } from './FolderAccessModal';
+import { CreateFolderModal } from './CreateFolderModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -49,7 +50,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [showFolderAccessModal, setShowFolderAccessModal] = useState(false);
   const [selectedFolderForAccess, setSelectedFolderForAccess] = useState<string | null>(null);
-  const [newFolderName, setNewFolderName] = useState('');
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
 
   const { projects, loading: projectsLoading } = useTeamProjects(teamId);
   const { data: allDocuments, getDocumentsByProject, refetch } = useTeamCompletionDocuments(teamId);
@@ -102,17 +103,15 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   const rootFolders = folders.filter(folder => !folder.parent_folder_id);
 
   // Handle folder creation
-  const handleCreateFolder = async () => {
-    if (!newFolderName.trim()) return;
-    
-    const success = await createFolder(newFolderName.trim(), currentFolderId);
+  const handleCreateFolder = async (folderName: string) => {
+    const success = await createFolder(folderName, currentFolderId);
     if (success) {
-      setNewFolderName('');
       toast({
         title: "Folder created",
-        description: `Folder "${newFolderName}" has been created successfully.`,
+        description: `Folder "${folderName}" has been created successfully.`,
       });
     }
+    return success;
   };
 
   if (projectsLoading) {
@@ -125,421 +124,436 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
 
   if (!selectedProject) {
     return (
-      <div className="container mx-auto p-4">
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold">Select a Project</h2>
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search projects..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 h-9"
-            />
-          </div>
-
-          {projects.length === 0 ? (
-            <div className="text-center py-12">
-              <Folder className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Team Projects Found</h3>
-              <p className="text-muted-foreground">
-                Create a team project to start managing completion documents.
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-6 py-8">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl font-bold tracking-tight">Project Documents</h1>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Select a project to manage completion documents and folders
               </p>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projects
-                .filter(project => 
-                  project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                  (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()))
-                )
-                .map(project => {
-                  const documentCount = getDocumentsByProject(project.id).length;
-                  
-                  return (
-                    <div
-                      key={project.id}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                      onClick={() => setSelectedProject(project.id)}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Folder className="h-5 w-5 text-blue-500" />
-                          <span className="font-medium">{project.name}</span>
-                        </div>
-                        <Badge variant="secondary">
-                          {documentCount} docs
-                        </Badge>
-                      </div>
-                      
-                      {project.description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {project.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">
-                          Team Project
-                        </span>
-                        <Button variant="ghost" size="sm">
-                          View →
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
+
+            {/* Search */}
+            <div className="max-w-md mx-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder="Search projects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 h-12 text-base"
+                />
+              </div>
             </div>
-          )}
+
+            {/* Projects Grid */}
+            {projects.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="p-4 rounded-full bg-muted/30 w-20 h-20 mx-auto mb-6 flex items-center justify-center">
+                  <Folder className="h-10 w-10 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold mb-3">No Team Projects Found</h3>
+                <p className="text-muted-foreground text-base max-w-md mx-auto">
+                  Create a team project to start managing completion documents and organize your files.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {projects
+                  .filter(project => 
+                    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()))
+                  )
+                  .map(project => {
+                    const documentCount = getDocumentsByProject(project.id).length;
+                    
+                    return (
+                      <Card
+                        key={project.id}
+                        className="cursor-pointer hover:shadow-lg transition-all duration-200 group border-border/40 hover:border-primary/30"
+                        onClick={() => setSelectedProject(project.id)}
+                      >
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                              <Folder className="h-6 w-6 text-primary" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <CardTitle className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                                {project.name}
+                              </CardTitle>
+                              <div className="flex items-center gap-2 mt-1">
+                                <Badge variant="secondary" className="text-xs">
+                                  {documentCount} documents
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">Team Project</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {project.description && (
+                            <CardDescription className="text-sm line-clamp-2 min-h-[2.5rem]">
+                              {project.description}
+                            </CardDescription>
+                          )}
+                        </CardHeader>
+                        
+                        <CardContent className="pt-0">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                              Click to open
+                            </span>
+                            <div className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                              Open →
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-3 space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              if (currentFolderId) {
-                setCurrentFolderId(null);
-              } else {
-                setSelectedProject(null);
-              }
-            }}
-            className="flex items-center gap-1 text-sm"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {currentFolderId ? 'Back to Project' : 'Back to Projects'}
-          </Button>
-          
-          <h1 className="text-xl font-bold">
-            {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {canManageAccess && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAccessModal(true)}
-              className="flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 text-sm"
-            >
-              <Users className="h-4 w-4" />
-              Project Access
-            </Button>
-          )}
-          
-          <Button
-            onClick={() => setShowUploadModal(true)}
-            size="sm"
-            className="flex items-center gap-1 text-sm"
-          >
-            <Upload className="h-4 w-4" />
-            Upload
-          </Button>
-        </div>
-      </div>
-
-      {/* Breadcrumb */}
-      {currentFolderId && (
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <span 
-            className="cursor-pointer hover:text-foreground"
-            onClick={() => setCurrentFolderId(null)}
-          >
-            {selectedProjectData?.name}
-          </span>
-          {currentFolderPath.map((folder, index) => (
-            <div key={folder.id} className="flex items-center gap-1">
-              <span>/</span>
-              <span 
-                className="cursor-pointer hover:text-foreground"
-                onClick={() => setCurrentFolderId(folder.id)}
-              >
-                {folder.name}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Search and Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder={`Search ${currentFolderData ? 'in folder' : 'documents'}...`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9"
-          />
-        </div>
-        
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full sm:w-40 h-9">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {Object.entries(categoryLabels).map(([key, label]) => (
-              <SelectItem key={key} value={key}>{label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Content Area */}
-      {!currentFolderId ? (
-        // Folder Grid View (Project Level)
-        <div className="space-y-4">
-          {/* Create New Folder - Compact Version */}
-          {canCreateFolders && (
-            <div className="flex items-center gap-3 p-4 border border-dashed border-primary/30 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-              <Plus className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Enter folder name..."
-                value={newFolderName}
-                onChange={(e) => setNewFolderName(e.target.value)}
-                className="flex-1 max-w-xs"
-                onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
-              />
-              <Button
-                onClick={handleCreateFolder}
-                disabled={!newFolderName.trim()}
-                size="sm"
-                variant="outline"
-              >
-                Create Folder
-              </Button>
-            </div>
-          )}
-
-          {/* Existing Folders */}
-          {rootFolders.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {rootFolders.map(folder => {
-                const folderDocCount = documentsForProject.filter(doc => doc.folder_id === folder.id).length;
-                const recentDoc = documentsForProject
-                  .filter(doc => doc.folder_id === folder.id)
-                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-
-                return (
-                  <Card 
-                    key={folder.id} 
-                    className="cursor-pointer hover:shadow-md transition-all duration-200 group hover:border-primary/30"
-                    onClick={() => setCurrentFolderId(folder.id)}
-                  >
-                    <CardHeader className="pb-2">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 rounded-md bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                            <FolderOpen className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <CardTitle className="text-sm font-medium truncate">{folder.name}</CardTitle>
-                            <CardDescription className="text-xs">
-                              {folderDocCount} doc{folderDocCount !== 1 ? 's' : ''}
-                            </CardDescription>
-                          </div>
-                        </div>
-                        {canManageAccess && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <MoreVertical className="h-3 w-3" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedFolderForAccess(folder.id);
-                                  setShowFolderAccessModal(true);
-                                }}
-                              >
-                                <Settings className="h-3 w-3 mr-2" />
-                                Folder Access
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2">
-                        {recentDoc ? (
-                          <div className="text-xs text-muted-foreground">
-                            Updated {new Date(recentDoc.created_at).toLocaleDateString()}
-                          </div>
-                        ) : (
-                          <div className="text-xs text-muted-foreground">Empty folder</div>
-                        )}
-                        
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Files className="h-3 w-3" />
-                            <span>Completion Docs</span>
-                          </div>
-                          <div className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            Open →
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Direct Project Documents (no folder) */}
-          {documentsForProject.filter(doc => !doc.folder_id).length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Files className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Project Documents</h3>
-                <Badge variant="secondary">
-                  {documentsForProject.filter(doc => !doc.folder_id).length}
-                </Badge>
-              </div>
-              <CompletionDocsList
-                documents={filteredDocuments.filter(doc => !doc.folder_id)}
-                loading={false}
-                onViewDocument={setSelectedDocument}
-              />
-            </div>
-          )}
-
-          {/* Empty State */}
-          {rootFolders.length === 0 && documentsForProject.filter(doc => !doc.folder_id).length === 0 && (
-            <div className="text-center py-12">
-              <Folder className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No folders or documents yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Create folders to organize your completion documents or upload documents directly.
-              </p>
-              <div className="flex items-center justify-center gap-3">
-                {canCreateFolders && (
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Folder
-                  </Button>
-                )}
-                <Button onClick={() => setShowUploadModal(true)}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Documents
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        // Document List View (Inside Folder)
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FolderOpen className="h-5 w-5" />
-              <h3 className="text-lg font-semibold">Folder Contents</h3>
-              <Badge variant="secondary">
-                {filteredDocuments.length} document{filteredDocuments.length !== 1 ? 's' : ''}
-              </Badge>
-            </div>
-            {canManageAccess && currentFolderId && (
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto px-6 py-6">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => {
-                  setSelectedFolderForAccess(currentFolderId);
-                  setShowFolderAccessModal(true);
+                  if (currentFolderId) {
+                    setCurrentFolderId(null);
+                  } else {
+                    setSelectedProject(null);
+                  }
                 }}
+                className="flex items-center gap-2"
               >
-                <Settings className="h-4 w-4 mr-2" />
-                Folder Access
+                <ArrowLeft className="h-4 w-4" />
+                {currentFolderId ? 'Back to Project' : 'Back to Projects'}
               </Button>
-            )}
-          </div>
-          
-          <CompletionDocsList
-            documents={filteredDocuments}
-            loading={false}
-            onViewDocument={setSelectedDocument}
-          />
+              
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight">
+                  {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  {currentFolderId ? 'Folder contents' : 'Project documents and folders'}
+                </p>
+              </div>
+            </div>
 
-          {filteredDocuments.length === 0 && (
-            <div className="text-center py-12">
-              <Files className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">This folder is empty</h3>
-              <p className="text-muted-foreground mb-6">
-                Upload documents to organize your completion documents in this folder.
-              </p>
-              <Button onClick={() => setShowUploadModal(true)}>
-                <Upload className="h-4 w-4 mr-2" />
+            <div className="flex items-center gap-3">
+              {canCreateFolders && (
+                <Button
+                  onClick={() => setShowCreateFolderModal(true)}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <FolderPlus className="h-4 w-4" />
+                  Create Folder
+                </Button>
+              )}
+              
+              {canManageAccess && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAccessModal(true)}
+                  className="flex items-center gap-2 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20"
+                >
+                  <Users className="h-4 w-4" />
+                  Project Access
+                </Button>
+              )}
+              
+              <Button
+                onClick={() => setShowUploadModal(true)}
+                className="flex items-center gap-2"
+              >
+                <Upload className="h-4 w-4" />
                 Upload Documents
               </Button>
             </div>
+          </div>
+
+          {/* Breadcrumb */}
+          {currentFolderId && (
+            <div className="flex items-center gap-2 text-sm">
+              <span 
+                className="cursor-pointer hover:text-primary transition-colors text-muted-foreground hover:underline"
+                onClick={() => setCurrentFolderId(null)}
+              >
+                {selectedProjectData?.name}
+              </span>
+              {currentFolderPath.map((folder, index) => (
+                <div key={folder.id} className="flex items-center gap-2">
+                  <span className="text-muted-foreground">/</span>
+                  <span 
+                    className="cursor-pointer hover:text-primary transition-colors text-muted-foreground hover:underline"
+                    onClick={() => setCurrentFolderId(folder.id)}
+                  >
+                    {folder.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Search and Filter Controls */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder={`Search ${currentFolderData ? 'in folder' : 'documents'}...`}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-11"
+              />
+            </div>
+            
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full lg:w-48 h-11">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {Object.entries(categoryLabels).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Content Area */}
+          {!currentFolderId ? (
+            // Folder Grid View (Project Level)
+            <div className="space-y-8">
+              {/* Existing Folders */}
+              {rootFolders.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Folder className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold">Folders</h2>
+                      <p className="text-sm text-muted-foreground">Organize your completion documents</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {rootFolders.map(folder => {
+                      const folderDocCount = documentsForProject.filter(doc => doc.folder_id === folder.id).length;
+                      const recentDoc = documentsForProject
+                        .filter(doc => doc.folder_id === folder.id)
+                        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+
+                      return (
+                        <Card 
+                          key={folder.id} 
+                          className="cursor-pointer hover:shadow-lg transition-all duration-200 group hover:border-primary/30 border-border/40"
+                          onClick={() => setCurrentFolderId(folder.id)}
+                        >
+                          <CardHeader className="pb-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                  <FolderOpen className="h-6 w-6 text-primary" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <CardTitle className="text-base font-semibold truncate group-hover:text-primary transition-colors">
+                                    {folder.name}
+                                  </CardTitle>
+                                  <CardDescription className="text-sm mt-1">
+                                    {folderDocCount} document{folderDocCount !== 1 ? 's' : ''}
+                                  </CardDescription>
+                                </div>
+                              </div>
+                              {canManageAccess && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedFolderForAccess(folder.id);
+                                        setShowFolderAccessModal(true);
+                                      }}
+                                    >
+                                      <Settings className="h-4 w-4 mr-2" />
+                                      Folder Access
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="pt-0">
+                            <div className="space-y-3">
+                              {recentDoc ? (
+                                <div className="text-sm text-muted-foreground">
+                                  Last updated {new Date(recentDoc.created_at).toLocaleDateString()}
+                                </div>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">Empty folder</div>
+                              )}
+                              
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Files className="h-4 w-4" />
+                                  <span>Completion Documents</span>
+                                </div>
+                                <div className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                  Open →
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Direct Project Documents (no folder) */}
+              {documentsForProject.filter(doc => !doc.folder_id).length > 0 && (
+                <div>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Files className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-semibold">Project Documents</h2>
+                      <p className="text-sm text-muted-foreground">
+                        Documents not organized in folders ({documentsForProject.filter(doc => !doc.folder_id).length} documents)
+                      </p>
+                    </div>
+                  </div>
+                  <CompletionDocsList
+                    documents={filteredDocuments.filter(doc => !doc.folder_id)}
+                    loading={false}
+                    onViewDocument={setSelectedDocument}
+                  />
+                </div>
+              )}
+
+              {/* Empty State */}
+              {rootFolders.length === 0 && documentsForProject.filter(doc => !doc.folder_id).length === 0 && (
+                <div className="text-center py-20">
+                  <div className="p-6 rounded-full bg-muted/30 w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                    <Files className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-4">No Documents Found</h3>
+                  <p className="text-muted-foreground text-lg max-w-lg mx-auto mb-8">
+                    Start by uploading your first completion document or creating folders to organize your files.
+                  </p>
+                  <div className="flex items-center justify-center gap-4">
+                    {canCreateFolders && (
+                      <Button variant="outline" size="lg" onClick={() => setShowCreateFolderModal(true)}>
+                        <FolderPlus className="h-5 w-5 mr-2" />
+                        Create Folder
+                      </Button>
+                    )}
+                    <Button size="lg" onClick={() => setShowUploadModal(true)}>
+                      <Upload className="h-5 w-5 mr-2" />
+                      Upload Document
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Folder Content View
+            <div className="space-y-6">
+              <CompletionDocsList
+                documents={filteredDocuments}
+                loading={false}
+                onViewDocument={setSelectedDocument}
+              />
+              
+              {filteredDocuments.length === 0 && (
+                <div className="text-center py-20">
+                  <div className="p-6 rounded-full bg-muted/30 w-24 h-24 mx-auto mb-8 flex items-center justify-center">
+                    <Files className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-2xl font-semibold mb-4">
+                    {searchTerm || selectedCategory !== 'all' ? 'No Matching Documents' : 'Empty Folder'}
+                  </h3>
+                  <p className="text-muted-foreground text-lg max-w-lg mx-auto mb-8">
+                    {searchTerm || selectedCategory !== 'all' 
+                      ? 'Try adjusting your search or filter criteria.'
+                      : 'This folder is empty. Upload documents to get started.'
+                    }
+                  </p>
+                  {(!searchTerm && selectedCategory === 'all') && (
+                    <Button size="lg" onClick={() => setShowUploadModal(true)}>
+                      <Upload className="h-5 w-5 mr-2" />
+                      Upload Document
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
-      )}
+      </div>
 
-      {/* Project Access Modal */}
-      {showAccessModal && selectedProject && (
-        <ProjectAccessModal
-          isOpen={showAccessModal}
-          onClose={() => setShowAccessModal(false)}
-          projectId={selectedProject}
-          teamId={teamId}
-          projectName={selectedProjectData?.name || 'Unknown Project'}
-        />
-      )}
+      {/* Modals */}
+      <CreateFolderModal
+        open={showCreateFolderModal}
+        onOpenChange={setShowCreateFolderModal}
+        onCreateFolder={handleCreateFolder}
+        currentFolderName={currentFolderData?.name}
+      />
 
-      {/* Upload Modal */}
-      {showUploadModal && selectedProject && (
-        <CompletionDocsUpload
-          isOpen={showUploadModal}
-          onClose={() => setShowUploadModal(false)}
-          projectId={selectedProject}
-          teamId={teamId}
-          folderId={currentFolderId}
-          onUploadComplete={() => {
-            refetch();
-            setShowUploadModal(false);
-          }}
-        />
-      )}
+      <CompletionDocsUpload
+        isOpen={showUploadModal}
+        teamId={teamId}
+        projectId={selectedProject}
+        folderId={currentFolderId}
+        onClose={() => setShowUploadModal(false)}
+        onUploadComplete={() => {
+          setShowUploadModal(false);
+          refetch();
+        }}
+      />
 
-      {/* Folder Access Modal */}
-      {showFolderAccessModal && selectedFolderForAccess && (
-        <FolderAccessModal
-          isOpen={showFolderAccessModal}
-          onClose={() => {
-            setShowFolderAccessModal(false);
-            setSelectedFolderForAccess(null);
-          }}
-          folderId={selectedFolderForAccess}
-          teamId={teamId}
-          folderName={folders.find(f => f.id === selectedFolderForAccess)?.name || 'Unknown Folder'}
-        />
-      )}
+      <CompletionDocsViewer
+        isOpen={!!selectedDocument}
+        document={selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+      />
 
-      {/* Document Viewer */}
-      {selectedDocument && (
-        <CompletionDocsViewer
-          isOpen={true}
-          onClose={() => setSelectedDocument(null)}
-          document={selectedDocument}
-          onDelete={() => {
-            refetch();
-            setSelectedDocument(null);
-          }}
-        />
-      )}
+      <ProjectAccessModal
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        projectId={selectedProject || ''}
+        teamId={teamId}
+        projectName={selectedProjectData?.name || ''}
+      />
+
+      <FolderAccessModal
+        isOpen={showFolderAccessModal}
+        onClose={() => setShowFolderAccessModal(false)}
+        folderId={selectedFolderForAccess || ''}
+        teamId={teamId}
+        folderName={currentFolderData?.name || ''}
+      />
     </div>
   );
 }
