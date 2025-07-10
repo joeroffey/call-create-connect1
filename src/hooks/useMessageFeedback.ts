@@ -23,14 +23,6 @@ export const useMessageFeedback = () => {
         throw new Error('User not authenticated');
       }
 
-      // Validate message_id is a proper UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(feedback.message_id)) {
-        console.log('Invalid message_id for feedback:', feedback.message_id);
-        // Don't submit feedback for non-UUID message IDs (like welcome messages)
-        return true;
-      }
-
       const { error } = await supabase
         .from('message_feedback')
         .upsert({
@@ -65,13 +57,6 @@ export const useMessageFeedback = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
-
-      // Validate message_id is a proper UUID
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(messageId)) {
-        console.log('Invalid message_id for feedback lookup:', messageId);
-        return null;
-      }
 
       const { data, error } = await supabase
         .from('message_feedback')

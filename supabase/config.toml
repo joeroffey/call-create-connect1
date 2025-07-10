@@ -26,6 +26,3 @@ verify_jwt = true
 
 [functions.analyze-drawing-scale]
 verify_jwt = true
-
-[functions.process-drawing-scale]
-verify_jwt = false
