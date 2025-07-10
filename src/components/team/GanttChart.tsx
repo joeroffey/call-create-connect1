@@ -66,21 +66,39 @@ class ChartErrorBoundary extends React.Component<ChartErrorBoundaryProps, ChartE
   }
 }
 
-// Comprehensive data sanitization function
+// Ultra-aggressive data sanitization function
 const sanitizeValue = (value: any, fallback: number = 0): number => {
-  if (value === null || value === undefined) return fallback;
-  
-  const num = typeof value === 'number' ? value : Number(value);
-  
-  if (!Number.isFinite(num) || isNaN(num) || num < 0) {
+  // Handle null, undefined, or empty values
+  if (value === null || value === undefined || value === '' || value === 'null' || value === 'undefined') {
     return fallback;
   }
   
-  return Math.floor(num);
+  // Convert to number
+  let num: number;
+  if (typeof value === 'string') {
+    // Remove any non-numeric characters except decimal point and minus
+    const cleaned = value.replace(/[^0-9.-]/g, '');
+    num = parseFloat(cleaned);
+  } else {
+    num = Number(value);
+  }
+  
+  // Comprehensive validation
+  if (!Number.isFinite(num) || isNaN(num) || typeof num !== 'number') {
+    return fallback;
+  }
+  
+  // Ensure it's a positive integer (for chart data)
+  const result = Math.max(0, Math.floor(Math.abs(num)));
+  
+  // Final safety check
+  return Number.isFinite(result) && !isNaN(result) ? result : fallback;
 };
 
-// Comprehensive data validation function
+// Ultra-comprehensive data validation function
 const validateChartData = (data: GanttData[]): GanttData[] => {
+  if (!Array.isArray(data)) return [];
+  
   return data.filter(item => {
     // Ensure all required properties exist and are valid
     if (!item || typeof item !== 'object') return false;
@@ -89,26 +107,37 @@ const validateChartData = (data: GanttData[]): GanttData[] => {
     if (!item.status || typeof item.status !== 'string') return false;
     if (!item.phase || typeof item.phase !== 'object') return false;
     
-    // Sanitize and validate numerical values
+    return true;
+  }).map(item => {
+    // Sanitize ALL numerical values aggressively
     const sanitizedStart = sanitizeValue(item.start, 0);
     const sanitizedDuration = sanitizeValue(item.duration, 1);
+    const sanitizedStartOffset = sanitizeValue(item.startOffset, 0);
+    const sanitizedEndPosition = sanitizeValue(item.endPosition, 1);
+    const sanitizedValue = sanitizeValue(item.value, 1);
     
-    if (sanitizedStart < 0 || sanitizedDuration <= 0) return false;
+    // Ensure minimum viable values
+    const safeDuration = Math.max(1, sanitizedDuration);
+    const safeValue = Math.max(1, sanitizedValue);
     
-    // Update the item with sanitized values
-    item.start = sanitizedStart;
-    item.duration = sanitizedDuration;
-    
-    return true;
+    return {
+      ...item,
+      start: sanitizedStart,
+      duration: safeDuration,
+      startOffset: sanitizedStartOffset,
+      endPosition: sanitizedEndPosition,
+      value: safeValue,
+      // Ensure color is valid
+      color: item.color && item.color.length > 0 ? item.color : '#3b82f6',
+      // Ensure status is valid
+      status: item.status || 'not_started'
+    };
   });
 };
 
 export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) => {
-  console.log('GanttChart component called with phases:', phases);
-  
   // Early validation - must have phases with valid data
   if (!phases || phases.length === 0) {
-    console.log('No phases provided to GanttChart');
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
         <p className="text-muted-foreground">No project phases to display</p>
@@ -235,29 +264,38 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   // Safe chart configuration with validated values
   const safeHeight = sanitizeValue(Math.max(300, Math.min(800, validatedData.length * 60)), 300);
   
-  // Extremely robust domain calculation to prevent NaN values
-  let domainMax = 1; // Default fallback
+  // Ultra-robust domain calculation to prevent any NaN values
+  let domainMax = 1; // Safe default
   
+  // Calculate domain from actual data if timeline calculation fails
+  const maxEndPosition = validatedData.reduce((max, item) => {
+    const endPos = sanitizeValue(item.endPosition, 0);
+    return Math.max(max, endPos);
+  }, 1);
+  
+  const maxDuration = validatedData.reduce((max, item) => {
+    const duration = sanitizeValue(item.duration, 0);
+    return Math.max(max, duration);
+  }, 1);
+  
+  // Use timeline duration if valid, otherwise use data-derived values
   if (Number.isFinite(timelineDuration) && timelineDuration > 0) {
     const flooredDuration = Math.floor(timelineDuration);
     if (Number.isFinite(flooredDuration) && flooredDuration > 0) {
       domainMax = Math.max(1, flooredDuration);
     }
+  } else {
+    // Fall back to data-derived maximum
+    domainMax = Math.max(1, maxEndPosition, maxDuration, 10); // At least 10 for visibility
   }
   
-  // Triple check domain values are absolutely safe for Recharts
-  const safeDomain = [0, sanitizeValue(domainMax, 1)];
+  // Quadruple check domain values are absolutely safe for Recharts
+  const safeDomainMin = sanitizeValue(0, 0);
+  const safeDomainMax = sanitizeValue(domainMax, 10);
+  const safeDomain = [safeDomainMin, Math.max(safeDomainMax, safeDomainMin + 1)];
 
 
   
-  // Temporary debugging
-  console.log('Chart Data Debug:', {
-    validatedData,
-    safeDomain,
-    safeHeight,
-    timelineDuration
-  });
-
   // Final verification that domain values are valid numbers
   if (safeDomain[0] < 0 || safeDomain[1] <= 0 || safeDomain[1] <= safeDomain[0]) {
     return (
