@@ -34,16 +34,21 @@ const DrawingScaler: React.FC<DrawingScalerProps> = ({ onBack }) => {
 
   // Process drawing with AI
   const processDrawing = async () => {
+    console.log('Process drawing clicked');
+    
     if (!uploadedFile) {
+      console.log('No file uploaded');
       toast.error('Please upload a PDF file first');
       return;
     }
 
     if (!targetSize || !scaleInput) {
+      console.log('Missing target size or scale');
       toast.error('Please specify target size and scale');
       return;
     }
 
+    console.log('Starting processing with params:', { targetSize, scaleInput, measurementStyle });
     setIsLoading(true);
 
     try {
@@ -54,23 +59,29 @@ const DrawingScaler: React.FC<DrawingScalerProps> = ({ onBack }) => {
       formData.append('measurementStyle', measurementStyle);
       formData.append('instructions', additionalInstructions);
 
+      console.log('Calling supabase function...');
       const { data, error } = await supabase.functions.invoke('process-drawing-scale', {
         body: formData
       });
 
+      console.log('Function response:', { data, error });
+
       if (error) {
         console.error('Error processing drawing:', error);
-        toast.error('Failed to process drawing');
+        toast.error(`Failed to process drawing: ${error.message || 'Unknown error'}`);
         return;
       }
 
-      if (data.processedPdfUrl) {
+      if (data?.processedPdfUrl) {
         setProcessedPdfUrl(data.processedPdfUrl);
         toast.success('Drawing processed successfully!');
+      } else {
+        console.log('No processed PDF URL in response');
+        toast.error('No processed PDF received');
       }
     } catch (error) {
       console.error('Error processing drawing:', error);
-      toast.error('Error processing drawing');
+      toast.error(`Error processing drawing: ${error.message || 'Unknown error'}`);
     } finally {
       setIsLoading(false);
     }
