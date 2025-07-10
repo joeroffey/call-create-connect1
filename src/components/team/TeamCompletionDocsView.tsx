@@ -206,10 +206,10 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
@@ -227,7 +227,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
           </Button>
           
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl font-bold">
               {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
             </h1>
             {canManageAccess && (
@@ -245,10 +245,10 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
               variant="outline"
               size="sm"
               onClick={() => setShowAccessModal(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
             >
               <Users className="h-4 w-4" />
-              Manage Access
+              Project Access
             </Button>
           )}
           
@@ -257,7 +257,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
             className="flex items-center gap-2"
           >
             <Upload className="h-4 w-4" />
-            Upload Documents
+            Upload
           </Button>
         </div>
       </div>
@@ -313,40 +313,32 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
       {/* Content Area */}
       {!currentFolderId ? (
         // Folder Grid View (Project Level)
-        <div className="space-y-6">
-          {/* Create New Folder */}
+        <div className="space-y-4">
+          {/* Create New Folder - Compact Version */}
           {canCreateFolders && (
-            <Card className="border-dashed border-2 hover:border-primary/50 transition-colors">
-              <CardContent className="flex items-center justify-center p-8">
-                <div className="text-center space-y-3">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <Input
-                      placeholder="Folder name..."
-                      value={newFolderName}
-                      onChange={(e) => setNewFolderName(e.target.value)}
-                      className="w-48"
-                      onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
-                    />
-                    <Button
-                      onClick={handleCreateFolder}
-                      disabled={!newFolderName.trim()}
-                      size="sm"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Create Folder
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Create a new folder to organize your completion documents
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="flex items-center gap-3 p-4 border border-dashed border-primary/30 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+              <Plus className="h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Enter folder name..."
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+                className="flex-1 max-w-xs"
+                onKeyPress={(e) => e.key === 'Enter' && handleCreateFolder()}
+              />
+              <Button
+                onClick={handleCreateFolder}
+                disabled={!newFolderName.trim()}
+                size="sm"
+                variant="outline"
+              >
+                Create Folder
+              </Button>
+            </div>
           )}
 
           {/* Existing Folders */}
           {rootFolders.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {rootFolders.map(folder => {
                 const folderDocCount = documentsForProject.filter(doc => doc.folder_id === folder.id).length;
                 const recentDoc = documentsForProject
@@ -356,27 +348,27 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                 return (
                   <Card 
                     key={folder.id} 
-                    className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+                    className="cursor-pointer hover:shadow-md transition-all duration-200 group hover:border-primary/30"
                     onClick={() => setCurrentFolderId(folder.id)}
                   >
-                    <CardHeader className="pb-3">
+                    <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors">
-                            <FolderOpen className="h-6 w-6 text-blue-600" />
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 rounded-md bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                            <FolderOpen className="h-4 w-4 text-blue-600" />
                           </div>
-                          <div>
-                            <CardTitle className="text-lg">{folder.name}</CardTitle>
-                            <CardDescription>
-                              {folderDocCount} document{folderDocCount !== 1 ? 's' : ''}
+                          <div className="min-w-0 flex-1">
+                            <CardTitle className="text-sm font-medium truncate">{folder.name}</CardTitle>
+                            <CardDescription className="text-xs">
+                              {folderDocCount} doc{folderDocCount !== 1 ? 's' : ''}
                             </CardDescription>
                           </div>
                         </div>
                         {canManageAccess && (
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
+                              <Button variant="ghost" size="sm" className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <MoreVertical className="h-3 w-3" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -387,33 +379,30 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                                   setShowFolderAccessModal(true);
                                 }}
                               >
-                                <Settings className="h-4 w-4 mr-2" />
-                                Manage Access
+                                <Settings className="h-3 w-3 mr-2" />
+                                Folder Access
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
+                    <CardContent className="pt-0">
+                      <div className="space-y-2">
                         {recentDoc ? (
-                          <div className="text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>Last updated {new Date(recentDoc.created_at).toLocaleDateString()}</span>
-                            </div>
+                          <div className="text-xs text-muted-foreground">
+                            Updated {new Date(recentDoc.created_at).toLocaleDateString()}
                           </div>
                         ) : (
-                          <div className="text-sm text-muted-foreground">No documents yet</div>
+                          <div className="text-xs text-muted-foreground">Empty folder</div>
                         )}
                         
-                        <div className="flex items-center justify-between pt-2">
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <Files className="h-3 w-3" />
-                            <span>Completion Documents</span>
+                            <span>Completion Docs</span>
                           </div>
-                          <div className="text-xs text-primary font-medium">
+                          <div className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                             Open →
                           </div>
                         </div>
