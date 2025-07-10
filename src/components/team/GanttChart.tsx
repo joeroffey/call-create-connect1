@@ -146,25 +146,25 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
                      onMouseEnter={() => setHoveredPhase(item.phase.id)}
                      onMouseLeave={() => setHoveredPhase(null)}
                    >
-                     {/* Duration label inside bar if wide enough */}
-                     {item.widthPercent > 12 && (
-                       <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium drop-shadow-sm">
-                         {item.duration} day{item.duration !== 1 ? 's' : ''}
-                       </div>
-                     )}
-                   </div>
-                   
-                   {/* Duration label outside bar if too narrow */}
-                   {item.widthPercent <= 12 && (
-                     <div 
-                       className="absolute top-0 h-full flex items-center text-xs text-foreground font-medium"
-                       style={{
-                         left: `${item.leftPercent + item.widthPercent + 1}%`
-                       }}
-                     >
-                       {item.duration} day{item.duration !== 1 ? 's' : ''}
-                     </div>
-                   )}
+                                           {/* Duration label inside bar if wide enough */}
+                      {item.widthPercent > 12 && (
+                        <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium drop-shadow-sm">
+                          {item.duration}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Duration label outside bar if too narrow */}
+                    {item.widthPercent <= 12 && (
+                      <div 
+                        className="absolute top-0 h-full flex items-center text-xs text-foreground font-medium"
+                        style={{
+                          left: `${item.leftPercent + item.widthPercent + 1}%`
+                        }}
+                      >
+                        {item.duration}
+                      </div>
+                    )}
                   
                   {/* Tooltip */}
                   {hoveredPhase === item.phase.id && (
