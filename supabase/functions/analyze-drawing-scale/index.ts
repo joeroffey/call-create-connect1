@@ -22,10 +22,16 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting drawing scale analysis...');
     const { image, customInstruction } = await req.json();
 
     if (!image) {
       throw new Error('No image provided');
+    }
+
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
+      throw new Error('OpenAI API key not configured');
     }
 
     console.log('Analyzing drawing scale with OpenAI Vision API...');
@@ -63,7 +69,7 @@ Return a JSON response with:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4.1-2025-04-14',
         messages: [
           {
             role: 'system',

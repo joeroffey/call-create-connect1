@@ -23,8 +23,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Configure PDF.js worker - use local worker to avoid CORS issues
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface DrawingScalerProps {
   onBack: () => void;
