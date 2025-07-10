@@ -27,7 +27,12 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   }
 
   // Calculate project timeline bounds with validation
-  const validPhases = phases.filter(phase => phase.start_date && phase.end_date);
+  const validPhases = phases.filter(phase => 
+    phase.start_date && 
+    phase.end_date && 
+    !isNaN(Date.parse(phase.start_date)) && 
+    !isNaN(Date.parse(phase.end_date))
+  );
   
   if (validPhases.length === 0) {
     return (
@@ -39,11 +44,16 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
 
   const allDates = validPhases.flatMap(phase => {
     try {
-      return [parseISO(phase.start_date), parseISO(phase.end_date)];
+      const startDate = parseISO(phase.start_date);
+      const endDate = parseISO(phase.end_date);
+      if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+        return [startDate, endDate];
+      }
+      return [];
     } catch {
       return [];
     }
-  }).filter(date => !isNaN(date.getTime()));
+  });
 
   if (allDates.length === 0) {
     return (
@@ -56,38 +66,91 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   const projectStart = new Date(Math.min(...allDates.map(d => d.getTime())));
   const projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
 
+  // Validate calculated dates
+  if (isNaN(projectStart.getTime()) || isNaN(projectEnd.getTime())) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">Unable to calculate project timeline</p>
+      </div>
+    );
+  }
+
   // Extend timeline for better visualization
   const timelineStart = startOfWeek(projectStart);
   const timelineEnd = endOfWeek(projectEnd);
+  
+  // Validate timeline dates
+  if (isNaN(timelineStart.getTime()) || isNaN(timelineEnd.getTime())) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">Unable to calculate timeline bounds</p>
+      </div>
+    );
+  }
 
-  // Prepare data for the Gantt chart with validation
+  // Calculate timeline duration with validation
+  const timelineDuration = differenceInDays(timelineEnd, timelineStart);
+  if (isNaN(timelineDuration) || timelineDuration < 0) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">Invalid timeline calculation</p>
+      </div>
+    );
+  }
+
+  // Prepare data for the Gantt chart with comprehensive validation
   const ganttData: GanttData[] = validPhases.map(phase => {
     try {
       const phaseStart = parseISO(phase.start_date);
       const phaseEnd = parseISO(phase.end_date);
-      const startOffset = Math.max(0, differenceInDays(phaseStart, timelineStart));
-      const duration = Math.max(1, differenceInDays(phaseEnd, phaseStart) + 1);
+      
+      // Validate parsed dates
+      if (isNaN(phaseStart.getTime()) || isNaN(phaseEnd.getTime())) {
+        throw new Error('Invalid date');
+      }
+      
+      const startOffset = differenceInDays(phaseStart, timelineStart);
+      const duration = differenceInDays(phaseEnd, phaseStart) + 1;
+      
+      // Validate calculations
+      if (isNaN(startOffset) || isNaN(duration) || duration < 1) {
+        throw new Error('Invalid calculation');
+      }
 
       return {
-        phase_name: phase.phase_name,
-        start: startOffset,
-        duration,
+        phase_name: phase.phase_name || 'Unnamed Phase',
+        start: Math.max(0, startOffset),
+        duration: Math.max(1, duration),
         color: phase.color || '#3b82f6',
-        status: phase.status,
+        status: phase.status || 'not_started',
         phase,
       };
     } catch {
-      // Fallback for invalid dates
+      // Return safe fallback values
       return {
-        phase_name: phase.phase_name,
+        phase_name: phase.phase_name || 'Unnamed Phase',
         start: 0,
         duration: 1,
         color: phase.color || '#3b82f6',
-        status: phase.status,
+        status: phase.status || 'not_started',
         phase,
       };
     }
-  }).filter(data => !isNaN(data.start) && !isNaN(data.duration));
+  }).filter(data => 
+    !isNaN(data.start) && 
+    !isNaN(data.duration) && 
+    data.duration > 0 && 
+    data.start >= 0
+  );
+
+  // Final validation of gantt data
+  if (ganttData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">No valid chart data available</p>
+      </div>
+    );
+  }
 
   // Generate timeline labels
   const timelineLabels: string[] = [];
@@ -157,7 +220,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
       </div>
 
       <div className="border border-border rounded-lg p-4 bg-card overflow-x-auto">
-        <ResponsiveContainer width="100%" height={Math.max(400, phases.length * 60)}>
+        <ResponsiveContainer width="100%" height={Math.max(400, validPhases.length * 60)}>
           <BarChart
             data={ganttData}
             layout="horizontal"
@@ -165,7 +228,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
           >
             <XAxis 
               type="number" 
-              domain={[0, Math.max(1, differenceInDays(timelineEnd, timelineStart) || 1)]}
+              domain={[0, Math.max(1, timelineDuration)]}
               tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
             />
