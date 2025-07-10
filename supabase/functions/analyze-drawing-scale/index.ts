@@ -17,12 +17,20 @@ interface DetectedElement {
   confidence: number;
 }
 
+interface MeasurementSummary {
+  totalElements: number;
+  elementCounts: Record<string, number>;
+  totalLength: number;
+  unit: string;
+}
+
 interface AnalysisResult {
   elements: DetectedElement[];
   suggestions: string[];
   pageSize: string;
   detectedScale: string;
   confidence: number;
+  summary: MeasurementSummary;
 }
 
 serve(async (req) => {
@@ -47,55 +55,90 @@ serve(async (req) => {
     console.log('Analyzing drawing with OpenAI Vision API...');
     console.log('Input parameters:', { pageSize, scale, unit });
 
-    // Enhanced system prompt for architectural drawing analysis
-    const systemPrompt = `You are an expert architectural drawing analyzer. Analyze this architectural drawing and identify all measurable elements.
+    // Calculate scale factor for real-world measurements
+    const calculateScaleFactor = (scale: string, pageSize: string, unit: string): number => {
+      const scaleMatch = scale.match(/1:(\d+)/);
+      if (!scaleMatch) return 0;
+      
+      const scaleRatio = parseInt(scaleMatch[1]);
+      
+      const pageDimensions: Record<string, number> = {
+        'A4': 210, 'A3': 297, 'A2': 420, 'A1': 594, 'A0': 841,
+        'Letter': 216, 'Legal': 216, 'Tabloid': 279
+      };
+      
+      const pageWidthMm = pageDimensions[pageSize] || 210;
+      // Assuming image width represents the page width at this scale
+      return (pageWidthMm * scaleRatio) / 800; // pixels to mm conversion
+    };
 
-TASK: Identify and locate architectural elements in the drawing with their coordinates and measurements.
+    const scaleFactor = calculateScaleFactor(scale, pageSize, unit);
+
+    // Enhanced system prompt for comprehensive architectural analysis
+    const systemPrompt = `You are an expert architectural drawing analyzer. Analyze this architectural drawing and provide comprehensive measurements and element detection.
+
+TASK: Identify ALL architectural elements, calculate their real-world measurements, and provide a complete analysis.
 
 DRAWING SPECIFICATIONS:
 - Page Size: ${pageSize}
-- Scale: ${scale}
+- Scale: ${scale}  
 - Unit: ${unit}
+- Scale Factor: ${scaleFactor} mm per pixel
 
 ELEMENT TYPES TO DETECT:
-1. WALLS: Structural walls (thick lines, typically 100-300mm thick)
-2. DOORS: Door openings with door swings
-3. WINDOWS: Window openings 
-4. DIMENSIONS: Dimension lines with measurements
-5. LINES: Other structural or reference lines
-6. TEXT: Labels, room names, measurements
+1. WALLS: Structural walls, load-bearing walls, partition walls
+2. DOORS: Door openings, door swings, entrance doors
+3. WINDOWS: Window openings, window frames
+4. DIMENSIONS: Dimension lines with measurements, extension lines
+5. LINES: Reference lines, construction lines, grid lines
+6. TEXT: Labels, room names, dimension text, notes
 
-For each element found, provide:
-- Precise pixel coordinates (x1, y1, x2, y2) for the start and end points
-- Element type classification
-- Pixel length measurement for linear elements
-- Any visible text labels
-- Confidence score (0-1)
+ANALYSIS REQUIREMENTS:
+- Identify EVERY measurable element in the drawing
+- Calculate precise real-world measurements using the scale factor
+- Detect dimension text and cross-reference with calculated measurements
+- Provide comprehensive element categorization
+- Generate summary statistics
 
 Return ONLY a JSON response in this exact format:
 {
   "elements": [
     {
-      "id": "unique_id",
+      "id": "element_1",
       "type": "wall|door|window|dimension|line|text",
       "coordinates": { "x1": number, "y1": number, "x2": number, "y2": number },
-      "measurement": number_in_pixels,
-      "label": "any_text_found",
+      "measurement": pixel_length,
+      "realWorldMeasurement": measurement_in_mm,
+      "label": "any_text_or_dimension_found",
       "confidence": 0.0_to_1.0
     }
   ],
-  "suggestions": ["improvement suggestions"],
+  "suggestions": ["specific improvement suggestions"],
   "pageSize": "${pageSize}",
-  "detectedScale": "any_scale_text_found_in_drawing",
-  "confidence": overall_confidence_0_to_1
+  "detectedScale": "any_scale_indication_found",
+  "confidence": overall_analysis_confidence,
+  "summary": {
+    "totalElements": total_count,
+    "elementCounts": {
+      "wall": count,
+      "door": count,
+      "window": count,
+      "dimension": count,
+      "line": count,
+      "text": count
+    },
+    "totalLength": total_length_in_mm,
+    "unit": "${unit}"
+  }
 }
 
-IMPORTANT: 
-- Only return valid JSON
-- Coordinates must be within image bounds
-- Focus on major architectural elements
-- Ignore small decorative details
-- Measurement should be pixel distance between coordinates`;
+CRITICAL INSTRUCTIONS:
+- Calculate realWorldMeasurement = measurement * ${scaleFactor} for each element
+- Only return valid JSON, no other text
+- Coordinates must be within image bounds  
+- Focus on ALL architectural elements, not just major ones
+- Be thorough - find walls, openings, dimensions, and reference elements
+- Cross-reference dimension text with calculated measurements`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -104,7 +147,7 @@ IMPORTANT:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -165,13 +208,25 @@ IMPORTANT:
             el.coordinates?.x2 || 0,
             el.coordinates?.y2 || 0
           ),
+          realWorldMeasurement: el.realWorldMeasurement || (el.measurement || 0) * scaleFactor,
           label: el.label || '',
           confidence: Math.min(1, Math.max(0, el.confidence || 0.5))
         })),
         suggestions: parsed.suggestions || ['Analysis complete'],
         pageSize: parsed.pageSize || pageSize,
         detectedScale: parsed.detectedScale || '',
-        confidence: Math.min(1, Math.max(0, parsed.confidence || 0.5))
+        confidence: Math.min(1, Math.max(0, parsed.confidence || 0.5)),
+        summary: parsed.summary || {
+          totalElements: (parsed.elements || []).length,
+          elementCounts: (parsed.elements || []).reduce((acc: any, el: any) => {
+            acc[el.type || 'unknown'] = (acc[el.type || 'unknown'] || 0) + 1;
+            return acc;
+          }, {}),
+          totalLength: (parsed.elements || []).reduce((total: number, el: any) => 
+            total + ((el.realWorldMeasurement || el.measurement * scaleFactor) || 0), 0
+          ),
+          unit: unit
+        }
       };
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
@@ -183,7 +238,13 @@ IMPORTANT:
         suggestions: ['Failed to analyze drawing - please try again'],
         pageSize: pageSize,
         detectedScale: '',
-        confidence: 0.1
+        confidence: 0.1,
+        summary: {
+          totalElements: 0,
+          elementCounts: {},
+          totalLength: 0,
+          unit: unit
+        }
       };
     }
 
@@ -201,7 +262,13 @@ IMPORTANT:
       suggestions: ['Analysis failed - please try again'],
       pageSize: '',
       detectedScale: '',
-      confidence: 0
+      confidence: 0,
+      summary: {
+        totalElements: 0,
+        elementCounts: {},
+        totalLength: 0,
+        unit: unit || 'mm'
+      }
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
