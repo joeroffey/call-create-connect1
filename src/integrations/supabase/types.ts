@@ -120,6 +120,111 @@ export type Database = {
           },
         ]
       }
+      content_gap_analysis: {
+        Row: {
+          avg_pinecone_confidence: number | null
+          created_at: string
+          flagged_for_review: boolean | null
+          frequency: number | null
+          id: string
+          question_theme: string
+          review_status: string | null
+          sample_questions: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          avg_pinecone_confidence?: number | null
+          created_at?: string
+          flagged_for_review?: boolean | null
+          frequency?: number | null
+          id?: string
+          question_theme: string
+          review_status?: string | null
+          sample_questions?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          avg_pinecone_confidence?: number | null
+          created_at?: string
+          flagged_for_review?: boolean | null
+          frequency?: number | null
+          id?: string
+          question_theme?: string
+          review_status?: string | null
+          sample_questions?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      conversation_analytics: {
+        Row: {
+          ai_messages: number | null
+          avg_pinecone_confidence: number | null
+          conversation_id: string
+          created_at: string
+          follow_up_questions: number | null
+          id: string
+          pinecone_matches_used: number | null
+          project_id: string | null
+          resolved: boolean | null
+          satisfaction_score: number | null
+          time_to_resolution: number | null
+          total_messages: number | null
+          updated_at: string
+          user_id: string
+          user_messages: number | null
+        }
+        Insert: {
+          ai_messages?: number | null
+          avg_pinecone_confidence?: number | null
+          conversation_id: string
+          created_at?: string
+          follow_up_questions?: number | null
+          id?: string
+          pinecone_matches_used?: number | null
+          project_id?: string | null
+          resolved?: boolean | null
+          satisfaction_score?: number | null
+          time_to_resolution?: number | null
+          total_messages?: number | null
+          updated_at?: string
+          user_id: string
+          user_messages?: number | null
+        }
+        Update: {
+          ai_messages?: number | null
+          avg_pinecone_confidence?: number | null
+          conversation_id?: string
+          created_at?: string
+          follow_up_questions?: number | null
+          id?: string
+          pinecone_matches_used?: number | null
+          project_id?: string | null
+          resolved?: boolean | null
+          satisfaction_score?: number | null
+          time_to_resolution?: number | null
+          total_messages?: number | null
+          updated_at?: string
+          user_id?: string
+          user_messages?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_conversation_analytics_conversation"
+            columns: ["conversation_id"]
+            isOneToOne: true
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_conversation_analytics_project"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -202,6 +307,54 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      message_feedback: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          feedback_text: string | null
+          feedback_type: string
+          id: string
+          message_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          feedback_text?: string | null
+          feedback_type: string
+          id?: string
+          message_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          feedback_text?: string | null
+          feedback_type?: string
+          id?: string
+          message_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_message_feedback_conversation"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_message_feedback_message"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -294,6 +447,57 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pinecone_query_analytics: {
+        Row: {
+          avg_confidence_score: number | null
+          conversation_id: string
+          created_at: string
+          id: string
+          message_id: string
+          pinecone_matches: number | null
+          query_text: string
+          top_match_confidence: number | null
+          user_found_helpful: boolean | null
+        }
+        Insert: {
+          avg_confidence_score?: number | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          message_id: string
+          pinecone_matches?: number | null
+          query_text: string
+          top_match_confidence?: number | null
+          user_found_helpful?: boolean | null
+        }
+        Update: {
+          avg_confidence_score?: number | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          message_id?: string
+          pinecone_matches?: number | null
+          query_text?: string
+          top_match_confidence?: number | null
+          user_found_helpful?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_pinecone_query_analytics_conversation"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_pinecone_query_analytics_message"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]

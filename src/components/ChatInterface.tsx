@@ -7,6 +7,9 @@ import ChatSidebar from './chat/ChatSidebar';
 import ImageGallery from './chat/ImageGallery';
 import { useToast } from "@/hooks/use-toast"
 import { useConversationMessages } from '../hooks/useConversationMessages';
+import { useConversationAnalytics } from '../hooks/useConversationAnalytics';
+import { usePineconeAnalytics } from '../hooks/usePineconeAnalytics';
+import { useContentGapAnalysis } from '../hooks/useContentGapAnalysis';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 
@@ -48,6 +51,11 @@ const ChatInterface = ({ user, onViewPlans, projectId, conversationId, onChatCom
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [relatedImages, setRelatedImages] = useState<Array<{ url: string; title: string; source: string; }>>([]);
   const { toast } = useToast()
+  
+  // Analytics hooks
+  const { incrementMessageCount, trackPineconeUsage, updateAnalytics } = useConversationAnalytics(currentConversationId);
+  const { trackPineconeQuery } = usePineconeAnalytics();
+  const { analyzeContentGap } = useContentGapAnalysis();
 
   // Sidebar Default open in PC Browser
   useEffect(() => {
@@ -391,6 +399,9 @@ What would you like to discuss about your project?`,
     setMessages(prevMessages => [...prevMessages, userMessage]);
     const messageText = newMessage;
     setNewMessage('');
+    
+    // Track user message in analytics
+    await incrementMessageCount('user');
 
     // Create new conversation if needed
     let conversationId = currentConversationId;
@@ -505,6 +516,28 @@ What would you like to discuss about your project?`,
 
       setMessages(prevMessages => [...prevMessages, assistantMessage]);
       setRelatedImages(data.images || []);
+
+      // Track assistant message and Pinecone usage in analytics
+      await incrementMessageCount('assistant');
+      
+      if (data.pineconeMatches && data.avgConfidence) {
+        await trackPineconeUsage(data.pineconeMatches, data.avgConfidence);
+        
+        // Track detailed Pinecone query analytics
+        await trackPineconeQuery({
+          conversation_id: conversationId,
+          message_id: assistantMessage.id,
+          query_text: messageText,
+          pinecone_matches: data.pineconeMatches,
+          avg_confidence_score: data.avgConfidence,
+          top_match_confidence: data.topMatchConfidence || data.avgConfidence,
+        });
+        
+        // Analyze content gaps for low confidence responses
+        if (data.avgConfidence < 0.6) {
+          await analyzeContentGap(messageText, data.avgConfidence);
+        }
+      }
 
       // Save assistant message
       if (conversationId && user) {
@@ -727,7 +760,12 @@ Would you like me to help you plan any work items or discuss project timeline ma
             {/* Chat Messages */}
             <div ref={chatContainerRef} className="flex-1 p-4 pb-32 overflow-y-auto">
               {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} isProjectChat={!!projectId} />
+                <ChatMessage 
+                  key={message.id} 
+                  message={message} 
+                  conversationId={currentConversationId || 'temp'} 
+                  isProjectChat={!!projectId} 
+                />
               ))}
               {isLoading && (
                 <ChatMessage
@@ -737,6 +775,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                     sender: 'assistant',
                     timestamp: new Date(),
                   }}
+                  conversationId={currentConversationId || 'temp'}
                   isProjectChat={!!projectId}
                 />
               )}

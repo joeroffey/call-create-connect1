@@ -314,11 +314,23 @@ Context: ${combinedContext}`;
 
     console.log(`Generated AI response successfully${projectContext ? ` for project ${projectContext.id}` : ''}`);
 
+    // Calculate Pinecone analytics
+    const totalMatches = (pineconeData && Array.isArray(pineconeData.matches)) ? pineconeData.matches.length : 0;
+    const avgConfidence = totalMatches > 0 
+      ? pineconeData.matches.reduce((sum, match) => sum + (match.score || 0), 0) / totalMatches 
+      : 0;
+    const topMatchConfidence = totalMatches > 0 ? (pineconeData.matches[0]?.score || 0) : 0;
+
     const responseData: any = {
       response: aiResponse,
       images: relatedImages.slice(0, 4), // Increased to 4 images for better quality
       documentsAnalyzed: projectDocuments.length,
-      conversationsReferenced: conversationHistory ? 'Available' : 'None'
+      conversationsReferenced: conversationHistory ? 'Available' : 'None',
+      // Analytics data for learning system
+      pineconeMatches: totalMatches,
+      avgConfidence: Math.round(avgConfidence * 100) / 100, // Round to 2 decimal places
+      topMatchConfidence: Math.round(topMatchConfidence * 100) / 100,
+      relevantMatches: relevantMatches.length
     };
 
     if (projectContext) {
