@@ -67,7 +67,7 @@ const ChatMessage = ({ message, conversationId, isProjectChat = false }: ChatMes
         </div>
       )}
       
-      <div className={`flex flex-col max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`flex flex-col ${isUser ? 'max-w-[80%] items-end' : 'max-w-[90%] items-start'}`}>
         <div
           className={`px-4 py-3 rounded-2xl ${
             isUser
