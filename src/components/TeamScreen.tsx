@@ -485,7 +485,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               <select
                 value={selectedTeamId || ''}
                 onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="bg-gray-800/50 border border-gray-600 text-white px-4 py-3 rounded-xl hover:border-gray-500 transition-colors"
+                className="w-full bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm border border-emerald-500/20 text-white px-4 py-3 rounded-xl hover:border-emerald-500/40 focus:border-emerald-500/60 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all duration-200 cursor-pointer shadow-lg hover:shadow-emerald-500/10"
               >
                 {teams.map((team) => (
                   <option key={team.id} value={team.id}>
