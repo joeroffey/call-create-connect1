@@ -53,6 +53,19 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   const projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
   const totalDays = differenceInDays(projectEnd, projectStart) + 1;
 
+  // Debug timeline calculation
+  console.log('Timeline Debug:', {
+    allDates: allDates.map(d => format(d, 'yyyy-MM-dd')),
+    projectStart: format(projectStart, 'yyyy-MM-dd'),
+    projectEnd: format(projectEnd, 'yyyy-MM-dd'),
+    totalDays,
+    phases: validPhases.map(p => ({
+      name: p.phase_name,
+      start: p.start_date,
+      end: p.end_date
+    }))
+  });
+
   // Create simple Gantt data
   const ganttData: SimpleGanttData[] = validPhases.map(phase => {
     const phaseStart = parseISO(phase.start_date);
@@ -62,6 +75,18 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     
     const leftPercent = (startDays / totalDays) * 100;
     const widthPercent = (duration / totalDays) * 100;
+
+    // Debug logging for positioning issues
+    console.log(`Phase: ${phase.phase_name}`, {
+      start_date: phase.start_date,
+      end_date: phase.end_date,
+      startDays,
+      duration,
+      leftPercent,
+      widthPercent,
+      projectStart: format(projectStart, 'yyyy-MM-dd'),
+      totalDays
+    });
 
     return {
       phase,
@@ -135,7 +160,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
                 
                 {/* Timeline bar */}
                 <div className="relative h-8 bg-muted rounded">
-                                     <div
+                                                        <div
                      className={`absolute top-0 h-full rounded cursor-pointer transition-all duration-200 ${getStatusColor(item.phase.status)} ${getStatusOpacity(item.phase.status)} hover:opacity-100`}
                      style={{
                        left: `${item.leftPercent}%`,
@@ -146,25 +171,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
                      onMouseEnter={() => setHoveredPhase(item.phase.id)}
                      onMouseLeave={() => setHoveredPhase(null)}
                    >
-                                           {/* Duration label inside bar if wide enough */}
-                      {item.widthPercent > 12 && (
-                        <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium drop-shadow-sm">
-                          {item.duration}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Duration label outside bar if too narrow */}
-                    {item.widthPercent <= 12 && (
-                      <div 
-                        className="absolute top-0 h-full flex items-center text-xs text-foreground font-medium"
-                        style={{
-                          left: `${item.leftPercent + item.widthPercent + 1}%`
-                        }}
-                      >
-                        {item.duration}
-                      </div>
-                    )}
+                     {/* Duration label always inside bar */}
+                     <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-bold drop-shadow-lg">
+                       {item.duration}
+                     </div>
+                   </div>
                   
                   {/* Tooltip */}
                   {hoveredPhase === item.phase.id && (
