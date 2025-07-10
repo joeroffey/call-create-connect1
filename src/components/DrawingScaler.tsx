@@ -95,6 +95,7 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [manualMeasurements, setManualMeasurements] = useState<ManualMeasurement[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [measurementMode, setMeasurementMode] = useState(false);
   const [currentMeasurement, setCurrentMeasurement] = useState<{ start: { x: number; y: number } } | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -132,59 +133,125 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
   }, []);
 
   const handleFileUpload = async (file: File) => {
+    console.log('File upload started:', file.name, file.type, file.size);
+    
     setUploadedFile(file);
     setAnalysisResult(null);
     setManualMeasurements([]);
+    setIsProcessingFile(true);
 
     try {
       if (file.type === 'application/pdf') {
+        console.log('Processing PDF file...');
         const imageUrl = await processPDF(file);
+        console.log('PDF processed successfully, setting image URL');
         setPdfImageUrl(imageUrl);
       } else if (file.type.startsWith('image/')) {
+        console.log('Processing image file...');
         // Support image files directly
         const imageUrl = URL.createObjectURL(file);
+        console.log('Image URL created:', imageUrl.substring(0, 50) + '...');
         setPdfImageUrl(imageUrl);
       } else {
-        throw new Error('Please upload a PDF file or image.');
+        console.error('Unsupported file type:', file.type);
+        throw new Error(`Unsupported file type: ${file.type}. Please upload a PDF file or image (JPG, PNG, etc.).`);
       }
       
+      console.log('File processing completed successfully');
       toast({
         title: "File Uploaded",
         description: "File uploaded successfully. Please set page size and scale, then analyze.",
       });
     } catch (error) {
       console.error('File processing error:', error);
+      setPdfImageUrl(null); // Clear any previous image
       toast({
         title: "Upload Error",
         description: error instanceof Error ? error.message : "Failed to process file",
         variant: "destructive"
       });
+    } finally {
+      setIsProcessingFile(false);
     }
   };
 
   const processPDF = async (file: File): Promise<string> => {
+    console.log('Processing PDF:', file.name, 'Size:', file.size);
+    
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-      const page = await pdf.getPage(1);
+      // Check file size (limit to 50MB for better performance)
+      if (file.size > 50 * 1024 * 1024) {
+        throw new Error('PDF file too large. Please use a file smaller than 50MB.');
+      }
 
-      // Use higher scale for better quality, especially on mobile
-      const viewport = page.getViewport({ scale: 2.5 });
+      const arrayBuffer = await file.arrayBuffer();
+      console.log('PDF arrayBuffer created, size:', arrayBuffer.byteLength);
+      
+      const loadingTask = pdfjsLib.getDocument({
+        data: arrayBuffer,
+        cMapUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/',
+        cMapPacked: true,
+        standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/',
+        useSystemFonts: false,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        // Add mobile-specific optimizations
+        maxImageSize: 1024 * 1024 * 5, // 5MB max image size
+        disableFontFace: true,
+        disableRange: true,
+        disableStream: true,
+      });
+
+      const pdf = await loadingTask.promise;
+      console.log('PDF loaded successfully, pages:', pdf.numPages);
+      
+      const page = await pdf.getPage(1);
+      console.log('First page loaded');
+
+      // Use adaptive scale based on screen size
+      const isMobile = window.innerWidth < 768;
+      const scale = isMobile ? 1.5 : 2.0;
+      
+      const viewport = page.getViewport({ scale });
+      console.log('Viewport created:', viewport.width, 'x', viewport.height);
+      
       const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d')!;
+      const context = canvas.getContext('2d');
+      
+      if (!context) {
+        throw new Error('Failed to get canvas context');
+      }
       
       canvas.height = viewport.height;
       canvas.width = viewport.width;
 
+      console.log('Starting page render...');
       await page.render({
         canvasContext: context,
-        viewport: viewport
+        viewport: viewport,
+        background: 'white'
       }).promise;
 
-      return canvas.toDataURL('image/jpeg', 0.9);
+      console.log('Page rendered successfully');
+      const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+      console.log('Canvas converted to data URL');
+      
+      return dataURL;
     } catch (error) {
       console.error('PDF processing error:', error);
-      throw new Error('Failed to process PDF. Please try a different file.');
+      
+      // Provide specific error messages
+      if (error.message.includes('Invalid PDF')) {
+        throw new Error('Invalid PDF file. Please ensure the file is not corrupted.');
+      }
+      if (error.message.includes('password')) {
+        throw new Error('Password-protected PDFs are not supported. Please use an unprotected PDF.');
+      }
+      if (error.message.includes('too large')) {
+        throw error; // Re-throw file size error
+      }
+      
+      throw new Error(`Failed to process PDF: ${error.message}`);
     }
   };
 
@@ -577,7 +644,15 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
               </CardHeader>
               <CardContent>
                 <div className="relative bg-white rounded-lg min-h-[400px] md:min-h-[600px] overflow-auto">
-                  {pdfImageUrl ? (
+                  {isProcessingFile ? (
+                    <div className="flex items-center justify-center h-full text-gray-600">
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 md:h-12 md:w-12 mx-auto mb-4 animate-spin text-blue-500" />
+                        <p className="text-sm md:text-base font-medium">Processing file...</p>
+                        <p className="text-xs text-gray-500 mt-1">This may take a moment for large files</p>
+                      </div>
+                    </div>
+                  ) : pdfImageUrl ? (
                     <div className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}>
                       <img 
                         ref={imageRef}
@@ -586,6 +661,15 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                         className={`w-full h-auto ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
                         onClick={handleImageClick}
                         draggable={false}
+                        onLoad={() => console.log('Image loaded successfully')}
+                        onError={(e) => {
+                          console.error('Image load error:', e);
+                          toast({
+                            title: "Image Load Error",
+                            description: "Failed to display the processed file. Please try again.",
+                            variant: "destructive"
+                          });
+                        }}
                       />
                       
                       {/* AI Analysis Overlays */}
@@ -692,6 +776,7 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                       <div className="text-center">
                         <FileText className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4" />
                         <p className="text-sm md:text-base">Upload a file to see it here with measurements</p>
+                        <p className="text-xs mt-2">Supported formats: PDF, JPG, PNG, GIF, WEBP</p>
                       </div>
                     </div>
                   )}
