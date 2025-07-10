@@ -234,7 +234,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-3">
               {canCreateFolders && (
                 <Button
                   onClick={() => setShowCreateFolderModal(true)}
@@ -253,7 +253,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                   className="flex items-center gap-2 bg-primary/5 hover:bg-primary/10 text-primary border-primary/20"
                 >
                   <Users className="h-4 w-4" />
-                  Manage Access
+                  Project Access
                 </Button>
               )}
               
