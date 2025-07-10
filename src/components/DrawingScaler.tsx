@@ -72,12 +72,12 @@ const DrawingScaler: React.FC<DrawingScalerProps> = ({ onBack }) => {
         return;
       }
 
-      if (data?.processedPdfUrl) {
+      if (data?.success && data?.processedPdfUrl) {
         setProcessedPdfUrl(data.processedPdfUrl);
         toast.success('Drawing processed successfully!');
       } else {
-        console.log('No processed PDF URL in response');
-        toast.error('No processed PDF received');
+        console.log('Response data:', data);
+        toast.error('Failed to process drawing - no PDF URL received');
       }
     } catch (error) {
       console.error('Error processing drawing:', error);
@@ -90,11 +90,20 @@ const DrawingScaler: React.FC<DrawingScalerProps> = ({ onBack }) => {
   // Download processed PDF
   const downloadProcessedPdf = () => {
     if (processedPdfUrl) {
-      const a = document.createElement('a');
-      a.href = processedPdfUrl;
-      a.download = `scaled-drawing-${Date.now()}.pdf`;
-      a.click();
-      toast.success('Download started');
+      try {
+        const a = document.createElement('a');
+        a.href = processedPdfUrl;
+        a.download = `scaled-drawing-${Date.now()}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        toast.success('Download started');
+      } catch (error) {
+        console.error('Download error:', error);
+        toast.error('Failed to download file');
+      }
+    } else {
+      toast.error('No file available for download');
     }
   };
 
