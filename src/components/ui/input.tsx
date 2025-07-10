@@ -1,9 +1,24 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import { useMobileInputFocus } from "@/hooks/useMobileInputFocus"
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+export interface InputProps extends React.ComponentProps<"input"> {
+  disableMobileFocus?: boolean;
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, disableMobileFocus = false, onFocus, ...props }, ref) => {
+    const { getInputProps } = useMobileInputFocus({ enabled: !disableMobileFocus });
+    const mobileProps = getInputProps();
+
+    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+      // Call mobile focus handler first
+      mobileProps.onFocus(e);
+      // Then call any custom onFocus handler
+      onFocus?.(e);
+    };
+
     return (
       <input
         type={type}
@@ -12,6 +27,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
+        onFocus={handleFocus}
         {...props}
       />
     )

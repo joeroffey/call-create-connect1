@@ -545,6 +545,33 @@
 }
 
 
+/* Mobile input focus behavior - enhanced keyboard handling */
+@media (max-width: 768px) {
+  /* Ensure inputs remain visible when focused */
+  input:focus,
+  textarea:focus {
+    transform: translateZ(0); /* Force hardware acceleration */
+    scroll-margin-top: 120px; /* Account for mobile headers */
+    scroll-margin-bottom: 120px; /* Account for virtual keyboard */
+  }
+  
+  /* Smooth scroll behavior for mobile inputs */
+  .mobile-input-focused {
+    scroll-behavior: smooth;
+  }
+  
+  /* Prevent zoom on input focus for iOS Safari */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
 /* CHat textinput mobile browser handling. */
 @media screen and (max-width: 500px) {
   
