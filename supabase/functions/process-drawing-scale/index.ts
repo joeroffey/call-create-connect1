@@ -30,13 +30,25 @@ serve(async (req) => {
     console.log('Starting PDF processing...');
     
     const formData = await req.formData();
+    console.log('Form data received');
+    
     const file = formData.get('file') as File;
     const targetSize = formData.get('targetSize') as string;
     const scale = formData.get('scale') as string;
     const measurementStyle = formData.get('measurementStyle') as string;
     const instructions = formData.get('instructions') as string || '';
 
+    console.log('Extracted parameters:', { 
+      hasFile: !!file, 
+      fileType: file?.type,
+      fileSize: file?.size,
+      targetSize, 
+      scale, 
+      measurementStyle 
+    });
+
     if (!file || !targetSize || !scale) {
+      console.error('Missing required parameters:', { hasFile: !!file, targetSize, scale });
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
         { 
@@ -49,8 +61,13 @@ serve(async (req) => {
     console.log('Processing parameters:', { targetSize, scale, measurementStyle });
 
     // Read the PDF file
+    console.log('Reading PDF file...');
     const arrayBuffer = await file.arrayBuffer();
+    console.log('PDF arrayBuffer size:', arrayBuffer.byteLength);
+    
+    console.log('Loading PDF document...');
     const pdfDoc = await PDFDocument.load(arrayBuffer);
+    console.log('PDF loaded successfully, page count:', pdfDoc.getPageCount());
     
     // Analyze the drawing with AI
     const scaleInfo = await analyzeDrawingWithAI(arrayBuffer, scale, instructions);
