@@ -39,7 +39,7 @@ import TeamLogoUpload from '@/components/team/TeamLogoUpload';
 import TeamSettings from '@/components/team/TeamSettings';
 import BasicTeamWork from '@/components/team/BasicTeamWork';
 import TeamProjectsView from '@/components/team/TeamProjectsView';
-import TeamTasksView from '@/components/team/TeamTasksView';
+import TeamProjectPlanView from '@/components/team/TeamProjectPlanView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
 import TeamCompletionDocsView from '@/components/team/TeamCompletionDocsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
@@ -512,7 +512,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                     { id: 'overview', label: 'Overview', icon: FileText },
                     { id: 'projects', label: 'Projects', icon: FileText },
                     { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
-                    { id: 'tasks', label: 'Active Tasks', icon: Calendar },
+                    { id: 'tasks', label: 'Project Plans', icon: Calendar },
                     { id: 'schedule', label: 'Schedule', icon: Calendar },
                     { id: 'comments', label: 'Comments', icon: MessageSquare }
                   ].map((tab) => (
@@ -629,7 +629,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
             );
           })()}
           {activeView === 'tasks' && selectedTeamId && selectedTeam && (
-            <TeamTasksView
+            <TeamProjectPlanView
               teamId={selectedTeamId}
               teamName={selectedTeam.name}
             />
