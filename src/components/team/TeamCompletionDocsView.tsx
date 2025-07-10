@@ -114,6 +114,15 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
     return success;
   };
 
+  console.log('TeamCompletionDocsView render:', { 
+    projectsLoading, 
+    selectedProject, 
+    projects: projects?.length, 
+    documentsForProject: documentsForProject?.length,
+    teamMembers: teamMembers?.length,
+    currentUserRole 
+  });
+
   if (projectsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -533,11 +542,13 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
         }}
       />
 
-      <CompletionDocsViewer
-        isOpen={!!selectedDocument}
-        document={selectedDocument}
-        onClose={() => setSelectedDocument(null)}
-      />
+      {selectedDocument && (
+        <CompletionDocsViewer
+          isOpen={!!selectedDocument}
+          document={selectedDocument}
+          onClose={() => setSelectedDocument(null)}
+        />
+      )}
 
       <ProjectAccessModal
         isOpen={showAccessModal}
