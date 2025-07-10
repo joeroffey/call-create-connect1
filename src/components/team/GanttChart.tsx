@@ -17,6 +17,7 @@ interface GanttData {
   color: string;
   status: string;
   phase: ProjectPhase;
+  value: number;
 }
 
 // ErrorBoundary component specifically for chart rendering
@@ -206,6 +207,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
           color: phase.color || '#3b82f6',
           status: phase.status || 'not_started',
           phase,
+          // Simple bar data for basic chart
+          value: safeDuration, // Alternative data key
         });
       }
     } catch (error) {
@@ -244,6 +247,14 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
 
 
   
+  // Temporary debugging
+  console.log('Chart Data Debug:', {
+    validatedData,
+    safeDomain,
+    safeHeight,
+    timelineDuration
+  });
+
   // Final verification that domain values are valid numbers
   if (safeDomain[0] < 0 || safeDomain[1] <= 0 || safeDomain[1] <= safeDomain[0]) {
     return (
@@ -341,20 +352,13 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
               axisLine={{ stroke: 'hsl(var(--border))' }}
             />
             <Tooltip content={<CustomTooltip />} />
-            {/* Invisible spacer bar to position the start */}
             <Bar 
-              dataKey="startOffset" 
-              fill="transparent"
-              stackId="gantt"
-            />
-            {/* Visible duration bar */}
-            <Bar 
-              dataKey="duration" 
-              fill="hsl(var(--primary))"
+              dataKey="value" 
+              fill="#3b82f6"
               onClick={(data) => onPhaseClick?.(data.phase)}
               cursor="pointer"
               radius={[0, 4, 4, 0]}
-              stackId="gantt"
+              minPointSize={5}
             >
               {validatedData.map((entry, index) => (
                 <Cell 
