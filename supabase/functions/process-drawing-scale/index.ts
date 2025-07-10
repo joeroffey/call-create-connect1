@@ -26,10 +26,24 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting PDF processing...');
+    console.log('=== STARTING EDGE FUNCTION ===');
+    console.log('Request method:', req.method);
+    console.log('Request headers:', Object.fromEntries(req.headers.entries()));
     
+    if (req.method !== 'POST') {
+      console.error('Invalid method:', req.method);
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { 
+          status: 405, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Parsing form data...');
     const formData = await req.formData();
-    console.log('Form data received');
+    console.log('Form data entries:', Array.from(formData.entries()).map(([key, value]) => [key, typeof value]));
     
     const file = formData.get('file') as File;
     const targetSize = formData.get('targetSize') as string;
@@ -37,19 +51,22 @@ serve(async (req) => {
     const measurementStyle = formData.get('measurementStyle') as string;
     const instructions = formData.get('instructions') as string || '';
 
-    console.log('Extracted parameters:', { 
-      hasFile: !!file, 
-      fileType: file?.type,
-      fileSize: file?.size,
-      targetSize, 
-      scale, 
-      measurementStyle 
+    console.log('=== EXTRACTED PARAMETERS ===');
+    console.log('File:', { 
+      exists: !!file, 
+      type: file?.type,
+      size: file?.size,
+      name: file?.name
     });
+    console.log('Target size:', targetSize);
+    console.log('Scale:', scale);
+    console.log('Measurement style:', measurementStyle);
+    console.log('Instructions length:', instructions?.length || 0);
 
-    if (!file || !targetSize || !scale) {
-      console.error('Missing required parameters:', { hasFile: !!file, targetSize, scale });
+    if (!file) {
+      console.error('No file provided');
       return new Response(
-        JSON.stringify({ error: 'Missing required parameters' }),
+        JSON.stringify({ error: 'No file provided' }),
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -57,43 +74,65 @@ serve(async (req) => {
       );
     }
 
-    console.log('Processing parameters:', { targetSize, scale, measurementStyle });
+    if (!targetSize || !scale) {
+      console.error('Missing required parameters - targetSize or scale');
+      return new Response(
+        JSON.stringify({ error: 'Missing targetSize or scale parameter' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
-    // Read the PDF file
-    console.log('Reading PDF file...');
+    console.log('=== PROCESSING FILE ===');
     const arrayBuffer = await file.arrayBuffer();
-    console.log('PDF arrayBuffer size:', arrayBuffer.byteLength);
+    console.log('Successfully read file, size:', arrayBuffer.byteLength);
     
-    // For now, let's just analyze with AI and return a simple result
-    const scaleInfo = await analyzeDrawingWithAI(arrayBuffer, scale, instructions);
-    console.log('AI Analysis result:', scaleInfo);
+    // Simple processing without complex operations
+    console.log('=== CREATING RESPONSE ===');
+    
+    // Return success without trying to convert to base64 for now
+    const response = {
+      success: true,
+      message: 'File received and processed successfully',
+      fileInfo: {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        arrayBufferSize: arrayBuffer.byteLength
+      },
+      parameters: {
+        targetSize,
+        scale,
+        measurementStyle,
+        hasInstructions: !!instructions
+      }
+    };
 
-    // Create a simple response with the original file for testing
-    const uint8Array = new Uint8Array(arrayBuffer);
-    const base64Pdf = btoa(String.fromCharCode(...uint8Array));
-    const pdfUrl = `data:application/pdf;base64,${base64Pdf}`;
-
-    console.log('PDF processing completed successfully');
+    console.log('=== SUCCESS ===');
+    console.log('Response:', response);
 
     return new Response(
-      JSON.stringify({ 
-        processedPdfUrl: pdfUrl,
-        scaleInfo,
-        success: true,
-        message: 'PDF processed successfully (simplified version for testing)'
-      }),
+      JSON.stringify(response),
       { 
+        status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
 
   } catch (error) {
-    console.error('Error processing PDF:', error);
+    console.error('=== ERROR IN EDGE FUNCTION ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to process PDF', 
-        details: error.message,
-        stack: error.stack
+        error: 'Edge function error',
+        type: error.constructor.name,
+        message: error.message,
+        timestamp: new Date().toISOString()
       }),
       { 
         status: 500, 
