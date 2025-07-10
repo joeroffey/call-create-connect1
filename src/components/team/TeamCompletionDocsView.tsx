@@ -114,15 +114,6 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
     return success;
   };
 
-  console.log('TeamCompletionDocsView render:', { 
-    projectsLoading, 
-    selectedProject, 
-    projects: projects?.length, 
-    documentsForProject: documentsForProject?.length,
-    teamMembers: teamMembers?.length,
-    currentUserRole 
-  });
-
   if (projectsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -169,7 +160,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {projects
                   .filter(project => 
                     project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -179,37 +170,34 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                     const documentCount = getDocumentsByProject(project.id).length;
                     
                     return (
-                      <Card
+                      <div
                         key={project.id}
-                        className="cursor-pointer hover:shadow-lg transition-all duration-200 group border-border/40 hover:border-primary/30"
+                        className="group cursor-pointer"
                         onClick={() => setSelectedProject(project.id)}
                       >
-                        <CardHeader className="pb-4">
-                          <div className="flex items-center gap-3 mb-3">
-                            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                        <div className="bg-card rounded-2xl border border-border/40 p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/30 group-hover:scale-[1.02]">
+                          <div className="flex items-center gap-4 mb-4">
+                            <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
                               <Folder className="h-6 w-6 text-primary" />
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <CardTitle className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
                                 {project.name}
-                              </CardTitle>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge variant="secondary" className="text-xs">
-                                  {documentCount} documents
-                                </Badge>
-                                <span className="text-xs text-muted-foreground">Team Project</span>
-                              </div>
+                              </h3>
+                              <p className="text-sm text-muted-foreground">Team Project</p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-primary">{documentCount}</div>
+                              <div className="text-xs text-muted-foreground">documents</div>
                             </div>
                           </div>
                           
                           {project.description && (
-                            <CardDescription className="text-sm line-clamp-2 min-h-[2.5rem]">
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
                               {project.description}
-                            </CardDescription>
+                            </p>
                           )}
-                        </CardHeader>
-                        
-                        <CardContent className="pt-0">
+                          
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">
                               Click to open
@@ -218,8 +206,8 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                               Open →
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                        </div>
+                      </div>
                     );
                   })}
               </div>
@@ -360,7 +348,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {rootFolders.map(folder => {
                       const folderDocCount = documentsForProject.filter(doc => doc.folder_id === folder.id).length;
                       const recentDoc = documentsForProject
@@ -368,30 +356,17 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 
                       return (
-                        <Card 
-                          key={folder.id} 
-                          className="cursor-pointer hover:shadow-lg transition-all duration-200 group hover:border-primary/30 border-border/40"
+                        <div
+                          key={folder.id}
+                          className="group cursor-pointer"
                           onClick={() => setCurrentFolderId(folder.id)}
                         >
-                          <CardHeader className="pb-4">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                                  <FolderOpen className="h-6 w-6 text-primary" />
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <CardTitle className="text-base font-semibold truncate group-hover:text-primary transition-colors">
-                                    {folder.name}
-                                  </CardTitle>
-                                  <CardDescription className="text-sm mt-1">
-                                    {folderDocCount} document{folderDocCount !== 1 ? 's' : ''}
-                                  </CardDescription>
-                                </div>
-                              </div>
-                              {canManageAccess && (
+                          <div className="bg-card rounded-2xl border border-border/40 p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/30 group-hover:scale-[1.02] relative">
+                            {canManageAccess && (
+                              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                                       <MoreVertical className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -408,31 +383,41 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
-                              )}
-                            </div>
-                          </CardHeader>
-                          <CardContent className="pt-0">
-                            <div className="space-y-3">
-                              {recentDoc ? (
-                                <div className="text-sm text-muted-foreground">
-                                  Last updated {new Date(recentDoc.created_at).toLocaleDateString()}
-                                </div>
-                              ) : (
-                                <div className="text-sm text-muted-foreground">Empty folder</div>
-                              )}
-                              
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Files className="h-4 w-4" />
-                                  <span>Completion Documents</span>
-                                </div>
-                                <div className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                  Open →
-                                </div>
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center gap-4 mb-4">
+                              <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
+                                <FolderOpen className="h-6 w-6 text-blue-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
+                                  {folder.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground">
+                                  {recentDoc 
+                                    ? `Updated ${new Date(recentDoc.created_at).toLocaleDateString()}`
+                                    : 'Empty folder'
+                                  }
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-2xl font-bold text-blue-600">{folderDocCount}</div>
+                                <div className="text-xs text-muted-foreground">documents</div>
                               </div>
                             </div>
-                          </CardContent>
-                        </Card>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Files className="h-4 w-4" />
+                                <span>Completion Documents</span>
+                              </div>
+                              <div className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                                Open →
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
