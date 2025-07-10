@@ -204,10 +204,11 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
       <div className="container mx-auto px-6 py-6">
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
-                variant="outline"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   if (currentFolderId) {
                     setCurrentFolderId(null);
@@ -215,10 +216,9 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                     setSelectedProject(null);
                   }
                 }}
-                className="flex items-center gap-2"
+                className="p-2"
               >
-                <ArrowLeft className="h-4 w-4" />
-                {currentFolderId ? 'Back to Project' : 'Back to Projects'}
+                <ArrowLeft className="h-5 w-5" />
               </Button>
               
               <div>
