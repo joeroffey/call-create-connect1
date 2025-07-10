@@ -242,16 +242,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   // Triple check domain values are absolutely safe for Recharts
   const safeDomain = [0, sanitizeValue(domainMax, 1)];
 
-  // Debug logging
-  console.log('Gantt Chart Debug:', {
-    validPhases: validPhases.length,
-    ganttData: ganttData.length,
-    validatedData: validatedData.length,
-    sampleData: validatedData.slice(0, 2),
-    timelineDuration,
-    safeDomain,
-    safeHeight
-  });
+
   
   // Final verification that domain values are valid numbers
   if (safeDomain[0] < 0 || safeDomain[1] <= 0 || safeDomain[1] <= safeDomain[0]) {
