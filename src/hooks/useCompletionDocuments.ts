@@ -62,7 +62,8 @@ export const useCompletionDocuments = (projectId?: string | null) => {
     file: File,
     category: string,
     description?: string,
-    displayName?: string
+    displayName?: string,
+    folderId?: string | null
   ): Promise<CompletionDocument | null> => {
     if (!projectId) {
       toast({
@@ -144,6 +145,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
           display_name: displayName || file.name,
           uploaded_by: user.id,
           team_id: project.team_id,
+          folder_id: folderId,
         })
         .select()
         .single();

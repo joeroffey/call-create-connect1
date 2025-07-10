@@ -146,7 +146,7 @@ export const CompletionDocsUpload = ({
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         const displayName = documentNames[file.name] || file.name;
-        await uploadDocument(file, category, description, displayName);
+        await uploadDocument(file, category, description, displayName, folderId);
         setUploadProgress(((i + 1) / selectedFiles.length) * 100);
       }
 
