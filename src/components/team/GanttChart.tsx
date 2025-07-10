@@ -104,8 +104,11 @@ const validateChartData = (data: GanttData[]): GanttData[] => {
 };
 
 export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) => {
+  console.log('GanttChart component called with phases:', phases);
+  
   // Early validation - must have phases with valid data
   if (!phases || phases.length === 0) {
+    console.log('No phases provided to GanttChart');
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
         <p className="text-muted-foreground">No project phases to display</p>
