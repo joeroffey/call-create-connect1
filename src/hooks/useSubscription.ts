@@ -52,7 +52,6 @@ export const useSubscription = (userId: string | null) => {
     initialCacheData?.subscription || null
   );
   const [loading, setLoading] = useState(true);
-  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
   const [hasActiveSubscription, setHasActiveSubscription] = useState(
     initialCacheData?.hasActiveSubscription || false
   );
@@ -90,7 +89,6 @@ export const useSubscription = (userId: string | null) => {
       setHasActiveSubscription(false);
       setHasUsedTrial(false);
       setLoading(false);
-      setSubscriptionLoading(false);
       setIsInitialLoad(false);
       return;
     }
@@ -119,7 +117,6 @@ export const useSubscription = (userId: string | null) => {
 
     if (!isBackgroundUpdate) {
       setLoading(true);
-      setSubscriptionLoading(true);
     }
 
     try {
@@ -202,7 +199,6 @@ export const useSubscription = (userId: string | null) => {
       });
     } finally {
       setLoading(false);
-      setSubscriptionLoading(false);
       setIsInitialLoad(false);
     }
   };
@@ -297,7 +293,6 @@ export const useSubscription = (userId: string | null) => {
   return {
     subscription,
     loading,
-    subscriptionLoading,
     hasActiveSubscription,
     hasUsedTrial,
     isInitialLoad,
