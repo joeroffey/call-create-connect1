@@ -8,10 +8,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ScaleInfo {
-  detected: boolean;
-  scaleText: string;
-  scaleFactor: number;
+interface DetectedElement {
+  id: string;
+  type: 'wall' | 'door' | 'window' | 'dimension' | 'line' | 'text';
+  coordinates: { x1: number; y1: number; x2: number; y2: number };
+  measurement?: number;
+  label?: string;
+  confidence: number;
+}
+
+interface AnalysisResult {
+  elements: DetectedElement[];
+  suggestions: string[];
+  pageSize: string;
+  detectedScale: string;
   confidence: number;
 }
 
@@ -22,8 +32,8 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting drawing scale analysis...');
-    const { image, customInstruction } = await req.json();
+    console.log('Starting enhanced drawing analysis...');
+    const { image, pageSize, scale, unit } = await req.json();
 
     if (!image) {
       throw new Error('No image provided');
@@ -34,33 +44,58 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    console.log('Analyzing drawing scale with OpenAI Vision API...');
+    console.log('Analyzing drawing with OpenAI Vision API...');
+    console.log('Input parameters:', { pageSize, scale, unit });
 
-    // Prepare the prompt for scale detection
-    const systemPrompt = `You are an expert architectural drawing analyzer. Your task is to:
-1. Detect any scale indicators in the drawing (scale bars, text like "1:100", "SCALE 1:50", etc.)
-2. Parse any natural language scaling instructions
-3. Calculate the scale factor for measurements
+    // Enhanced system prompt for architectural drawing analysis
+    const systemPrompt = `You are an expert architectural drawing analyzer. Analyze this architectural drawing and identify all measurable elements.
 
-Look for:
-- Scale bars with measurements
-- Scale text (1:100, 1:50, SCALE 1:25, etc.)
-- Dimension lines with measurements
-- Paper size indicators
-- Any scaling instructions in text
+TASK: Identify and locate architectural elements in the drawing with their coordinates and measurements.
 
-Return a JSON response with:
+DRAWING SPECIFICATIONS:
+- Page Size: ${pageSize}
+- Scale: ${scale}
+- Unit: ${unit}
+
+ELEMENT TYPES TO DETECT:
+1. WALLS: Structural walls (thick lines, typically 100-300mm thick)
+2. DOORS: Door openings with door swings
+3. WINDOWS: Window openings 
+4. DIMENSIONS: Dimension lines with measurements
+5. LINES: Other structural or reference lines
+6. TEXT: Labels, room names, measurements
+
+For each element found, provide:
+- Precise pixel coordinates (x1, y1, x2, y2) for the start and end points
+- Element type classification
+- Pixel length measurement for linear elements
+- Any visible text labels
+- Confidence score (0-1)
+
+Return ONLY a JSON response in this exact format:
 {
-  "detected": boolean,
-  "scaleText": "exact text found",
-  "scaleFactor": number (millimeters per pixel),
-  "confidence": number (0-1),
-  "reasoning": "explanation of detection"
-}`;
+  "elements": [
+    {
+      "id": "unique_id",
+      "type": "wall|door|window|dimension|line|text",
+      "coordinates": { "x1": number, "y1": number, "x2": number, "y2": number },
+      "measurement": number_in_pixels,
+      "label": "any_text_found",
+      "confidence": 0.0_to_1.0
+    }
+  ],
+  "suggestions": ["improvement suggestions"],
+  "pageSize": "${pageSize}",
+  "detectedScale": "any_scale_text_found_in_drawing",
+  "confidence": overall_confidence_0_to_1
+}
 
-    const userPrompt = customInstruction 
-      ? `Please analyze this architectural drawing for scale information. Additional instruction: "${customInstruction}"`
-      : 'Please analyze this architectural drawing for scale information and detect any scale indicators.';
+IMPORTANT: 
+- Only return valid JSON
+- Coordinates must be within image bounds
+- Focus on major architectural elements
+- Ignore small decorative details
+- Measurement should be pixel distance between coordinates`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -80,7 +115,7 @@ Return a JSON response with:
             content: [
               {
                 type: 'text',
-                text: userPrompt
+                text: `Analyze this ${pageSize} architectural drawing at ${scale} scale. Identify all architectural elements with their coordinates and measurements.`
               },
               {
                 type: 'image_url',
@@ -92,7 +127,7 @@ Return a JSON response with:
             ]
           }
         ],
-        max_tokens: 500,
+        max_tokens: 2000,
         temperature: 0.1,
       }),
     });
@@ -109,56 +144,52 @@ Return a JSON response with:
     console.log('OpenAI Response:', aiResponse);
 
     // Parse the JSON response from AI
-    let scaleInfo: ScaleInfo;
+    let analysisResult: AnalysisResult;
     try {
       const parsed = JSON.parse(aiResponse);
-      scaleInfo = {
-        detected: parsed.detected || false,
-        scaleText: parsed.scaleText || '',
-        scaleFactor: parsed.scaleFactor || 1,
-        confidence: parsed.confidence || 0
+      
+      // Validate and clean the response
+      analysisResult = {
+        elements: (parsed.elements || []).map((el: any, index: number) => ({
+          id: el.id || `element_${index}`,
+          type: el.type || 'line',
+          coordinates: {
+            x1: Math.max(0, el.coordinates?.x1 || 0),
+            y1: Math.max(0, el.coordinates?.y1 || 0),
+            x2: Math.max(0, el.coordinates?.x2 || 0),
+            y2: Math.max(0, el.coordinates?.y2 || 0)
+          },
+          measurement: el.measurement || calculatePixelDistance(
+            el.coordinates?.x1 || 0,
+            el.coordinates?.y1 || 0,
+            el.coordinates?.x2 || 0,
+            el.coordinates?.y2 || 0
+          ),
+          label: el.label || '',
+          confidence: Math.min(1, Math.max(0, el.confidence || 0.5))
+        })),
+        suggestions: parsed.suggestions || ['Analysis complete'],
+        pageSize: parsed.pageSize || pageSize,
+        detectedScale: parsed.detectedScale || '',
+        confidence: Math.min(1, Math.max(0, parsed.confidence || 0.5))
       };
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', parseError);
+      console.log('Raw AI response:', aiResponse);
       
-      // Fallback: try to extract scale information using regex
-      const scaleMatches = aiResponse.match(/1:(\d+)|SCALE\s*1:(\d+)|(\d+)\s*mm/gi);
-      
-      if (scaleMatches && scaleMatches.length > 0) {
-        const scaleText = scaleMatches[0];
-        const scaleNumber = scaleText.match(/\d+/)?.[0];
-        const scaleFactor = scaleNumber ? 1 / parseInt(scaleNumber) : 1;
-        
-        scaleInfo = {
-          detected: true,
-          scaleText: scaleText,
-          scaleFactor: scaleFactor,
-          confidence: 0.7
-        };
-      } else {
-        scaleInfo = {
-          detected: false,
-          scaleText: '',
-          scaleFactor: 1,
-          confidence: 0
-        };
-      }
+      // Fallback: Create a minimal valid response
+      analysisResult = {
+        elements: [],
+        suggestions: ['Failed to analyze drawing - please try again'],
+        pageSize: pageSize,
+        detectedScale: '',
+        confidence: 0.1
+      };
     }
 
-    // Apply custom instruction parsing if no scale was detected
-    if (!scaleInfo.detected && customInstruction) {
-      const customScaleInfo = parseCustomInstruction(customInstruction);
-      if (customScaleInfo.detected) {
-        scaleInfo = customScaleInfo;
-      }
-    }
+    console.log('Final analysis result:', analysisResult);
 
-    console.log('Final scale info:', scaleInfo);
-
-    return new Response(JSON.stringify({ 
-      scaleInfo,
-      reasoning: aiResponse 
-    }), {
+    return new Response(JSON.stringify(analysisResult), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
@@ -166,12 +197,11 @@ Return a JSON response with:
     console.error('Error in analyze-drawing-scale function:', error);
     return new Response(JSON.stringify({ 
       error: error.message,
-      scaleInfo: {
-        detected: false,
-        scaleText: '',
-        scaleFactor: 1,
-        confidence: 0
-      }
+      elements: [],
+      suggestions: ['Analysis failed - please try again'],
+      pageSize: '',
+      detectedScale: '',
+      confidence: 0
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -179,55 +209,6 @@ Return a JSON response with:
   }
 });
 
-function parseCustomInstruction(instruction: string): ScaleInfo {
-  const lowerInstruction = instruction.toLowerCase();
-  
-  // Parse common scale formats
-  const scaleMatches = instruction.match(/1:(\d+)|scale\s*1:(\d+)|(\d+)\s*mm/gi);
-  
-  if (scaleMatches) {
-    const match = scaleMatches[0];
-    const numbers = match.match(/\d+/g);
-    
-    if (numbers) {
-      const scaleRatio = parseInt(numbers[0]);
-      return {
-        detected: true,
-        scaleText: match,
-        scaleFactor: 1 / scaleRatio, // Convert scale ratio to factor
-        confidence: 0.9
-      };
-    }
-  }
-  
-  // Parse paper size instructions (A4, A3, A2, etc.)
-  if (lowerInstruction.includes('a4') || lowerInstruction.includes('a3') || lowerInstruction.includes('a2')) {
-    return {
-      detected: true,
-      scaleText: instruction,
-      scaleFactor: 0.1, // Default scale factor for paper size instructions
-      confidence: 0.6
-    };
-  }
-  
-  // Parse magnification instructions (1.2×, 150%, etc.)
-  const magnificationMatch = instruction.match(/(\d+\.?\d*)[×x%]/);
-  if (magnificationMatch) {
-    const factor = parseFloat(magnificationMatch[1]);
-    const scaleFactor = factor > 10 ? factor / 100 : factor; // Handle percentage vs decimal
-    
-    return {
-      detected: true,
-      scaleText: instruction,
-      scaleFactor: scaleFactor,
-      confidence: 0.8
-    };
-  }
-  
-  return {
-    detected: false,
-    scaleText: '',
-    scaleFactor: 1,
-    confidence: 0
-  };
+function calculatePixelDistance(x1: number, y1: number, x2: number, y2: number): number {
+  return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 }
