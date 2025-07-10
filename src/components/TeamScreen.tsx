@@ -13,12 +13,24 @@ import {
   Plus,
   CheckCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useTeams } from '@/hooks/useTeams';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import CreateTeamModal from '@/components/team/CreateTeamModal';
@@ -234,6 +246,26 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     }
   };
 
+  // Helper function to determine if current user can remove a specific member
+  const canRemoveMember = (member: any) => {
+    const currentUserMember = members.find(m => m.user_id === user?.id);
+    const isCurrentUserOwnerOrAdmin = currentUserMember?.role === 'owner' || currentUserMember?.role === 'admin';
+    const isTargetOwner = member.role === 'owner';
+    const isCurrentUser = member.user_id === user?.id;
+    
+    return isCurrentUserOwnerOrAdmin && !isTargetOwner && !isCurrentUser;
+  };
+
+  // Handle member removal with confirmation
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
+    try {
+      await removeMember(memberId);
+      console.log(`Successfully removed member: ${memberName}`);
+    } catch (error) {
+      console.error('Error removing member:', error);
+    }
+  };
+
   const renderOverview = () => (
     <div className="space-y-8">
       {/* Team Stats */}
@@ -335,11 +367,49 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                     <p className="text-gray-400 text-xs sm:text-sm truncate">Joined {new Date(member.joined_at).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center ml-2 flex-shrink-0">
+                <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                   <Badge variant="outline" className="border-gray-600 text-gray-300 px-2 sm:px-3 py-1 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                     {getRoleIcon(member.role)}
                     <span className="capitalize font-medium">{member.role}</span>
                   </Badge>
+                  
+                  {/* Remove member button - only show for owners/admins and not for owners/current user */}
+                  {canRemoveMember(member) && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-red-600/30 text-red-400 hover:bg-red-600/20 hover:border-red-600/50 px-2 py-1"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-gray-800 border-gray-700">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white">Remove Team Member</AlertDialogTitle>
+                          <AlertDialogDescription className="text-gray-300">
+                            Are you sure you want to remove{' '}
+                            <span className="font-semibold text-white">
+                              {member.profiles?.full_name || 'this member'}
+                            </span>{' '}
+                            from the team? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-gray-700 border-gray-600 text-white hover:bg-gray-600">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleRemoveMember(member.id, member.profiles?.full_name || 'Unknown User')}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                          >
+                            Remove Member
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </CardContent>
