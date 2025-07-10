@@ -18,7 +18,8 @@ interface GanttData {
 }
 
 export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) => {
-  if (phases.length === 0) {
+  // Early validation - must have phases with valid data
+  if (!phases || phases.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
         <p className="text-muted-foreground">No project phases to display</p>
@@ -26,13 +27,20 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     );
   }
 
-  // Calculate project timeline bounds with validation
-  const validPhases = phases.filter(phase => 
-    phase.start_date && 
-    phase.end_date && 
-    !isNaN(Date.parse(phase.start_date)) && 
-    !isNaN(Date.parse(phase.end_date))
-  );
+  // Filter and validate phases with comprehensive checks
+  const validPhases = phases.filter(phase => {
+    if (!phase || typeof phase !== 'object') return false;
+    if (!phase.start_date || !phase.end_date || !phase.phase_name) return false;
+    
+    // Validate dates can be parsed
+    const startTime = Date.parse(phase.start_date);
+    const endTime = Date.parse(phase.end_date);
+    
+    if (isNaN(startTime) || isNaN(endTime)) return false;
+    if (startTime > endTime) return false; // End must be after start
+    
+    return true;
+  });
   
   if (validPhases.length === 0) {
     return (
@@ -42,32 +50,44 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     );
   }
 
-  const allDates = validPhases.flatMap(phase => {
-    try {
-      const startDate = parseISO(phase.start_date);
-      const endDate = parseISO(phase.end_date);
-      if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-        return [startDate, endDate];
-      }
-      return [];
-    } catch {
-      return [];
+  // Safe date calculations with multiple fallbacks
+  let projectStart: Date;
+  let projectEnd: Date;
+  let timelineStart: Date;
+  let timelineEnd: Date;
+  let timelineDuration: number;
+
+  try {
+    const allDates = validPhases.flatMap(phase => {
+      const start = parseISO(phase.start_date);
+      const end = parseISO(phase.end_date);
+      return [start, end];
+    });
+
+    projectStart = new Date(Math.min(...allDates.map(d => d.getTime())));
+    projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
+    
+    // Validate calculated dates
+    if (isNaN(projectStart.getTime()) || isNaN(projectEnd.getTime())) {
+      throw new Error('Invalid project dates');
     }
-  });
 
-  if (allDates.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-        <p className="text-muted-foreground">Invalid date data in project phases</p>
-      </div>
-    );
-  }
+    timelineStart = startOfWeek(projectStart);
+    timelineEnd = endOfWeek(projectEnd);
+    
+    // Validate timeline dates
+    if (isNaN(timelineStart.getTime()) || isNaN(timelineEnd.getTime())) {
+      throw new Error('Invalid timeline dates');
+    }
 
-  const projectStart = new Date(Math.min(...allDates.map(d => d.getTime())));
-  const projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
-
-  // Validate calculated dates
-  if (isNaN(projectStart.getTime()) || isNaN(projectEnd.getTime())) {
+    timelineDuration = differenceInDays(timelineEnd, timelineStart);
+    
+    // Validate duration
+    if (isNaN(timelineDuration) || timelineDuration <= 0) {
+      throw new Error('Invalid timeline duration');
+    }
+  } catch (error) {
+    console.error('Date calculation error:', error);
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
         <p className="text-muted-foreground">Unable to calculate project timeline</p>
@@ -75,79 +95,56 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     );
   }
 
-  // Extend timeline for better visualization
-  const timelineStart = startOfWeek(projectStart);
-  const timelineEnd = endOfWeek(projectEnd);
+  // Create chart data with absolute safety guarantees
+  const ganttData: GanttData[] = [];
   
-  // Validate timeline dates
-  if (isNaN(timelineStart.getTime()) || isNaN(timelineEnd.getTime())) {
-    return (
-      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-        <p className="text-muted-foreground">Unable to calculate timeline bounds</p>
-      </div>
-    );
-  }
-
-  // Calculate timeline duration with validation
-  const timelineDuration = differenceInDays(timelineEnd, timelineStart);
-  if (isNaN(timelineDuration) || timelineDuration < 0) {
-    return (
-      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
-        <p className="text-muted-foreground">Invalid timeline calculation</p>
-      </div>
-    );
-  }
-
-  // Prepare data for the Gantt chart with comprehensive validation
-  const ganttData: GanttData[] = validPhases.map(phase => {
+  for (const phase of validPhases) {
     try {
       const phaseStart = parseISO(phase.start_date);
       const phaseEnd = parseISO(phase.end_date);
       
-      // Validate parsed dates
-      if (isNaN(phaseStart.getTime()) || isNaN(phaseEnd.getTime())) {
-        throw new Error('Invalid date');
-      }
-      
       const startOffset = differenceInDays(phaseStart, timelineStart);
       const duration = differenceInDays(phaseEnd, phaseStart) + 1;
       
-      // Validate calculations
-      if (isNaN(startOffset) || isNaN(duration) || duration < 1) {
-        throw new Error('Invalid calculation');
+      // Triple-check all values are valid numbers
+      const safeStart = isNaN(startOffset) ? 0 : Math.max(0, Math.floor(startOffset));
+      const safeDuration = isNaN(duration) ? 1 : Math.max(1, Math.floor(duration));
+      
+      // Only add if all values are definitely valid
+      if (isFinite(safeStart) && isFinite(safeDuration) && safeStart >= 0 && safeDuration > 0) {
+        ganttData.push({
+          phase_name: String(phase.phase_name).slice(0, 50), // Limit length
+          start: safeStart,
+          duration: safeDuration,
+          color: phase.color || '#3b82f6',
+          status: phase.status || 'not_started',
+          phase,
+        });
       }
-
-      return {
-        phase_name: phase.phase_name || 'Unnamed Phase',
-        start: Math.max(0, startOffset),
-        duration: Math.max(1, duration),
-        color: phase.color || '#3b82f6',
-        status: phase.status || 'not_started',
-        phase,
-      };
-    } catch {
-      // Return safe fallback values
-      return {
-        phase_name: phase.phase_name || 'Unnamed Phase',
-        start: 0,
-        duration: 1,
-        color: phase.color || '#3b82f6',
-        status: phase.status || 'not_started',
-        phase,
-      };
+    } catch (error) {
+      console.warn('Skipping invalid phase:', phase.phase_name, error);
+      // Skip this phase instead of crashing
     }
-  }).filter(data => 
-    !isNaN(data.start) && 
-    !isNaN(data.duration) && 
-    data.duration > 0 && 
-    data.start >= 0
-  );
+  }
 
-  // Final validation of gantt data
+  // Final safety check
   if (ganttData.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
         <p className="text-muted-foreground">No valid chart data available</p>
+      </div>
+    );
+  }
+
+  // Safe chart configuration with validated values
+  const safeHeight = Math.max(300, Math.min(800, ganttData.length * 60));
+  const safeDomain = [0, Math.max(1, Math.floor(timelineDuration))];
+  
+  // Verify domain values are safe
+  if (!isFinite(safeDomain[0]) || !isFinite(safeDomain[1]) || safeDomain[1] <= safeDomain[0]) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">Invalid chart domain</p>
       </div>
     );
   }
@@ -220,7 +217,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
       </div>
 
       <div className="border border-border rounded-lg p-4 bg-card overflow-x-auto">
-        <ResponsiveContainer width="100%" height={Math.max(400, validPhases.length * 60)}>
+        <ResponsiveContainer width="100%" height={safeHeight}>
           <BarChart
             data={ganttData}
             layout="horizontal"
@@ -228,7 +225,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
           >
             <XAxis 
               type="number" 
-              domain={[0, Math.max(1, timelineDuration)]}
+              domain={safeDomain}
               tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
             />
