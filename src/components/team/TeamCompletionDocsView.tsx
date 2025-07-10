@@ -125,17 +125,9 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
 
   if (!selectedProject) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Select a Project</h2>
-            {canManageAccess && (
-              <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                <Shield className="h-3 w-3 mr-1" />
-                Admin Access
-              </Badge>
-            )}
-          </div>
+      <div className="container mx-auto p-4">
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">Select a Project</h2>
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -143,7 +135,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
               placeholder="Search projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-9 h-9"
             />
           </div>
 
@@ -206,10 +198,10 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
+    <div className="container mx-auto p-3 space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
@@ -220,23 +212,15 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                 setSelectedProject(null);
               }
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-1 text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
             {currentFolderId ? 'Back to Project' : 'Back to Projects'}
           </Button>
           
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">
-              {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
-            </h1>
-            {canManageAccess && (
-              <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                <Shield className="h-3 w-3 mr-1" />
-                Admin
-              </Badge>
-            )}
-          </div>
+          <h1 className="text-xl font-bold">
+            {currentFolderData ? currentFolderData.name : selectedProjectData?.name || 'Unknown Project'}
+          </h1>
         </div>
 
         <div className="flex items-center gap-2">
@@ -245,7 +229,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
               variant="outline"
               size="sm"
               onClick={() => setShowAccessModal(true)}
-              className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+              className="flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 text-sm"
             >
               <Users className="h-4 w-4" />
               Project Access
@@ -254,7 +238,8 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
           
           <Button
             onClick={() => setShowUploadModal(true)}
-            className="flex items-center gap-2"
+            size="sm"
+            className="flex items-center gap-1 text-sm"
           >
             <Upload className="h-4 w-4" />
             Upload
@@ -264,7 +249,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
 
       {/* Breadcrumb */}
       {currentFolderId && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <span 
             className="cursor-pointer hover:text-foreground"
             onClick={() => setCurrentFolderId(null)}
@@ -272,7 +257,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
             {selectedProjectData?.name}
           </span>
           {currentFolderPath.map((folder, index) => (
-            <div key={folder.id} className="flex items-center gap-2">
+            <div key={folder.id} className="flex items-center gap-1">
               <span>/</span>
               <span 
                 className="cursor-pointer hover:text-foreground"
@@ -286,20 +271,20 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
       )}
 
       {/* Search and Filter Controls */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={`Search ${currentFolderData ? 'in folder' : 'documents'}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-9 h-9"
           />
         </div>
         
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filter by category" />
+          <SelectTrigger className="w-full sm:w-40 h-9">
+            <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
