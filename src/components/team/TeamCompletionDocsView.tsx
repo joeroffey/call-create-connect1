@@ -252,7 +252,7 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                 className="flex items-center gap-2"
               >
                 <Upload className="h-4 w-4" />
-                Upload Documents
+                Upload
               </Button>
             </div>
           </div>
