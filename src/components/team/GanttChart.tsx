@@ -110,8 +110,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
       const safeStart = isNaN(startOffset) ? 0 : Math.max(0, Math.floor(startOffset));
       const safeDuration = isNaN(duration) ? 1 : Math.max(1, Math.floor(duration));
       
-      // Only add if all values are definitely valid
-      if (isFinite(safeStart) && isFinite(safeDuration) && safeStart >= 0 && safeDuration > 0) {
+      // Only add if all values are definitely valid and safe for Recharts
+      if (isFinite(safeStart) && isFinite(safeDuration) && 
+          !isNaN(safeStart) && !isNaN(safeDuration) && 
+          Number.isFinite(safeStart) && Number.isFinite(safeDuration) &&
+          safeStart >= 0 && safeDuration > 0) {
         ganttData.push({
           phase_name: String(phase.phase_name).slice(0, 50), // Limit length
           start: safeStart,
@@ -138,10 +141,24 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
 
   // Safe chart configuration with validated values
   const safeHeight = Math.max(300, Math.min(800, ganttData.length * 60));
-  const safeDomain = [0, Math.max(1, Math.floor(timelineDuration))];
   
-  // Verify domain values are safe
-  if (!isFinite(safeDomain[0]) || !isFinite(safeDomain[1]) || safeDomain[1] <= safeDomain[0]) {
+  // Extremely robust domain calculation to prevent NaN values
+  let domainMax = 1; // Default fallback
+  
+  if (isFinite(timelineDuration) && !isNaN(timelineDuration) && timelineDuration > 0) {
+    const flooredDuration = Math.floor(timelineDuration);
+    if (isFinite(flooredDuration) && !isNaN(flooredDuration) && flooredDuration > 0) {
+      domainMax = Math.max(1, flooredDuration);
+    }
+  }
+  
+  // Triple check domain values are absolutely safe for Recharts
+  const safeDomain = [0, domainMax];
+  
+  // Final verification that domain values are valid numbers
+  if (!Number.isFinite(safeDomain[0]) || !Number.isFinite(safeDomain[1]) || 
+      isNaN(safeDomain[0]) || isNaN(safeDomain[1]) || 
+      safeDomain[1] <= safeDomain[0] || safeDomain[1] <= 0) {
     return (
       <div className="flex items-center justify-center h-64 border border-border rounded-lg">
         <p className="text-muted-foreground">Invalid chart domain</p>
@@ -217,43 +234,56 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
       </div>
 
       <div className="border border-border rounded-lg p-4 bg-card overflow-x-auto">
-        <ResponsiveContainer width="100%" height={safeHeight}>
-          <BarChart
-            data={ganttData}
-            layout="horizontal"
-            margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
-          >
-            <XAxis 
-              type="number" 
-              domain={safeDomain}
-              tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
-            />
-            <YAxis 
-              type="category" 
-              dataKey="phase_name"
-              width={120}
-              tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
-              axisLine={{ stroke: 'hsl(var(--border))' }}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar 
-              dataKey="duration" 
-              fill="hsl(var(--primary))"
-              onClick={(data) => onPhaseClick?.(data.phase)}
-              cursor="pointer"
-              radius={[0, 4, 4, 0]}
-            >
-              {ganttData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={entry.color}
-                  fillOpacity={getStatusOpacity(entry.status)}
-                />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        {(() => {
+          try {
+            return (
+              <ResponsiveContainer width="100%" height={safeHeight}>
+                <BarChart
+                  data={ganttData}
+                  layout="horizontal"
+                  margin={{ top: 20, right: 30, left: 120, bottom: 20 }}
+                >
+                  <XAxis 
+                    type="number" 
+                    domain={safeDomain}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="phase_name"
+                    width={120}
+                    tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+                    axisLine={{ stroke: 'hsl(var(--border))' }}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar 
+                    dataKey="duration" 
+                    fill="hsl(var(--primary))"
+                    onClick={(data) => onPhaseClick?.(data.phase)}
+                    cursor="pointer"
+                    radius={[0, 4, 4, 0]}
+                  >
+                    {ganttData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.color}
+                        fillOpacity={getStatusOpacity(entry.status)}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            );
+          } catch (error) {
+            console.error('Recharts rendering error:', error);
+            return (
+              <div className="flex items-center justify-center h-64">
+                <p className="text-muted-foreground">Chart rendering error. Please refresh the page.</p>
+              </div>
+            );
+          }
+        })()}
       </div>
 
       <div className="text-xs text-muted-foreground">
