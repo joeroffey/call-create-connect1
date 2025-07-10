@@ -715,6 +715,69 @@ export type Database = {
           },
         ]
       }
+      project_plan_phases: {
+        Row: {
+          color: string
+          created_at: string
+          created_by: string
+          description: string | null
+          end_date: string
+          id: string
+          order_index: number
+          phase_name: string
+          project_id: string
+          start_date: string
+          status: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          end_date: string
+          id?: string
+          order_index?: number
+          phase_name: string
+          project_id: string
+          start_date: string
+          status?: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          order_index?: number
+          phase_name?: string
+          project_id?: string
+          start_date?: string
+          status?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_plan_phases_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_plan_phases_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_schedule_of_works: {
         Row: {
           assigned_to: string | null
@@ -723,8 +786,11 @@ export type Database = {
           created_at: string
           description: string | null
           due_date: string | null
+          end_date: string | null
           id: string
+          phase_id: string | null
           project_id: string
+          start_date: string | null
           title: string
           updated_at: string
           user_id: string
@@ -736,8 +802,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          end_date?: string | null
           id?: string
+          phase_id?: string | null
           project_id: string
+          start_date?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -749,8 +818,11 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          end_date?: string | null
           id?: string
+          phase_id?: string | null
           project_id?: string
+          start_date?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -761,6 +833,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_schedule_of_works_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "project_plan_phases"
             referencedColumns: ["id"]
           },
         ]
