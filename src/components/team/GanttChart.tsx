@@ -26,11 +26,33 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
     );
   }
 
-  // Calculate project timeline bounds
-  const allDates = phases.flatMap(phase => [
-    parseISO(phase.start_date),
-    parseISO(phase.end_date)
-  ]);
+  // Calculate project timeline bounds with validation
+  const validPhases = phases.filter(phase => phase.start_date && phase.end_date);
+  
+  if (validPhases.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">No valid project phases to display</p>
+      </div>
+    );
+  }
+
+  const allDates = validPhases.flatMap(phase => {
+    try {
+      return [parseISO(phase.start_date), parseISO(phase.end_date)];
+    } catch {
+      return [];
+    }
+  }).filter(date => !isNaN(date.getTime()));
+
+  if (allDates.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 border border-border rounded-lg">
+        <p className="text-muted-foreground">Invalid date data in project phases</p>
+      </div>
+    );
+  }
+
   const projectStart = new Date(Math.min(...allDates.map(d => d.getTime())));
   const projectEnd = new Date(Math.max(...allDates.map(d => d.getTime())));
 
@@ -38,22 +60,34 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   const timelineStart = startOfWeek(projectStart);
   const timelineEnd = endOfWeek(projectEnd);
 
-  // Prepare data for the Gantt chart
-  const ganttData: GanttData[] = phases.map(phase => {
-    const phaseStart = parseISO(phase.start_date);
-    const phaseEnd = parseISO(phase.end_date);
-    const startOffset = differenceInDays(phaseStart, timelineStart);
-    const duration = differenceInDays(phaseEnd, phaseStart) + 1;
+  // Prepare data for the Gantt chart with validation
+  const ganttData: GanttData[] = validPhases.map(phase => {
+    try {
+      const phaseStart = parseISO(phase.start_date);
+      const phaseEnd = parseISO(phase.end_date);
+      const startOffset = Math.max(0, differenceInDays(phaseStart, timelineStart));
+      const duration = Math.max(1, differenceInDays(phaseEnd, phaseStart) + 1);
 
-    return {
-      phase_name: phase.phase_name,
-      start: startOffset,
-      duration,
-      color: phase.color,
-      status: phase.status,
-      phase,
-    };
-  });
+      return {
+        phase_name: phase.phase_name,
+        start: startOffset,
+        duration,
+        color: phase.color || '#3b82f6',
+        status: phase.status,
+        phase,
+      };
+    } catch {
+      // Fallback for invalid dates
+      return {
+        phase_name: phase.phase_name,
+        start: 0,
+        duration: 1,
+        color: phase.color || '#3b82f6',
+        status: phase.status,
+        phase,
+      };
+    }
+  }).filter(data => !isNaN(data.start) && !isNaN(data.duration));
 
   // Generate timeline labels
   const timelineLabels: string[] = [];
@@ -131,7 +165,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
           >
             <XAxis 
               type="number" 
-              domain={[0, differenceInDays(timelineEnd, timelineStart)]}
+              domain={[0, Math.max(1, differenceInDays(timelineEnd, timelineStart) || 1)]}
               tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
               axisLine={{ stroke: 'hsl(var(--border))' }}
             />
@@ -164,7 +198,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
 
       <div className="text-xs text-muted-foreground">
         Timeline: {format(projectStart, 'MMM dd, yyyy')} - {format(projectEnd, 'MMM dd, yyyy')}
-        {' '}({differenceInDays(projectEnd, projectStart) + 1} days)
+        {' '}({Math.max(1, differenceInDays(projectEnd, projectStart) + 1)} days)
       </div>
     </div>
   );
