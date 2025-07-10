@@ -175,38 +175,19 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                         className="group cursor-pointer"
                         onClick={() => setSelectedProject(project.id)}
                       >
-                        <div className="bg-card rounded-2xl border border-border/40 p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/30 group-hover:scale-[1.02]">
-                          <div className="flex items-center gap-4 mb-4">
-                            <div className="p-3 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                              <Folder className="h-6 w-6 text-primary" />
+                        <Card className="p-6 bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105">
+                          <div className="flex items-center space-x-4">
+                            <div className="p-3 bg-blue-500/20 rounded-xl">
+                              <Folder className="h-6 w-6 text-blue-400" />
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                                {project.name}
-                              </h3>
-                              <p className="text-sm text-muted-foreground">Team Project</p>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-2xl font-bold text-primary">{documentCount}</div>
-                              <div className="text-xs text-muted-foreground">documents</div>
+                            <div className="flex-1">
+                              <div className="text-3xl font-bold text-white">
+                                {documentCount}
+                              </div>
+                              <div className="text-sm text-gray-400">{project.name}</div>
                             </div>
                           </div>
-                          
-                          {project.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
-                              {project.description}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">
-                              Click to open
-                            </span>
-                            <div className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                              Open →
-                            </div>
-                          </div>
-                        </div>
+                        </Card>
                       </div>
                     );
                   })}
@@ -361,12 +342,21 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                           className="group cursor-pointer"
                           onClick={() => setCurrentFolderId(folder.id)}
                         >
-                          <div className="bg-card rounded-2xl border border-border/40 p-6 hover:shadow-lg transition-all duration-200 hover:border-primary/30 group-hover:scale-[1.02] relative">
-                            {canManageAccess && (
-                              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Card className="p-6 bg-gradient-to-br from-gray-800/80 to-gray-900/80 border-gray-700 hover:border-gray-600 transition-all cursor-pointer hover:scale-105 relative">
+                            <div className="flex items-center space-x-4">
+                              <div className="p-3 bg-orange-500/20 rounded-xl">
+                                <FolderOpen className="h-6 w-6 text-orange-400" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="text-3xl font-bold text-white">
+                                  {folderDocCount}
+                                </div>
+                                <div className="text-sm text-gray-400">{folder.name}</div>
+                              </div>
+                              {canManageAccess && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
                                       <MoreVertical className="h-4 w-4" />
                                     </Button>
                                   </DropdownMenuTrigger>
@@ -383,40 +373,9 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
                                     </DropdownMenuItem>
                                   </DropdownMenuContent>
                                 </DropdownMenu>
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center gap-4 mb-4">
-                              <div className="p-3 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 transition-colors">
-                                <FolderOpen className="h-6 w-6 text-blue-600" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-lg font-semibold truncate group-hover:text-primary transition-colors">
-                                  {folder.name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground">
-                                  {recentDoc 
-                                    ? `Updated ${new Date(recentDoc.created_at).toLocaleDateString()}`
-                                    : 'Empty folder'
-                                  }
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-2xl font-bold text-blue-600">{folderDocCount}</div>
-                                <div className="text-xs text-muted-foreground">documents</div>
-                              </div>
+                              )}
                             </div>
-                            
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Files className="h-4 w-4" />
-                                <span>Completion Documents</span>
-                              </div>
-                              <div className="text-sm text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                                Open →
-                              </div>
-                            </div>
-                          </div>
+                          </Card>
                         </div>
                       );
                     })}
