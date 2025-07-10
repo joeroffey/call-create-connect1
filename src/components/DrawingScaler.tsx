@@ -275,7 +275,13 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error('Not authenticated');
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to use the Drawing Scaler tool.",
+          variant: "destructive"
+        });
+        setIsAnalyzing(false);
+        return;
       }
 
       // Convert file to base64 for API
