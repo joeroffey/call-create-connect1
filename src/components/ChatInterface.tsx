@@ -758,7 +758,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
         <div className="flex flex-col flex-1 min-w-0">
           <div className='relative w-full'>
             {/* Chat Messages */}
-            <div ref={chatContainerRef} className="flex-1 p-4 pb-32 overflow-y-auto">
+            <div ref={chatContainerRef} className="flex-1 py-4 pb-32 overflow-y-auto">
               {messages.map((message) => (
                 <ChatMessage 
                   key={message.id} 
