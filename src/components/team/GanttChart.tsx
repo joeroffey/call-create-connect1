@@ -135,24 +135,36 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
                 
                 {/* Timeline bar */}
                 <div className="relative h-8 bg-muted rounded">
-                  <div
-                    className={`absolute top-0 h-full rounded cursor-pointer transition-all duration-200 ${getStatusColor(item.phase.status)} ${getStatusOpacity(item.phase.status)} hover:opacity-100`}
-                    style={{
-                      left: `${item.leftPercent}%`,
-                      width: `${item.widthPercent}%`,
-                      backgroundColor: item.phase.color || undefined
-                    }}
-                    onClick={() => onPhaseClick?.(item.phase)}
-                    onMouseEnter={() => setHoveredPhase(item.phase.id)}
-                    onMouseLeave={() => setHoveredPhase(null)}
-                  >
-                    {/* Duration label inside bar if wide enough */}
-                    {item.widthPercent > 15 && (
-                      <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
-                        {item.duration} day{item.duration !== 1 ? 's' : ''}
-                      </div>
-                    )}
-                  </div>
+                                     <div
+                     className={`absolute top-0 h-full rounded cursor-pointer transition-all duration-200 ${getStatusColor(item.phase.status)} ${getStatusOpacity(item.phase.status)} hover:opacity-100`}
+                     style={{
+                       left: `${item.leftPercent}%`,
+                       width: `${item.widthPercent}%`,
+                       backgroundColor: item.phase.color || undefined
+                     }}
+                     onClick={() => onPhaseClick?.(item.phase)}
+                     onMouseEnter={() => setHoveredPhase(item.phase.id)}
+                     onMouseLeave={() => setHoveredPhase(null)}
+                   >
+                     {/* Duration label inside bar if wide enough */}
+                     {item.widthPercent > 12 && (
+                       <div className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium drop-shadow-sm">
+                         {item.duration} day{item.duration !== 1 ? 's' : ''}
+                       </div>
+                     )}
+                   </div>
+                   
+                   {/* Duration label outside bar if too narrow */}
+                   {item.widthPercent <= 12 && (
+                     <div 
+                       className="absolute top-0 h-full flex items-center text-xs text-foreground font-medium"
+                       style={{
+                         left: `${item.leftPercent + item.widthPercent + 1}%`
+                       }}
+                     >
+                       {item.duration} day{item.duration !== 1 ? 's' : ''}
+                     </div>
+                   )}
                   
                   {/* Tooltip */}
                   {hoveredPhase === item.phase.id && (
