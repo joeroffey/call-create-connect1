@@ -30,14 +30,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Configure PDF.js worker with fallback for mobile
+// Configure PDF.js worker - disable worker for CORS issues
 const configureWorker = () => {
   try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+    // Disable worker entirely to avoid CORS issues
+    pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+    pdfjsLib.GlobalWorkerOptions.workerPort = null;
+    console.log('PDF.js configured without worker for CORS compatibility');
   } catch (error) {
-    console.warn('PDF.js worker configuration failed, using fallback');
-    // Fallback for mobile environments
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    console.warn('PDF.js worker configuration failed:', error);
   }
 };
 
@@ -189,17 +190,17 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       
       const loadingTask = pdfjsLib.getDocument({
         data: arrayBuffer,
-        cMapUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/cmaps/',
-        cMapPacked: true,
-        standardFontDataUrl: 'https://unpkg.com/pdfjs-dist@3.11.174/standard_fonts/',
-        useSystemFonts: false,
+        useSystemFonts: true,
         useWorkerFetch: false,
         isEvalSupported: false,
-        // Add mobile-specific optimizations
-        maxImageSize: 1024 * 1024 * 5, // 5MB max image size
+        // Disable external resources to avoid CORS issues
         disableFontFace: true,
         disableRange: true,
         disableStream: true,
+        // Disable worker completely
+        disableWorker: true,
+        // Reduce memory usage
+        maxImageSize: 1024 * 1024 * 2, // 2MB max image size
       });
 
       const pdf = await loadingTask.promise;
@@ -250,8 +251,11 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       if (error.message.includes('too large')) {
         throw error; // Re-throw file size error
       }
+      if (error.message.includes('worker') || error.message.includes('CORS')) {
+        throw new Error('PDF processing failed due to browser security restrictions. Please try uploading the PDF as an image (JPG/PNG) instead.');
+      }
       
-      throw new Error(`Failed to process PDF: ${error.message}`);
+      throw new Error(`Failed to process PDF: ${error.message}. Try converting the PDF to an image format (JPG/PNG) as an alternative.`);
     }
   };
 
@@ -777,6 +781,9 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                         <FileText className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4" />
                         <p className="text-sm md:text-base">Upload a file to see it here with measurements</p>
                         <p className="text-xs mt-2">Supported formats: PDF, JPG, PNG, GIF, WEBP</p>
+                        <p className="text-xs mt-1 text-orange-400">
+                          💡 Tip: If PDF upload fails, try converting to JPG/PNG first
+                        </p>
                       </div>
                     </div>
                   )}
