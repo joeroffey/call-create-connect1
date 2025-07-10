@@ -11,29 +11,35 @@ import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import AppsScreen from '../components/AppsScreen';
 import ProjectsScreen from '../components/ProjectsScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
-import NotificationsScreen from '../components/NotificationsScreen';
 import TeamScreen from '../components/TeamScreen';
-import { supabase } from '@/integrations/supabase/client';
-import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { AppLoadingSkeleton, SubscriptionLoadingSkeleton } from '../components/LoadingSkeleton';
+import { useAppInitialization } from '../hooks/useAppInitialization';
 import { useSubscription } from '../hooks/useSubscription';
 import { useDeepLinking } from '@/hooks/useDeepLinking';
 import { useNotifications } from '@/hooks/useNotifications';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<any>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [pendingProjectModal, setPendingProjectModal] = useState<{projectId: string, view: string} | null>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
+  // Use new app initialization hook
+  const { 
+    isInitializing, 
+    isAuthenticated, 
+    user, 
+    session, 
+    authLoading, 
+    needsOnboarding,
+    updateOnboardingStatus 
+  } = useAppInitialization();
+
   // Get subscription info
-  const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
+  const { subscription, hasActiveSubscription, subscriptionLoading, refetch } = useSubscription(user?.id);
   
   // Get notifications for the red dot
   const { getUnreadCount } = useNotifications(user?.id, !!user?.id);
@@ -129,74 +135,32 @@ const Index = () => {
     }
   }, [user?.id, refetch]);
 
+  // Handle subscription refetch on auth events
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event, session);
-        setSession(session);
-        if (session?.user) {
-          const userData = {
-            id: session.user.id,
-            email: session.user.email,
-            name: session.user.user_metadata?.name || session.user.email?.split('@')[0],
-            subscription: 'pro',
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
-          };
-          setUser(userData);
-          setIsAuthenticated(true);
-
-          // Check if user needs onboarding (in real app, check from database)
-          const hasCompletedOnboarding = session.user.user_metadata?.onboarding_completed;
-          setNeedsOnboarding(!hasCompletedOnboarding);
-        } else {
-          setUser(null);
-          setIsAuthenticated(false);
-          setNeedsOnboarding(false);
-        }
-        setLoading(false);
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (session?.user) {
-        const userData = {
-          id: session.user.id,
-          email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email?.split('@')[0],
-          subscription: 'pro',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
-        };
-        setUser(userData);
-        setIsAuthenticated(true);
-
-        // Check if user needs onboarding
-        const hasCompletedOnboarding = session.user.user_metadata?.onboarding_completed;
-        setNeedsOnboarding(!hasCompletedOnboarding);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    if (isAuthenticated && user) {
+      console.log('🔄 User authenticated, refreshing subscription data');
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+    }
+  }, [isAuthenticated, user, refetch]);
 
   const handleOnboardingComplete = async (userData: any) => {
-    // Update user metadata to mark onboarding as completed
+    console.log('Onboarding completed with data:', userData);
     try {
-      await supabase.auth.updateUser({
+      const { error } = await supabase.auth.updateUser({
         data: {
-          onboarding_completed: true,
-          full_name: userData.fullName,
-          address: userData.address,
-          occupation: userData.occupation,
-          date_of_birth: userData.dateOfBirth
+          name: userData.fullName,
+          onboarded: true
         }
       });
 
-      setUser(userData);
-      setNeedsOnboarding(false);
+      if (error) throw error;
+
+      // Update local state
+      updateOnboardingStatus(true);
+
+      console.log('User metadata updated successfully');
     } catch (error) {
       console.error('Error updating user metadata:', error);
     }
@@ -212,6 +176,10 @@ const Index = () => {
 
   // Get display name for subscription tier
   const getSubscriptionDisplayName = () => {
+    if (subscriptionLoading) {
+      return <SubscriptionLoadingSkeleton />;
+    }
+    
     if (!hasActiveSubscription || !subscription) return 'No Plan';
 
     switch (subscription.plan_type) {
@@ -228,6 +196,16 @@ const Index = () => {
 
   // Define available tabs based on subscription - replaced Updates with Team
   const getAvailableTabs = () => {
+    // Show loading skeleton tabs if subscription is still loading
+    if (subscriptionLoading) {
+      return [
+        { id: 'chat', icon: MessageCircle, label: 'Chat' },
+        { id: 'team', icon: Users, label: 'Team' },
+        { id: 'profile', icon: User, label: 'Profile' },
+        { id: 'subscription', icon: Crown, label: 'Plans' }
+      ];
+    }
+
     const baseTabs = [
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
     ];
@@ -294,16 +272,9 @@ const Index = () => {
     console.log('✅ activeTab should now be: subscription');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-        />
-      </div>
-    );
+  // Show loading skeleton during app initialization or while auth is loading
+  if (isInitializing || authLoading) {
+    return <AppLoadingSkeleton />;
   }
 
   console.log('🔐 Authentication check:', { isAuthenticated, user, session });
@@ -311,10 +282,8 @@ const Index = () => {
   if (!isAuthenticated) {
     return (
       <AuthScreen
-        onAuth={(authenticated) => {
-          setIsAuthenticated(authenticated);
-        }}
-        setUser={setUser}
+        onAuth={() => {}}
+        setUser={() => {}}
       />
     );
   }
@@ -442,6 +411,9 @@ const Index = () => {
                   src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png"
                   alt="EezyBuild Logo"
                   className="w-full h-full object-contain"
+                  style={{ imageRendering: 'crisp-edges' }}
+                  loading="eager"
+                  decoding="sync"
                 />
                 <div className="ml-4 z-50">
                   {currentProjectId && (
@@ -453,7 +425,7 @@ const Index = () => {
             <motion.nav
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.4, delay: subscriptionLoading ? 0.3 : 0.1, ease: [0.4, 0, 0.2, 1] }}
               style={{ marginLeft: 'auto', marginRight: 'auto', zIndex: '1' }}
               className="hidden md:flex absolute border-b w-full border-white/5 px-6 py-3 backdrop-blur-md z-10"
             >
@@ -461,19 +433,24 @@ const Index = () => {
                 {tabs.map((tab, index) => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
+                  const isDisabled = subscriptionLoading && !['chat', 'team', 'profile', 'subscription'].includes(tab.id);
 
                   return (
                     <motion.button
                       key={tab.id}
                       initial={{ opacity: 0, y: 16 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05, ease: [0.4, 0, 0.2, 1] }}
-                      whileTap={{ scale: 0.96 }}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 ${isActive
-                        ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20'
-                        : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
+                      transition={{ delay: (index * 0.05) + (subscriptionLoading ? 0.2 : 0), ease: [0.4, 0, 0.2, 1] }}
+                      whileTap={{ scale: isDisabled ? 1 : 0.96 }}
+                      whileHover={{ scale: isDisabled ? 1 : 1.02 }}
+                      onClick={() => !isDisabled && setActiveTab(tab.id)}
+                      disabled={isDisabled}
+                      className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 ${
+                        isDisabled 
+                          ? 'text-gray-600 cursor-not-allowed opacity-50'
+                          : isActive
+                            ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/20'
+                            : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
                         }`}
                     >
                       <Icon className="w-5 h-5" />

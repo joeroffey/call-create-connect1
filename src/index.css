@@ -2,6 +2,14 @@
 /* Import Inter font from Google Fonts for a more professional look */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* Preload critical images */
+body::before {
+  content: '';
+  position: absolute;
+  left: -9999px;
+  background: url('/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
