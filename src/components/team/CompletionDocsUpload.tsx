@@ -12,8 +12,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCompletionDocuments } from '@/hooks/useCompletionDocuments';
 
 interface CompletionDocsUploadProps {
+  isOpen: boolean;
   projectId: string;
   teamId: string;
+  folderId?: string | null;
   onClose: () => void;
   onUploadComplete: () => void;
 }
@@ -52,8 +54,10 @@ const allowedFileTypes = [
 const maxFileSize = 10 * 1024 * 1024; // 10MB
 
 export const CompletionDocsUpload = ({
+  isOpen,
   projectId,
   teamId,
+  folderId,
   onClose,
   onUploadComplete,
 }: CompletionDocsUploadProps) => {
@@ -170,7 +174,7 @@ export const CompletionDocsUpload = ({
   };
 
   return (
-    <Dialog open onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden mx-auto top-[2vh] translate-y-0 sm:top-[50%] sm:translate-y-[-50%]">
         <DialogHeader className="pb-3">
           <DialogTitle className="text-lg">Upload Completion Documents</DialogTitle>

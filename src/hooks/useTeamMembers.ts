@@ -267,6 +267,13 @@ export const useTeamMembers = (teamId?: string) => {
     fetchMembers();
   }, [teamId]);
 
+  const getCurrentUserRole = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    const currentMember = members.find(member => member.user_id === user.id);
+    return currentMember?.role || null;
+  };
+
   return {
     members,
     loading,
@@ -274,6 +281,7 @@ export const useTeamMembers = (teamId?: string) => {
     createTestInvitation,
     updateMemberRole,
     removeMember,
-    refetch: fetchMembers
+    refetch: fetchMembers,
+    currentUserRole: getCurrentUserRole()
   };
 };

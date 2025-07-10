@@ -15,6 +15,7 @@ export interface CompletionDocument {
   display_name?: string;
   uploaded_by: string;
   team_id: string;
+  folder_id?: string | null;
   created_at: string;
   updated_at: string;
 }

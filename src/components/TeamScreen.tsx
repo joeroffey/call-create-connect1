@@ -41,7 +41,7 @@ import BasicTeamWork from '@/components/team/BasicTeamWork';
 import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
-import { TeamCompletionDocsView } from '@/components/team/TeamCompletionDocsView';
+import TeamCompletionDocsView from '@/components/team/TeamCompletionDocsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 import TeamActivityFeed from '@/components/team/TeamActivityFeed';
 

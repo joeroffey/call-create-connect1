@@ -65,6 +65,61 @@ export type Database = {
           },
         ]
       }
+      completion_document_folders: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          parent_folder_id: string | null
+          project_id: string
+          team_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          parent_folder_id?: string | null
+          project_id: string
+          team_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          parent_folder_id?: string | null
+          project_id?: string
+          team_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completion_document_folders_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "completion_document_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completion_document_folders_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completion_document_folders_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -96,6 +151,57 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      folder_permissions: {
+        Row: {
+          created_at: string
+          folder_id: string
+          granted_at: string
+          granted_by: string
+          id: string
+          permission_level: string
+          team_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          folder_id: string
+          granted_at?: string
+          granted_by: string
+          id?: string
+          permission_level: string
+          team_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          folder_id?: string
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          permission_level?: string
+          team_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folder_permissions_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "completion_document_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folder_permissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -247,6 +353,7 @@ export type Database = {
           file_path: string
           file_size: number
           file_type: string
+          folder_id: string | null
           id: string
           project_id: string
           team_id: string
@@ -262,6 +369,7 @@ export type Database = {
           file_path: string
           file_size: number
           file_type: string
+          folder_id?: string | null
           id?: string
           project_id: string
           team_id: string
@@ -277,6 +385,7 @@ export type Database = {
           file_path?: string
           file_size?: number
           file_type?: string
+          folder_id?: string | null
           id?: string
           project_id?: string
           team_id?: string
@@ -284,6 +393,13 @@ export type Database = {
           uploaded_by?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_completion_documents_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "completion_document_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_completion_documents_project_id_fkey"
             columns: ["project_id"]
@@ -340,6 +456,57 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_permissions: {
+        Row: {
+          created_at: string
+          granted_at: string
+          granted_by: string
+          id: string
+          permission_level: string
+          project_id: string
+          team_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_at?: string
+          granted_by: string
+          id?: string
+          permission_level: string
+          project_id: string
+          team_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          permission_level?: string
+          project_id?: string
+          team_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_permissions_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_permissions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
@@ -814,6 +981,22 @@ export type Database = {
       }
       user_can_access_project: {
         Args: { project_user_id: string; project_team_id: string }
+        Returns: boolean
+      }
+      user_has_folder_permission: {
+        Args: {
+          p_user_id: string
+          p_folder_id: string
+          p_required_level: string
+        }
+        Returns: boolean
+      }
+      user_has_project_permission: {
+        Args: {
+          p_user_id: string
+          p_project_id: string
+          p_required_level: string
+        }
         Returns: boolean
       }
     }

@@ -15,9 +15,10 @@ import { ErrorBoundary } from './ErrorBoundary';
 import { supabase } from '@/integrations/supabase/client';
 
 interface CompletionDocsViewerProps {
+  isOpen: boolean;
   document: CompletionDocument;
   onClose: () => void;
-  onDocumentDeleted?: () => void;
+  onDelete?: () => void;
 }
 
 const categoryLabels = {
@@ -28,7 +29,7 @@ const categoryLabels = {
   'other': 'Other',
 };
 
-export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: CompletionDocsViewerProps) => {
+export const CompletionDocsViewer = ({ isOpen, document, onClose, onDelete }: CompletionDocsViewerProps) => {
   console.log('CompletionDocsViewer rendering with document:', {
     id: document?.id,
     file_name: document?.file_name,
@@ -83,7 +84,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
   const handleDelete = async () => {
     try {
       await deleteDocument(document.id);
-      onDocumentDeleted?.(); // Trigger refresh in parent component
+      onDelete?.(); // Trigger refresh in parent component
       onClose();
     } catch (error) {
       console.error('Delete failed:', error);
@@ -110,7 +111,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
 
   return (
     <>
-      <Dialog open onOpenChange={onClose}>
+      <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl w-[95vw] h-[95vh] flex flex-col overflow-hidden" aria-describedby="document-description">
           <DialogHeader className="flex-shrink-0 border-b pb-4">
             <div className="flex items-start justify-between">
@@ -257,7 +258,7 @@ export const CompletionDocsViewer = ({ document, onClose, onDocumentDeleted }: C
         <EditDocumentModal
           document={document}
           onClose={() => setShowEditModal(false)}
-          onDocumentUpdated={onDocumentDeleted} // Reuse the refresh callback
+          onDocumentUpdated={onDelete} // Reuse the refresh callback
         />
       )}
     </>
