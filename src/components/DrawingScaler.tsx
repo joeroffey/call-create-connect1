@@ -30,15 +30,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Configure PDF.js to work completely offline without external workers
+// Configure PDF.js with reliable CDN worker
 const configureWorker = () => {
   try {
-    // Completely disable worker to avoid all external dependencies
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-    delete pdfjsLib.GlobalWorkerOptions.workerPort;
-    console.log('PDF.js configured in legacy mode (no worker dependencies)');
+    // Use a reliable CDN that works across all platforms
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+    console.log(`PDF.js configured with unpkg CDN worker v${pdfjsLib.version}`);
   } catch (error) {
-    console.warn('PDF.js configuration failed:', error);
+    console.error('PDF.js worker configuration failed:', error);
   }
 };
 
@@ -188,15 +187,12 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       const arrayBuffer = await file.arrayBuffer();
       console.log('PDF arrayBuffer created, size:', arrayBuffer.byteLength);
       
-      // Configure PDF loading without workers from the start
+      // Configure PDF loading with proper worker
       const documentConfig = {
         data: arrayBuffer,
         useWorkerFetch: false,
         isEvalSupported: false,
-        // Completely disable worker usage
-        useWorker: false,
-        disableWorker: true,
-        // Disable external resources to avoid CORS issues
+        // Disable external resources to avoid CORS issues for fonts
         disableFontFace: true,
         disableRange: true,
         disableStream: true,
@@ -208,10 +204,9 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
         verbosity: 0,
         // Additional safety options
         stopAtErrors: false,
-        ownerDocument: document,
       };
 
-      console.log('Attempting PDF load without worker:', documentConfig);
+      console.log('Attempting PDF load with worker:', documentConfig);
       const loadingTask = pdfjsLib.getDocument(documentConfig);
 
       // Add progress tracking
@@ -222,7 +217,7 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       }
 
       const pdf = await loadingTask.promise;
-      console.log('PDF loaded successfully (no worker), pages:', pdf.numPages);
+      console.log('PDF loaded successfully, pages:', pdf.numPages);
       
       const page = await pdf.getPage(1);
       console.log('First page loaded');
@@ -269,18 +264,21 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       if (error.message.includes('too large')) {
         throw error; // Re-throw file size error
       }
+      if (error.message.includes('GlobalWorkerOptions.workerSrc')) {
+        throw new Error('PDF worker not configured properly. Please refresh the page and try again.');
+      }
       if (error.message.includes('worker') || error.message.includes('CORS') || error.message.includes('fetch')) {
-        throw new Error('PDF processing failed due to browser restrictions. This usually means the PDF file is corrupted or incompatible. Please try a different PDF file.');
+        throw new Error('PDF processing failed. This could be due to network issues or PDF compatibility. Please check your internet connection and try again.');
       }
       if (error.message.includes('Setting up fake worker failed') || error.message.includes('dynamically imported module')) {
-        throw new Error('PDF worker failed to load. This has been fixed - please refresh the page and try again.');
+        throw new Error('PDF worker failed to load. Please refresh the page and try again.');
       }
       if (error.message.includes('Invalid PDF')) {
         throw new Error('The PDF file appears to be corrupted or invalid. Please try a different PDF file.');
       }
       
       console.error('Detailed PDF error:', error.stack || error);
-      throw new Error(`PDF processing failed: ${error.message}. Please try refreshing the page or using a different PDF file.`);
+      throw new Error(`PDF processing failed: ${error.message}. Please refresh the page and try again.`);
     }
   };
 
