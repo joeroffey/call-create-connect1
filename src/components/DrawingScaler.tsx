@@ -1,7 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { 
   ArrowLeft, 
   Upload, 
@@ -23,7 +21,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Document, Page, pdfjs } from 'react-pdf';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,11 +28,6 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-// Configure react-pdf worker (handles CORS issues automatically)
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-
-console.log('React-PDF configured successfully');
 
 interface DrawingScalerProps {
   onBack: () => void;
@@ -135,26 +127,20 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
     setIsProcessingFile(true);
 
     try {
-      if (file.type === 'application/pdf') {
-        console.log('Processing PDF file...');
-        const imageUrl = await processPDF(file);
-        console.log('PDF processed successfully, setting image URL');
-        setPdfImageUrl(imageUrl);
-      } else if (file.type.startsWith('image/')) {
+      if (file.type.startsWith('image/')) {
         console.log('Processing image file...');
-        // Support image files directly
-        const imageUrl = URL.createObjectURL(file);
-        console.log('Image URL created:', imageUrl.substring(0, 50) + '...');
+        const imageUrl = await processFile(file);
+        console.log('Image processed successfully, setting image URL');
         setPdfImageUrl(imageUrl);
       } else {
         console.error('Unsupported file type:', file.type);
-        throw new Error(`Unsupported file type: ${file.type}. Please upload a PDF file or image (JPG, PNG, etc.).`);
+        throw new Error(`Unsupported file type: ${file.type}. Please upload an image file (JPG, PNG, GIF, WEBP). PDF support is temporarily disabled due to technical issues.`);
       }
       
       console.log('File processing completed successfully');
       toast({
         title: "File Uploaded",
-        description: "File uploaded successfully. Please set page size and scale, then analyze.",
+        description: "Image uploaded successfully. Please set page size and scale, then analyze.",
       });
     } catch (error) {
       console.error('File processing error:', error);
@@ -169,49 +155,30 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
     }
   };
 
-  const [numPages, setNumPages] = useState<number>(0);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-
-  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
-    setNumPages(numPages);
-    console.log('PDF loaded successfully with', numPages, 'pages');
-  };
-
-  const onDocumentLoadError = (error: Error) => {
-    console.error('PDF load error:', error);
-    toast({
-      title: "PDF Load Error",
-      description: "Failed to load PDF. Please try a different file.",
-      variant: "destructive"
-    });
-  };
-
-  const processPDF = async (file: File): Promise<string> => {
-    console.log('Processing PDF with react-pdf:', file.name, 'Size:', file.size);
+  // Simple file processing for images only
+  const processFile = async (file: File): Promise<string> => {
+    console.log('Processing file:', file.name, 'Type:', file.type, 'Size:', file.size);
     
     try {
       // Check file size (limit to 50MB for better performance)
       if (file.size > 50 * 1024 * 1024) {
-        throw new Error('PDF file too large. Please use a file smaller than 50MB.');
+        throw new Error('File too large. Please use a file smaller than 50MB.');
       }
 
-      // Set the PDF file for react-pdf to handle
-      setPdfFile(file);
-      
-      // Create a temporary URL for immediate display
+      // Create URL for image display
       const fileUrl = URL.createObjectURL(file);
-      console.log('PDF file URL created for react-pdf');
+      console.log('File URL created successfully');
       
       return fileUrl;
     } catch (error) {
-      console.error('PDF processing error:', error);
+      console.error('File processing error:', error);
       
       // Provide specific error messages
       if (error.message.includes('too large')) {
         throw error; // Re-throw file size error
       }
       
-      throw new Error(`PDF processing failed: ${error.message}. Please try a different PDF file.`);
+      throw new Error(`File processing failed: ${error.message}. Please try a different file.`);
     }
   };
 
@@ -398,7 +365,7 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                 <span>Drawing Scaler</span>
               </h1>
               <p className="text-gray-400 mt-1 text-sm md:text-base">
-                Upload PDF, set scale, get accurate measurements instantly
+                Upload images, set scale, get accurate measurements instantly
               </p>
             </div>
           </div>
@@ -416,10 +383,10 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-white flex items-center space-x-2 text-lg">
                   <Upload className="h-5 w-5" />
-                  <span>Upload File</span>
+                  <span>Upload Image</span>
                 </CardTitle>
                 <CardDescription className="text-gray-400 text-sm">
-                  PDF drawings or images supported
+                  Image files supported (JPG, PNG, GIF, WEBP)
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -427,7 +394,7 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".pdf,image/*"
+                    accept="image/*"
                     onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
@@ -437,12 +404,13 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                         <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-green-400 mx-auto" />
                         <p className="text-xs md:text-sm text-white truncate">{uploadedFile.name}</p>
                       </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Upload className="h-6 w-6 md:h-8 md:w-8 text-gray-400 mx-auto" />
-                        <p className="text-xs md:text-sm text-gray-400">Click to upload PDF or image</p>
-                      </div>
-                    )}
+                                          ) : (
+                        <div className="space-y-2">
+                          <Upload className="h-6 w-6 md:h-8 md:w-8 text-gray-400 mx-auto" />
+                          <p className="text-xs md:text-sm text-gray-400">Click to upload image</p>
+                          <p className="text-xs text-orange-400">PDF support temporarily disabled</p>
+                        </div>
+                      )}
                   </div>
                 </div>
               </CardContent>
@@ -614,56 +582,23 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                     </div>
                   ) : pdfImageUrl ? (
                     <div className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}>
-                      {uploadedFile?.type === 'application/pdf' ? (
-                        <div
-                          ref={imageRef}
-                          className={`w-full ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
-                          onClick={handleImageClick}
-                        >
-                          <Document
-                            file={pdfFile}
-                            onLoadSuccess={onDocumentLoadSuccess}
-                            onLoadError={onDocumentLoadError}
-                            loading={
-                              <div className="flex items-center justify-center p-8 text-gray-600">
-                                <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                                Loading PDF...
-                              </div>
-                            }
-                            error={
-                              <div className="flex items-center justify-center p-8 text-red-600">
-                                <AlertCircle className="h-6 w-6 mr-2" />
-                                Failed to load PDF
-                              </div>
-                            }
-                          >
-                            <Page
-                              pageNumber={1}
-                              renderTextLayer={false}
-                              renderAnnotationLayer={false}
-                              width={window.innerWidth < 768 ? 300 : 600}
-                            />
-                          </Document>
-                        </div>
-                      ) : (
-                        <img 
-                          ref={imageRef}
-                          src={pdfImageUrl} 
-                          alt="Drawing" 
-                          className={`w-full h-auto ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
-                          onClick={handleImageClick}
-                          draggable={false}
-                          onLoad={() => console.log('Image loaded successfully')}
-                          onError={(e) => {
-                            console.error('Image load error:', e);
-                            toast({
-                              title: "Image Load Error",
-                              description: "Failed to display the processed file. Please try again.",
-                              variant: "destructive"
-                            });
-                          }}
-                        />
-                      )}
+                      <img 
+                        ref={imageRef}
+                        src={pdfImageUrl} 
+                        alt="Drawing" 
+                        className={`w-full h-auto ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
+                        onClick={handleImageClick}
+                        draggable={false}
+                        onLoad={() => console.log('Image loaded successfully')}
+                        onError={(e) => {
+                          console.error('Image load error:', e);
+                          toast({
+                            title: "Image Load Error",
+                            description: "Failed to display the image. Please try again.",
+                            variant: "destructive"
+                          });
+                        }}
+                      />
                       
                       {/* AI Analysis Overlays */}
                       {analysisResult && activeTab === 'ai-analysis' && (
@@ -768,10 +703,10 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                     <div className="flex items-center justify-center h-full text-gray-400">
                       <div className="text-center">
                         <FileText className="h-12 w-12 md:h-16 md:w-16 mx-auto mb-4" />
-                        <p className="text-sm md:text-base">Upload a file to see it here with measurements</p>
-                        <p className="text-xs mt-2">Supported formats: PDF, JPG, PNG, GIF, WEBP</p>
+                        <p className="text-sm md:text-base">Upload an image to see it here with measurements</p>
+                        <p className="text-xs mt-2">Supported formats: JPG, PNG, GIF, WEBP</p>
                         <p className="text-xs mt-1 text-orange-400">
-                          💡 Tip: If PDF upload fails, try converting to JPG/PNG first
+                          💡 PDF support temporarily disabled due to technical issues
                         </p>
                       </div>
                     </div>
