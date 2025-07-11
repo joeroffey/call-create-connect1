@@ -10,13 +10,12 @@ import {
   CheckCircle,
   AlertCircle,
   Ruler,
-  ZoomIn,
-  ZoomOut,
   MousePointer,
   Info,
   Plus,
   Minus,
-  RotateCcw
+  RotateCcw,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -91,7 +90,7 @@ const MEASUREMENT_COLORS = [
 export default function DrawingScaler({ onBack }: DrawingScalerProps) {
   // Core state
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [pdfImageUrl, setPdfImageUrl] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [pageSize, setPageSize] = useState<string>('');
   const [scale, setScale] = useState<string>('');
   const [customScale, setCustomScale] = useState<string>('');
@@ -130,12 +129,12 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
     return (pageInfo.width * scaleRatio) / imageWidth;
   }, [scale, customScale, pageSize]);
 
-  // Handle PDF upload and processing
+  // Handle file upload - support both PDF and images
   const handleFileUpload = async (file: File) => {
-    if (file.type !== 'application/pdf') {
+    if (!file.type.startsWith('image/') && file.type !== 'application/pdf') {
       toast({
         title: "Invalid File Type",
-        description: "Please upload a PDF file.",
+        description: "Please upload an image file (JPG, PNG, GIF, WEBP) or PDF.",
         variant: "destructive"
       });
       return;
@@ -144,7 +143,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
     if (file.size > 50 * 1024 * 1024) { // 50MB limit
       toast({
         title: "File Too Large", 
-        description: "Please upload a PDF smaller than 50MB.",
+        description: "Please upload a file smaller than 50MB.",
         variant: "destructive"
       });
       return;
@@ -153,71 +152,92 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
     setUploadedFile(file);
     setMeasurements([]);
     setAnalysisResults(null);
-    setPdfImageUrl(null);
+    setImageUrl(null);
     setIsProcessing(true);
 
     try {
-      await processPDFToImage(file);
-      toast({
-        title: "PDF Uploaded Successfully",
-        description: "Set your page size and scale, then start measuring.",
-      });
+      if (file.type.startsWith('image/')) {
+        // Handle image files directly
+        const url = URL.createObjectURL(file);
+        setImageUrl(url);
+        toast({
+          title: "Image Uploaded Successfully",
+          description: "Set your page size and scale, then start measuring.",
+        });
+      } else if (file.type === 'application/pdf') {
+        // For PDFs, create a placeholder that explains how to use
+        const canvas = document.createElement('canvas');
+        canvas.width = 800;
+        canvas.height = 600;
+        const ctx = canvas.getContext('2d');
+        
+        if (ctx) {
+          // Draw white background
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw border
+          ctx.strokeStyle = '#cccccc';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+          
+          // Draw title
+          ctx.fillStyle = '#333333';
+          ctx.font = 'bold 24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('PDF Uploaded', canvas.width / 2, 80);
+          
+          // Instructions
+          ctx.font = '16px Arial';
+          ctx.fillStyle = '#666666';
+          ctx.fillText('To measure your PDF:', canvas.width / 2, 120);
+          ctx.fillText('1. Convert PDF to image (screenshot or export)', canvas.width / 2, 150);
+          ctx.fillText('2. Upload the image instead', canvas.width / 2, 180);
+          ctx.fillText('3. Set page size and scale below', canvas.width / 2, 210);
+          
+          // Sample drawing elements
+          ctx.strokeStyle = '#333333';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(150, 280, 500, 200);
+          
+          // Door
+          ctx.beginPath();
+          ctx.moveTo(300, 280);
+          ctx.lineTo(350, 280);
+          ctx.stroke();
+          
+          // Window
+          ctx.strokeRect(500, 280, 50, 20);
+          
+          ctx.font = '14px Arial';
+          ctx.fillStyle = '#999999';
+          ctx.fillText('Convert PDF to image for accurate measurements', canvas.width / 2, 550);
+        }
+        
+        // Convert canvas to blob URL
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const url = URL.createObjectURL(blob);
+            setImageUrl(url);
+          }
+        });
+        
+        toast({
+          title: "PDF Received",
+          description: "For best results, convert PDF to image and re-upload.",
+          variant: "default"
+        });
+      }
     } catch (error) {
-      console.error('PDF processing error:', error);
+      console.error('File processing error:', error);
       toast({
         title: "Processing Error",
-        description: error instanceof Error ? error.message : "Failed to process PDF",
+        description: error instanceof Error ? error.message : "Failed to process file",
         variant: "destructive"
       });
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  // Process PDF to image using server-side function
-  const processPDFToImage = async (file: File) => {
-    const formData = new FormData();
-    formData.append('pdf', file);
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Please sign in to use the Drawing Scaler.');
-      }
-
-      // Convert PDF to base64 for server processing
-      const base64 = await fileToBase64(file);
-      
-      const { data, error } = await supabase.functions.invoke('process-pdf-drawing', {
-        body: { 
-          pdfData: base64,
-          filename: file.name 
-        }
-      });
-
-      if (error) throw error;
-      if (!data?.imageUrl) throw new Error('No image URL returned from server');
-
-      setPdfImageUrl(data.imageUrl);
-      console.log('PDF processed successfully on server');
-      
-    } catch (error) {
-      console.error('Server PDF processing failed:', error);
-      throw new Error('Failed to process PDF. Please try a different file or check your connection.');
-    }
-  };
-
-  // Convert file to base64
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const result = reader.result as string;
-        resolve(result.split(',')[1]);
-      };
-      reader.onerror = reject;
-    });
   };
 
   // Handle click on image for measurements
@@ -268,12 +288,12 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
     }
   };
 
-  // AI Analysis
+  // AI Analysis - Using same API key as chat system
   const runAIAnalysis = async () => {
     if (!uploadedFile || !pageSize || !scale) {
       toast({
         title: "Missing Information",
-        description: "Please upload a PDF and set page size and scale first.",
+        description: "Please upload a file and set page size and scale first.",
         variant: "destructive"
       });
       return;
@@ -287,6 +307,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
         throw new Error('Please sign in to use AI analysis.');
       }
 
+      // Convert file to base64 for AI analysis
       const base64 = await fileToBase64(uploadedFile);
       const finalScale = scale === 'custom' ? customScale : scale;
 
@@ -299,25 +320,28 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('AI analysis error:', error);
+        throw new Error(`AI analysis failed: ${error.message}`);
+      }
 
       // Convert API response format to component format
       const convertedElements = (data.elements || []).map((element: any) => ({
         id: element.id,
         type: element.type,
         coordinates: [
-          element.coordinates.x1,
-          element.coordinates.y1,
-          element.coordinates.x2,
-          element.coordinates.y2
+          element.coordinates?.x1 || 0,
+          element.coordinates?.y1 || 0,
+          element.coordinates?.x2 || 0,
+          element.coordinates?.y2 || 0
         ] as [number, number, number, number],
-        length: element.realWorldMeasurement || 0,
+        length: element.realWorldMeasurement || element.measurement || 0,
         confidence: element.confidence || 0
       }));
 
       setAnalysisResults({
         elements: convertedElements,
-        totalElements: data.summary?.totalElements || 0,
+        totalElements: data.summary?.totalElements || convertedElements.length,
         pageSize,
         scale: finalScale,
         confidence: data.confidence || 0
@@ -327,7 +351,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
       
       toast({
         title: "AI Analysis Complete",
-        description: `Found ${data.elements?.length || 0} elements in the drawing.`,
+        description: `Found ${convertedElements.length} elements in the drawing.`,
       });
 
     } catch (error) {
@@ -340,6 +364,19 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // Convert file to base64
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]);
+      };
+      reader.onerror = reject;
+    });
   };
 
   // Export results
@@ -421,7 +458,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
                 <span>Drawing Scaler Pro</span>
               </h1>
               <p className="text-gray-400 mt-1 text-sm md:text-base">
-                Professional PDF measurement tool with AI analysis
+                Professional measurement tool with AI analysis
               </p>
             </div>
           </div>
@@ -441,14 +478,17 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
               <CardHeader className="pb-3">
                 <CardTitle className="text-white flex items-center space-x-2 text-lg">
                   <Upload className="h-5 w-5" />
-                  <span>Upload PDF Drawing</span>
+                  <span>Upload Drawing</span>
                 </CardTitle>
+                <CardDescription className="text-gray-400 text-sm">
+                  Images (JPG, PNG) work best. PDFs need conversion.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="relative">
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept="image/*,.pdf"
                     onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
@@ -457,11 +497,15 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
                       <div className="space-y-2">
                         <CheckCircle className="h-8 w-8 text-green-400 mx-auto" />
                         <p className="text-sm text-white truncate">{uploadedFile.name}</p>
+                        <Badge variant="secondary" className="text-xs">
+                          {uploadedFile.type.startsWith('image/') ? 'Image' : 'PDF'}
+                        </Badge>
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <Upload className="h-8 w-8 text-gray-400 mx-auto" />
-                        <p className="text-sm text-gray-400">Click to upload PDF</p>
+                        <ImageIcon className="h-8 w-8 text-gray-400 mx-auto" />
+                        <p className="text-sm text-gray-400">Click to upload file</p>
+                        <p className="text-xs text-gray-500">Images or PDFs</p>
                       </div>
                     )}
                   </div>
@@ -531,7 +575,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
                   onClick={() => setMeasurementMode(!measurementMode)}
                   variant={measurementMode ? "default" : "outline"}
                   className="w-full"
-                  disabled={!pdfImageUrl || !pageSize || !scale}
+                  disabled={!imageUrl || !pageSize || !scale}
                 >
                   <MousePointer className="h-4 w-4 mr-2" />
                   {measurementMode ? 'Stop Measuring' : 'Start Measuring'}
@@ -599,7 +643,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
               <CardHeader className="pb-3">
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
                   <CardTitle className="text-white text-lg">Drawing Viewer</CardTitle>
-                  {pdfImageUrl && (
+                  {imageUrl && (
                     <div className="flex items-center space-x-2">
                       <Button
                         onClick={() => setZoom(Math.max(0.25, zoom - 0.25))}
@@ -630,24 +674,24 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
                     <div className="flex items-center justify-center h-full text-gray-600">
                       <div className="text-center">
                         <Loader2 className="h-12 w-12 mx-auto mb-4 animate-spin text-blue-500" />
-                        <p className="font-medium">Processing PDF...</p>
+                        <p className="font-medium">Processing file...</p>
                         <p className="text-sm text-gray-500 mt-1">This may take a moment</p>
                       </div>
                     </div>
-                  ) : pdfImageUrl ? (
+                  ) : imageUrl ? (
                     <div className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}>
                       <img 
                         ref={imageRef}
-                        src={pdfImageUrl} 
-                        alt="PDF Drawing" 
+                        src={imageUrl} 
+                        alt="Drawing" 
                         className={`w-full h-auto ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
                         onClick={handleImageClick}
                         draggable={false}
-                        onLoad={() => console.log('PDF image loaded successfully')}
+                        onLoad={() => console.log('Image loaded successfully')}
                         onError={() => {
                           toast({
                             title: "Display Error",
-                            description: "Failed to display PDF. Please try uploading again.",
+                            description: "Failed to display image. Please try uploading again.",
                             variant: "destructive"
                           });
                         }}
@@ -751,8 +795,14 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
                     <div className="flex items-center justify-center h-full text-gray-400">
                       <div className="text-center">
                         <FileText className="h-16 w-16 mx-auto mb-4" />
-                        <p className="text-lg font-medium">Upload a PDF to get started</p>
-                        <p className="text-sm mt-2">Supports architectural drawings and technical plans</p>
+                        <p className="text-lg font-medium">Upload a drawing to get started</p>
+                        <p className="text-sm mt-2">Best results with high-quality images</p>
+                        <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                          <p className="text-xs text-gray-600 font-medium">💡 Pro Tip:</p>
+                          <p className="text-xs text-gray-600 mt-1">
+                            Convert PDFs to high-res images first
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -873,10 +923,14 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2 text-xs text-gray-400">
-                  <p>1. Upload your PDF drawing</p>
+                  <p>1. Upload your drawing (image works best)</p>
                   <p>2. Set page size and scale</p>
                   <p>3. Use manual measurement or AI analysis</p>
                   <p>4. Export your results</p>
+                  <div className="mt-3 p-2 bg-blue-950/50 rounded">
+                    <p className="text-xs text-blue-300 font-medium">✨ Best practices:</p>
+                    <p className="text-xs text-blue-300">Convert PDFs to high-res images first</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
