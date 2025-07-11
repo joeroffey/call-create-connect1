@@ -1,5 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { 
   ArrowLeft, 
   Upload, 
@@ -21,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import * as pdfjsLib from 'pdfjs-dist';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,18 +32,10 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Configure PDF.js with reliable CDN worker
-const configureWorker = () => {
-  try {
-    // Use a reliable CDN that works across all platforms
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
-    console.log(`PDF.js configured with unpkg CDN worker v${pdfjsLib.version}`);
-  } catch (error) {
-    console.error('PDF.js worker configuration failed:', error);
-  }
-};
+// Configure react-pdf worker (handles CORS issues automatically)
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
-configureWorker();
+console.log('React-PDF configured successfully');
 
 interface DrawingScalerProps {
   onBack: () => void;
@@ -175,8 +169,25 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
     }
   };
 
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    console.log('PDF loaded successfully with', numPages, 'pages');
+  };
+
+  const onDocumentLoadError = (error: Error) => {
+    console.error('PDF load error:', error);
+    toast({
+      title: "PDF Load Error",
+      description: "Failed to load PDF. Please try a different file.",
+      variant: "destructive"
+    });
+  };
+
   const processPDF = async (file: File): Promise<string> => {
-    console.log('Processing PDF:', file.name, 'Size:', file.size);
+    console.log('Processing PDF with react-pdf:', file.name, 'Size:', file.size);
     
     try {
       // Check file size (limit to 50MB for better performance)
@@ -184,101 +195,23 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
         throw new Error('PDF file too large. Please use a file smaller than 50MB.');
       }
 
-      const arrayBuffer = await file.arrayBuffer();
-      console.log('PDF arrayBuffer created, size:', arrayBuffer.byteLength);
+      // Set the PDF file for react-pdf to handle
+      setPdfFile(file);
       
-      // Configure PDF loading with proper worker
-      const documentConfig = {
-        data: arrayBuffer,
-        useWorkerFetch: false,
-        isEvalSupported: false,
-        // Disable external resources to avoid CORS issues for fonts
-        disableFontFace: true,
-        disableRange: true,
-        disableStream: true,
-        // Use system fonts
-        useSystemFonts: true,
-        // Reduce memory usage
-        maxImageSize: 1024 * 1024 * 2, // 2MB max image size
-        // Legacy compatibility
-        verbosity: 0,
-        // Additional safety options
-        stopAtErrors: false,
-      };
-
-      console.log('Attempting PDF load with worker:', documentConfig);
-      const loadingTask = pdfjsLib.getDocument(documentConfig);
-
-      // Add progress tracking
-      if (loadingTask.onProgress) {
-        loadingTask.onProgress = (progress) => {
-          console.log('PDF loading progress:', `${progress.loaded}/${progress.total}`);
-        };
-      }
-
-      const pdf = await loadingTask.promise;
-      console.log('PDF loaded successfully, pages:', pdf.numPages);
+      // Create a temporary URL for immediate display
+      const fileUrl = URL.createObjectURL(file);
+      console.log('PDF file URL created for react-pdf');
       
-      const page = await pdf.getPage(1);
-      console.log('First page loaded');
-
-      // Use adaptive scale based on screen size
-      const isMobile = window.innerWidth < 768;
-      const scale = isMobile ? 1.5 : 2.0;
-      
-      const viewport = page.getViewport({ scale });
-      console.log('Viewport created:', viewport.width, 'x', viewport.height);
-      
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      
-      if (!context) {
-        throw new Error('Failed to get canvas context');
-      }
-      
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-
-      console.log('Starting page render...');
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-        background: 'white'
-      }).promise;
-
-      console.log('Page rendered successfully');
-      const dataURL = canvas.toDataURL('image/jpeg', 0.85);
-      console.log('Canvas converted to data URL');
-      
-      return dataURL;
+      return fileUrl;
     } catch (error) {
       console.error('PDF processing error:', error);
       
       // Provide specific error messages
-      if (error.message.includes('Invalid PDF')) {
-        throw new Error('Invalid PDF file. Please ensure the file is not corrupted.');
-      }
-      if (error.message.includes('password')) {
-        throw new Error('Password-protected PDFs are not supported. Please use an unprotected PDF.');
-      }
       if (error.message.includes('too large')) {
         throw error; // Re-throw file size error
       }
-      if (error.message.includes('GlobalWorkerOptions.workerSrc')) {
-        throw new Error('PDF worker not configured properly. Please refresh the page and try again.');
-      }
-      if (error.message.includes('worker') || error.message.includes('CORS') || error.message.includes('fetch')) {
-        throw new Error('PDF processing failed. This could be due to network issues or PDF compatibility. Please check your internet connection and try again.');
-      }
-      if (error.message.includes('Setting up fake worker failed') || error.message.includes('dynamically imported module')) {
-        throw new Error('PDF worker failed to load. Please refresh the page and try again.');
-      }
-      if (error.message.includes('Invalid PDF')) {
-        throw new Error('The PDF file appears to be corrupted or invalid. Please try a different PDF file.');
-      }
       
-      console.error('Detailed PDF error:', error.stack || error);
-      throw new Error(`PDF processing failed: ${error.message}. Please refresh the page and try again.`);
+      throw new Error(`PDF processing failed: ${error.message}. Please try a different PDF file.`);
     }
   };
 
@@ -681,23 +614,56 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
                     </div>
                   ) : pdfImageUrl ? (
                     <div className="relative" style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}>
-                      <img 
-                        ref={imageRef}
-                        src={pdfImageUrl} 
-                        alt="Drawing" 
-                        className={`w-full h-auto ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
-                        onClick={handleImageClick}
-                        draggable={false}
-                        onLoad={() => console.log('Image loaded successfully')}
-                        onError={(e) => {
-                          console.error('Image load error:', e);
-                          toast({
-                            title: "Image Load Error",
-                            description: "Failed to display the processed file. Please try again.",
-                            variant: "destructive"
-                          });
-                        }}
-                      />
+                      {uploadedFile?.type === 'application/pdf' ? (
+                        <div
+                          ref={imageRef}
+                          className={`w-full ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
+                          onClick={handleImageClick}
+                        >
+                          <Document
+                            file={pdfFile}
+                            onLoadSuccess={onDocumentLoadSuccess}
+                            onLoadError={onDocumentLoadError}
+                            loading={
+                              <div className="flex items-center justify-center p-8 text-gray-600">
+                                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                                Loading PDF...
+                              </div>
+                            }
+                            error={
+                              <div className="flex items-center justify-center p-8 text-red-600">
+                                <AlertCircle className="h-6 w-6 mr-2" />
+                                Failed to load PDF
+                              </div>
+                            }
+                          >
+                            <Page
+                              pageNumber={1}
+                              renderTextLayer={false}
+                              renderAnnotationLayer={false}
+                              width={window.innerWidth < 768 ? 300 : 600}
+                            />
+                          </Document>
+                        </div>
+                      ) : (
+                        <img 
+                          ref={imageRef}
+                          src={pdfImageUrl} 
+                          alt="Drawing" 
+                          className={`w-full h-auto ${measurementMode ? 'cursor-crosshair' : 'cursor-move'}`}
+                          onClick={handleImageClick}
+                          draggable={false}
+                          onLoad={() => console.log('Image loaded successfully')}
+                          onError={(e) => {
+                            console.error('Image load error:', e);
+                            toast({
+                              title: "Image Load Error",
+                              description: "Failed to display the processed file. Please try again.",
+                              variant: "destructive"
+                            });
+                          }}
+                        />
+                      )}
                       
                       {/* AI Analysis Overlays */}
                       {analysisResult && activeTab === 'ai-analysis' && (
