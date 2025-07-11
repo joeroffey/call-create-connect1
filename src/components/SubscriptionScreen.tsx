@@ -54,7 +54,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Priority response time'
       ],
       planType: 'pro',
-      popular: true,
       current: hasActiveSubscription && subscription?.plan_type === 'pro'
     },
     {
@@ -72,13 +71,37 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Project Plans'
       ],
       planType: 'enterprise',
-      enterprise: true,
+      popular: true,
       current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
+    },
+    {
+      name: 'Enterprise',
+      price: 'Custom',
+      period: '',
+      description: 'Please Contact the EezyBuild team to see our competitive Enterprise subscription prices',
+      features: [
+        'Everything in ProMax',
+        'Custom integrations',
+        'White-label options',
+        'Dedicated support',
+        'Custom pricing',
+        'SLA guarantees'
+      ],
+      planType: 'custom',
+      enterprise: true,
+      isContactPlan: true,
+      current: false
     }
   ];
 
   const handlePlanSelection = async (planType: string) => {
     console.log('🎯 Plan selection clicked:', { planType, user, isNative });
+    
+    // Handle Enterprise contact plan
+    if (planType === 'custom') {
+      window.open('mailto:support@eezybuild.com?subject=Enterprise Subscription Inquiry', '_blank');
+      return;
+    }
     
     if (!user?.id) {
       console.error('❌ No user found - cannot create checkout session');
@@ -249,7 +272,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         )}
 
         {/* Plans Grid */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan, index) => (
             <motion.div
               key={plan.name}
@@ -348,11 +371,13 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 ) : null}
                 {plan.current 
                   ? 'Current Plan' 
-                  : isNative 
-                    ? 'Subscribe Now'
-                    : !hasUsedTrial && !hasActiveSubscription 
-                      ? 'Start Free Trial' 
-                      : 'Subscribe Now'
+                  : plan.isContactPlan
+                    ? 'Contact Us'
+                    : isNative 
+                      ? 'Subscribe Now'
+                      : !hasUsedTrial && !hasActiveSubscription 
+                        ? 'Start Free Trial' 
+                        : 'Subscribe Now'
                 }
               </Button>
             </motion.div>
