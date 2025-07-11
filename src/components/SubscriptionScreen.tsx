@@ -220,20 +220,20 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                  <div className="flex-1 pr-20">
-                    <div className="flex items-center gap-3 mb-2">
+                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 min-h-[200px]">
+                  <div className="flex-1 pr-24 flex flex-col justify-center">
+                    <div className="flex items-center gap-3 mb-3">
                       <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                       <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
                     </div>
-                    <h3 className="text-2xl font-bold text-white mb-3">
+                    <h3 className="text-3xl font-bold text-white mb-6">
                       {getPlanDisplayName()} Plan
                     </h3>
-                    <p className="text-gray-300 text-base mb-4">
+                    <p className="text-gray-300 text-base mb-8 leading-relaxed">
                       Your premium subscription is active and ready to use. You have full access to all advanced features, priority support, enhanced building tools, and extended chat history. Enjoy unlimited access to our comprehensive building regulations assistance.
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex flex-col sm:flex-row gap-6">
                       <div className="flex items-center gap-3">
                         <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
                         <span className="text-gray-300">
@@ -247,7 +247,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 flex items-end">
                     <Button
                       onClick={handleManageSubscription}
                       disabled={loading === 'manage'}
