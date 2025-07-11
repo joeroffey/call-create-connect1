@@ -82,7 +82,6 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       features: [
         'Everything in ProMax',
         'Custom integrations',
-        'White-label options',
         'Dedicated support',
         'Custom pricing',
         'SLA guarantees'
