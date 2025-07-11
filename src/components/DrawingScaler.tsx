@@ -197,8 +197,6 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
         disableFontFace: true,
         disableRange: true,
         disableStream: true,
-        // Disable worker completely
-        disableWorker: true,
         // Reduce memory usage
         maxImageSize: 1024 * 1024 * 2, // 2MB max image size
       });

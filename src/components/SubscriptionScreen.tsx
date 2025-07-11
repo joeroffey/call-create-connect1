@@ -33,11 +33,10 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       period: 'per month',
       description: 'Essential building regulations assistant',
       features: [
-        'AI chat assistance',
-        'Basic building regulations guidance',
-        'Standard response time',
-        'Email support',
-        'Chat history'
+        'Unlimited Building Regulation Chats',
+        'Chat History',
+        'Email Support',
+        'Limited Advanced Tools'
       ],
       planType: 'basic',
       current: hasActiveSubscription && subscription?.plan_type === 'basic'
@@ -49,11 +48,10 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       description: 'Advanced features for professionals',
       features: [
         'Everything in EezyBuild',
-        'Priority response time',
-        'Advanced building tools',
+        'Advanced Building Tools',
         'Document upload',
-        'Priority support',
-        'Extended chat history'
+        'Extended Chat History',
+        'Priority response time'
       ],
       planType: 'pro',
       popular: true,
@@ -66,13 +64,12 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       description: 'Complete solution for teams and enterprises',
       features: [
         'Everything in Pro',
-        'Advanced search capabilities',
-        'Project management',
+        'Advanced Building regulation search',
+        'Project Management',
         'Team collaboration',
-        'Advanced analytics',
-        'Custom integrations',
-        'White-label options',
-        'Dedicated support'
+        'Full catagory of Advanced Building Tools',
+        'Advanced Analytics',
+        'Project Plans'
       ],
       planType: 'enterprise',
       enterprise: true,
