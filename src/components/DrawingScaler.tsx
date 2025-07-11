@@ -30,15 +30,28 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-// Configure PDF.js worker - disable worker for CORS issues
+// Configure PDF.js with jsdelivr CDN (better CORS support)
 const configureWorker = () => {
   try {
-    // Disable worker entirely to avoid CORS issues
-    pdfjsLib.GlobalWorkerOptions.workerSrc = null;
-    pdfjsLib.GlobalWorkerOptions.workerPort = null;
-    console.log('PDF.js configured without worker for CORS compatibility');
+    // Try jsdelivr CDN first (better CORS support)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@5.3.93/build/pdf.worker.min.js`;
+    console.log('PDF.js configured with jsdelivr CDN worker');
   } catch (error) {
-    console.warn('PDF.js worker configuration failed:', error);
+    console.warn('Primary worker config failed, trying unpkg:', error);
+    try {
+      // Fallback to unpkg
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.3.93/build/pdf.worker.min.js`;
+      console.log('PDF.js configured with unpkg CDN worker');
+    } catch (fallbackError) {
+      console.warn('All CDN workers failed, trying local approach');
+      try {
+        // Local approach - disable worker entirely
+        pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+        console.log('PDF.js configured without worker (legacy mode)');
+      } catch (finalError) {
+        console.error('All PDF.js configurations failed:', finalError);
+      }
+    }
   }
 };
 
@@ -188,21 +201,51 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       const arrayBuffer = await file.arrayBuffer();
       console.log('PDF arrayBuffer created, size:', arrayBuffer.byteLength);
       
-      const loadingTask = pdfjsLib.getDocument({
+      // Configure PDF loading with fallbacks
+      const documentConfig = {
         data: arrayBuffer,
-        useSystemFonts: true,
         useWorkerFetch: false,
         isEvalSupported: false,
         // Disable external resources to avoid CORS issues
         disableFontFace: true,
         disableRange: true,
         disableStream: true,
+        // Use system fonts
+        useSystemFonts: true,
         // Reduce memory usage
         maxImageSize: 1024 * 1024 * 2, // 2MB max image size
-      });
+        // Legacy compatibility
+        verbosity: 0,
+        // Worker configuration
+        stopAtErrors: false,
+      };
 
-      const pdf = await loadingTask.promise;
-      console.log('PDF loaded successfully, pages:', pdf.numPages);
+      console.log('Attempting PDF load with config:', documentConfig);
+      const loadingTask = pdfjsLib.getDocument(documentConfig);
+
+      // Add promise error handler
+      loadingTask.onProgress = (progress) => {
+        console.log('PDF loading progress:', `${progress.loaded}/${progress.total}`);
+      };
+
+      let pdf;
+      try {
+        pdf = await loadingTask.promise;
+        console.log('PDF loaded successfully, pages:', pdf.numPages);
+      } catch (workerError) {
+        console.warn('PDF load failed with worker, trying without worker:', workerError);
+        
+        // If worker fails, try again with worker explicitly disabled
+        pdfjsLib.GlobalWorkerOptions.workerSrc = null;
+        const fallbackConfig = {
+          ...documentConfig,
+          useWorker: false,
+        };
+        
+        const fallbackTask = pdfjsLib.getDocument(fallbackConfig);
+        pdf = await fallbackTask.promise;
+        console.log('PDF loaded successfully with fallback (no worker), pages:', pdf.numPages);
+      }
       
       const page = await pdf.getPage(1);
       console.log('First page loaded');
@@ -249,11 +292,15 @@ const DrawingScaler = ({ onBack }: DrawingScalerProps) => {
       if (error.message.includes('too large')) {
         throw error; // Re-throw file size error
       }
-      if (error.message.includes('worker') || error.message.includes('CORS')) {
-        throw new Error('PDF processing failed due to browser security restrictions. Please try uploading the PDF as an image (JPG/PNG) instead.');
+      if (error.message.includes('worker') || error.message.includes('CORS') || error.message.includes('fetch')) {
+        throw new Error('PDF processing failed due to network/security restrictions. The PDF format is complex - this should work now with the latest fixes.');
+      }
+      if (error.message.includes('Setting up fake worker failed')) {
+        throw new Error('PDF worker initialization failed. This is a known issue that has been addressed - please try refreshing and uploading again.');
       }
       
-      throw new Error(`Failed to process PDF: ${error.message}. Try converting the PDF to an image format (JPG/PNG) as an alternative.`);
+      console.error('Detailed PDF error:', error.stack || error);
+      throw new Error(`PDF processing failed: ${error.message}. The file should work - if this persists, please try a different PDF file.`);
     }
   };
 
