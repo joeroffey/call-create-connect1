@@ -220,8 +220,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   </div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 min-h-[200px]">
-                  <div className="flex-1 pr-24 flex flex-col justify-center">
+                <div className="flex flex-col gap-6 min-h-[200px]">
+                  <div className="flex-1 pr-20">
                     <div className="flex items-center gap-3 mb-3">
                       <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                       <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
@@ -233,7 +233,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                       Your premium subscription is active and ready to use. You have full access to all advanced features, priority support, enhanced building tools, and extended chat history. Enjoy unlimited access to our comprehensive building regulations assistance.
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-6">
+                    <div className="flex flex-col sm:flex-row gap-6 mb-6">
                       <div className="flex items-center gap-3">
                         <Calendar className="w-5 h-5 text-gray-400 flex-shrink-0" />
                         <span className="text-gray-300">
@@ -247,7 +247,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex-shrink-0 flex items-end">
+                  <div className="flex justify-end pr-20">
                     <Button
                       onClick={handleManageSubscription}
                       disabled={loading === 'manage'}
