@@ -278,14 +278,14 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 * (index + 1) }}
-              className={`relative rounded-2xl p-6 border backdrop-blur-sm ${
+              className={`relative rounded-2xl p-6 border-2 backdrop-blur-sm ${
                 plan.current
                   ? 'border-emerald-500 bg-emerald-500/10'
                   : plan.popular
                   ? 'border-blue-500 bg-blue-500/10'
                   : plan.enterprise
                   ? 'border-purple-500 bg-purple-500/10'
-                  : 'border-gray-700 bg-gray-900/50'
+                  : 'border-gray-600 bg-gray-900/50'
               }`}
             >
               {plan.popular && (
