@@ -1,0 +1,112 @@
+name: 🚀 Quick Test Build (Android APK)
+
+on:
+  workflow_dispatch: # Manual trigger only
+    inputs:
+      device_type:
+        description: 'Target Device'
+        required: true
+        default: 'phone'
+        type: choice
+        options:
+        - phone
+        - tablet
+        - both
+
+jobs:
+  quick-android-build:
+    name: 🚀 Quick Android Test Build
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: ☕ Setup Java 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        
+    - name: 🔧 Setup Node.js 18
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: 📦 Install Dependencies
+      run: |
+        echo "📦 Installing npm dependencies..."
+        npm ci
+        
+    - name: 🏗️ Build Web App
+      run: |
+        echo "🏗️ Building React app..."
+        npm run build
+        
+    - name: 📱 Setup Capacitor & Android
+      run: |
+        echo "📱 Setting up Capacitor..."
+        npm install -g @capacitor/cli
+        npx cap sync android
+        
+    - name: 🤖 Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: 📋 Configure Android Build
+      run: |
+        echo "📋 Configuring Android build environment..."
+        echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+        cd android
+        chmod +x ./gradlew
+        
+    - name: 🔨 Build Debug APK
+      run: |
+        echo "🔨 Building Android APK..."
+        cd android
+        ./gradlew assembleDebug --no-daemon --stacktrace
+        
+    - name: 📋 APK Info
+      run: |
+        echo "📋 APK Build Information:"
+        APK_FILE=$(find android -name "*debug*.apk" -type f | head -1)
+        if [ -f "$APK_FILE" ]; then
+          echo "✅ APK Built Successfully!"
+          echo "📱 File: $APK_FILE"
+          echo "📦 Size: $(du -h "$APK_FILE" | cut -f1)"
+          echo "🔍 APK Details:"
+          ls -la "$APK_FILE"
+        else
+          echo "❌ APK not found!"
+          find android -name "*.apk" -type f
+        fi
+        
+    - name: 📤 Upload APK for Download
+      uses: actions/upload-artifact@v4
+      with:
+        name: EezyBuild-Android-Test-APK
+        path: android/app/build/outputs/apk/debug/*.apk
+        retention-days: 7
+        
+    - name: 🎉 Success Summary
+      run: |
+        echo "🎉 SUCCESS! Your EezyBuild Android APK is ready!"
+        echo ""
+        echo "📱 What you get:"
+        echo "• Installable APK file"
+        echo "• All 15 native Capacitor plugins"
+        echo "• Camera, file system, sharing features"
+        echo "• Push notifications, haptic feedback"
+        echo "• Native Android Material Design"
+        echo ""
+        echo "📦 Download Instructions:"
+        echo "1. Go to: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        echo "2. Scroll down to 'Artifacts' section"
+        echo "3. Click 'EezyBuild-Android-Test-APK' to download"
+        echo "4. Unzip and install the APK on your Android device"
+        echo ""
+        echo "📱 Installation:"
+        echo "• Enable 'Unknown Sources' in Android settings"
+        echo "• Transfer APK to your device"
+        echo "• Tap the APK file to install"
+        echo "• Grant permissions when prompted to test native features"
