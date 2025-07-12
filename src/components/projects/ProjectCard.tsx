@@ -18,6 +18,8 @@ interface Project {
   customer_name?: string;
   customer_address?: string;
   customer_phone?: string;
+  creator_name?: string;
+  creator_email?: string;
 }
 
 interface ProjectCardProps {
@@ -313,12 +315,18 @@ const ProjectCard = ({
         </button>
       </div>
 
-      {/* Project dates */}
+      {/* Project dates and creator */}
       <div className="mt-4 pt-3 border-t border-gray-800/30 text-xs text-gray-500">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mb-2">
           <span>Created: {new Date(project.created_at).toLocaleDateString()}</span>
           <span>Updated: {new Date(project.updated_at).toLocaleDateString()}</span>
         </div>
+        {project.creator_name && (
+          <div className="flex items-center gap-2 text-gray-400">
+            <User className="w-3 h-3" />
+            <span>Created by: {project.creator_name}</span>
+          </div>
+        )}
       </div>
     </motion.div>
   );

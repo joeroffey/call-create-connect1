@@ -17,6 +17,8 @@ interface TeamProject {
   customer_name?: string;
   customer_address?: string;
   customer_phone?: string;
+  creator_name?: string;
+  creator_email?: string;
 }
 
 export const useTeamProjects = (teamId: string | null, teamName: string = '') => {
@@ -36,18 +38,38 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
     setError(null);
     
     try {
-      const { data, error } = await supabase
+      // First, get the projects
+      const { data: projectsData, error: projectsError } = await supabase
         .from('projects')
         .select('*')
         .eq('team_id', teamId)
         .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (projectsError) throw projectsError;
+
+      // Get unique user IDs from projects
+      const userIds = [...new Set(projectsData?.map(p => p.user_id) || [])];
       
-      const processedProjects = (data || []).map(project => ({
-        ...project,
-        team_name: teamName
-      }));
+      // Get profiles for these users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Create a map of user_id to profile
+      const profilesMap = new Map(profilesData?.map(p => [p.user_id, p]) || []);
+      
+      const processedProjects = (projectsData || []).map(project => {
+        const profile = profilesMap.get(project.user_id);
+        return {
+          ...project,
+          team_name: teamName,
+          creator_name: profile?.full_name || 'Unknown User',
+          creator_email: project.user_id
+        };
+      });
       
       // Sort projects: pinned first, then by updated_at
       const sortedProjects = processedProjects.sort((a, b) => {

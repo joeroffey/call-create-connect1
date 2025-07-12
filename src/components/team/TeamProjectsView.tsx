@@ -23,6 +23,8 @@ interface TeamProject {
   pinned?: boolean;
   team_id: string;
   team_name: string;
+  creator_name?: string;
+  creator_email?: string;
 }
 
 interface TeamProjectsViewProps {
