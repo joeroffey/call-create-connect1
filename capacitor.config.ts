@@ -5,6 +5,7 @@ const config: CapacitorConfig = {
   appName: 'EezyBuild',
   webDir: 'dist',
   bundledWebRuntime: false,
+  loggingBehavior: 'none',
   plugins: {
     StatusBar: {
       overlaysWebView: false,
@@ -50,6 +51,26 @@ const config: CapacitorConfig = {
     },
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"]
+    },
+    LocalNotifications: {
+      smallIcon: "ic_stat_icon_config_sample",
+      iconColor: "#10b981",
+      sound: "beep.wav"
+    },
+    Camera: {
+      androidPermissions: [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    Storage: {
+      iosUseKeychain: true,
+      iosKeychainAccessGroup: "com.eezybuild.app.keychain"
+    },
+    BackgroundMode: {
+      enabled: true,
+      enabledTypes: ["background-fetch", "background-processing"]
     }
   },
   ios: {
@@ -65,7 +86,12 @@ const config: CapacitorConfig = {
     scrollEnabled: true,
     minimumFontSize: 12.0,
     contentInset: 'automatic',
-    webviewStyle: 'light'
+    webviewStyle: 'dark',
+    scheme: 'eezybuild',
+    limitsNavigationsToAppBoundDomains: false,
+    allowsBackForwardNavigationGestures: true,
+    mediaTypesRequiringUserActionForPlayback: [],
+    presentationStyle: 'fullscreen'
   },
   android: {
     backgroundColor: '#000000',
@@ -75,7 +101,14 @@ const config: CapacitorConfig = {
     appendUserAgent: 'EezyBuild',
     overrideUserAgent: '',
     hideLogs: true,
-    useLegacyBridge: false
+    useLegacyBridge: false,
+    deepLinkingEnabled: true,
+    allowNavigation: [
+      "https://eezybuild.com",
+      "https://*.supabase.co"
+    ],
+    enableDiskCaching: true,
+    mixedContentMode: "compatibility"
   },
   server: {
     androidScheme: 'https',

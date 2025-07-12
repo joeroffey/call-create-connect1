@@ -43,6 +43,35 @@ export interface UseNativeCapabilitiesReturn {
     hide: () => Promise<void>;
     show: () => Promise<void>;
   };
+  camera: {
+    takePhoto: () => Promise<string>;
+    selectFromGallery: () => Promise<string>;
+  };
+  filesystem: {
+    saveFile: (filename: string, data: string) => Promise<string>;
+    readFile: (path: string) => Promise<string>;
+    deleteFile: (path: string) => Promise<void>;
+  };
+  sharing: {
+    shareContent: (title: string, text: string, url?: string) => Promise<void>;
+  };
+  notifications: {
+    showToast: (message: string, duration?: 'short' | 'long') => Promise<void>;
+    scheduleNotification: (title: string, body: string, date: Date) => Promise<void>;
+  };
+  keyboard: {
+    show: () => Promise<void>;
+    hide: () => Promise<void>;
+    addListener: (callback: (info: any) => void) => () => void;
+  };
+  accessibility: {
+    speak: (text: string) => Promise<void>;
+  };
+  storage: {
+    setPreference: (key: string, value: string) => Promise<void>;
+    getPreference: (key: string) => Promise<string | null>;
+    removePreference: (key: string) => Promise<void>;
+  };
   
   // Lifecycle
   refreshDeviceInfo: () => Promise<void>;
@@ -155,6 +184,43 @@ export const useNativeCapabilities = (): UseNativeCapabilitiesReturn => {
     };
   }, [initialize, refreshDeviceInfo, refreshNetworkStatus, isNative]);
 
+  // New capability methods
+  const camera = {
+    takePhoto: useCallback(() => nativeCapabilities.takePhoto(), []),
+    selectFromGallery: useCallback(() => nativeCapabilities.selectFromGallery(), []),
+  };
+
+  const filesystem = {
+    saveFile: useCallback((filename: string, data: string) => nativeCapabilities.saveFile(filename, data), []),
+    readFile: useCallback((path: string) => nativeCapabilities.readFile(path), []),
+    deleteFile: useCallback((path: string) => nativeCapabilities.deleteFile(path), []),
+  };
+
+  const sharing = {
+    shareContent: useCallback((title: string, text: string, url?: string) => nativeCapabilities.shareContent(title, text, url), []),
+  };
+
+  const notifications = {
+    showToast: useCallback((message: string, duration?: 'short' | 'long') => nativeCapabilities.showToast(message, duration), []),
+    scheduleNotification: useCallback((title: string, body: string, date: Date) => nativeCapabilities.scheduleNotification(title, body, date), []),
+  };
+
+  const keyboard = {
+    show: useCallback(() => nativeCapabilities.showKeyboard(), []),
+    hide: useCallback(() => nativeCapabilities.hideKeyboard(), []),
+    addListener: useCallback((callback: (info: any) => void) => nativeCapabilities.addKeyboardListener(callback), []),
+  };
+
+  const accessibility = {
+    speak: useCallback((text: string) => nativeCapabilities.speak(text), []),
+  };
+
+  const storage = {
+    setPreference: useCallback((key: string, value: string) => nativeCapabilities.setPreference(key, value), []),
+    getPreference: useCallback((key: string) => nativeCapabilities.getPreference(key), []),
+    removePreference: useCallback((key: string) => nativeCapabilities.removePreference(key), []),
+  };
+
   return {
     // Platform detection
     isNative,
@@ -175,6 +241,13 @@ export const useNativeCapabilities = (): UseNativeCapabilitiesReturn => {
     hapticFeedback,
     statusBar,
     splashScreen,
+    camera,
+    filesystem,
+    sharing,
+    notifications,
+    keyboard,
+    accessibility,
+    storage,
     
     // Lifecycle
     refreshDeviceInfo,
