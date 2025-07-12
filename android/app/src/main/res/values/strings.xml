@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">EezyBuild</string>
+    <string name="title_activity_main">EezyBuild</string>
+    <string name="package_name">com.eezybuild.app</string>
+    <string name="custom_url_scheme">eezybuild</string>
+    
+    <!-- App Description -->
+    <string name="app_description">Professional building and construction management app with AI assistance</string>
+    
+    <!-- Permissions -->
+    <string name="camera_permission_desc">This app uses the camera to take photos for your construction projects and document scanning.</string>
+    <string name="microphone_permission_desc">This app uses the microphone to record audio notes and voice commands for construction management.</string>
+    <string name="location_permission_desc">This app uses location services to provide relevant local building regulations and find nearby construction professionals.</string>
+    <string name="storage_permission_desc">This app accesses storage to save and share construction documents and project files.</string>
+    
+    <!-- Notifications -->
+    <string name="notification_channel_name">EezyBuild Notifications</string>
+    <string name="notification_channel_desc">Receive updates about your construction projects, regulatory changes, and important reminders</string>
+    
+    <!-- Error Messages -->
+    <string name="network_error">Please check your internet connection and try again.</string>
+    <string name="generic_error">Something went wrong. Please try again.</string>
+    
+    <!-- Loading -->
+    <string name="loading">Loading...</string>
+    <string name="please_wait">Please wait...</string>
+</resources>
