@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen, Users } from 'lucide-react';
+import { OfflineIndicator } from '@/components/OfflineIndicator';
+import { useOffline } from '@/hooks/useOffline';
 import { useNavigate } from 'react-router-dom';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
@@ -31,6 +33,7 @@ const Index = () => {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [pendingProjectModal, setPendingProjectModal] = useState<{projectId: string, view: string} | null>(null);
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const { isOnline } = useOffline();
 
   // Get subscription info
   const { subscription, hasActiveSubscription, refetch } = useSubscription(user?.id);
@@ -522,6 +525,9 @@ const Index = () => {
         </div>
       </motion.header>
 
+
+      {/* Offline Indicator */}
+      <OfflineIndicator />
 
       {/* Main Content - fills space between header and nav with proper mobile spacing */}
       <main ref={mainContentRef} className="flex-1 min-h-0 overflow-y-auto pb-24">
