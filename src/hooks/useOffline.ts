@@ -20,20 +20,11 @@ export const useOffline = () => {
     // Listen for online/offline events
     const handleOnline = () => {
       setIsOnline(true);
-      toast({
-        title: "Back Online",
-        description: "Syncing your latest changes...",
-      });
       syncDataWhenOnline();
     };
 
     const handleOffline = () => {
       setIsOnline(false);
-      toast({
-        title: "You're Offline",
-        description: "Don't worry, you can still view your projects and schedules.",
-        variant: "destructive",
-      });
     };
 
     window.addEventListener('online', handleOnline);
