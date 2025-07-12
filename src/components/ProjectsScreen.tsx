@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, WifiOff } from 'lucide-react';
-import { useOfflineSync } from '@/hooks/useOfflineSync';
+import { Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useConversations } from '../hooks/useConversations';
 import { useToast } from "@/hooks/use-toast";
@@ -41,7 +40,6 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
   console.log('ProjectsScreen: Component starting to render');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const { isOnline, getOfflineProjects } = useOfflineSync({ userId: user?.id });
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newProject, setNewProject] = useState({ 
     name: '', 
@@ -91,22 +89,6 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
     
     console.log('Fetching projects for user:', user.id);
     setLoading(true);
-    
-    // If offline, try to get cached projects
-    if (!isOnline) {
-      try {
-        const offlineProjects = await getOfflineProjects();
-        if (offlineProjects.length > 0) {
-          setProjects(offlineProjects);
-          console.log('Loaded offline projects:', offlineProjects.length);
-        }
-      } catch (error) {
-        console.error('Error loading offline projects:', error);
-      }
-      setLoading(false);
-      return;
-    }
-    
     try {
       // First get user's team IDs
       const { data: teamMembers } = await supabase
@@ -414,30 +396,11 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
     }
   };
 
-  if (loading && isOnline) {
+  if (loading || conversationsLoading) {
     console.log('Projects screen loading - projects loading:', loading, 'conversations loading:', conversationsLoading);
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  // Show offline message if offline and no cached projects
-  if (!isOnline && projects.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto">
-            <WifiOff className="w-6 h-6 text-amber-600" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-muted-foreground">You're Offline</h3>
-            <p className="text-sm text-muted-foreground">
-              No cached projects available. Projects will load when you're back online.
-            </p>
-          </div>
-        </div>
       </div>
     );
   }
