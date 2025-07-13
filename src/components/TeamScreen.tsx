@@ -269,10 +269,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     return (currentUserRole === 'owner' || currentUserRole === 'admin') && !isTargetOwner && !isCurrentUser;
   };
 
-  const getCurrentUserRole = () => {
-    const currentUserMember = members.find(m => m.user_id === user?.id);
-    return currentUserMember?.role || null;
-  };
+  const currentUserMember = members.find(m => m.user_id === user?.id);
+  const currentUserRole = currentUserMember?.role || null;
 
   // Handle member removal with confirmation
   const handleRemoveMember = async (memberId: string, memberName: string) => {
@@ -394,7 +392,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                     canEdit={canEditRole(member)}
                     isCurrentUser={member.user_id === user?.id}
                     isOwner={member.role === 'owner'}
-                    currentUserRole={getCurrentUserRole()}
+                    currentUserRole={currentUserRole}
                   />
                   
                   {/* Remove member button - only show for owners/admins and not for owners/current user */}
