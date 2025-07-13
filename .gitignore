@@ -12,57 +12,6 @@ dist
 dist-ssr
 *.local
 
-# Build artifacts
-build/
-.output/
-.nuxt/
-.next/
-.svelte-kit/
-
-# Android
-android/app/build/
-android/app/release/
-android/build/
-android/gradle/
-android/gradlew
-android/local.properties
-android/app/src/main/assets/public/
-android/app/src/main/res/values/strings.xml
-android/app/src/main/res/xml/file_paths.xml
-
-# iOS
-ios/App/build/
-ios/App/Pods/
-ios/App/public/
-ios/App/App/public/
-ios/App/App.xcworkspace/xcuserdata/
-ios/App/App.xcworkspace/xcshareddata/
-ios/App/App.xcodeproj/xcuserdata/
-ios/App/App.xcodeproj/project.xcworkspace/xcuserdata/
-ios/App/App.xcodeproj/project.xcworkspace/xcshareddata/
-ios/App/DerivedData/
-ios/App/*.ipa
-ios/App/*.app
-ios/App/*.dSYM.zip
-
-# Code signing
-*.p12
-*.mobileprovision
-*.provisionprofile
-*.cer
-*.pem
-*.key
-*.keystore
-*.jks
-
-# Capacitor
-capacitor.config.json
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -73,8 +22,3 @@ capacitor.config.json
 *.njsproj
 *.sln
 *.sw?
-
-# Temporary files
-.tmp/
-tmp/
-temp/

@@ -1,232 +1,133 @@
 workflows:
-  # Build Android APK
-  android-build:
-    name: 📱 Build Android APK
-    instance_type: linux_x2
-    max_build_duration: 60
-    environment:
-      android_signing:
-        - keystore_reference
-      groups:
-        - google_play
-      vars:
-        PACKAGE_NAME: "com.eezybuild.app"
-        GOOGLE_PLAY_TRACK: "internal"
-      node: 18
-    cache:
-      cache_paths:
-        - $HOME/.npm
-        - node_modules
-    triggering:
-      events:
-        - push
-        - tag
-        - pull_request
-      branch_patterns:
-        - pattern: main
-          include: true
-          source: true
-        - pattern: develop
-          include: true
-          source: true
-    scripts:
-      - name: 📦 Install dependencies
-        script: |
-          npm ci
-          
-      - name: 🔧 Build web assets
-        script: |
-          npm run build:prod
-          
-      - name: ⚡ Sync Capacitor Android
-        script: |
-          npx cap sync android
-          
-      - name: 🔨 Set up keystore
-        script: |
-          echo $CM_KEYSTORE | base64 --decode > /tmp/keystore.keystore
-          
-      - name: 🏗️ Build Android APK
-        script: |
-          cd android
-          ./gradlew assembleRelease
-          
-      - name: 📋 Debug APK Info
-        script: |
-          APK_PATH=$(find android/app/build/outputs/apk -name "*.apk" | head -1)
-          echo "APK found at: $APK_PATH"
-          if [ -f "$APK_PATH" ]; then
-            ls -la "$APK_PATH"
-            aapt dump badging "$APK_PATH" | grep -E "(package|application-label|versionName|versionCode)"
-          else
-            echo "❌ APK not found"
-            find android/app/build/outputs -name "*.apk" -o -name "*.aab"
-          fi
-          
-    artifacts:
-      - android/app/build/outputs/**/*.apk
-      - android/app/build/outputs/**/*.aab
-      - android/app/build/outputs/**/mapping.txt
-      
-    publishing:
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: $GOOGLE_PLAY_TRACK
-        submit_as_draft: true
-
-  # Build iOS IPA
-  ios-build:
-    name: 🍎 Build iOS IPA
+  # Ultra Minimal Test - Step by step diagnosis
+  minimal-test:
+    name: 🧪 Ultra Minimal iOS Test
     instance_type: mac_mini_m1
-    max_build_duration: 60
+    max_build_duration: 15
     environment:
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.eezybuild.app
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-        BUNDLE_ID: "com.eezybuild.app"
-        APP_ID: 1234567890 # Replace with your actual App Store Connect App ID
       xcode: latest
-      node: 18
-    cache:
-      cache_paths:
-        - $HOME/.npm
-        - node_modules
-        - ios/App/Pods
     triggering:
       events:
         - push
-        - tag
-        - pull_request
       branch_patterns:
         - pattern: main
           include: true
           source: true
-        - pattern: develop
-          include: true
-          source: true
     scripts:
-      - name: 📦 Install dependencies
+      - name: 🔍 Environment Check
         script: |
-          npm ci
+          echo "=== Environment Check ==="
+          echo "macOS: $(sw_vers -productVersion)"
+          echo "Xcode: $(xcodebuild -version)"
+          echo "Swift: $(swift --version)"
           
-      - name: 🔧 Build web assets
+      - name: 🧪 Test 1 - Hello World Swift
         script: |
-          npm run build:prod
+          echo "=== Test 1: Hello World Swift ==="
+          cat > hello.swift << 'EOF'
+          import Foundation
+          print("Hello from Codemagic!")
+          EOF
           
-      - name: ⚡ Sync Capacitor iOS
-        script: |
-          npx cap sync ios
+          echo "Compiling hello.swift..."
+          swiftc hello.swift -o hello
+          echo "Running hello..."
+          ./hello
           
-      - name: 🍎 Set up CocoaPods
+      - name: 🧪 Test 2 - Basic iOS Project Check
         script: |
-          cd ios/App
-          pod install
+          echo "=== Test 2: Basic Project Check ==="
+          cd ios-native/EezyBuild
           
-      - name: 🔐 Set up code signing
-        script: |
-          keychain initialize
-          app-store-connect fetch-signing-files $BUNDLE_ID \
-            --type IOS_APP_STORE \
-            --create
-          keychain add-certificates
-          xcode-project use-profiles
+          echo "Project structure:"
+          ls -la EezyBuild/
           
-      - name: 📱 Increment build number
-        script: |
-          cd ios/App
-          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_ID")
-          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+          echo "Swift files found:"
+          find EezyBuild/ -name "*.swift" -exec echo {} \;
           
-      - name: 🏗️ Build iOS IPA
+          echo "Xcode project info:"
+          xcodebuild -list -project EezyBuild.xcodeproj
+          
+      - name: 🧪 Test 3 - Swift File Syntax Check
         script: |
-          cd ios/App
-          xcode-project build-ipa \
-            --workspace "$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --archive-flags "-destination 'generic/platform=iOS'" \
-            --export-options-plist /tmp/ExportOptions.plist
+          echo "=== Test 3: Individual Swift File Syntax ==="
+          cd ios-native/EezyBuild
+          
+          # Test the isolated test app first
+          echo "Testing isolated TestApp.swift:"
+          xcrun swift -frontend -parse EezyBuild/TestApp.swift -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) || echo "❌ TestApp syntax error"
+          
+          # Test the main app file
+          echo "Testing EezyBuildApp.swift:"
+          xcrun swift -frontend -parse EezyBuild/EezyBuildApp.swift -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) || echo "❌ EezyBuildApp syntax error"
+          
+      - name: 🧪 Test 4 - Compile Single File
+        script: |
+          echo "=== Test 4: Single File Compilation ==="
+          cd ios-native/EezyBuild
+          
+          echo "Trying to compile TestApp.swift alone..."
+          xcrun swiftc \
+            -sdk $(xcrun --show-sdk-path --sdk iphonesimulator) \
+            -target arm64-apple-ios15.0-simulator \
+            EezyBuild/TestApp.swift \
+            -o TestApp || echo "❌ TestApp compilation failed"
             
-      - name: 📋 Debug IPA Info
+      - name: 🧪 Test 5 - Xcode Dry Run
         script: |
-          IPA_PATH=$(find build/ios/ipa -name "*.ipa" | head -1)
-          echo "IPA found at: $IPA_PATH"
-          if [ -f "$IPA_PATH" ]; then
-            ls -la "$IPA_PATH"
-            unzip -l "$IPA_PATH" | head -20
-          else
-            echo "❌ IPA not found"
-            find build -name "*.ipa"
-          fi
+          echo "=== Test 5: Xcode Dry Run ==="
+          cd ios-native/EezyBuild
           
-    artifacts:
-      - build/ios/ipa/*.ipa
-      - build/ios/dsym/*.app.dSYM.zip
-      - build/ios/xcarchive/*.xcarchive
-      
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        beta_groups:
-          - App Store Connect Users
-        submit_to_app_store: false
-
-  # Development builds (unsigned)
-  dev-build:
-    name: 🛠️ Development Build
-    instance_type: mac_mini_m1
-    max_build_duration: 45
-    environment:
-      xcode: latest
-      node: 18
-    cache:
-      cache_paths:
-        - $HOME/.npm
-        - node_modules
-    triggering:
-      events:
-        - pull_request
-      branch_patterns:
-        - pattern: develop
-          include: true
-          source: true
-    scripts:
-      - name: 📦 Install dependencies
-        script: |
-          npm ci
-          
-      - name: 🔧 Build web assets  
-        script: |
-          npm run build:dev
-          
-      - name: ⚡ Sync Capacitor
-        script: |
-          npx cap sync
-          
-      - name: 🧪 Run tests
-        script: |
-          npm run lint
-          npm run type-check
-          
-      - name: 🏗️ Build Android Debug
-        script: |
-          cd android
-          ./gradlew assembleDebug
-          
-      - name: 🏗️ Build iOS Debug  
-        script: |
-          cd ios/App
-          pod install
-          xcodebuild \
-            -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Debug \
+          echo "Attempting xcodebuild dry-run..."
+          timeout 30 xcodebuild \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
             -sdk iphonesimulator \
+            -configuration Debug \
+            -dry-run \
+            CODE_SIGNING_ALLOWED=NO || echo "❌ Dry-run failed"
+          
+    artifacts:
+      - hello
+      - ios-native/EezyBuild/TestApp
+
+  # Only if above succeeds
+  ios-diagnosis:
+    name: 🔍 iOS Build Diagnosis
+    instance_type: mac_mini_m1
+    max_build_duration: 20
+    environment:
+      xcode: latest
+    triggering:
+      events:
+        - workflow_dispatch  # Manual only
+    scripts:
+      - name: 🧪 Gradual Build Test
+        script: |
+          echo "=== Gradual Build Test ==="
+          cd ios-native/EezyBuild
+          
+          echo "Step 1: Clean only..."
+          xcodebuild clean -project EezyBuild.xcodeproj -scheme EezyBuild || echo "❌ Clean failed"
+          
+          echo "Step 2: Build settings check..."
+          xcodebuild -project EezyBuild.xcodeproj -target EezyBuild -showBuildSettings | head -20
+          
+          echo "Step 3: Try minimal build with maximum safety..."
+          timeout 120 xcodebuild build \
+            -project EezyBuild.xcodeproj \
+            -scheme EezyBuild \
+            -sdk iphonesimulator \
+            -configuration Debug \
             -destination 'platform=iOS Simulator,name=iPhone 14' \
-            build
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            SWIFT_COMPILATION_MODE=singlefile \
+            GCC_OPTIMIZATION_LEVEL=0 \
+            SWIFT_OPTIMIZATION_LEVEL=-Onone \
+            DEBUG_INFORMATION_FORMAT=dwarf \
+            ONLY_ACTIVE_ARCH=YES \
+            ENABLE_TESTING_SEARCH_PATHS=NO || echo "❌ Build failed with segfault likely"
             
     artifacts:
-      - android/app/build/outputs/apk/debug/*.apk
+      - ios-native/EezyBuild/build/**/*

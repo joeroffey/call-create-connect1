@@ -1,178 +1,188 @@
-# Codemagic Setup Guide for APK and IPA Builds
+# 🚀 Codemagic iOS Build Setup Guide
 
-This guide will help you configure Codemagic to build both Android APK and iOS IPA files for your EezyBuild app.
+Codemagic is often more reliable than GitHub Actions for iOS builds. Here's how to set up your EezyBuild iOS app with Codemagic.
 
-## Prerequisites
+## 🎯 **Quick Start (Free Tier)**
 
-1. **Codemagic Account**: Sign up at [codemagic.io](https://codemagic.io)
-2. **Repository Access**: Connect your GitHub repository to Codemagic
-3. **Android Keystore**: For signing Android APKs
-4. **iOS Certificates**: For signing iOS IPAs (App Store Connect account required)
+### **1. Connect Repository to Codemagic**
 
-## Quick Start
+1. **Sign up**: https://codemagic.io/
+2. **Connect GitHub**: Link your `call-create-connect1` repository
+3. **Select workflow**: Choose `ios-simulator` for free builds
 
-1. **Connect Repository**:
-   - Go to your Codemagic dashboard
-   - Click "Add application"
-   - Select your repository
-   - Codemagic will automatically detect the `codemagic.yaml` configuration
+### **2. Automatic Detection**
 
-2. **Configure Environment Variables** (see detailed sections below)
+Codemagic will automatically:
+- ✅ Detect the `codemagic.yaml` file
+- ✅ Show 3 available workflows
+- ✅ Configure build environment
 
-3. **Run Builds**:
-   - **Android**: Push to `main` or `develop` branch to trigger `android-build`
-   - **iOS**: Push to `main` or `develop` branch to trigger `ios-build`
-   - **Development**: Create PR to `develop` branch to trigger `dev-build`
+### **3. Test Simulator Build (Free)**
 
-## Android Configuration
-
-### 1. Generate Android Keystore
-
-```bash
-# Generate keystore (run this locally)
-keytool -genkey -v -keystore keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias key0
-
-# Convert to base64 for Codemagic
-base64 -i keystore.jks | pbcopy  # macOS
-base64 -i keystore.jks | xclip -selection clipboard  # Linux
-```
-
-### 2. Configure Android Environment Variables
-
-In your Codemagic app settings → Environment variables:
-
-| Variable | Type | Value |
-|----------|------|-------|
-| `CM_KEYSTORE` | Secure | Base64 encoded keystore file |
-| `CM_KEYSTORE_PASSWORD` | Secure | Keystore password |
-| `CM_KEY_ALIAS` | Secure | Key alias (usually `key0`) |
-| `CM_KEY_PASSWORD` | Secure | Key password |
-
-### 3. Google Play Console (Optional)
-
-For automatic publishing to Google Play:
-
-1. Create a service account in Google Cloud Console
-2. Download the JSON key file
-3. Add to Codemagic environment variables:
-   - `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`: JSON key file content
-
-## iOS Configuration
-
-### 1. App Store Connect Setup
-
-1. **Create App ID**:
-   - Go to Apple Developer Portal
-   - Create App ID with identifier: `com.eezybuild.app`
-   - Enable required capabilities (Push Notifications, etc.)
-
-2. **App Store Connect**:
-   - Create new app in App Store Connect
-   - Note the App ID number (replace `1234567890` in `codemagic.yaml`)
-
-### 2. Code Signing Setup
-
-**Option A: Automatic (Recommended)**
-- Codemagic will automatically generate certificates and profiles
-- Requires App Store Connect API key (see below)
-
-**Option B: Manual**
-- Upload certificates and provisioning profiles manually
-- More control but requires manual maintenance
-
-### 3. Configure iOS Environment Variables
-
-In your Codemagic app settings → Environment variables:
-
-| Variable | Type | Value |
-|----------|------|-------|
-| `APP_ID` | Text | Your App Store Connect App ID |
-| `BUNDLE_ID` | Text | `com.eezybuild.app` |
-| `APP_STORE_CONNECT_ISSUER_ID` | Secure | From App Store Connect API |
-| `APP_STORE_CONNECT_KEY_IDENTIFIER` | Secure | From App Store Connect API |
-| `APP_STORE_CONNECT_PRIVATE_KEY` | Secure | From App Store Connect API |
-
-### 4. App Store Connect API Key
-
-1. Go to App Store Connect → Users and Access → Keys
-2. Create new key with "Developer" role
-3. Download the .p8 file
-4. Note the Key ID and Issuer ID
-5. Add to Codemagic environment variables
-
-## Build Configuration
-
-### Available Workflows
-
-1. **`android-build`**: 
-   - Builds signed Android APK
-   - Publishes to Google Play (internal track)
-   - Triggers on: push to `main`/`develop`
-
-2. **`ios-build`**: 
-   - Builds signed iOS IPA
-   - Publishes to TestFlight
-   - Triggers on: push to `main`/`develop`
-
-3. **`dev-build`**: 
-   - Builds unsigned debug versions
-   - Runs tests and linting
-   - Triggers on: pull requests to `develop`
-
-### Customization
-
-Edit `codemagic.yaml` to customize:
-
-- **Build triggers**: Modify `triggering.branch_patterns`
-- **Build duration**: Adjust `max_build_duration`
-- **Publishing**: Configure `publishing` sections
-- **Environment**: Update `environment.vars`
-
-## Troubleshooting
-
-### Common Android Issues
-
-1. **Keystore errors**: Ensure base64 encoding is correct
-2. **Gradle errors**: Check Android SDK/NDK versions
-3. **Signing errors**: Verify keystore passwords
-
-### Common iOS Issues
-
-1. **Code signing**: Ensure App Store Connect API key is valid
-2. **Build failures**: Check Xcode version compatibility
-3. **App Store Connect**: Verify App ID and bundle identifier
-
-### General Issues
-
-1. **Dependencies**: Ensure `package.json` is up to date
-2. **Capacitor sync**: Make sure web assets build correctly
-3. **Environment**: Check Node.js version compatibility
-
-## Build Artifacts
-
-### Android
-- **APK**: `android/app/build/outputs/apk/release/app-release.apk`
-- **AAB**: `android/app/build/outputs/bundle/release/app-release.aab`
-- **Mapping**: `android/app/build/outputs/mapping/release/mapping.txt`
-
-### iOS
-- **IPA**: `build/ios/ipa/App.ipa`
-- **dSYM**: `build/ios/dsym/App.app.dSYM.zip`
-- **Archive**: `build/ios/xcarchive/App.xcarchive`
-
-## Next Steps
-
-1. **Test Builds**: Start with `dev-build` workflow
-2. **Configure Signing**: Set up Android keystore and iOS certificates
-3. **Production Builds**: Use `android-build` and `ios-build` workflows
-4. **Store Submission**: Configure automatic publishing (optional)
-
-## Support
-
-- **Codemagic Docs**: [docs.codemagic.io](https://docs.codemagic.io)
-- **Capacitor Docs**: [capacitorjs.com](https://capacitorjs.com)
-- **Issues**: Check build logs in Codemagic dashboard
+- **Workflow**: `ios-simulator`
+- **Triggers**: Automatically on push to `main` or `develop`
+- **Duration**: ~10-15 minutes
+- **Result**: Validates your app builds correctly
 
 ---
 
-**Note**: Replace `1234567890` in `codemagic.yaml` with your actual App Store Connect App ID before running iOS builds.
+## 📱 **Device IPA Builds (Requires Apple Developer Account)**
+
+### **Prerequisites**
+
+1. **Apple Developer Account** ($99/year)
+2. **iOS Development Certificate**
+3. **Provisioning Profile**
+4. **Codemagic Pro subscription** (for private repos and device builds)
+
+### **Setup Steps**
+
+#### **Step 1: Add Certificates to Codemagic**
+
+1. **Go to**: Codemagic Teams > Your Team > Integrations
+2. **Click**: "Code signing identities"
+3. **Add**: iOS Development Certificate (.p12 file + password)
+4. **Add**: Provisioning Profile (.mobileprovision file)
+5. **Create group**: Name it `ios_credentials`
+
+#### **Step 2: Trigger Device Build**
+
+- **Method 1**: Create a git tag starting with `v` (e.g., `v1.0.0`)
+- **Method 2**: Manual trigger in Codemagic dashboard
+- **Workflow**: `ios-device` will run automatically
+
+#### **Step 3: Download IPA**
+
+- **Build artifacts** will include the signed IPA file
+- **Install on device** using Xcode, TestFlight, or third-party tools
+
+---
+
+## 🏪 **App Store Builds (Production)**
+
+### **For TestFlight & App Store**
+
+#### **Step 1: App Store Connect Integration**
+
+1. **Go to**: Codemagic Teams > Integrations
+2. **Add**: App Store Connect API key
+3. **Create group**: `app_store_credentials`
+
+#### **Step 2: Trigger Release Build**
+
+- **Create tag**: `release-v1.0.0` (triggers `ios-appstore` workflow)
+- **Automatic**: Builds, signs, and uploads to TestFlight
+- **Review**: Submit to App Store when ready
+
+---
+
+## 🔧 **Workflow Overview**
+
+### **1. `ios-simulator` (Free)**
+- **Triggers**: Push to `main`/`develop`, Pull Requests
+- **Purpose**: Validation and testing
+- **Output**: Build verification
+- **Cost**: Free (within monthly limits)
+
+### **2. `ios-device` (Paid)**
+- **Triggers**: Git tags like `v1.0.0`
+- **Purpose**: Device testing and beta distribution
+- **Output**: Signed IPA file
+- **Cost**: Uses build minutes
+
+### **3. `ios-appstore` (Paid)**
+- **Triggers**: Release tags like `release-v1.0.0`
+- **Purpose**: Production App Store releases
+- **Output**: App Store submission + TestFlight
+- **Cost**: Uses build minutes + App Store integration
+
+---
+
+## 💰 **Pricing & Plans**
+
+### **Free Tier**
+- ✅ **500 build minutes/month**
+- ✅ **Public repositories**
+- ✅ **Simulator builds**
+- ❌ No device builds or IPA export
+
+### **Paid Plans** (Starting ~$28/month)
+- ✅ **Unlimited build minutes**
+- ✅ **Private repositories**
+- ✅ **Device builds & IPA export**
+- ✅ **App Store/TestFlight integration**
+- ✅ **Advanced features**
+
+---
+
+## 🎯 **Advantages of Codemagic**
+
+### **vs GitHub Actions**
+- ✅ **Better iOS support** (M1 Mac minis)
+- ✅ **Faster builds** (dedicated iOS infrastructure)
+- ✅ **Easier certificate management**
+- ✅ **Built-in App Store integration**
+- ✅ **Better error handling** for iOS-specific issues
+
+### **vs Xcode Cloud**
+- ✅ **More flexible** configuration
+- ✅ **Support for non-Apple CI/CD**
+- ✅ **Better pricing** for small teams
+- ✅ **Multi-platform** support
+
+---
+
+## 🚀 **Getting Started Commands**
+
+### **Trigger Device Build**
+```bash
+# Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### **Trigger App Store Build**
+```bash
+# Create and push a release tag
+git tag release-v1.0.0
+git push origin release-v1.0.0
+```
+
+### **Check Build Status**
+- Visit: https://codemagic.io/apps
+- Or get notifications via email/Slack
+
+---
+
+## 🔍 **Troubleshooting**
+
+### **Common Issues**
+
+1. **"No provisioning profile found"**
+   - Ensure profile includes your device UDID
+   - Check bundle ID matches: `com.eezybuild.app`
+
+2. **"Certificate not trusted"**
+   - Verify certificate is valid and not expired
+   - Check it's properly uploaded to Codemagic
+
+3. **"Build failed on signing"**
+   - Ensure certificate and provisioning profile match
+   - Check team ID and bundle ID consistency
+
+### **Getting Help**
+
+- **Codemagic Docs**: https://docs.codemagic.io/
+- **Slack Community**: https://codemagicio.slack.com/
+- **Support**: support@codemagic.io
+
+---
+
+## ✅ **Next Steps**
+
+1. **Start with simulator builds** (free)
+2. **Add certificates** when ready for device testing
+3. **Set up App Store integration** for production
+4. **Configure notifications** for build status
+
+Your EezyBuild iOS app is ready for professional CI/CD with Codemagic! 🎉

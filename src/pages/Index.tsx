@@ -249,7 +249,7 @@ const Index = () => {
     // Always available tabs
     baseTabs.push(
       { id: 'profile', icon: User, label: 'Profile' },
-      { id: 'subscription', icon: Crown, label: 'Tiers' }
+      { id: 'subscription', icon: Crown, label: 'Plans' }
     );
 
     return baseTabs;
