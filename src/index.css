@@ -603,3 +603,15 @@
     background-color: rgba(255, 255, 255, 0) !important;
   }
 }
+
+/* ────────────────────────── Keyboard visibility adjustments ────────────────────────── */
+.keyboard-visible .chat-input-container,
+.keyboard-visible .text-input-container {
+  padding-bottom: calc(var(--keyboard-offset, 0px) + env(safe-area-inset-bottom, 0px));
+}
+
+.keyboard-visible body {
+  /* Allow natural scroll while keyboard is shown. */
+  height: auto;
+  max-height: none;
+}

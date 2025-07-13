@@ -10,6 +10,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import TeamInvitePage from "./pages/TeamInvitePage";
 import PasswordResetPage from "./pages/PasswordResetPage";
 import { ENVIRONMENT, initializeViewportCSS } from "./utils/environment";
+import { useMobileAppEnhancements } from "./hooks/useMobileAppEnhancements";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,9 @@ const App = () => {
       userAgent: navigator.userAgent
     });
   }, []);
+
+  // Initialise native–only enhancements (no-op on web).
+  useMobileAppEnhancements();
 
   return (
     <QueryClientProvider client={queryClient}>

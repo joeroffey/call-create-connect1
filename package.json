@@ -39,6 +39,7 @@
     "@capacitor/core": "^7.4.0",
     "@capacitor/device": "^7.0.1",
     "@capacitor/haptics": "^7.0.1",
+    "@capacitor/keyboard": "^7.0.1",
     "@capacitor/ios": "^7.4.0",
     "@capacitor/network": "^7.0.1",
     "@capacitor/splash-screen": "^7.0.1",
