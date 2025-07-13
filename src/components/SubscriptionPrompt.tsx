@@ -33,7 +33,7 @@ const SubscriptionPrompt = ({ onViewPlans }: SubscriptionPromptProps) => {
 
         <p className="text-gray-400 mb-8 leading-relaxed">
           To access the UK Building Regulations AI assistant and save your chat history, 
-          you'll need a subscription. Choose from our professional plans designed 
+          you'll need a subscription. Choose from our professional tiers designed 
           for building industry professionals.
         </p>
 
@@ -42,7 +42,7 @@ const SubscriptionPrompt = ({ onViewPlans }: SubscriptionPromptProps) => {
           className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold"
         >
           <Crown className="w-5 h-5 mr-2" />
-          View Subscription Plans
+          View Subscription Tiers
         </Button>
       </motion.div>
     </div>

@@ -160,7 +160,9 @@ export class KeyboardManager {
 
   onKeyboardToggle(callback: (isVisible: boolean, keyboardHeight: number) => void) {
     this.listeners.add(callback);
-    return () => this.listeners.delete(callback);
+    return () => {
+      this.listeners.delete(callback);
+    };
   }
 
   getKeyboardInfo() {
@@ -433,9 +435,10 @@ export const useKeyboard = () => {
   useEffect(() => {
     if (ENVIRONMENT.IS_MOBILE_APP) {
       const keyboardManager = KeyboardManager.getInstance();
-      return keyboardManager.onKeyboardToggle((isVisible, height) => {
+      const cleanup = keyboardManager.onKeyboardToggle((isVisible, height) => {
         setKeyboardState({ isVisible, height });
       });
+      return cleanup;
     }
   }, []);
   

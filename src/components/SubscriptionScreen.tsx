@@ -26,7 +26,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
   const { products, loading: iapLoading, isNative, purchaseProduct, restorePurchases } = useInAppPurchases(user?.id);
   const [loading, setLoading] = useState<string | null>(null);
 
-  const plans = [
+  const tiers = [
     {
       name: 'EezyBuild',
       price: '£14.99',
@@ -270,116 +270,116 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
           </motion.div>
         )}
 
-        {/* Plans Grid */}
+        {/* Tiers Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * (index + 1) }}
-              className={`relative rounded-2xl p-6 border-2 backdrop-blur-sm ${
-                plan.current
-                  ? 'border-emerald-500 bg-emerald-500/10'
-                  : plan.popular
-                  ? 'border-blue-500 bg-blue-500/10'
-                  : plan.enterprise
-                  ? 'border-purple-500 bg-purple-500/10'
-                  : 'border-gray-600 bg-gray-900/50'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
-                    <Star className="w-3 h-3" />
-                    <span>Most Popular</span>
-                  </div>
-                </div>
-              )}
+          {tiers.map((tier, index) => (
+             <motion.div
+               key={tier.name}
+               initial={{ opacity: 0, y: 20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ delay: 0.1 * (index + 1) }}
+               className={`relative rounded-2xl p-6 border-2 backdrop-blur-sm ${
+                 tier.current
+                   ? 'border-emerald-500 bg-emerald-500/10'
+                   : tier.popular
+                   ? 'border-blue-500 bg-blue-500/10'
+                   : tier.enterprise
+                   ? 'border-purple-500 bg-purple-500/10'
+                   : 'border-gray-600 bg-gray-900/50'
+               }`}
+             >
+               {tier.popular && (
+                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                   <div className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                     <Star className="w-3 h-3" />
+                     <span>Most Popular</span>
+                   </div>
+                 </div>
+               )}
 
-              {plan.enterprise && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
-                    <Building className="w-3 h-3" />
-                    <span>Enterprise</span>
-                  </div>
-                </div>
-              )}
+               {tier.enterprise && (
+                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                   <div className="bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
+                     <Building className="w-3 h-3" />
+                     <span>Enterprise</span>
+                   </div>
+                 </div>
+               )}
 
-              <div className="text-center mb-6">
-                <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
-                <div className="mb-2">
-                  {isNative && products.length > 0 ? (
-                    // Show native store prices if available
-                    (() => {
-                      const product = products.find(p => p.productId.includes(plan.planType));
-                      return product ? (
-                        <>
-                          <span className="text-3xl font-bold text-white">{product.price}</span>
-                          <span className="text-gray-400 ml-1">/{plan.period}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-3xl font-bold text-white">{plan.price}</span>
-                          <span className="text-gray-400 ml-1">/{plan.period}</span>
-                        </>
-                      );
-                    })()
-                  ) : (
-                    <>
-                      <span className="text-3xl font-bold text-white">{plan.price}</span>
-                      <span className="text-gray-400 ml-1">/{plan.period}</span>
-                    </>
-                  )}
-                </div>
-                {/* Only show trial info if user hasn't used trial and doesn't have active subscription and not on native */}
-                {!hasUsedTrial && !hasActiveSubscription && !isNative && (
-                  <div className="mb-2">
-                    <span className="text-sm font-medium text-emerald-400">
-                      7-day free trial
-                    </span>
-                  </div>
-                )}
-                <p className="text-gray-400 text-sm">{plan.description}</p>
-              </div>
+               <div className="text-center mb-6">
+                 <h3 className="text-xl font-bold text-white mb-2">{tier.name}</h3>
+                 <div className="mb-2">
+                   {isNative && products.length > 0 ? (
+                     // Show native store prices if available
+                     (() => {
+                       const product = products.find(p => p.productId.includes(tier.planType));
+                       return product ? (
+                         <>
+                           <span className="text-3xl font-bold text-white">{product.price}</span>
+                           <span className="text-gray-400 ml-1">/{tier.period}</span>
+                         </>
+                       ) : (
+                         <>
+                           <span className="text-3xl font-bold text-white">{tier.price}</span>
+                           <span className="text-gray-400 ml-1">/{tier.period}</span>
+                         </>
+                       );
+                     })()
+                   ) : (
+                     <>
+                       <span className="text-3xl font-bold text-white">{tier.price}</span>
+                       <span className="text-gray-400 ml-1">/{tier.period}</span>
+                     </>
+                   )}
+                 </div>
+                 {/* Only show trial info if user hasn't used trial and doesn't have active subscription and not on native */}
+                 {!hasUsedTrial && !hasActiveSubscription && !isNative && (
+                   <div className="mb-2">
+                     <span className="text-sm font-medium text-emerald-400">
+                       7-day free trial
+                     </span>
+                   </div>
+                 )}
+                 <p className="text-gray-400 text-sm">{tier.description}</p>
+               </div>
 
-              <ul className="space-y-3 mb-8">
-                {plan.features.map((feature, featureIndex) => (
-                  <li key={featureIndex} className="flex items-center space-x-3">
-                    <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span className="text-gray-300 text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
+               <ul className="space-y-3 mb-8">
+                 {tier.features.map((feature, featureIndex) => (
+                   <li key={featureIndex} className="flex items-center space-x-3">
+                     <Check className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                     <span className="text-gray-300 text-sm">{feature}</span>
+                   </li>
+                 ))}
+               </ul>
 
-              <Button
-                onClick={() => handlePlanSelection(plan.planType)}
-                disabled={plan.current || loading === plan.planType || (isNative && iapLoading)}
-                className={`w-full h-12 rounded-xl font-medium ${
-                  plan.current
-                    ? 'bg-emerald-600 text-white cursor-default'
-                    : plan.popular
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                    : plan.enterprise
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                    : 'bg-gray-700 hover:bg-gray-600 text-white'
-                }`}
-              >
-                {loading === plan.planType || (isNative && iapLoading) ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : null}
-                {plan.current 
-                  ? 'Current Plan' 
-                  : plan.isContactPlan
-                    ? 'Contact Us'
-                    : isNative 
-                      ? 'Subscribe Now'
-                      : !hasUsedTrial && !hasActiveSubscription 
-                        ? 'Start Free Trial' 
-                        : 'Subscribe Now'
-                }
-              </Button>
-            </motion.div>
+               <Button
+                 onClick={() => handlePlanSelection(tier.planType)}
+                 disabled={tier.current || loading === tier.planType || (isNative && iapLoading)}
+                 className={`w-full h-12 rounded-xl font-medium ${
+                   tier.current
+                     ? 'bg-emerald-600 text-white cursor-default'
+                     : tier.popular
+                     ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                     : tier.enterprise
+                     ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                     : 'bg-gray-700 hover:bg-gray-600 text-white'
+                 }`}
+               >
+                 {loading === tier.planType || (isNative && iapLoading) ? (
+                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                 ) : null}
+                 {tier.current 
+                   ? 'Current Tier' 
+                   : tier.isContactPlan
+                     ? 'Contact Us'
+                     : isNative 
+                       ? 'Subscribe Now'
+                       : !hasUsedTrial && !hasActiveSubscription 
+                         ? 'Start Free Trial' 
+                         : 'Subscribe Now'
+                 }
+               </Button>
+             </motion.div>
           ))}
         </div>
 
