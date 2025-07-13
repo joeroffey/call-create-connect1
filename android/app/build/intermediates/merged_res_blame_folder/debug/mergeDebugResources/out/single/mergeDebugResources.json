@@ -1,0 +1,10 @@
+[
+    {
+        "merged": "com.lovable.callcreateconnect.app-debug-27:/xml_config.xml.flat",
+        "source": "com.lovable.callcreateconnect.app-main-29:/xml/config.xml"
+    },
+    {
+        "merged": "com.lovable.callcreateconnect.app-debug-27:/xml_file_paths.xml.flat",
+        "source": "com.lovable.callcreateconnect.app-main-29:/xml/file_paths.xml"
+    }
+]
