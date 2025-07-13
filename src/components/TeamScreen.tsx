@@ -32,6 +32,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useTeams } from '@/hooks/useTeams';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import CreateTeamModal from '@/components/team/CreateTeamModal';
@@ -46,6 +52,7 @@ import TeamCommentsView from '@/components/team/TeamCommentsView';
 import TeamCompletionDocsView from '@/components/team/TeamCompletionDocsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 import TeamActivityFeed from '@/components/team/TeamActivityFeed';
+import { RoleSelect } from '@/components/team/RoleSelect';
 
 interface TeamScreenProps {
   user: any;
@@ -239,14 +246,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     );
   }
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'owner': return <Crown className="w-4 h-4 text-yellow-500" />;
-      case 'admin': return <Shield className="w-4 h-4 text-blue-500" />;
-      case 'viewer': return <Eye className="w-4 h-4 text-gray-500" />;
-      default: return <Users className="w-4 h-4 text-emerald-500" />;
-    }
-  };
 
   // Helper function to determine if current user can remove a specific member
   const canRemoveMember = (member: any) => {
@@ -256,6 +255,23 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     const isCurrentUser = member.user_id === user?.id;
     
     return isCurrentUserOwnerOrAdmin && !isTargetOwner && !isCurrentUser;
+  };
+
+  // Helper function to determine if current user can edit a member's role
+  const canEditRole = (member: any) => {
+    const currentUserMember = members.find(m => m.user_id === user?.id);
+    const currentUserRole = currentUserMember?.role;
+    const isTargetOwner = member.role === 'owner';
+    const isCurrentUser = member.user_id === user?.id;
+    
+    // Only owners and admins can edit roles
+    // Cannot edit owner's role or own role
+    return (currentUserRole === 'owner' || currentUserRole === 'admin') && !isTargetOwner && !isCurrentUser;
+  };
+
+  const getCurrentUserRole = () => {
+    const currentUserMember = members.find(m => m.user_id === user?.id);
+    return currentUserMember?.role || null;
   };
 
   // Handle member removal with confirmation
@@ -370,10 +386,16 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                   </div>
                 </div>
                 <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                  <Badge variant="outline" className="border-gray-600 text-gray-300 px-2 sm:px-3 py-1 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
-                    {getRoleIcon(member.role)}
-                    <span className="capitalize font-medium">{member.role}</span>
-                  </Badge>
+                  <RoleSelect
+                    currentRole={member.role}
+                    memberId={member.id}
+                    memberName={member.profiles?.full_name || 'Unknown User'}
+                    onRoleChange={updateMemberRole}
+                    canEdit={canEditRole(member)}
+                    isCurrentUser={member.user_id === user?.id}
+                    isOwner={member.role === 'owner'}
+                    currentUserRole={getCurrentUserRole()}
+                  />
                   
                   {/* Remove member button - only show for owners/admins and not for owners/current user */}
                   {canRemoveMember(member) && (
