@@ -5,7 +5,7 @@ import { createProject } from '@/lib/projects';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NameInput } from "@/components/ui/name-input";
 import { PhoneInput } from "@/components/ui/phone-input";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import { AddressInput } from "@/components/ui/address-input";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -118,11 +118,10 @@ const CreateProjectModal = ({
                        <label htmlFor="customer-address" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Address
                        </label>
-                       <AddressAutocomplete
+                       <AddressInput
                          value={newProject.customer_address}
                          onChange={(value) => setNewProject({ ...newProject, customer_address: value })}
                          className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                         placeholder="Start typing customer address..."
                        />
                      </div>
 
