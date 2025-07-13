@@ -1,8 +1,8 @@
 
 ext {
     minSdkVersion = 22
-    compileSdkVersion = 29
-    targetSdkVersion = 29
+    compileSdkVersion = 35
+    targetSdkVersion = 35
     androidxAppCompatVersion = '1.6.1'
     androidxJunitVersion = '1.1.5'
     androidxEspressoCoreVersion = '3.5.1'

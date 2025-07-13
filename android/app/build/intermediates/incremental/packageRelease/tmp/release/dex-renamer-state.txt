@@ -1,0 +1,7 @@
+#Sun Jul 13 14:12:15 UTC 2025
+base.0=/workspace/android/app/build/intermediates/dex/release/mergeDexRelease/classes.dex
+base.1=/workspace/android/app/build/intermediates/global_synthetics_dex/release/mergeReleaseGlobalSynthetics/classes.dex
+path.0=classes.dex
+path.1=classes.dex
+renamed.0=classes.dex
+renamed.1=classes2.dex
