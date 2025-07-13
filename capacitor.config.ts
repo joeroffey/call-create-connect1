@@ -13,9 +13,11 @@ const config: CapacitorConfig = {
       androidStyle: 'DARK'
     },
     Keyboard: {
-      resize: 'native',
+      resize: 'ionic', // Changed to ionic for better native behavior
       style: 'dark',
-      resizeOnFullScreen: true
+      resizeOnFullScreen: true,
+      androidInputMode: 'adjustResize', // Better keyboard handling on Android
+      iOSInputAssistItem: false // Disable iOS input accessory view for cleaner look
     },
     App: {
       appUrlOpen: {
@@ -57,7 +59,7 @@ const config: CapacitorConfig = {
     allowsLinkPreview: false,
     handleApplicationNotifications: true,
     hideLogs: true,
-    disallowOverscroll: true,
+    disallowOverscroll: false, // Changed to false for more native feel
     enableViewportScale: false,
     allowsInlineMediaPlayback: true,
     suppresessIncrementalRendering: false,
@@ -65,7 +67,11 @@ const config: CapacitorConfig = {
     scrollEnabled: true,
     minimumFontSize: 12.0,
     contentInset: 'automatic',
-    webviewStyle: 'light'
+    webviewStyle: 'light',
+    // Enhanced iOS-specific settings
+    automaticallyAdjustsScrollIndicatorInsets: true,
+    keyboardDisplayRequiresUserAction: false, // Better keyboard UX
+    suppressesIncrementalRendering: false
   },
   android: {
     backgroundColor: '#000000',
@@ -75,7 +81,11 @@ const config: CapacitorConfig = {
     appendUserAgent: 'EezyBuild',
     overrideUserAgent: '',
     hideLogs: true,
-    useLegacyBridge: false
+    useLegacyBridge: false,
+    // Enhanced Android-specific settings
+    mixedContentMode: 'never',
+    themeColor: '#000000',
+    androidAmbientMode: 'auto'
   },
   server: {
     androidScheme: 'https',

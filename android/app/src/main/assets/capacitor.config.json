@@ -11,9 +11,11 @@
 			"androidStyle": "DARK"
 		},
 		"Keyboard": {
-			"resize": "native",
+			"resize": "ionic",
 			"style": "dark",
-			"resizeOnFullScreen": true
+			"resizeOnFullScreen": true,
+			"androidInputMode": "adjustResize",
+			"iOSInputAssistItem": false
 		},
 		"App": {
 			"appUrlOpen": {
@@ -59,7 +61,7 @@
 		"allowsLinkPreview": false,
 		"handleApplicationNotifications": true,
 		"hideLogs": true,
-		"disallowOverscroll": true,
+		"disallowOverscroll": false,
 		"enableViewportScale": false,
 		"allowsInlineMediaPlayback": true,
 		"suppresessIncrementalRendering": false,
@@ -67,7 +69,10 @@
 		"scrollEnabled": true,
 		"minimumFontSize": 12,
 		"contentInset": "automatic",
-		"webviewStyle": "light"
+		"webviewStyle": "light",
+		"automaticallyAdjustsScrollIndicatorInsets": true,
+		"keyboardDisplayRequiresUserAction": false,
+		"suppressesIncrementalRendering": false
 	},
 	"android": {
 		"backgroundColor": "#000000",
@@ -77,7 +82,10 @@
 		"appendUserAgent": "EezyBuild",
 		"overrideUserAgent": "",
 		"hideLogs": true,
-		"useLegacyBridge": false
+		"useLegacyBridge": false,
+		"mixedContentMode": "never",
+		"themeColor": "#000000",
+		"androidAmbientMode": "auto"
 	},
 	"server": {
 		"androidScheme": "https",

@@ -5,6 +5,7 @@ import ChatHeader from './chat/ChatHeader';
 import ChatMessage from './chat/ChatMessage';
 import ChatSidebar from './chat/ChatSidebar';
 import ImageGallery from './chat/ImageGallery';
+import MobileChatInput from './chat/MobileChatInput';
 import { useToast } from "@/hooks/use-toast"
 import { useConversationMessages } from '../hooks/useConversationMessages';
 import { useConversationAnalytics } from '../hooks/useConversationAnalytics';
@@ -12,6 +13,7 @@ import { usePineconeAnalytics } from '../hooks/usePineconeAnalytics';
 import { useContentGapAnalysis } from '../hooks/useContentGapAnalysis';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import ENVIRONMENT from '@/utils/environment';
 
 interface ChatMessageData {
   id: string;
@@ -792,65 +794,85 @@ Would you like me to help you plan any work items or discuss project timeline ma
               </motion.div>
             )}
 
-            {/* Fixed Input Area */}
-            {/* 🔥 Floating Chat Input */}
-            <div id='floating-chatinput' className="fixed mx-auto border rounded-full border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl z-50">
-              <div className="max-w-4xl mx-auto">
-                <div className="flex items-center space-x-3">
-                  {projectId && (
-                    <button
-                      onClick={handleDocumentUpload}
-                      disabled={isUploading}
-                      className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Upload Document"
-                    >
-                      <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
-                    </button>
-                  )}
-                  {projectId && (
-                    <button
-                      onClick={handleScheduleOfWorks}
-                      className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
-                      title="Schedule of Works"
-                    >
-                      <Clock className="w-5 h-5" />
-                    </button>
-                  )}
+            {/* Mobile-Optimized Chat Input */}
+            {ENVIRONMENT.IS_MOBILE_APP ? (
+              <MobileChatInput
+                value={newMessage}
+                onChange={setNewMessage}
+                onSend={handleSendMessage}
+                onDocumentUpload={projectId ? handleDocumentUpload : undefined}
+                onScheduleOfWorks={projectId ? handleScheduleOfWorks : undefined}
+                placeholder={
+                  projectId && project
+                    ? `Ask about ${project.name}...`
+                    : "Ask me a question..."
+                }
+                isLoading={isLoading}
+                isUploading={isUploading}
+                projectId={projectId}
+                disabled={false}
+              />
+            ) : (
+              /* Legacy Web Chat Input */
+              <div id='floating-chatinput' className="fixed mx-auto border rounded-full border-gray-800/30 p-4 bg-gradient-to-r from-gray-950/80 via-black/80 to-gray-950/80 backdrop-blur-xl z-50">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-center space-x-3">
+                    {projectId && (
+                      <button
+                        onClick={handleDocumentUpload}
+                        disabled={isUploading}
+                        className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Upload Document"
+                      >
+                        <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
+                      </button>
+                    )}
+                    {projectId && (
+                      <button
+                        onClick={handleScheduleOfWorks}
+                        className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
+                        title="Schedule of Works"
+                      >
+                        <Clock className="w-5 h-5" />
+                      </button>
+                    )}
 
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileSelect}
-                  />
-
-                  <div className="flex-1 relative flex items-center">
-                    <textarea
-                      ref={inputRef}
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      rows={1}
-                      placeholder={
-                        projectId && project
-                          ? `Ask about ${project.name}...`
-                          : "Ask me a question..."
-                      }
-                      className="w-full px-4 py-3 pr-12 rounded-full bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
-                    />
-                    <motion.button
-                      whileTap={{ scale: 0.95 }}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={handleSendMessage}
-                      disabled={!newMessage.trim() || isLoading}
-                      className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-full p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                    >
-                      <Send className="w-4 h-4" />
-                    </motion.button>
+                    <div className="flex-1 relative flex items-center">
+                      <textarea
+                        ref={inputRef}
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        rows={1}
+                        placeholder={
+                          projectId && project
+                            ? `Ask about ${project.name}...`
+                            : "Ask me a question..."
+                        }
+                        className="w-full px-4 py-3 pr-12 rounded-full bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
+                      />
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        onClick={handleSendMessage}
+                        disabled={!newMessage.trim() || isLoading}
+                        className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-full p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      >
+                        <Send className="w-4 h-4" />
+                      </motion.button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* Hidden file input for both mobile and web */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileSelect}
+            />
           </div>
         </div>
 
