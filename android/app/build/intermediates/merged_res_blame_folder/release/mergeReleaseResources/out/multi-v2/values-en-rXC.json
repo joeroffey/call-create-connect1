@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.lovable.callcreateconnect.app-mergeReleaseResources-25:/values-en-rXC/values-en-rXC.xml",
+            "outputFile": "com.lovable.callcreateconnect.app-mergeReleaseResources-32:/values-en-rXC/values-en-rXC.xml",
             "map": [
                 {
                     "source": "/home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/res/values-en-rXC/values-en-rXC.xml",

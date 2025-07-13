@@ -21,285 +21,286 @@
 15    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 15-->/workspace/android/app/src/main/AndroidManifest.xml:10:5-71
 15-->/workspace/android/app/src/main/AndroidManifest.xml:10:22-68
-16    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-16-->/workspace/android/app/src/main/AndroidManifest.xml:11:5-80
-16-->/workspace/android/app/src/main/AndroidManifest.xml:11:22-77
-17    <uses-permission
-17-->/workspace/android/app/src/main/AndroidManifest.xml:12:5-13:38
-18        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-18-->/workspace/android/app/src/main/AndroidManifest.xml:12:22-78
-19        android:maxSdkVersion="28" />
-19-->/workspace/android/app/src/main/AndroidManifest.xml:13:9-35
-20    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-20-->/workspace/android/app/src/main/AndroidManifest.xml:14:5-79
-20-->/workspace/android/app/src/main/AndroidManifest.xml:14:22-76
-21    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-21-->/workspace/android/app/src/main/AndroidManifest.xml:15:5-81
-21-->/workspace/android/app/src/main/AndroidManifest.xml:15:22-78
-22    <uses-permission android:name="android.permission.VIBRATE" />
-22-->/workspace/android/app/src/main/AndroidManifest.xml:16:5-66
-22-->/workspace/android/app/src/main/AndroidManifest.xml:16:22-63
-23    <uses-permission android:name="android.permission.WAKE_LOCK" />
-23-->/workspace/android/app/src/main/AndroidManifest.xml:17:5-68
-23-->/workspace/android/app/src/main/AndroidManifest.xml:17:22-65
-24    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-24-->/workspace/android/app/src/main/AndroidManifest.xml:18:5-81
-24-->/workspace/android/app/src/main/AndroidManifest.xml:18:22-78
-25
-26    <!-- Features -->
-27    <uses-feature
-27-->/workspace/android/app/src/main/AndroidManifest.xml:21:5-85
-28        android:name="android.hardware.camera"
-28-->/workspace/android/app/src/main/AndroidManifest.xml:21:19-57
-29        android:required="false" />
-29-->/workspace/android/app/src/main/AndroidManifest.xml:21:58-82
-30    <uses-feature
-30-->/workspace/android/app/src/main/AndroidManifest.xml:22:5-95
-31        android:name="android.hardware.camera.autofocus"
-31-->/workspace/android/app/src/main/AndroidManifest.xml:22:19-67
-32        android:required="false" />
-32-->/workspace/android/app/src/main/AndroidManifest.xml:22:68-92
-33    <uses-feature
-33-->/workspace/android/app/src/main/AndroidManifest.xml:23:5-89
-34        android:name="android.hardware.microphone"
-34-->/workspace/android/app/src/main/AndroidManifest.xml:23:19-61
-35        android:required="false" />
-35-->/workspace/android/app/src/main/AndroidManifest.xml:23:62-86
-36    <uses-feature
-36-->/workspace/android/app/src/main/AndroidManifest.xml:24:5-87
-37        android:name="android.hardware.location"
-37-->/workspace/android/app/src/main/AndroidManifest.xml:24:19-59
-38        android:required="false" />
-38-->/workspace/android/app/src/main/AndroidManifest.xml:24:60-84
-39    <uses-feature
-39-->/workspace/android/app/src/main/AndroidManifest.xml:25:5-91
-40        android:name="android.hardware.location.gps"
-40-->/workspace/android/app/src/main/AndroidManifest.xml:25:19-63
-41        android:required="false" />
-41-->/workspace/android/app/src/main/AndroidManifest.xml:25:64-88
-42    <uses-feature
-42-->/workspace/android/app/src/main/AndroidManifest.xml:26:5-90
-43        android:name="android.hardware.touchscreen"
-43-->/workspace/android/app/src/main/AndroidManifest.xml:26:19-62
-44        android:required="false" />
-44-->/workspace/android/app/src/main/AndroidManifest.xml:26:63-87
-45    <uses-feature
-45-->/workspace/android/app/src/main/AndroidManifest.xml:27:5-83
-46        android:name="android.hardware.wifi"
-46-->/workspace/android/app/src/main/AndroidManifest.xml:27:19-55
-47        android:required="false" />
-47-->/workspace/android/app/src/main/AndroidManifest.xml:27:56-80
+16    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+16-->/workspace/android/app/src/main/AndroidManifest.xml:11:5-79
+16-->/workspace/android/app/src/main/AndroidManifest.xml:11:22-76
+17    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+17-->/workspace/android/app/src/main/AndroidManifest.xml:12:5-81
+17-->/workspace/android/app/src/main/AndroidManifest.xml:12:22-78
+18    <uses-permission android:name="android.permission.VIBRATE" />
+18-->/workspace/android/app/src/main/AndroidManifest.xml:13:5-66
+18-->/workspace/android/app/src/main/AndroidManifest.xml:13:22-63
+19    <uses-permission android:name="android.permission.WAKE_LOCK" />
+19-->/workspace/android/app/src/main/AndroidManifest.xml:14:5-68
+19-->/workspace/android/app/src/main/AndroidManifest.xml:14:22-65
+20    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+20-->/workspace/android/app/src/main/AndroidManifest.xml:15:5-81
+20-->/workspace/android/app/src/main/AndroidManifest.xml:15:22-78
+21
+22    <!-- Features -->
+23    <uses-feature
+23-->/workspace/android/app/src/main/AndroidManifest.xml:18:5-85
+24        android:name="android.hardware.camera"
+24-->/workspace/android/app/src/main/AndroidManifest.xml:18:19-57
+25        android:required="false" />
+25-->/workspace/android/app/src/main/AndroidManifest.xml:18:58-82
+26    <uses-feature
+26-->/workspace/android/app/src/main/AndroidManifest.xml:19:5-95
+27        android:name="android.hardware.camera.autofocus"
+27-->/workspace/android/app/src/main/AndroidManifest.xml:19:19-67
+28        android:required="false" />
+28-->/workspace/android/app/src/main/AndroidManifest.xml:19:68-92
+29    <uses-feature
+29-->/workspace/android/app/src/main/AndroidManifest.xml:20:5-89
+30        android:name="android.hardware.microphone"
+30-->/workspace/android/app/src/main/AndroidManifest.xml:20:19-61
+31        android:required="false" />
+31-->/workspace/android/app/src/main/AndroidManifest.xml:20:62-86
+32    <uses-feature
+32-->/workspace/android/app/src/main/AndroidManifest.xml:21:5-87
+33        android:name="android.hardware.location"
+33-->/workspace/android/app/src/main/AndroidManifest.xml:21:19-59
+34        android:required="false" />
+34-->/workspace/android/app/src/main/AndroidManifest.xml:21:60-84
+35    <uses-feature
+35-->/workspace/android/app/src/main/AndroidManifest.xml:22:5-91
+36        android:name="android.hardware.location.gps"
+36-->/workspace/android/app/src/main/AndroidManifest.xml:22:19-63
+37        android:required="false" />
+37-->/workspace/android/app/src/main/AndroidManifest.xml:22:64-88
+38    <uses-feature
+38-->/workspace/android/app/src/main/AndroidManifest.xml:23:5-90
+39        android:name="android.hardware.touchscreen"
+39-->/workspace/android/app/src/main/AndroidManifest.xml:23:19-62
+40        android:required="false" />
+40-->/workspace/android/app/src/main/AndroidManifest.xml:23:63-87
+41    <uses-feature
+41-->/workspace/android/app/src/main/AndroidManifest.xml:24:5-83
+42        android:name="android.hardware.wifi"
+42-->/workspace/android/app/src/main/AndroidManifest.xml:24:19-55
+43        android:required="false" />
+43-->/workspace/android/app/src/main/AndroidManifest.xml:24:56-80
+44
+45    <permission
+45-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:22:5-24:47
+46        android:name="com.lovable.callcreateconnect.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+46-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:23:9-81
+47        android:protectionLevel="signature" />
+47-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:24:9-44
 48
-49    <permission
-49-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:22:5-24:47
-50        android:name="com.lovable.callcreateconnect.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
-50-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:23:9-81
-51        android:protectionLevel="signature" />
-51-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:24:9-44
-52
-53    <uses-permission android:name="com.lovable.callcreateconnect.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
-53-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:26:5-97
-53-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:26:22-94
-54
-55    <application
-55-->/workspace/android/app/src/main/AndroidManifest.xml:29:5-95:19
-56        android:name="com.lovable.callcreateconnect.MainApplication"
-56-->/workspace/android/app/src/main/AndroidManifest.xml:30:9-69
-57        android:allowBackup="true"
-57-->/workspace/android/app/src/main/AndroidManifest.xml:31:9-35
-58        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
-58-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:28:18-86
-59        android:extractNativeLibs="true"
-60        android:hardwareAccelerated="true"
-60-->/workspace/android/app/src/main/AndroidManifest.xml:35:9-43
-61        android:label="EEZYBuild"
-61-->/workspace/android/app/src/main/AndroidManifest.xml:32:9-34
-62        android:largeHeap="true"
-62-->/workspace/android/app/src/main/AndroidManifest.xml:36:9-33
-63        android:requestLegacyExternalStorage="false"
-63-->/workspace/android/app/src/main/AndroidManifest.xml:34:9-53
-64        android:supportsRtl="true"
-64-->/workspace/android/app/src/main/AndroidManifest.xml:37:9-35
-65        android:usesCleartextTraffic="true" >
-65-->/workspace/android/app/src/main/AndroidManifest.xml:33:9-44
+49    <uses-permission android:name="com.lovable.callcreateconnect.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" />
+49-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:26:5-97
+49-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:26:22-94
+50
+51    <application
+51-->/workspace/android/app/src/main/AndroidManifest.xml:26:5-97:19
+52        android:name="com.lovable.callcreateconnect.MainApplication"
+52-->/workspace/android/app/src/main/AndroidManifest.xml:27:9-69
+53        android:allowBackup="true"
+53-->/workspace/android/app/src/main/AndroidManifest.xml:28:9-35
+54        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+54-->[androidx.core:core:1.15.0] /home/ubuntu/.gradle/caches/transforms-3/25c55d8a38935b24acd91b546bfa16db/transformed/core-1.15.0/AndroidManifest.xml:28:18-86
+55        android:extractNativeLibs="true"
+56        android:hardwareAccelerated="true"
+56-->/workspace/android/app/src/main/AndroidManifest.xml:36:9-43
+57        android:icon="@mipmap/ic_launcher"
+57-->/workspace/android/app/src/main/AndroidManifest.xml:29:9-43
+58        android:label="@string/app_name"
+58-->/workspace/android/app/src/main/AndroidManifest.xml:31:9-41
+59        android:largeHeap="true"
+59-->/workspace/android/app/src/main/AndroidManifest.xml:37:9-33
+60        android:networkSecurityConfig="@xml/network_security_config"
+60-->/workspace/android/app/src/main/AndroidManifest.xml:34:9-69
+61        android:requestLegacyExternalStorage="false"
+61-->/workspace/android/app/src/main/AndroidManifest.xml:35:9-53
+62        android:roundIcon="@mipmap/ic_launcher"
+62-->/workspace/android/app/src/main/AndroidManifest.xml:30:9-48
+63        android:supportsRtl="true"
+63-->/workspace/android/app/src/main/AndroidManifest.xml:38:9-35
+64        android:theme="@style/AppTheme"
+64-->/workspace/android/app/src/main/AndroidManifest.xml:32:9-40
+65        android:usesCleartextTraffic="false" >
+65-->/workspace/android/app/src/main/AndroidManifest.xml:33:9-45
 66
 67        <!-- Main Activity -->
 68        <activity
-68-->/workspace/android/app/src/main/AndroidManifest.xml:41:9-70:20
+68-->/workspace/android/app/src/main/AndroidManifest.xml:42:9-72:20
 69            android:name="com.lovable.callcreateconnect.MainActivity"
-69-->/workspace/android/app/src/main/AndroidManifest.xml:42:13-70
+69-->/workspace/android/app/src/main/AndroidManifest.xml:43:13-70
 70            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
-70-->/workspace/android/app/src/main/AndroidManifest.xml:47:13-129
+70-->/workspace/android/app/src/main/AndroidManifest.xml:49:13-129
 71            android:exported="true"
-71-->/workspace/android/app/src/main/AndroidManifest.xml:43:13-36
+71-->/workspace/android/app/src/main/AndroidManifest.xml:44:13-36
 72            android:launchMode="singleTask"
-72-->/workspace/android/app/src/main/AndroidManifest.xml:44:13-44
+72-->/workspace/android/app/src/main/AndroidManifest.xml:45:13-44
 73            android:screenOrientation="portrait"
-73-->/workspace/android/app/src/main/AndroidManifest.xml:46:13-49
-74            android:windowSoftInputMode="adjustResize" >
-74-->/workspace/android/app/src/main/AndroidManifest.xml:45:13-55
-75            <intent-filter android:autoVerify="true" >
-75-->/workspace/android/app/src/main/AndroidManifest.xml:49:13-52:29
-75-->/workspace/android/app/src/main/AndroidManifest.xml:49:28-53
-76                <action android:name="android.intent.action.MAIN" />
-76-->/workspace/android/app/src/main/AndroidManifest.xml:50:17-69
-76-->/workspace/android/app/src/main/AndroidManifest.xml:50:25-66
-77
-78                <category android:name="android.intent.category.LAUNCHER" />
-78-->/workspace/android/app/src/main/AndroidManifest.xml:51:17-77
-78-->/workspace/android/app/src/main/AndroidManifest.xml:51:27-74
-79            </intent-filter>
-80
-81            <!-- Deep Links -->
-82            <intent-filter android:autoVerify="true" >
-82-->/workspace/android/app/src/main/AndroidManifest.xml:55:13-60:29
-82-->/workspace/android/app/src/main/AndroidManifest.xml:55:28-53
-83                <action android:name="android.intent.action.VIEW" />
-83-->/workspace/android/app/src/main/AndroidManifest.xml:56:17-69
-83-->/workspace/android/app/src/main/AndroidManifest.xml:56:25-66
-84
-85                <category android:name="android.intent.category.DEFAULT" />
-85-->/workspace/android/app/src/main/AndroidManifest.xml:57:17-76
-85-->/workspace/android/app/src/main/AndroidManifest.xml:57:27-73
-86                <category android:name="android.intent.category.BROWSABLE" />
-86-->/workspace/android/app/src/main/AndroidManifest.xml:58:17-78
-86-->/workspace/android/app/src/main/AndroidManifest.xml:58:27-75
-87
-88                <data android:scheme="eezybuild" />
-88-->/workspace/android/app/src/main/AndroidManifest.xml:59:17-52
-88-->/workspace/android/app/src/main/AndroidManifest.xml:59:23-49
-89            </intent-filter>
-90
-91            <!-- HTTPS Deep Links -->
-92            <intent-filter android:autoVerify="true" >
-92-->/workspace/android/app/src/main/AndroidManifest.xml:63:13-69:29
-92-->/workspace/android/app/src/main/AndroidManifest.xml:63:28-53
-93                <action android:name="android.intent.action.VIEW" />
-93-->/workspace/android/app/src/main/AndroidManifest.xml:56:17-69
-93-->/workspace/android/app/src/main/AndroidManifest.xml:56:25-66
-94
-95                <category android:name="android.intent.category.DEFAULT" />
-95-->/workspace/android/app/src/main/AndroidManifest.xml:57:17-76
-95-->/workspace/android/app/src/main/AndroidManifest.xml:57:27-73
-96                <category android:name="android.intent.category.BROWSABLE" />
-96-->/workspace/android/app/src/main/AndroidManifest.xml:58:17-78
-96-->/workspace/android/app/src/main/AndroidManifest.xml:58:27-75
-97
-98                <data
-98-->/workspace/android/app/src/main/AndroidManifest.xml:59:17-52
-99                    android:host="eezybuild.com"
-99-->/workspace/android/app/src/main/AndroidManifest.xml:68:23-51
-100                    android:scheme="https" />
-100-->/workspace/android/app/src/main/AndroidManifest.xml:59:23-49
-101            </intent-filter>
-102        </activity>
-103
-104        <!-- File Provider for Camera -->
-105        <provider
-105-->/workspace/android/app/src/main/AndroidManifest.xml:73:9-81:20
-106            android:name="androidx.core.content.FileProvider"
-106-->/workspace/android/app/src/main/AndroidManifest.xml:74:13-62
-107            android:authorities="com.lovable.callcreateconnect.fileprovider"
-107-->/workspace/android/app/src/main/AndroidManifest.xml:75:13-77
-108            android:exported="false"
-108-->/workspace/android/app/src/main/AndroidManifest.xml:76:13-37
-109            android:grantUriPermissions="true" >
-109-->/workspace/android/app/src/main/AndroidManifest.xml:77:13-47
-110            <meta-data
-110-->/workspace/android/app/src/main/AndroidManifest.xml:78:13-80:54
-111                android:name="android.support.FILE_PROVIDER_PATHS"
-111-->/workspace/android/app/src/main/AndroidManifest.xml:79:17-67
-112                android:resource="@xml/file_paths" />
-112-->/workspace/android/app/src/main/AndroidManifest.xml:80:17-51
-113        </provider>
-114
-115        <!-- Service for background tasks -->
-116        <service
-116-->/workspace/android/app/src/main/AndroidManifest.xml:84:9-87:40
-117            android:name="com.capacitorjs.plugins.background.BackgroundService"
-117-->/workspace/android/app/src/main/AndroidManifest.xml:85:13-80
-118            android:enabled="true"
-118-->/workspace/android/app/src/main/AndroidManifest.xml:86:13-35
-119            android:exported="false" />
-119-->/workspace/android/app/src/main/AndroidManifest.xml:87:13-37
-120
-121        <!-- Notification metadata -->
-122        <!-- Default notification icon/color removed to avoid missing resources -->
-123
+73-->/workspace/android/app/src/main/AndroidManifest.xml:48:13-49
+74            android:theme="@style/AppTheme.NoActionBarLaunch"
+74-->/workspace/android/app/src/main/AndroidManifest.xml:46:13-62
+75            android:windowSoftInputMode="adjustResize" >
+75-->/workspace/android/app/src/main/AndroidManifest.xml:47:13-55
+76            <intent-filter android:autoVerify="true" >
+76-->/workspace/android/app/src/main/AndroidManifest.xml:51:13-54:29
+76-->/workspace/android/app/src/main/AndroidManifest.xml:51:28-53
+77                <action android:name="android.intent.action.MAIN" />
+77-->/workspace/android/app/src/main/AndroidManifest.xml:52:17-69
+77-->/workspace/android/app/src/main/AndroidManifest.xml:52:25-66
+78
+79                <category android:name="android.intent.category.LAUNCHER" />
+79-->/workspace/android/app/src/main/AndroidManifest.xml:53:17-77
+79-->/workspace/android/app/src/main/AndroidManifest.xml:53:27-74
+80            </intent-filter>
+81
+82            <!-- Deep Links -->
+83            <intent-filter android:autoVerify="true" >
+83-->/workspace/android/app/src/main/AndroidManifest.xml:57:13-62:29
+83-->/workspace/android/app/src/main/AndroidManifest.xml:57:28-53
+84                <action android:name="android.intent.action.VIEW" />
+84-->/workspace/android/app/src/main/AndroidManifest.xml:58:17-69
+84-->/workspace/android/app/src/main/AndroidManifest.xml:58:25-66
+85
+86                <category android:name="android.intent.category.DEFAULT" />
+86-->/workspace/android/app/src/main/AndroidManifest.xml:59:17-76
+86-->/workspace/android/app/src/main/AndroidManifest.xml:59:27-73
+87                <category android:name="android.intent.category.BROWSABLE" />
+87-->/workspace/android/app/src/main/AndroidManifest.xml:60:17-78
+87-->/workspace/android/app/src/main/AndroidManifest.xml:60:27-75
+88
+89                <data android:scheme="eezybuild" />
+89-->/workspace/android/app/src/main/AndroidManifest.xml:61:17-52
+89-->/workspace/android/app/src/main/AndroidManifest.xml:61:23-49
+90            </intent-filter>
+91
+92            <!-- HTTPS Deep Links -->
+93            <intent-filter android:autoVerify="true" >
+93-->/workspace/android/app/src/main/AndroidManifest.xml:65:13-71:29
+93-->/workspace/android/app/src/main/AndroidManifest.xml:65:28-53
+94                <action android:name="android.intent.action.VIEW" />
+94-->/workspace/android/app/src/main/AndroidManifest.xml:58:17-69
+94-->/workspace/android/app/src/main/AndroidManifest.xml:58:25-66
+95
+96                <category android:name="android.intent.category.DEFAULT" />
+96-->/workspace/android/app/src/main/AndroidManifest.xml:59:17-76
+96-->/workspace/android/app/src/main/AndroidManifest.xml:59:27-73
+97                <category android:name="android.intent.category.BROWSABLE" />
+97-->/workspace/android/app/src/main/AndroidManifest.xml:60:17-78
+97-->/workspace/android/app/src/main/AndroidManifest.xml:60:27-75
+98
+99                <data
+99-->/workspace/android/app/src/main/AndroidManifest.xml:61:17-52
+100                    android:host="eezybuild.com"
+100-->/workspace/android/app/src/main/AndroidManifest.xml:70:23-51
+101                    android:scheme="https" />
+101-->/workspace/android/app/src/main/AndroidManifest.xml:61:23-49
+102            </intent-filter>
+103        </activity>
+104
+105        <!-- File Provider for Camera -->
+106        <provider
+106-->/workspace/android/app/src/main/AndroidManifest.xml:75:9-83:20
+107            android:name="androidx.core.content.FileProvider"
+107-->/workspace/android/app/src/main/AndroidManifest.xml:76:13-62
+108            android:authorities="com.lovable.callcreateconnect.fileprovider"
+108-->/workspace/android/app/src/main/AndroidManifest.xml:77:13-77
+109            android:exported="false"
+109-->/workspace/android/app/src/main/AndroidManifest.xml:78:13-37
+110            android:grantUriPermissions="true" >
+110-->/workspace/android/app/src/main/AndroidManifest.xml:79:13-47
+111            <meta-data
+111-->/workspace/android/app/src/main/AndroidManifest.xml:80:13-82:54
+112                android:name="android.support.FILE_PROVIDER_PATHS"
+112-->/workspace/android/app/src/main/AndroidManifest.xml:81:17-67
+113                android:resource="@xml/file_paths" />
+113-->/workspace/android/app/src/main/AndroidManifest.xml:82:17-51
+114        </provider>
+115
+116        <!-- Service for background tasks -->
+117        <service
+117-->/workspace/android/app/src/main/AndroidManifest.xml:86:9-89:40
+118            android:name="com.capacitorjs.plugins.background.BackgroundService"
+118-->/workspace/android/app/src/main/AndroidManifest.xml:87:13-80
+119            android:enabled="true"
+119-->/workspace/android/app/src/main/AndroidManifest.xml:88:13-35
+120            android:exported="false" />
+120-->/workspace/android/app/src/main/AndroidManifest.xml:89:13-37
+121
+122        <!-- Notification metadata -->
+123        <!-- Default notification icon/color removed to avoid missing resources -->
 124
-125        <!-- Disable Firebase Analytics automatic collection -->
-126        <meta-data
-126-->/workspace/android/app/src/main/AndroidManifest.xml:93:9-100
-127            android:name="firebase_analytics_collection_deactivated"
-127-->/workspace/android/app/src/main/AndroidManifest.xml:93:20-76
-128            android:value="true" />
-128-->/workspace/android/app/src/main/AndroidManifest.xml:93:77-97
-129
-130        <provider
-130-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
-131            android:name="androidx.startup.InitializationProvider"
-131-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
-132            android:authorities="com.lovable.callcreateconnect.androidx-startup"
-132-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
-133            android:exported="false" >
-133-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
-134            <meta-data
-134-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
-135                android:name="androidx.emoji2.text.EmojiCompatInitializer"
-135-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
-136                android:value="androidx.startup" />
-136-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
-137            <meta-data
-137-->[androidx.lifecycle:lifecycle-process:2.6.2] /home/ubuntu/.gradle/caches/transforms-3/b3ebdf0ea8782540e87d8671afb7eacb/transformed/jetified-lifecycle-process-2.6.2/AndroidManifest.xml:29:13-31:52
-138                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
-138-->[androidx.lifecycle:lifecycle-process:2.6.2] /home/ubuntu/.gradle/caches/transforms-3/b3ebdf0ea8782540e87d8671afb7eacb/transformed/jetified-lifecycle-process-2.6.2/AndroidManifest.xml:30:17-78
-139                android:value="androidx.startup" />
-139-->[androidx.lifecycle:lifecycle-process:2.6.2] /home/ubuntu/.gradle/caches/transforms-3/b3ebdf0ea8782540e87d8671afb7eacb/transformed/jetified-lifecycle-process-2.6.2/AndroidManifest.xml:31:17-49
-140            <meta-data
-140-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
-141                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
-141-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
-142                android:value="androidx.startup" />
-142-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
-143        </provider>
-144
-145        <receiver
-145-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
-146            android:name="androidx.profileinstaller.ProfileInstallReceiver"
-146-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
-147            android:directBootAware="false"
-147-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
-148            android:enabled="true"
-148-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
-149            android:exported="true"
-149-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
-150            android:permission="android.permission.DUMP" >
-150-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
-151            <intent-filter>
-151-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
-152                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
-152-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
-152-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
-153            </intent-filter>
-154            <intent-filter>
-154-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
-155                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
-155-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
-155-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
-156            </intent-filter>
-157            <intent-filter>
-157-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
-158                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
-158-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
-158-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
-159            </intent-filter>
-160            <intent-filter>
-160-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
-161                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
-161-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
-161-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
-162            </intent-filter>
-163        </receiver>
-164    </application>
-165
-166</manifest>
+125
+126        <!-- Disable Firebase Analytics automatic collection -->
+127        <meta-data
+127-->/workspace/android/app/src/main/AndroidManifest.xml:95:9-100
+128            android:name="firebase_analytics_collection_deactivated"
+128-->/workspace/android/app/src/main/AndroidManifest.xml:95:20-76
+129            android:value="true" />
+129-->/workspace/android/app/src/main/AndroidManifest.xml:95:77-97
+130
+131        <provider
+131-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:24:9-32:20
+132            android:name="androidx.startup.InitializationProvider"
+132-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:25:13-67
+133            android:authorities="com.lovable.callcreateconnect.androidx-startup"
+133-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:26:13-68
+134            android:exported="false" >
+134-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:27:13-37
+135            <meta-data
+135-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:29:13-31:52
+136                android:name="androidx.emoji2.text.EmojiCompatInitializer"
+136-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:30:17-75
+137                android:value="androidx.startup" />
+137-->[androidx.emoji2:emoji2:1.2.0] /home/ubuntu/.gradle/caches/transforms-3/387b3dc6693985e1d6dffb9c5b1a9119/transformed/jetified-emoji2-1.2.0/AndroidManifest.xml:31:17-49
+138            <meta-data
+138-->[androidx.lifecycle:lifecycle-process:2.6.2] /home/ubuntu/.gradle/caches/transforms-3/b3ebdf0ea8782540e87d8671afb7eacb/transformed/jetified-lifecycle-process-2.6.2/AndroidManifest.xml:29:13-31:52
+139                android:name="androidx.lifecycle.ProcessLifecycleInitializer"
+139-->[androidx.lifecycle:lifecycle-process:2.6.2] /home/ubuntu/.gradle/caches/transforms-3/b3ebdf0ea8782540e87d8671afb7eacb/transformed/jetified-lifecycle-process-2.6.2/AndroidManifest.xml:30:17-78
+140                android:value="androidx.startup" />
+140-->[androidx.lifecycle:lifecycle-process:2.6.2] /home/ubuntu/.gradle/caches/transforms-3/b3ebdf0ea8782540e87d8671afb7eacb/transformed/jetified-lifecycle-process-2.6.2/AndroidManifest.xml:31:17-49
+141            <meta-data
+141-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:29:13-31:52
+142                android:name="androidx.profileinstaller.ProfileInstallerInitializer"
+142-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:30:17-85
+143                android:value="androidx.startup" />
+143-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:31:17-49
+144        </provider>
+145
+146        <receiver
+146-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:34:9-52:20
+147            android:name="androidx.profileinstaller.ProfileInstallReceiver"
+147-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:35:13-76
+148            android:directBootAware="false"
+148-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:36:13-44
+149            android:enabled="true"
+149-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:37:13-35
+150            android:exported="true"
+150-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:38:13-36
+151            android:permission="android.permission.DUMP" >
+151-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:39:13-57
+152            <intent-filter>
+152-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:40:13-42:29
+153                <action android:name="androidx.profileinstaller.action.INSTALL_PROFILE" />
+153-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:17-91
+153-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:41:25-88
+154            </intent-filter>
+155            <intent-filter>
+155-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:43:13-45:29
+156                <action android:name="androidx.profileinstaller.action.SKIP_FILE" />
+156-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:17-85
+156-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:44:25-82
+157            </intent-filter>
+158            <intent-filter>
+158-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:46:13-48:29
+159                <action android:name="androidx.profileinstaller.action.SAVE_PROFILE" />
+159-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:17-88
+159-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:47:25-85
+160            </intent-filter>
+161            <intent-filter>
+161-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:49:13-51:29
+162                <action android:name="androidx.profileinstaller.action.BENCHMARK_OPERATION" />
+162-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:17-95
+162-->[androidx.profileinstaller:profileinstaller:1.3.1] /home/ubuntu/.gradle/caches/transforms-3/1c1d8e0320f018d0047d764a4d1159e9/transformed/jetified-profileinstaller-1.3.1/AndroidManifest.xml:50:25-92
+163            </intent-filter>
+164        </receiver>
+165    </application>
+166
+167</manifest>

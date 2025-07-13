@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.lovable.callcreateconnect.app-mergeReleaseResources-25:/values-v29/values-v29.xml",
+            "outputFile": "com.lovable.callcreateconnect.app-mergeReleaseResources-32:/values-v29/values-v29.xml",
             "map": [
                 {
                     "source": "/home/ubuntu/.gradle/caches/transforms-3/a9722bfbc47486052d03755129236cae/transformed/jetified-core-splashscreen-1.0.1/res/values-v29/values-v29.xml",
