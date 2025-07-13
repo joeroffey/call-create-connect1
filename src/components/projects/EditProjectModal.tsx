@@ -12,6 +12,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { NameInput } from "@/components/ui/name-input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 interface Project {
   id: string;
@@ -184,47 +187,41 @@ const EditProjectModal = ({
                   <h3 className="text-sm font-medium text-gray-300 mb-3">Customer Details</h3>
                   
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="edit-customer-name" className="text-sm font-medium text-gray-300 mb-2 block">
-                        Customer Name
-                      </Label>
-                      <Input
-                        id="edit-customer-name"
-                        type="text"
-                        value={editingProject.customer_name || ''}
-                        onChange={(e) => setEditingProject({ ...editingProject, customer_name: e.target.value })}
-                        className="w-full bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:ring-emerald-500/20"
-                        placeholder="Enter customer name"
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="edit-customer-name" className="text-sm font-medium text-gray-300 mb-2 block">
+                         Customer Name
+                       </Label>
+                       <NameInput
+                         id="edit-customer-name"
+                         value={editingProject.customer_name || ''}
+                         onChange={(value) => setEditingProject({ ...editingProject, customer_name: value })}
+                         className="w-full bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:ring-emerald-500/20"
+                       />
+                     </div>
 
-                    <div>
-                      <Label htmlFor="edit-customer-address" className="text-sm font-medium text-gray-300 mb-2 block">
-                        Customer Address
-                      </Label>
-                      <textarea
-                        id="edit-customer-address"
-                        value={editingProject.customer_address || ''}
-                        onChange={(e) => setEditingProject({ ...editingProject, customer_address: e.target.value })}
-                        rows={2}
-                        className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
-                        placeholder="Enter customer address"
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="edit-customer-address" className="text-sm font-medium text-gray-300 mb-2 block">
+                         Customer Address
+                       </Label>
+                       <AddressAutocomplete
+                         value={editingProject.customer_address || ''}
+                         onChange={(value) => setEditingProject({ ...editingProject, customer_address: value })}
+                         className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                         placeholder="Start typing customer address..."
+                       />
+                     </div>
 
-                    <div>
-                      <Label htmlFor="edit-customer-phone" className="text-sm font-medium text-gray-300 mb-2 block">
-                        Customer Phone
-                      </Label>
-                      <Input
-                        id="edit-customer-phone"
-                        type="tel"
-                        value={editingProject.customer_phone || ''}
-                        onChange={(e) => setEditingProject({ ...editingProject, customer_phone: e.target.value })}
-                        className="w-full bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:ring-emerald-500/20"
-                        placeholder="Enter customer phone number"
-                      />
-                    </div>
+                     <div>
+                       <Label htmlFor="edit-customer-phone" className="text-sm font-medium text-gray-300 mb-2 block">
+                         Customer Phone
+                       </Label>
+                       <PhoneInput
+                         id="edit-customer-phone"
+                         value={editingProject.customer_phone || ''}
+                         onChange={(value) => setEditingProject({ ...editingProject, customer_phone: value })}
+                         className="w-full bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:ring-emerald-500/20"
+                       />
+                     </div>
                   </div>
                 </div>
               </div>
