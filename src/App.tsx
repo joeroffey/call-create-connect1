@@ -23,13 +23,22 @@ const App = () => {
     const html = document.documentElement;
     
     // Remove any existing platform classes
-    body.className = body.className.replace(/\b(mobile-app|mobile-browser|desktop-browser)\b/g, '').trim();
-    html.className = html.className.replace(/\b(mobile-app|mobile-browser|desktop-browser)\b/g, '').trim();
+    body.className = body.className.replace(/\b(mobile-app|mobile-browser|desktop-browser|ios|android|touch-optimized)\b/g, '').trim();
+    html.className = html.className.replace(/\b(mobile-app|mobile-browser|desktop-browser|ios|android|touch-optimized)\b/g, '').trim();
     
     // Add appropriate platform class
     if (ENVIRONMENT.IS_MOBILE_APP) {
-      body.classList.add('mobile-app');
-      html.classList.add('mobile-app');
+      body.classList.add('mobile-app', 'touch-optimized');
+      html.classList.add('mobile-app', 'touch-optimized');
+      
+      // Add platform-specific classes
+      if (ENVIRONMENT.IS_IOS_APP) {
+        body.classList.add('ios');
+        html.classList.add('ios');
+      } else if (ENVIRONMENT.IS_ANDROID_APP) {
+        body.classList.add('android');
+        html.classList.add('android');
+      }
     } else if (ENVIRONMENT.IS_MOBILE_BROWSER) {
       body.classList.add('mobile-browser');
       html.classList.add('mobile-browser');
