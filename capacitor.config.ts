@@ -13,9 +13,9 @@ const config: CapacitorConfig = {
       androidStyle: 'DARK'
     },
     Keyboard: {
-      resize: 'body',
+      resize: 'ionic',         // adds CSS padding equal to keyboard height
       style: 'dark',
-      resizeOnFullScreen: true
+      resizeOnFullScreen: false
     },
     App: {
       appUrlOpen: {
