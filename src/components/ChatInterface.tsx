@@ -821,7 +821,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                       <button
                         onClick={handleDocumentUpload}
                         disabled={isUploading}
-                        className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Upload Document"
                       >
                         <Upload className={`w-5 h-5 ${isUploading ? 'animate-pulse' : ''}`} />
@@ -830,7 +830,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
                     {projectId && (
                       <button
                         onClick={handleScheduleOfWorks}
-                        className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-emerald-400"
+                        className="p-3 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-primary"
                         title="Schedule of Works"
                       >
                         <Clock className="w-5 h-5" />
@@ -849,14 +849,14 @@ Would you like me to help you plan any work items or discuss project timeline ma
                             ? `Ask about ${project.name}...`
                             : "Ask me a question..."
                         }
-                        className="w-full px-4 py-3 pr-12 rounded-full bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
+                        className="w-full px-4 py-3 pr-12 rounded-full bg-gray-900/70 border border-gray-700/50 text-white placeholder-gray-400 focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-300 resize-none backdrop-blur-sm shadow-lg text-sm leading-relaxed font-medium min-h-[48px] max-h-[120px]"
                       />
                       <motion.button
                         whileTap={{ scale: 0.95 }}
                         whileHover={{ scale: 1.02 }}
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || isLoading}
-                        className="absolute right-3 w-8 h-8 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-full p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="absolute right-3 w-8 h-8 gradient-logo-green hover:opacity-90 disabled:from-gray-600 disabled:to-gray-700 text-black rounded-full p-0 transition-all duration-300 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                       >
                         <Send className="w-4 h-4" />
                       </motion.button>

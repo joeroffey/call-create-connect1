@@ -118,7 +118,7 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
     <Card className="bg-gray-900/50 border-gray-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white">
-          <Key className="w-5 h-5 text-emerald-400" />
+          <Key className="w-5 h-5 text-primary" />
           Firecrawl API Setup
         </CardTitle>
       </CardHeader>
@@ -148,7 +148,7 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
         <Button
           onClick={handleTestApiKey}
           disabled={isTestingKey || !apiKey.trim()}
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
+          className="w-full bg-primary hover:bg-primary/90"
         >
           {isTestingKey ? (
             <>
@@ -170,14 +170,14 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
     <Card className="bg-gray-900/50 border-gray-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white">
-          <Globe className="w-5 h-5 text-emerald-400" />
+          <Globe className="w-5 h-5 text-primary" />
           Crawl Building Regulations
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Alert className="bg-emerald-500/10 border-emerald-500/20">
-          <CheckCircle className="w-4 h-4 text-emerald-400" />
-          <AlertDescription className="text-emerald-300">
+        <Alert className="bg-primary/10 border-primary/20">
+          <CheckCircle className="w-4 h-4 text-primary" />
+          <AlertDescription className="text-primary">
             API key configured successfully. Ready to crawl UK building regulations.
           </AlertDescription>
         </Alert>
@@ -204,7 +204,7 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
         <Button
           onClick={handleStartCrawl}
           disabled={isCrawling}
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
+          className="w-full bg-primary hover:bg-primary/90"
         >
           {isCrawling ? (
             <>
@@ -226,7 +226,7 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
     <Card className="bg-gray-900/50 border-gray-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white">
-          <CheckCircle className="w-5 h-5 text-emerald-400" />
+          <CheckCircle className="w-5 h-5 text-primary" />
           Crawl Results
         </CardTitle>
       </CardHeader>

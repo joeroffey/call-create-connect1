@@ -179,14 +179,14 @@ const AddressAutocomplete = ({
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
           {isLoading ? (
             <motion.div
-              className="w-4 h-4 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full"
+              className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full"
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             />
           ) : showManualEntry ? (
-            <Edit3 className="w-4 h-4 text-emerald-400/60" />
+            <Edit3 className="w-4 h-4 text-primary/60" />
           ) : (
-            <Search className="w-4 h-4 text-emerald-400/60" />
+            <Search className="w-4 h-4 text-primary/60" />
           )}
         </div>
       </div>
@@ -196,7 +196,7 @@ const AddressAutocomplete = ({
         type="button"
         variant="ghost"
         onClick={toggleManualEntry}
-        className="w-full text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/10 text-sm h-8"
+        className="w-full text-primary hover:text-primary/80 hover:bg-primary/10 text-sm h-8"
       >
         {showManualEntry ? (
           <>
@@ -230,7 +230,7 @@ const AddressAutocomplete = ({
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute z-50 w-full bg-gray-800 border border-emerald-500/30 rounded-lg shadow-xl max-h-64 overflow-y-auto"
+            className="absolute z-50 w-full bg-gray-800 border border-primary/30 rounded-lg shadow-xl max-h-64 overflow-y-auto"
           >
             {suggestions.map((suggestion, index) => (
               <motion.div
@@ -240,7 +240,7 @@ const AddressAutocomplete = ({
                 transition={{ delay: index * 0.03 }}
                 className={`p-3 cursor-pointer text-sm transition-all duration-150 ${
                   index === activeSuggestion
-                    ? 'bg-emerald-600 text-white'
+                    ? 'bg-primary text-primary-foreground'
                     : 'text-gray-300 hover:bg-gray-700/50'
                 } ${index === 0 ? 'rounded-t-lg' : ''} ${
                   index === suggestions.length - 1 ? 'rounded-b-lg' : 'border-b border-gray-700/50'
@@ -248,7 +248,7 @@ const AddressAutocomplete = ({
                 onClick={() => handleSuggestionClick(suggestion)}
               >
                 <div className="flex items-start space-x-3">
-                  <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                   <span className="leading-relaxed">{suggestion.display_name}</span>
                 </div>
               </motion.div>

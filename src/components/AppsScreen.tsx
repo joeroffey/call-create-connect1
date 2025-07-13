@@ -146,7 +146,7 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
           animate={{ opacity: 1, y: 0 }}
           className="text-center sm:text-left"
         >
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-emerald-400 via-green-300 to-emerald-500 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
             Construction Tools
           </h1>
           <p className="text-gray-400 text-sm sm:text-base">
@@ -164,7 +164,7 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
                 size="sm"
                 onClick={() => setSelectedCategory(category)}
                 className={`text-xs sm:text-sm ${selectedCategory === category 
-                  ? "bg-emerald-600 hover:bg-emerald-700" 
+                  ? "bg-primary hover:bg-primary/90" 
                   : "border-gray-600 text-gray-300 hover:bg-gray-700"
                 }`}
               >
@@ -185,20 +185,20 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Card className="card-professional hover:border-emerald-500/40 transition-all duration-300 group cursor-pointer">
+                  <Card className="card-professional hover:border-primary/40 transition-all duration-300 group cursor-pointer">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center border border-emerald-500/20">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center border border-primary/20">
                             <span className="text-2xl">{app.icon}</span>
                           </div>
                           <div>
-                            <CardTitle className="text-lg text-white group-hover:text-emerald-300 transition-colors">
+                            <CardTitle className="text-lg text-white group-hover:text-primary transition-colors">
                               {app.title}
                             </CardTitle>
                           </div>
                         </div>
-                        <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-200" />
+                        <ArrowRight className="w-5 h-5 text-gray-500 group-hover:text-primary group-hover:translate-x-1 transition-all duration-200" />
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -207,7 +207,7 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
                       </CardDescription>
                       <Button
                         onClick={() => handleAppClick(app.id)}
-                        className="w-full gradient-emerald hover:from-emerald-600 hover:to-green-600 text-black font-medium"
+                        className="w-full gradient-logo-green hover:opacity-90 text-black font-medium"
                       >
                         Open Tool
                       </Button>
@@ -251,7 +251,7 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
           className="card-professional rounded-2xl p-6 mt-8"
         >
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-emerald-300 mb-2">
+            <h3 className="text-xl font-semibold text-primary mb-2">
               Professional Construction Tools
             </h3>
             <p className="text-gray-400 mb-4">
@@ -260,8 +260,8 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
                 : "All the essential calculators and references you need for accurate construction planning and material estimation."
               }
             </p>
-            <div className="flex items-center justify-center space-x-2 text-sm text-emerald-400">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+            <div className="flex items-center justify-center space-x-2 text-sm text-primary">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
               <span>Always Updated</span>
             </div>
           </div>
