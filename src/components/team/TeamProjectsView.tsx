@@ -299,7 +299,7 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
             <p className="text-sm text-gray-400">Try adjusting your filter criteria or clearing all filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}
