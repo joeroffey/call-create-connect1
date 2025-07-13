@@ -131,3 +131,68 @@ workflows:
             
     artifacts:
       - ios-native/EezyBuild/build/**/*
+
+  ios-release:
+    name: "📦 iOS Release IPA"
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      cocoapods: default
+      vars:
+        APP_STORE_CONNECT_ISSUER_ID: Encrypted(...)
+        APP_STORE_CONNECT_KEY_ID: Encrypted(...)
+        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...)
+        APPLE_TEAM_ID: YOUR_TEAM_ID
+        BUNDLE_ID: com.lovable.callcreateconnect
+    triggering:
+      events:
+        - workflow_dispatch
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+
+    scripts:
+      - name: "🔧 Install JS deps & build web"
+        script: |
+          npm ci --prefer-offline --no-audit --progress=false
+          npm run build
+          npx cap sync ios
+
+      - name: "📦 Install CocoaPods"
+        script: |
+          cd ios
+          pod install --repo-update
+
+      - name: "🛠  Xcode archive"
+        script: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            PROVISIONING_PROFILE_SPECIFIER="" \
+            CODE_SIGN_STYLE="Automatic" \
+            clean archive
+
+      - name: "🚀 Export IPA"
+        script: |
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            -exportPath $CM_BUILD_DIR/ipa \
+            -allowProvisioningUpdates \
+            -exportOptionsPlist ios/App/ExportOptions.plist
+
+    artifacts:
+      - $CM_BUILD_DIR/ipa/*.ipa
+
+    publishing:
+      app_store_connect:
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        private_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        submit_to_testflight: true
