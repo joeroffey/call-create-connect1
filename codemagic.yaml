@@ -30,7 +30,7 @@ workflows:
           include: true
           source: true
     scripts:
-      - name: � Install dependencies
+      - name: 📦 Install dependencies
         script: |
           npm ci
           
@@ -176,7 +176,7 @@ workflows:
 
   # Development builds (unsigned)
   dev-build:
-    name: �️ Development Build
+    name: 🛠️ Development Build
     instance_type: mac_mini_m1
     max_build_duration: 45
     environment:
