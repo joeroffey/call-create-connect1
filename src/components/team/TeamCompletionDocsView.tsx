@@ -68,7 +68,10 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   useEffect(() => {
     const checkPermissions = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Checking permissions for user:', user?.id, 'project:', selectedProject);
+      
       if (!user || !selectedProject) {
+        console.log('No user or project selected - setting permissions to false');
         setCanEditProject(false);
         setCurrentUserRole(null);
         return;
@@ -77,27 +80,41 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
       // Get team member role
       const currentMember = teamMembers.find(member => member.user_id === user.id);
       const userRole = currentMember?.role || null;
+      console.log('User role in team:', userRole, 'team members:', teamMembers);
       setCurrentUserRole(userRole);
 
       // Check if user has edit permission for this project
       try {
+        console.log('Calling user_has_project_permission RPC with:', {
+          p_user_id: user.id,
+          p_project_id: selectedProject,
+          p_required_level: 'edit'
+        });
+        
         const { data, error } = await supabase.rpc('user_has_project_permission', {
           p_user_id: user.id,
           p_project_id: selectedProject,
           p_required_level: 'edit'
         });
 
+        console.log('RPC result:', { data, error });
+
         if (!error) {
           setCanEditProject(data || false);
+          console.log('Can edit project (from RPC):', data);
         } else {
           console.error('Error checking project permissions:', error);
           // Fallback: team owners/admins can edit
-          setCanEditProject(userRole === 'owner' || userRole === 'admin');
+          const fallbackPermission = userRole === 'owner' || userRole === 'admin';
+          setCanEditProject(fallbackPermission);
+          console.log('Using fallback permission (team role):', fallbackPermission);
         }
       } catch (err) {
         console.error('Error checking project permissions:', err);
         // Fallback: team owners/admins can edit
-        setCanEditProject(userRole === 'owner' || userRole === 'admin');
+        const fallbackPermission = userRole === 'owner' || userRole === 'admin';
+        setCanEditProject(fallbackPermission);
+        console.log('Using fallback permission (exception):', fallbackPermission);
       }
     };
 
@@ -106,6 +123,15 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
 
   const canManageAccess = currentUserRole === 'owner' || currentUserRole === 'admin';
   const canCreateFolders = canEditProject;
+  
+  console.log('Permission states:', {
+    currentUserRole,
+    canEditProject,
+    canCreateFolders,
+    canManageAccess,
+    selectedProject,
+    teamMembers: teamMembers.length
+  });
 
   const selectedProjectData = selectedProject 
     ? projects.find(p => p.id === selectedProject)
