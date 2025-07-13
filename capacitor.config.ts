@@ -13,7 +13,7 @@ const config: CapacitorConfig = {
       androidStyle: 'DARK'
     },
     Keyboard: {
-      resize: 'native',
+      resize: 'body',
       style: 'dark',
       resizeOnFullScreen: true
     },
