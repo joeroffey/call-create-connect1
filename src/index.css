@@ -24,7 +24,7 @@
     --popover: 0 0% 8%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 111 100% 54%;
+    --primary: 142 69% 58%;
     --primary-foreground: 0 0% 0%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -33,26 +33,26 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 111 100% 54%;
+    --accent: 142 69% 58%;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 111 100% 54% / 0.1;
+    --border: 142 69% 58% / 0.1;
     --input: 217.2 32.6% 17.5%;
-    --ring: 111 100% 54%;
+    --ring: 142 69% 58%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 111 100% 54%;
+    --sidebar-primary: 142 69% 58%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 111 100% 54% / 0.1;
-    --sidebar-ring: 111 100% 54%;
+    --sidebar-border: 142 69% 58% / 0.1;
+    --sidebar-ring: 142 69% 58%;
   }
 
   .dark {
@@ -65,7 +65,7 @@
     --popover: 0 0% 6%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 111 100% 54%;
+    --primary: 142 69% 58%;
     --primary-foreground: 0 0% 0%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -74,23 +74,23 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 111 100% 54%;
+    --accent: 142 69% 58%;
     --accent-foreground: 0 0% 0%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 111 100% 54% / 0.1;
+    --border: 142 69% 58% / 0.1;
     --input: 217.2 32.6% 17.5%;
-    --ring: 111 100% 54%;
+    --ring: 142 69% 58%;
     --sidebar-background: 0 0% 4%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 111 100% 54%;
+    --sidebar-primary: 142 69% 58%;
     --sidebar-primary-foreground: 0 0% 0%;
     --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 111 100% 54% / 0.1;
-    --sidebar-ring: 111 100% 54%;
+    --sidebar-border: 142 69% 58% / 0.1;
+    --sidebar-ring: 142 69% 58%;
   }
 }
 
@@ -266,13 +266,13 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(57, 255, 20, 0.3);
+    background: rgba(16, 185, 129, 0.3);
     border-radius: 3px;
     transition: all 0.2s ease;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(57, 255, 20, 0.5);
+    background: rgba(16, 185, 129, 0.5);
   }
 
   /* Hide default scrollbars globally */
@@ -290,9 +290,9 @@
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    outline: 2px solid rgb(57 255 20 / 0.8);
+    outline: 2px solid rgb(16 185 129 / 0.8);
     outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(57, 255, 20, 0.08);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
   }
 
   /* Smooth transitions for all interactive elements */
@@ -302,34 +302,9 @@
 
   /* Better text selection */
   ::selection {
-    background: rgba(57, 255, 20, 0.2);
+    background: rgba(16, 185, 129, 0.2);
     color: inherit;
   }
-}
-
-/* Custom gradient utilities using the exact logo green #39FF14 */
-.gradient-logo-green {
-  background: linear-gradient(135deg, rgb(57, 255, 20) 0%, rgb(45, 200, 15) 100%);
-}
-
-.gradient-logo-green-subtle {
-  background: linear-gradient(135deg, rgba(57, 255, 20, 0.1) 0%, rgba(45, 200, 15, 0.05) 100%);
-}
-
-.bg-logo-green {
-  background-color: rgb(57, 255, 20);
-}
-
-.text-logo-green {
-  color: rgb(57, 255, 20);
-}
-
-.border-logo-green {
-  border-color: rgb(57, 255, 20);
-}
-
-.shadow-logo-green {
-  box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
 }
 
 /* Professional animations with easing curves similar to ChatGPT */
@@ -470,11 +445,11 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-  .message-bubble-user {
-    background: linear-gradient(135deg, rgb(57 255 20) 0%, rgb(45 200 15) 100%);
-    border: none;
-    box-shadow: 0 2px 8px rgba(57, 255, 20, 0.2);
-  }
+.message-bubble-user {
+  background: linear-gradient(135deg, rgb(16 185 129) 0%, rgb(5 150 105) 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
 
 /* Loading states */
 .loading-shimmer {
@@ -720,8 +695,8 @@
 .mobile-app input:focus,
 .mobile-app textarea:focus {
   outline: none;
-  border-color: rgba(57, 255, 20, 0.6);
-  box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.2);
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
   background: rgba(255, 255, 255, 0.08);
 }
 
@@ -1003,7 +978,7 @@
 }
 
 .mobile-app .focus-visible {
-  outline: 2px solid rgba(57, 255, 20, 0.6);
+  outline: 2px solid rgba(16, 185, 129, 0.6);
   outline-offset: 2px;
 }
 
@@ -1015,9 +990,9 @@
 }
 
 .mobile-app .success-state {
-  color: rgb(57, 255, 20);
-  background: rgba(57, 255, 20, 0.1);
-  border-color: rgba(57, 255, 20, 0.3);
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .mobile-app .warning-state {

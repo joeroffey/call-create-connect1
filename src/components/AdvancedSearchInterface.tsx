@@ -259,7 +259,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="space-y-2">
-              <h1 className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
                 Advanced Search
               </h1>
               <p className="text-gray-300 text-sm md:text-base leading-relaxed">
@@ -292,19 +292,19 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
               <TabsList className="bg-transparent border-none rounded-none w-full px-6 py-2 overflow-x-auto flex gap-1 scrollbar-hide justify-start">
                 <TabsTrigger 
                   value="search" 
-                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-primary data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/30 transition-all duration-200"
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-emerald-300 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-300 data-[state=active]:border data-[state=active]:border-emerald-500/30 transition-all duration-200"
                 >
                   Search
                 </TabsTrigger>
                 <TabsTrigger 
                   value="tools" 
-                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-primary data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/30 transition-all duration-200"
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-emerald-300 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-300 data-[state=active]:border data-[state=active]:border-emerald-500/30 transition-all duration-200"
                 >
                   Quick Tools
                 </TabsTrigger>
                 <TabsTrigger 
                   value="history" 
-                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-primary data-[state=active]:bg-primary/15 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/30 transition-all duration-200"
+                  className="flex-shrink-0 px-6 py-3 rounded-xl bg-transparent text-gray-400 hover:text-emerald-300 data-[state=active]:bg-emerald-500/15 data-[state=active]:text-emerald-300 data-[state=active]:border data-[state=active]:border-emerald-500/30 transition-all duration-200"
                 >
                   History & Favorites
                 </TabsTrigger>
