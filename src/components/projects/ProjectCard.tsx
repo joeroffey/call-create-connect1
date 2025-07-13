@@ -201,7 +201,7 @@ const ProjectCard = ({
         </span>
         
         {project.team_name && (
-          <span className="px-2 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30">
+          <span className="px-2 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 truncate min-w-0">
             {project.team_name}
           </span>
         )}
