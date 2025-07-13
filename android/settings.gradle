@@ -1,0 +1,6 @@
+rootProject.name = 'android'
+
+apply from: 'capacitor.settings.gradle'
+
+include ':app'
+include ':capacitor-cordova-android-plugins'
