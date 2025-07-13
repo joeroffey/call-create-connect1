@@ -168,12 +168,12 @@ const ProjectCard = ({
         </div>
       </div>
 
-      {/* Status and Label - Improved responsive layout */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        <div className="relative">
+      {/* Status and Label - Single line layout */}
+      <div className="flex items-center gap-1.5 mb-4 overflow-hidden">
+        <div className="relative flex-shrink-0">
           <button
             onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-            className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
+            className={`px-2 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
           >
             <span>{getStatusLabel(project.status)}</span>
             <ChevronDown className="w-3 h-3" />
@@ -196,12 +196,12 @@ const ProjectCard = ({
           )}
         </div>
         
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getLabelColor(project.label)}`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${getLabelColor(project.label)}`}>
           {project.label}
         </span>
         
         {project.team_name && (
-          <span className="px-3 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 max-w-full truncate">
+          <span className="px-2 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 truncate min-w-0">
             {project.team_name}
           </span>
         )}
