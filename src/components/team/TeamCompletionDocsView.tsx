@@ -56,25 +56,56 @@ export default function TeamCompletionDocsView({ teamId }: TeamCompletionDocsVie
   const { data: allDocuments, getDocumentsByProject, refetch } = useTeamCompletionDocuments(teamId);
   const { members: teamMembers } = useTeamMembers(teamId);
   
-  // Get current user role
-  const getCurrentUserRole = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return null;
-    const currentMember = teamMembers.find(member => member.user_id === user.id);
-    return currentMember?.role || null;
-  };
-  
+  // Get current user permissions
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [canEditProject, setCanEditProject] = useState(false);
   
-  useEffect(() => {
-    getCurrentUserRole().then(setCurrentUserRole);
-  }, [teamMembers]);
   const { folders, getFolderPath, createFolder } = useFolders(selectedProject, teamId);
   const { permissions: projectPermissions } = useProjectPermissions(selectedProject);
   const { toast } = useToast();
 
+  // Check user permissions
+  useEffect(() => {
+    const checkPermissions = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !selectedProject) {
+        setCanEditProject(false);
+        setCurrentUserRole(null);
+        return;
+      }
+
+      // Get team member role
+      const currentMember = teamMembers.find(member => member.user_id === user.id);
+      const userRole = currentMember?.role || null;
+      setCurrentUserRole(userRole);
+
+      // Check if user has edit permission for this project
+      try {
+        const { data, error } = await supabase.rpc('user_has_project_permission', {
+          p_user_id: user.id,
+          p_project_id: selectedProject,
+          p_required_level: 'edit'
+        });
+
+        if (!error) {
+          setCanEditProject(data || false);
+        } else {
+          console.error('Error checking project permissions:', error);
+          // Fallback: team owners/admins can edit
+          setCanEditProject(userRole === 'owner' || userRole === 'admin');
+        }
+      } catch (err) {
+        console.error('Error checking project permissions:', err);
+        // Fallback: team owners/admins can edit
+        setCanEditProject(userRole === 'owner' || userRole === 'admin');
+      }
+    };
+
+    checkPermissions();
+  }, [teamMembers, selectedProject]);
+
   const canManageAccess = currentUserRole === 'owner' || currentUserRole === 'admin';
-  const canCreateFolders = canManageAccess;
+  const canCreateFolders = canEditProject;
 
   const selectedProjectData = selectedProject 
     ? projects.find(p => p.id === selectedProject)
