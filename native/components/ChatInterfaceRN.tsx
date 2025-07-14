@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
+import ImageGalleryRN from "./chat/ImageGalleryRN";
 import {
   View,
   Text,
@@ -9,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { Send, Upload } from "lucide-react-native";
 import { supabase } from "../../src/integrations/supabase/client";
@@ -43,6 +45,25 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
   const [uploading, setUploading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(initialConv || null);
   const flatListRef = useRef<FlatList>(null);
+  const [relatedImages, setRelatedImages] = useState<any[]>([]);
+
+  // Welcome message generation
+  useEffect(() => {
+    if (messages.length > 0) return;
+
+    (async () => {
+      let welcomeText = `Hi ${user?.user_metadata?.name?.split(" ")[0] || user?.email?.split("@")[0] || "there"}! Welcome to EezyBuild! 👋\n\nAsk me anything about UK Building Regulations.`;
+
+      if (projectId) {
+        const { data, error } = await supabase.from("projects").select("name, description, label").eq("id", projectId).single();
+        if (!error && data) {
+          welcomeText = `Hi ${user?.user_metadata?.name?.split(" ")[0] || "there"}! Welcome to your project chat! 🏗️\n\n**Project: ${data.name}**\n${data.description ? `**Description:** ${data.description}\n` : ""}${data.label ? `**Category:** ${data.label}` : ""}\n\nAsk me anything about this project.`;
+        }
+      }
+
+      addMessage({ id: generateId(), text: welcomeText, sender: "assistant", timestamp: new Date() });
+    })();
+  }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -161,6 +182,8 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
       };
       addMessage(assistantMsg);
 
+      if (data.images) setRelatedImages(data.images);
+
       // save assistant message
       await supabase.from("messages").insert([
         {
@@ -222,6 +245,8 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
       />
+
+      {relatedImages.length > 0 && <ImageGalleryRN images={relatedImages} />}
 
       {loading && (
         <ActivityIndicator color="#10b981" style={{ marginBottom: 8 }} />
