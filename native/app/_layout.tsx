@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
 import { supabase } from "../../src/integrations/supabase/client";
 
 export default function RootLayout() {
@@ -9,6 +10,7 @@ export default function RootLayout() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -24,7 +26,7 @@ export default function RootLayout() {
   }, []);
 
   if (loading) {
-    return null; // TODO: Splash screen
+    return null; // splash stays until auth resolved
   }
 
   const initialRouteName = session ? "(tabs)" : "(auth)";
@@ -39,3 +41,9 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+useEffect(() => {
+  (async () => {
+    await SplashScreen.hideAsync();
+  })();
+}, []);
