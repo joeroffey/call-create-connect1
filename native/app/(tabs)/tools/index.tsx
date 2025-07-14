@@ -1,32 +1,27 @@
 // @ts-nocheck
 import React from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Link } from "expo-router";
-import { Hammer, Ruler, Calculator, Image as Img } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
-const tools = [
-  { id: "brick", title: "Brick Calculator", icon: Hammer },
-  { id: "timber", title: "Timber Calculator", icon: Hammer },
-  { id: "roof", title: "Roof Tiles Calculator", icon: Hammer },
-  { id: "volume", title: "Volume Calculator", icon: Calculator },
-  { id: "scaler", title: "Drawing Scaler", icon: Ruler },
-];
-
-export default function ToolsIndex() {
+export default function ToolsList() {
+  const router = useRouter();
+  const tools = [
+    { id: "brick", name: "Brick Calculator" },
+    { id: "timber", name: "Timber Calculator" },
+    { id: "roof", name: "Roof Tiles Calculator" },
+    { id: "volume", name: "Volume Calculator" },
+  ];
   return (
     <ScrollView className="flex-1 bg-black px-4 py-6">
-      <Text className="text-white text-2xl font-bold mb-6">Tools</Text>
-      {tools.map((t) => {
-        const Ico = t.icon;
-        return (
-          <Link key={t.id} href={`/tools/${t.id}`} asChild>
-            <TouchableOpacity className="flex-row items-center p-4 mb-3 bg-gray-900 rounded-xl border border-gray-700">
-              <Ico color="#10b981" size={24} />
-              <Text className="text-white text-lg ml-4">{t.title}</Text>
-            </TouchableOpacity>
-          </Link>
-        );
-      })}
+      {tools.map((t) => (
+        <TouchableOpacity
+          key={t.id}
+          className="p-4 border-b border-gray-700"
+          onPress={() => router.push(`/tools/${t.id}`)}
+        >
+          <Text className="text-white text-lg">{t.name}</Text>
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 }
