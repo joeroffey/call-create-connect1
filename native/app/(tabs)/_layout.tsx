@@ -1,8 +1,7 @@
 // @ts-nocheck
 import React from "react";
 import { Tabs } from "expo-router";
-import { MessageCircle, User, FolderOpen } from "lucide-react-native";
-import { Users } from "lucide-react-native";
+import { MessageCircle, User, FolderOpen, Users, Wrench } from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
