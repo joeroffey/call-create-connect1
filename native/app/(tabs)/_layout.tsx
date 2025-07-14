@@ -1,7 +1,8 @@
 // @ts-nocheck
 import React from "react";
 import { Tabs } from "expo-router";
-import { MessageCircle, User, FolderOpen, Users } from "lucide-react-native";
+import { MessageCircle, User, FolderOpen } from "lucide-react-native";
+import { Users } from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
@@ -42,6 +43,14 @@ export default function TabsLayout() {
         options={{
           title: "Team",
           tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="tools"
+        options={{
+          title: "Tools",
+          tabBarIcon: ({ color, size }) => <Wrench color={color} size={size} />,
         }}
       />
     </Tabs>
