@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React from "react";
 import { Tabs } from "expo-router";
-import { MessageCircle, User, FolderOpen, Users, Wrench } from "lucide-react-native";
+import { MessageCircle, User, FolderOpen, Users, Wrench, Search as SearchIcon } from "lucide-react-native";
 
 export default function TabsLayout() {
   return (
@@ -50,6 +50,14 @@ export default function TabsLayout() {
         options={{
           title: "Tools",
           tabBarIcon: ({ color, size }) => <Wrench color={color} size={size} />,
+        }}
+      />
+
+      <Tabs.Screen
+        name="search"
+        options={{
+          title: "Search",
+          tabBarIcon: ({ color, size }) => <SearchIcon color={color} size={size} />,
         }}
       />
     </Tabs>
