@@ -4,7 +4,9 @@
     "buffer": "^6.0.3",
     "expo-document-picker": "^13.1.6",
     "expo-file-system": "^18.1.11",
+    "expo-image-picker": "^16.1.4",
     "expo-splash-screen": "^0.30.10",
+    "expo-web-browser": "^14.2.0",
     "lucide-react-native": "^0.525.0",
     "react-native-webview": "^13.15.0"
   }
