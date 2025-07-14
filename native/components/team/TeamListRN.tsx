@@ -9,11 +9,16 @@ export default function TeamListRN({ userId, onSelect }: { userId: string; onSel
   const [refreshing, setRefreshing] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase
-      .from("teams")
-      .select("id,name,description,updated_at")
-      .contains("members", [userId]); // assuming members is array
-    setTeams(data || []);
+    // Fetch teams where the user is a member
+    const { data, error } = await supabase
+      .from("team_members")
+      .select("team_id, teams ( id, name )")
+      .eq("user_id", userId);
+
+    if (!error) {
+      const mapped = data.map((d) => d.teams);
+      setTeams(mapped);
+    }
     setLoading(false);
   };
 
@@ -27,23 +32,24 @@ export default function TeamListRN({ userId, onSelect }: { userId: string; onSel
     setRefreshing(false);
   };
 
+  if (loading) return <ActivityIndicator className="flex-1" />;
+
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity className="p-4 border-b border-gray-700" onPress={() => onSelect(item)}>
       <Text className="text-white text-lg font-medium">{item.name}</Text>
-      {item.description && <Text className="text-gray-400" numberOfLines={2}>{item.description}</Text>}
     </TouchableOpacity>
   );
-
-  if (loading) return <ActivityIndicator className="flex-1" />;
 
   return (
     <FlatList
       data={teams}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(t) => t.id}
       renderItem={renderItem}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       ListEmptyComponent={() => (
-        <View className="flex-1 items-center justify-center mt-20"><Text className="text-gray-400">No teams</Text></View>
+        <View className="items-center mt-20">
+          <Text className="text-gray-400">Not part of any team</Text>
+        </View>
       )}
     />
   );
