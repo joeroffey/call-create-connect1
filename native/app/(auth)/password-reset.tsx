@@ -11,12 +11,11 @@ import {
   ScrollView,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { supabase } from "../../src/integrations/supabase/client";
-import { Lock, Eye, EyeOff, Loader2 } from "lucide-react-native";
+import { supabase } from "../../../src/integrations/supabase/client";
+import { Lock, Eye, EyeOff } from "lucide-react-native";
 
 export default function PasswordReset() {
   const router = useRouter();
-  // Query params from deep-link: ?access_token=...&refresh_token=...
   const { access_token, refresh_token } = useLocalSearchParams();
 
   const [password, setPassword] = useState("");
@@ -26,7 +25,6 @@ export default function PasswordReset() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If tokens exist, set session so the user can update password.
     if (access_token && refresh_token) {
       supabase.auth.setSession({
         access_token: String(access_token),
@@ -52,7 +50,7 @@ export default function PasswordReset() {
       alert(error.message);
     } else {
       alert("Password updated successfully. Please sign in.");
-      router.replace("/");
+      router.replace("/(auth)");
     }
   };
 
@@ -61,7 +59,7 @@ export default function PasswordReset() {
       <View className="flex-1 items-center justify-center bg-black px-6">
         <Text className="text-red-400 text-xl mb-4">Invalid reset link</Text>
         <TouchableOpacity
-          onPress={() => router.replace("/")}
+          onPress={() => router.replace("/(auth)")}
           className="bg-emerald-500 px-6 py-3 rounded-xl"
         >
           <Text className="text-white font-medium">Go to Sign In</Text>
@@ -88,7 +86,6 @@ export default function PasswordReset() {
               </Text>
             </View>
 
-            {/* New password */}
             <View className="mb-4">
               <Text className="text-emerald-300 mb-1">New Password</Text>
               <View className="flex-row items-center bg-gray-800/50 rounded-lg px-3">
@@ -110,7 +107,6 @@ export default function PasswordReset() {
               </View>
             </View>
 
-            {/* Confirm password */}
             <View className="mb-6">
               <Text className="text-emerald-300 mb-1">Confirm Password</Text>
               <View className="flex-row items-center bg-gray-800/50 rounded-lg px-3">
@@ -122,9 +118,7 @@ export default function PasswordReset() {
                   secureTextEntry={!showConfirmPassword}
                   className="flex-1 text-white py-3"
                 />
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                   {showConfirmPassword ? (
                     <EyeOff color="#10b981" size={20} />
                   ) : (
@@ -147,7 +141,7 @@ export default function PasswordReset() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => router.replace("/")}
+              onPress={() => router.replace("/(auth)")}
               className="w-full border border-emerald-500/40 py-4 rounded-xl items-center justify-center"
             >
               <Text className="text-emerald-300 font-medium">Cancel</Text>
