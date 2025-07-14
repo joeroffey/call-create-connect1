@@ -1,7 +1,8 @@
 // @ts-nocheck
 import React, { useState } from "react";
-import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator, Linking, Platform } from "react-native";
 import { supabase } from "../../../../src/integrations/supabase/client";
+import * as WebBrowser from "expo-web-browser";
 
 export default function SearchScreen() {
   const [term, setTerm] = useState("");
@@ -23,7 +24,15 @@ export default function SearchScreen() {
       <TouchableOpacity onPress={search} className="bg-emerald-500 py-3 rounded-xl items-center mb-4"><Text className="text-white font-medium">Search</Text></TouchableOpacity>
       {loading && <ActivityIndicator />}
       <FlatList data={results} keyExtractor={(i)=>i.id} renderItem={({ item })=> (
-        <TouchableOpacity className="py-3 border-b border-gray-700" onPress={()=>{}}>
+        <TouchableOpacity className="py-3 border-b border-gray-700" onPress={async ()=>{
+          if (item.url) {
+            if (Platform.OS === "web") {
+              Linking.openURL(item.url);
+            } else {
+              await WebBrowser.openBrowserAsync(item.url);
+            }
+          }
+        }}>
           <Text className="text-emerald-400 font-medium mb-1">{item.title}</Text>
           <Text className="text-gray-400" numberOfLines={2}>{item.snippet}</Text>
         </TouchableOpacity>
