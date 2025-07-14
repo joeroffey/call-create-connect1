@@ -13,8 +13,13 @@ import {
 import { Send, Upload } from "lucide-react-native";
 import { supabase } from "../../src/integrations/supabase/client";
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-import { useEffectOnce } from "react-use";
+
+// Polyfill atob for React Native if missing
+import { Buffer } from "buffer";
+if (typeof global.atob === "undefined") {
+  // @ts-ignore
+  global.atob = (b64) => Buffer.from(b64, "base64").toString("binary");
+}
 
 interface ChatMessageData {
   id: string;
@@ -178,9 +183,9 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
       const file = res.assets[0];
       setUploading(true);
 
-      // read as base64 then to blob
-      const base64 = await FileSystem.readAsStringAsync(file.uri, { encoding: FileSystem.EncodingType.Base64 });
-      const blob = new Blob([Uint8Array.from(atob(base64), (c) => c.charCodeAt(0))], { type: file.mimeType || "application/octet-stream" });
+      // Read file into blob via fetch (works for RN file URIs)
+      const fetched = await fetch(file.uri);
+      const blob = await fetched.blob();
 
       const path = `${user.id}/${projectId || "general"}/${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from("project-documents").upload(path, blob, {
