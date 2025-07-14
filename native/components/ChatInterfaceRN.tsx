@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
 import ImageGalleryRN from "./chat/ImageGalleryRN";
+import ConversationDrawerRN from "./chat/ConversationDrawerRN";
 import {
   View,
   Text,
@@ -12,7 +13,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { Send, Upload } from "lucide-react-native";
+import { Send, Upload, Menu } from "lucide-react-native";
 import { supabase } from "../../src/integrations/supabase/client";
 import * as DocumentPicker from "expo-document-picker";
 
@@ -46,6 +47,7 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
   const [conversationId, setConversationId] = useState<string | null>(initialConv || null);
   const flatListRef = useRef<FlatList>(null);
   const [relatedImages, setRelatedImages] = useState<any[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Welcome message generation
   useEffect(() => {
@@ -238,6 +240,15 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={80}
     >
+      {/* Header */}
+      <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-800">
+        <TouchableOpacity onPress={() => setDrawerOpen(true)} className="p-2">
+          <Menu color="#10b981" size={24} />
+        </TouchableOpacity>
+        <Text className="text-white font-semibold text-lg">Chat</Text>
+        <View style={{ width: 32 }} />
+      </View>
+
       <FlatList
         ref={flatListRef}
         data={messages}
@@ -277,6 +288,23 @@ export default function ChatInterfaceRN({ user, projectId, conversationId: initi
           <Send color="#fff" size={20} />
         </TouchableOpacity>
       </View>
+
+      <ConversationDrawerRN
+        visible={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        userId={user.id}
+        onSelect={(id) => {
+          setConversationId(id);
+          setMessages([]);
+          setRelatedImages([]);
+        }}
+        onNewConversation={() => {
+          setConversationId(null);
+          setMessages([]);
+          setRelatedImages([]);
+        }}
+        projectId={projectId}
+      />
     </KeyboardAvoidingView>
   );
 }
