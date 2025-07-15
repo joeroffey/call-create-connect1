@@ -53,6 +53,8 @@ import TeamCompletionDocsView from '@/components/team/TeamCompletionDocsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 import TeamActivityFeed from '@/components/team/TeamActivityFeed';
 import { RoleSelect } from '@/components/team/RoleSelect';
+import TeamProjectsDashboard from '@/components/team/TeamProjectsDashboard';
+import QuickActions from '@/components/team/QuickActions';
 
 interface TeamScreenProps {
   user: any;
@@ -355,10 +357,43 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      {selectedTeamId && (
-        <TeamActivityFeed teamId={selectedTeamId} />
-      )}
+      {/* Enhanced Overview with Projects Dashboard and Quick Actions */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Team Projects Dashboard */}
+        <div className="lg:col-span-2">
+          {selectedTeamId && (
+            <TeamProjectsDashboard 
+              teamId={selectedTeamId}
+              onCreateProject={() => setActiveView('projects')}
+              onViewProject={(projectId) => {
+                // You can add navigation to project detail here
+                console.log('View project:', projectId);
+              }}
+            />
+          )}
+        </div>
+
+        {/* Quick Actions Sidebar */}
+        <div className="space-y-6">
+          {selectedTeamId && (
+            <QuickActions
+              teamId={selectedTeamId}
+              onCreateProject={() => setActiveView('projects')}
+              onCreateTask={() => setActiveView('tasks')}
+              onUploadDocument={() => setActiveView('completion-docs')}
+              onScheduleMeeting={() => setActiveView('schedule')}
+              onTeamSettings={() => setActiveView('settings')}
+              onInviteMember={inviteMember}
+              onCreateTestInvitation={createTestInvitation}
+            />
+          )}
+          
+          {/* Recent Activity */}
+          {selectedTeamId && (
+            <TeamActivityFeed teamId={selectedTeamId} />
+          )}
+        </div>
+      </div>
     </div>
   );
 
