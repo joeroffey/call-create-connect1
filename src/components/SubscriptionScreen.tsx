@@ -28,8 +28,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
 
   const tiers = [
     {
-      name: 'EezyBuild',
-      price: '£14.99',
+      name: 'EezyBuild Basic',
+      price: '£15',
       period: 'per month',
       description: 'Essential building regulations assistant',
       features: [
@@ -42,12 +42,12 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       current: hasActiveSubscription && subscription?.plan_type === 'basic'
     },
     {
-      name: 'Pro',
-      price: '£29.99',
+      name: 'EezyBuild Pro',
+      price: '£30',
       period: 'per month',
       description: 'Advanced features for professionals',
       features: [
-        'Everything in EezyBuild',
+        'Everything in EezyBuild Basic',
         'Advanced Building Tools',
         'Document upload',
         'Extended Chat History',
@@ -57,12 +57,12 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       current: hasActiveSubscription && subscription?.plan_type === 'pro'
     },
     {
-      name: 'ProMax',
-      price: '£59.99',
+      name: 'EezyBuild Pro Max',
+      price: '£60',
       period: 'per month',
       description: 'Complete solution for teams and enterprises',
       features: [
-        'Everything in Pro',
+        'Everything in EezyBuild Pro',
         'Advanced Building regulation search',
         'Project Management',
         'Team collaboration',
@@ -75,12 +75,12 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
     },
     {
-      name: 'Enterprise',
+      name: 'EezyBuild Enterprise',
       price: 'Custom',
       period: '',
       description: 'Please Contact the EezyBuild team to see our competitive Enterprise subscription prices',
       features: [
-        'Everything in ProMax',
+        'Everything in EezyBuild Pro Max',
         'Custom integrations',
         'Dedicated support',
         'Custom pricing',
@@ -148,11 +148,11 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
     
     switch (subscription.plan_type) {
       case 'basic':
-        return 'EezyBuild';
+        return 'EezyBuild Basic';
       case 'pro':
-        return 'Pro';
+        return 'EezyBuild Pro';
       case 'enterprise':
-        return 'ProMax';
+        return 'EezyBuild Pro Max';
       default:
         return 'Unknown Plan';
     }
