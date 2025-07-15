@@ -39,7 +39,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Limited Advanced Tools'
       ],
       planType: 'basic',
-      current: hasActiveSubscription && subscription?.plan_type === 'basic'
+      current: hasActiveSubscription && subscription?.plan_type === 'basic',
+      colorScheme: 'orange'
     },
     {
       name: 'EezyBuild Pro',
@@ -54,7 +55,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
         'Priority response time'
       ],
       planType: 'pro',
-      current: hasActiveSubscription && subscription?.plan_type === 'pro'
+      current: hasActiveSubscription && subscription?.plan_type === 'pro',
+      colorScheme: 'cyan'
     },
     {
       name: 'EezyBuild Pro Max',
@@ -72,7 +74,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       ],
       planType: 'enterprise',
       popular: true,
-      current: hasActiveSubscription && subscription?.plan_type === 'enterprise'
+      current: hasActiveSubscription && subscription?.plan_type === 'enterprise',
+      colorScheme: 'blue'
     },
     {
       name: 'EezyBuild Enterprise',
@@ -89,7 +92,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       planType: 'custom',
       enterprise: true,
       isContactPlan: true,
-      current: false
+      current: false,
+      colorScheme: 'purple'
     }
   ];
 
@@ -278,15 +282,19 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                initial={{ opacity: 0, y: 20 }}
                animate={{ opacity: 1, y: 0 }}
                transition={{ delay: 0.1 * (index + 1) }}
-               className={`relative rounded-2xl p-6 border-2 backdrop-blur-sm ${
-                 tier.current
-                   ? 'border-emerald-500 bg-emerald-500/10'
-                   : tier.popular
-                   ? 'border-blue-500 bg-blue-500/10'
-                   : tier.enterprise
-                   ? 'border-purple-500 bg-purple-500/10'
-                   : 'border-gray-600 bg-gray-900/50'
-               }`}
+                className={`relative rounded-2xl p-6 border-2 backdrop-blur-sm ${
+                  tier.current
+                    ? 'border-emerald-500 bg-emerald-500/10'
+                    : tier.colorScheme === 'orange'
+                    ? 'border-orange-500 bg-orange-500/10'
+                    : tier.colorScheme === 'cyan'
+                    ? 'border-cyan-500 bg-cyan-500/10'
+                    : tier.colorScheme === 'blue'
+                    ? 'border-blue-500 bg-blue-500/10'
+                    : tier.colorScheme === 'purple'
+                    ? 'border-purple-500 bg-purple-500/10'
+                    : 'border-gray-600 bg-gray-900/50'
+                }`}
              >
                {tier.popular && (
                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -355,15 +363,19 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                <Button
                  onClick={() => handlePlanSelection(tier.planType)}
                  disabled={tier.current || loading === tier.planType || (isNative && iapLoading)}
-                 className={`w-full h-12 rounded-xl font-medium ${
-                   tier.current
-                     ? 'bg-emerald-600 text-white cursor-default'
-                     : tier.popular
-                     ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                     : tier.enterprise
-                     ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                     : 'bg-gray-700 hover:bg-gray-600 text-white'
-                 }`}
+                  className={`w-full h-12 rounded-xl font-medium ${
+                    tier.current
+                      ? 'bg-emerald-600 text-white cursor-default'
+                      : tier.colorScheme === 'orange'
+                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                      : tier.colorScheme === 'cyan'
+                      ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
+                      : tier.colorScheme === 'blue'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : tier.colorScheme === 'purple'
+                      ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                      : 'bg-gray-700 hover:bg-gray-600 text-white'
+                  }`}
                >
                  {loading === tier.planType || (isNative && iapLoading) ? (
                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
