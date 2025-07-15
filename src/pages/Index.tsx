@@ -441,7 +441,8 @@ const Index = () => {
                 <img
                   src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png"
                   alt="EezyBuild Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setActiveTab('chat')}
                 />
                 <div className="ml-4 z-50">
                   {currentProjectId && (
