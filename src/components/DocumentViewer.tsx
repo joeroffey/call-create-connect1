@@ -77,15 +77,6 @@ const DocumentViewer = ({ isOpen, onClose, result }: DocumentViewerProps) => {
             </div>
             <div className="flex items-center space-x-2 ml-4">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExternalOpen}
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Official Doc
-              </Button>
-              <Button
                 variant="ghost"
                 size="icon"
                 onClick={onClose}
@@ -140,19 +131,9 @@ const DocumentViewer = ({ isOpen, onClose, result }: DocumentViewerProps) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="border-t border-gray-700 pt-4 flex justify-between items-center">
+            <div className="border-t border-gray-700 pt-4">
               <div className="text-sm text-gray-500">
                 This information is derived from UK Building Regulations guidance
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  onClick={handleExternalOpen}
-                  className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View Official Document
-                </Button>
               </div>
             </div>
           </motion.div>
