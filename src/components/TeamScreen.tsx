@@ -366,8 +366,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               teamId={selectedTeamId}
               onCreateProject={() => setActiveView('projects')}
               onViewProject={(projectId) => {
-                // You can add navigation to project detail here
-                console.log('View project:', projectId);
+                onStartNewChat(projectId);
               }}
             />
           )}

@@ -254,7 +254,7 @@ const TeamProjectsDashboard = ({ teamId, onCreateProject, onViewProject }: TeamP
                   onClick={() => onViewProject?.(project.id)}
                   className="w-full text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 mt-3 group-hover:bg-emerald-500/20"
                 >
-                  View Project
+                  Open Project
                   <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>
