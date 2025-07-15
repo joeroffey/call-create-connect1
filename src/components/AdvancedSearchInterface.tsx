@@ -84,22 +84,63 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
       // Add to search history
       setSearchHistory(prev => [query, ...prev.slice(0, 9)]);
 
-      // Build search message incorporating filters
+      // Build enhanced search message incorporating filters for better Pinecone matching
       let searchMessage = query.text;
       const filters = [];
+      const contextKeywords = [];
 
       if (query.part) {
-        filters.push(`focusing on ${query.part}`);
+        const partMapping = {
+          'part-a': 'Part A Structure structural requirements load bearing walls foundations',
+          'part-b': 'Part B Fire Safety fire protection escape routes fire doors fire resistance',
+          'part-c': 'Part C Site Preparation ground conditions contaminated land',
+          'part-d': 'Part D Toxic Substances cavity insulation materials',
+          'part-e': 'Part E Sound acoustic insulation noise control party walls',
+          'part-f': 'Part F Ventilation air quality mechanical natural ventilation',
+          'part-g': 'Part G Sanitation water supply drainage hot water storage',
+          'part-h': 'Part H Drainage surface water foul water sewers',
+          'part-j': 'Part J Combustion Appliances heating flues chimneys gas appliances',
+          'part-k': 'Part K Protection from Falls stairs handrails barriers',
+          'part-l': 'Part L Conservation of Fuel energy efficiency thermal insulation',
+          'part-m': 'Part M Access and Facilities disabled access wheelchair accessibility',
+          'part-n': 'Part N Glazing Safety safety glass impact resistance',
+          'part-p': 'Part P Electrical Safety electrical installations circuits'
+        };
+        const partContext = partMapping[query.part] || query.part;
+        filters.push(`focusing on ${partContext}`);
+        contextKeywords.push(partContext);
       }
+      
       if (query.buildingType) {
-        filters.push(`for ${query.buildingType} buildings`);
+        const typeContext = `${query.buildingType} buildings construction requirements`;
+        filters.push(`for ${typeContext}`);
+        contextKeywords.push(typeContext);
       }
+      
       if (query.topic) {
-        filters.push(`related to ${query.topic}`);
+        const topicMapping = {
+          'fire-safety': 'fire safety protection systems escape routes detection',
+          'structural': 'structural engineering foundations load bearing elements',
+          'accessibility': 'accessibility disabled access wheelchair provisions',
+          'energy-efficiency': 'energy efficiency thermal performance insulation',
+          'ventilation': 'ventilation air quality mechanical natural systems',
+          'drainage': 'drainage water systems surface foul sewerage',
+          'electrical': 'electrical safety installations circuits protection',
+          'glazing': 'glazing safety glass windows impact resistance'
+        };
+        const topicContext = topicMapping[query.topic] || query.topic;
+        filters.push(`related to ${topicContext}`);
+        contextKeywords.push(topicContext);
       }
 
+      // Enhanced search message with context keywords for better vector matching
       if (filters.length > 0) {
         searchMessage += ` (${filters.join(', ')})`;
+      }
+      
+      // Add context keywords to improve Pinecone search relevance
+      if (contextKeywords.length > 0) {
+        searchMessage += ` ${contextKeywords.join(' ')}`;
       }
 
       console.log('Calling building-regulations-chat with message:', searchMessage);

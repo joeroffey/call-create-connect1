@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Star, ExternalLink, FileText, AlertCircle, Loader2, Image } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import ImageGallery from '../chat/ImageGallery';
+import DocumentViewer from '../DocumentViewer';
 
 interface SearchResult {
   id: string;
@@ -36,8 +37,14 @@ interface SearchResultsProps {
 }
 
 const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorite }: SearchResultsProps) => {
+  const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
+  
   const isFavorite = (result: SearchResult) => {
     return favorites.some(fav => fav.id === result.id);
+  };
+
+  const handleViewDocument = (result: SearchResult) => {
+    setSelectedResult(result);
   };
 
   if (isSearching) {
@@ -234,6 +241,7 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
                         <Button
                           variant="outline"
                           size="sm"
+                          onClick={() => handleViewDocument(result)}
                           className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                         >
                           <ExternalLink className="w-4 h-4 mr-2" />
@@ -255,6 +263,15 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Document Viewer Modal */}
+      {selectedResult && (
+        <DocumentViewer
+          isOpen={!!selectedResult}
+          onClose={() => setSelectedResult(null)}
+          result={selectedResult}
+        />
+      )}
     </div>
   );
 };

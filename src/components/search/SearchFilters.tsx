@@ -88,6 +88,17 @@ const SearchFilters = ({ onSearch, isSearching }: SearchFiltersProps) => {
     }));
   };
 
+  // Real-time search when filters change
+  React.useEffect(() => {
+    if (query.text.trim() && (query.part || query.buildingType || query.topic)) {
+      const timeoutId = setTimeout(() => {
+        onSearch(query);
+      }, 500); // Debounce to avoid too many requests
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [query.part, query.buildingType, query.topic, query.text, onSearch]);
+
   return (
     <motion.div 
       initial={{ opacity: 0, x: -20 }}

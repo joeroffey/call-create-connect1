@@ -1262,6 +1262,18 @@ export type Database = {
         Args: { check_user_id: string; check_team_id: string }
         Returns: boolean
       }
+      search_documents: {
+        Args: { query: string }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          file_path: string
+          snippet: string
+          url: string
+          created_at: string
+        }[]
+      }
       user_can_access_project: {
         Args: { project_user_id: string; project_team_id: string }
         Returns: boolean

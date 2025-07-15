@@ -15,8 +15,18 @@ export default function AdvancedSearchRN() {
   const search = async () => {
     if (!term) return;
     setLoading(true);
-    const { data, error } = await supabase.rpc("search_documents", { query: term });
-    if (!error) setResults(data || []);
+    try {
+      const { data, error } = await supabase.rpc("search_documents", { query: term });
+      if (error) {
+        console.error('Search error:', error);
+        setResults([]);
+      } else {
+        setResults(data || []);
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      setResults([]);
+    }
     setLoading(false);
   };
 
