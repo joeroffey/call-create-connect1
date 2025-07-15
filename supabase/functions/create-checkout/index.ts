@@ -84,9 +84,9 @@ serve(async (req) => {
 
     // FIXED PRICING - Updated to match the actual pricing structure
     const pricing = {
-      basic: { amount: 1499, name: "EezyBuild Basic" }, // £14.99
-      pro: { amount: 2999, name: "EezyBuild Pro" }, // £29.99
-      enterprise: { amount: 5999, name: "EezyBuild ProMax" } // £59.99
+      basic: { amount: 1500, name: "EezyBuild Basic" }, // £15.00
+      pro: { amount: 3000, name: "EezyBuild Pro" }, // £30.00
+      enterprise: { amount: 6000, name: "EezyBuild Pro Max" } // £60.00
     };
 
     const selectedPlan = pricing[planType as keyof typeof pricing];

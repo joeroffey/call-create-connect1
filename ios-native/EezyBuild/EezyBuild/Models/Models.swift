@@ -162,22 +162,25 @@ struct Conversation: Codable, Identifiable {
 // MARK: - Subscription Models
 enum SubscriptionTier: String, Codable, CaseIterable {
     case free = "free"
+    case basic = "basic"
     case pro = "pro"
     case enterprise = "enterprise"
     
     var displayName: String {
         switch self {
         case .free: return "Free"
-        case .pro: return "Pro"
-        case .enterprise: return "Enterprise"
+        case .basic: return "EezyBuild Basic"
+        case .pro: return "EezyBuild Pro"
+        case .enterprise: return "EezyBuild Pro Max"
         }
     }
     
     var monthlyPrice: String {
         switch self {
         case .free: return "£0"
-        case .pro: return "£9.99"
-        case .enterprise: return "£29.99"
+        case .basic: return "£15"
+        case .pro: return "£30"
+        case .enterprise: return "£60"
         }
     }
 }
