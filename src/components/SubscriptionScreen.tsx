@@ -40,7 +40,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
       ],
       planType: 'basic',
       current: hasActiveSubscription && subscription?.plan_type === 'basic',
-      colorScheme: 'orange'
+      colorScheme: 'amber'
     },
     {
       name: 'EezyBuild Pro',
@@ -285,8 +285,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                 className={`relative rounded-2xl p-6 border-2 backdrop-blur-sm ${
                   tier.current
                     ? 'border-emerald-500 bg-emerald-500/10'
-                    : tier.colorScheme === 'orange'
-                    ? 'border-orange-500 bg-orange-500/10'
+                    : tier.colorScheme === 'amber'
+                    ? 'border-amber-500 bg-amber-500/10'
                     : tier.colorScheme === 'cyan'
                     ? 'border-cyan-500 bg-cyan-500/10'
                     : tier.colorScheme === 'blue'
@@ -366,8 +366,8 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   className={`w-full h-12 rounded-xl font-medium ${
                     tier.current
                       ? 'bg-emerald-600 text-white cursor-default'
-                      : tier.colorScheme === 'orange'
-                      ? 'bg-orange-600 hover:bg-orange-700 text-white'
+                      : tier.colorScheme === 'amber'
+                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
                       : tier.colorScheme === 'cyan'
                       ? 'bg-cyan-600 hover:bg-cyan-700 text-white'
                       : tier.colorScheme === 'blue'
