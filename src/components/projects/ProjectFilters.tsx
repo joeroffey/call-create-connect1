@@ -61,22 +61,23 @@ const ProjectFiltersComponent = ({
   };
     
     return (
-      <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-4 mb-6">
-        <div className="flex flex-wrap gap-4 items-center">
-          {/* Search */}
-          <div className="relative flex-1 min-w-[200px]">
-            <Input
-              placeholder="Search projects..."
-              value={filters.search || ''}
-              onChange={(e) => updateFilter('search', e.target.value)}
-              className="bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400"
-            />
-          </div>
+      <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-3 mb-4">
+        {/* Search - Full Width on Mobile */}
+        <div className="mb-3">
+          <Input
+            placeholder="Search projects..."
+            value={filters.search || ''}
+            onChange={(e) => updateFilter('search', e.target.value)}
+            className="bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400"
+          />
+        </div>
 
+        {/* Filters Row - Compact on Mobile */}
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           {/* Context Filter */}
           {showContextFilter && (
             <Select value={filters.context} onValueChange={(value) => updateFilter('context', value)}>
-              <SelectTrigger className="w-[180px] bg-gray-800/50 border-gray-700/50 text-white">
+              <SelectTrigger className="bg-gray-800/50 border-gray-700/50 text-white text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-gray-800/95 border border-gray-700/50 text-white">
@@ -89,44 +90,50 @@ const ProjectFiltersComponent = ({
             </Select>
           )}
 
-          {/* Project Type */}
-          <Select value={filters.projectType} onValueChange={(value) => updateFilter('projectType', value)}>
-            <SelectTrigger className="w-[150px] bg-gray-800/50 border-gray-700/50 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800/95 border border-gray-700/50 text-white">
-              {PROJECT_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {/* Project Type & Status - Side by Side on Mobile */}
+          <div className="flex gap-2 flex-1">
+            <Select value={filters.projectType} onValueChange={(value) => updateFilter('projectType', value)}>
+              <SelectTrigger className="bg-gray-800/50 border-gray-700/50 text-white text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800/95 border border-gray-700/50 text-white">
+                {PROJECT_TYPES.map((type) => (
+                  <SelectItem key={type.value} value={type.value}>
+                    {type.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          {/* Status */}
-          <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
-            <SelectTrigger className="w-[140px] bg-gray-800/50 border-gray-700/50 text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-gray-800/95 border border-gray-700/50 text-white">
-              {PROJECT_STATUSES.map((status) => (
-                <SelectItem key={status.value} value={status.value}>
-                  {status.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
+              <SelectTrigger className="bg-gray-800/50 border-gray-700/50 text-white text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-gray-800/95 border border-gray-700/50 text-white">
+                {PROJECT_STATUSES.map((status) => (
+                  <SelectItem key={status.value} value={status.value}>
+                    {status.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Clear Button */}
-          <Button variant="outline" onClick={clearFilters} className="text-white border-gray-700">
+          <Button 
+            variant="outline" 
+            onClick={clearFilters} 
+            className="text-white border-gray-700 text-sm px-3 shrink-0"
+            size="sm"
+          >
             Clear
           </Button>
         </div>
 
         {/* Results Count */}
         {projectCount !== undefined && (
-          <div className="mt-3 pt-3 border-t border-gray-800/30">
-            <p className="text-sm text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-800/30">
+            <p className="text-xs text-gray-400">
               {projectCount} project{projectCount !== 1 ? 's' : ''} found
             </p>
           </div>
