@@ -553,17 +553,9 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           )}
 
           {/* Navigation Tabs */}
-          <div className='relative flex items-center'>
-            {/* Left Arrow - More Prominent */}
-            <button
-              onClick={() => scrollTabs("left")}
-              className="flex-shrink-0 p-3 mr-2 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 z-20 shadow-lg backdrop-blur-sm transition-all duration-200"
-            >
-              <ChevronLeft className="w-5 h-5 text-emerald-300" />
-            </button>
-
+          <div className='relative'>
             {/* Scrollable Container with Fade Gradients */}
-            <div className="relative flex-1 overflow-hidden">
+            <div className="relative overflow-hidden">
               {/* Left Fade Gradient */}
               <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none" />
               
@@ -615,14 +607,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
                 </div>
               </div>
             </div>
-
-            {/* Right Arrow - More Prominent */}
-            <button
-              onClick={() => scrollTabs("right")}
-              className="flex-shrink-0 p-3 ml-2 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 z-20 shadow-lg backdrop-blur-sm transition-all duration-200"
-            >
-              <ChevronRight className="w-5 h-5 text-emerald-300" />
-            </button>
 
             {/* Swipe Indicator for Mobile */}
             <div className="md:hidden absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-6">
