@@ -16,7 +16,9 @@ import {
   CheckCircle,
   FileText,
   User,
-  CheckCheck
+  CheckCheck,
+  MessageSquare,
+  Settings
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -120,15 +122,21 @@ const NotificationsScreen = () => {
       case 'task_assigned': return <User className="w-4 h-4 text-blue-500" />;
       case 'document_uploaded': return <FileText className="w-4 h-4 text-green-500" />;
       case 'task_completed': return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+      case 'comment_created': return <MessageSquare className="w-4 h-4 text-purple-500" />;
+      case 'project_status_changed': return <Settings className="w-4 h-4 text-orange-500" />;
+      case 'project_plan_status_changed': return <Calendar className="w-4 h-4 text-cyan-500" />;
       default: return <Bell className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getNotificationColor = (type: string) => {
     switch (type) {
-      case 'task_assigned': return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
-      case 'document_uploaded': return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
+      case 'task_assigned': return 'bg-blue-500/20 border-blue-500/40 text-blue-300';
+      case 'document_uploaded': return 'bg-green-500/20 border-green-500/40 text-green-300';
       case 'task_completed': return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
+      case 'comment_created': return 'bg-purple-500/20 border-purple-500/40 text-purple-300';
+      case 'project_status_changed': return 'bg-orange-500/20 border-orange-500/40 text-orange-300';
+      case 'project_plan_status_changed': return 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300';
       default: return 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300';
     }
   };
@@ -223,6 +231,9 @@ const NotificationsScreen = () => {
                 <SelectItem value="task_assigned">Task Assignments</SelectItem>
                 <SelectItem value="document_uploaded">Document Uploads</SelectItem>
                 <SelectItem value="task_completed">Task Completions</SelectItem>
+                <SelectItem value="comment_created">Comments</SelectItem>
+                <SelectItem value="project_status_changed">Project Status</SelectItem>
+                <SelectItem value="project_plan_status_changed">Project Plan Status</SelectItem>
               </SelectContent>
             </Select>
 

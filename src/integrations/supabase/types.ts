@@ -1202,6 +1202,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_comment_notification: {
+        Args: {
+          p_comment_id: string
+          p_author_id: string
+          p_team_id: string
+          p_target_id: string
+          p_target_type: string
+          p_content: string
+        }
+        Returns: boolean
+      }
       create_document_upload_notification: {
         Args: {
           p_document_id: string
@@ -1212,11 +1223,44 @@ export type Database = {
         }
         Returns: boolean
       }
+      create_phase_status_notification: {
+        Args: {
+          p_phase_id: string
+          p_project_id: string
+          p_changed_by: string
+          p_team_id: string
+          p_old_status: string
+          p_new_status: string
+          p_phase_name: string
+        }
+        Returns: boolean
+      }
+      create_project_status_notification: {
+        Args: {
+          p_project_id: string
+          p_changed_by: string
+          p_team_id: string
+          p_old_status: string
+          p_new_status: string
+          p_project_name: string
+        }
+        Returns: boolean
+      }
       create_task_assignment_notification: {
         Args: {
           p_task_id: string
           p_assigned_to: string
           p_assigned_by: string
+          p_project_id: string
+          p_team_id: string
+          p_task_title: string
+        }
+        Returns: boolean
+      }
+      create_task_completion_notification: {
+        Args: {
+          p_task_id: string
+          p_completed_by: string
           p_project_id: string
           p_team_id: string
           p_task_title: string

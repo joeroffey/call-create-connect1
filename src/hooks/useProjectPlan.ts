@@ -100,6 +100,16 @@ export const useProjectPlan = (projectId: string | undefined, teamId: string | u
   const updatePhase = async (phaseId: string, updates: Partial<ProjectPhase>) => {
     setSaving(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error('User not authenticated');
+
+      // Get current phase data for comparison
+      const { data: currentPhase } = await supabase
+        .from('project_plan_phases')
+        .select('status, phase_name, project_id, team_id')
+        .eq('id', phaseId)
+        .single();
+
       const { data, error } = await supabase
         .from('project_plan_phases')
         .update(updates)
@@ -112,6 +122,23 @@ export const useProjectPlan = (projectId: string | undefined, teamId: string | u
       setPhases(prev => prev.map(phase => 
         phase.id === phaseId ? { ...phase, ...data } as ProjectPhase : phase
       ));
+
+      // Trigger notification for status change if status was updated
+      if (currentPhase && updates.status && currentPhase.status !== updates.status) {
+        try {
+          await supabase.rpc('create_phase_status_notification', {
+            p_phase_id: phaseId,
+            p_project_id: currentPhase.project_id,
+            p_changed_by: user.id,
+            p_team_id: currentPhase.team_id,
+            p_old_status: currentPhase.status,
+            p_new_status: updates.status,
+            p_phase_name: currentPhase.phase_name
+          });
+        } catch (notifError) {
+          console.warn('Failed to create phase status notification:', notifError);
+        }
+      }
 
       toast({
         title: "Success",

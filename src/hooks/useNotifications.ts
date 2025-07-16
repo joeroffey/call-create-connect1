@@ -7,11 +7,11 @@ export interface Notification {
   user_id: string;
   team_id: string;
   project_id: string;
-  type: 'task_assigned' | 'document_uploaded' | 'task_completed';
+  type: 'task_assigned' | 'document_uploaded' | 'task_completed' | 'comment_created' | 'project_status_changed' | 'project_plan_status_changed';
   title: string;
   message: string;
   target_id: string | null;
-  target_type: 'task' | 'document' | null;
+  target_type: 'task' | 'document' | 'comment' | 'project' | 'phase' | null;
   read: boolean;
   created_at: string;
   metadata: any;

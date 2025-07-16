@@ -126,6 +126,16 @@ const TeamProjectPlanView = ({ teamId, teamName }: TeamProjectPlanViewProps) => 
 
   const markTaskComplete = async (taskId: string) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error('User not authenticated');
+
+      // Get task details before updating
+      const { data: taskData } = await supabase
+        .from('project_schedule_of_works')
+        .select('title, project_id')
+        .eq('id', taskId)
+        .single();
+
       const { error } = await supabase
         .from('project_schedule_of_works')
         .update({ 
@@ -135,6 +145,21 @@ const TeamProjectPlanView = ({ teamId, teamName }: TeamProjectPlanViewProps) => 
         .eq('id', taskId);
 
       if (error) throw error;
+
+      // Trigger notification for task completion
+      if (taskData && teamId) {
+        try {
+          await supabase.rpc('create_task_completion_notification', {
+            p_task_id: taskId,
+            p_completed_by: user.id,
+            p_project_id: taskData.project_id,
+            p_team_id: teamId,
+            p_task_title: taskData.title
+          });
+        } catch (notifError) {
+          console.warn('Failed to create task completion notification:', notifError);
+        }
+      }
 
       toast({
         title: "Task completed",

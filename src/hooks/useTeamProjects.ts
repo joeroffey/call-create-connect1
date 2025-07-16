@@ -176,20 +176,55 @@ export const useTeamProjects = (teamId: string | null, teamName: string = '') =>
   };
 
   const handleStatusChange = async (projectId: string, newStatus: string) => {
-    const { error } = await supabase
-      .from('projects')
-      .update({ status: newStatus })
-      .eq('id', projectId);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error('User not authenticated');
 
-    if (error) throw error;
-    
-    const statusLabel = newStatus === 'setup' ? 'Set-up' : newStatus.replace('-', ' ');
-    toast({
-      title: "Status updated",
-      description: `Project status changed to ${statusLabel}.`,
-    });
-    
-    fetchTeamProjects();
+      // Get current project data for comparison
+      const { data: currentProject } = await supabase
+        .from('projects')
+        .select('status, name, team_id')
+        .eq('id', projectId)
+        .single();
+
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: newStatus })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      // Trigger notification for status change
+      if (currentProject && currentProject.status !== newStatus) {
+        try {
+          await supabase.rpc('create_project_status_notification', {
+            p_project_id: projectId,
+            p_changed_by: user.id,
+            p_team_id: currentProject.team_id,
+            p_old_status: currentProject.status,
+            p_new_status: newStatus,
+            p_project_name: currentProject.name
+          });
+        } catch (notifError) {
+          console.warn('Failed to create project status notification:', notifError);
+        }
+      }
+      
+      const statusLabel = newStatus === 'setup' ? 'Set-up' : newStatus.replace('-', ' ');
+      toast({
+        title: "Status updated",
+        description: `Project status changed to ${statusLabel}.`,
+      });
+      
+      fetchTeamProjects();
+    } catch (error: any) {
+      console.error('Error updating project status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update project status",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {

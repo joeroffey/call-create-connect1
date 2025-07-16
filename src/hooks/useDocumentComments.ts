@@ -137,7 +137,7 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.id) throw new Error('User not authenticated');
       
-      const { error } = await supabase
+      const { data: newComment, error } = await supabase
         .from('comments')
         .insert({
           content: content.trim(),
@@ -146,9 +146,27 @@ export const useDocumentComments = (documentId: string, teamId: string) => {
           target_type: 'completion_document',
           parent_id: parentId || null,
           author_id: user.id
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Trigger notification for new comment
+      if (newComment) {
+        try {
+          await supabase.rpc('create_comment_notification', {
+            p_comment_id: newComment.id,
+            p_author_id: user.id,
+            p_team_id: teamId,
+            p_target_id: documentId,
+            p_target_type: 'completion_document',
+            p_content: content.trim()
+          });
+        } catch (notifError) {
+          console.warn('Failed to create comment notification:', notifError);
+        }
+      }
 
       toast({
         title: "Comment added",
