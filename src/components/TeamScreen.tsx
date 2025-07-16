@@ -553,96 +553,85 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
           )}
 
           {/* Navigation Tabs */}
-          <div className='flex items-center'>
+          <div className='relative flex items-center'>
+            {/* Left Arrow - More Prominent */}
             <button
               onClick={() => scrollTabs("left")}
-              className="p-2 team-tabs-arrow rounded-full bg-gray-800/50 hover:bg-gray-700 z-10"
+              className="flex-shrink-0 p-3 mr-2 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 z-20 shadow-lg backdrop-blur-sm transition-all duration-200"
             >
-              <ChevronLeft className="w-4 h-4 text-white" />
+              <ChevronLeft className="w-5 h-5 text-emerald-300" />
             </button>
-            <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide teampage-tabs px-4">            {/* Left Arrow */}
 
-              <div className="flex justify-between items-center w-full">
-                <div className="flex gap-2">
-                  {[
-                    { id: 'overview', label: 'Overview', icon: FileText },
-                    { id: 'projects', label: 'Projects', icon: FileText },
-                    { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
-                    { id: 'tasks', label: 'Active Tasks', icon: Calendar },
-                    { id: 'schedule', label: 'Project Plans', icon: BarChart3 },
-                    { id: 'comments', label: 'Comments', icon: MessageSquare }
-                  ].map((tab) => (
-                    <button
-                      style={{
-                        width: tab.label === 'Completion Docs' ? '175px' : tab.label === 'Active Tasks' ? '145px' : undefined
-                      }}
-                      key={tab.id}
-                      onClick={() => setActiveView(tab.id as any)}
-                      className={`flex w-full sm:w-fit items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeView === tab.id
-                        ? 'bg-emerald-500 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                        }`}
-                    >
-                      <tab.icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  {[
-                    { id: 'members', label: 'Members', icon: Users },
-                    { id: 'settings', label: 'Settings', icon: Settings }
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveView(tab.id as any)}
-                      className={`flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all ${activeView === tab.id
-                        ? 'bg-emerald-500 text-white shadow-lg'
-                        : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                        }`}
-                    >
-                      <tab.icon className="w-4 h-4" />
-                      {tab.label}
-                    </button>
-                  ))}
+            {/* Scrollable Container with Fade Gradients */}
+            <div className="relative flex-1 overflow-hidden">
+              {/* Left Fade Gradient */}
+              <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none" />
+              
+              {/* Right Fade Gradient */}
+              <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none" />
+              
+              <div ref={scrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide teampage-tabs px-4 py-2">
+                <div className="flex justify-between items-center w-full min-w-max">
+                  <div className="flex gap-2">
+                    {[
+                      { id: 'overview', label: 'Overview', icon: FileText },
+                      { id: 'projects', label: 'Projects', icon: FileText },
+                      { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+                      { id: 'tasks', label: 'Active Tasks', icon: Calendar },
+                      { id: 'schedule', label: 'Project Plans', icon: BarChart3 },
+                      { id: 'comments', label: 'Comments', icon: MessageSquare }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveView(tab.id as any)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeView === tab.id
+                          ? 'bg-emerald-500 text-white shadow-lg'
+                          : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                          }`}
+                      >
+                        <tab.icon className="w-4 h-4" />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 ml-4">
+                    {[
+                      { id: 'members', label: 'Members', icon: Users },
+                      { id: 'settings', label: 'Settings', icon: Settings }
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveView(tab.id as any)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeView === tab.id
+                          ? 'bg-emerald-500 text-white shadow-lg'
+                          : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                          }`}
+                      >
+                        <tab.icon className="w-4 h-4" />
+                        {tab.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-
-              {/* Mobile Navigation */}
-              {/* <div className="md:hidden grid grid-cols-2 gap-2">
-                {[
-                  { id: 'overview', label: 'Overview', icon: FileText },
-                  { id: 'projects', label: 'Projects', icon: FileText },
-                  { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
-                  { id: 'tasks', label: 'Active Tasks', icon: Calendar },
-                  { id: 'schedule', label: 'Schedule', icon: Calendar },
-                  { id: 'comments', label: 'Comments', icon: MessageSquare },
-                  { id: 'members', label: 'Members', icon: Users },
-                  { id: 'settings', label: 'Settings', icon: Settings }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveView(tab.id as any)}
-                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeView === tab.id
-                      ? 'bg-emerald-500 text-white shadow-lg'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                      }`}
-                  >
-                    <tab.icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                ))}
-              </div> */}
-
             </div>
 
-            {/* Right Arrow */}
+            {/* Right Arrow - More Prominent */}
             <button
               onClick={() => scrollTabs("right")}
-              className="p-2 team-tabs-arrow rounded-full bg-gray-800/50 hover:bg-gray-700 z-10"
+              className="flex-shrink-0 p-3 ml-2 rounded-full bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/30 z-20 shadow-lg backdrop-blur-sm transition-all duration-200"
             >
-              <ChevronRight className="w-4 h-4 text-white" />
+              <ChevronRight className="w-5 h-5 text-emerald-300" />
             </button>
+
+            {/* Swipe Indicator for Mobile */}
+            <div className="md:hidden absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-6">
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <ChevronLeft className="w-3 h-3" />
+                <span>Swipe</span>
+                <ChevronRight className="w-3 h-3" />
+              </div>
+            </div>
           </div>
         </motion.div>
 
