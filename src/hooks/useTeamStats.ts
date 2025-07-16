@@ -34,10 +34,28 @@ export const useTeamStats = (teamId: string | null) => {
       return;
     }
 
+    // Check if user is authenticated first
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setStats(prev => ({ ...prev, loading: false }));
+        return;
+      }
+
+      // Proceed with fetching stats only if authenticated
+      fetchStats();
+    };
+
     const fetchStats = async () => {
       setStats(prev => ({ ...prev, loading: true }));
       
       try {
+        // Check authentication again before each fetch
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setStats(prev => ({ ...prev, loading: false }));
+          return;
+        }
         // Fetch member count
         const { data: members, error: membersError } = await supabase
           .from('team_members')
@@ -86,7 +104,10 @@ export const useTeamStats = (teamId: string | null) => {
           .select('id')
           .eq('team_id', teamId);
 
-        if (activityError) throw activityError;
+        if (activityError) {
+          console.error('Activity error:', activityError);
+          // Continue without failing completely
+        }
 
         // Fetch activity counts for different time periods
         const today = new Date();
@@ -103,7 +124,9 @@ export const useTeamStats = (teamId: string | null) => {
           .eq('team_id', teamId)
           .gte('created_at', today.toISOString());
 
-        if (todayError) throw todayError;
+        if (todayError) {
+          console.error('Today activity error:', todayError);
+        }
 
         const { data: weekActivity, error: weekError } = await supabase
           .from('team_activity')
@@ -111,7 +134,9 @@ export const useTeamStats = (teamId: string | null) => {
           .eq('team_id', teamId)
           .gte('created_at', weekStart.toISOString());
 
-        if (weekError) throw weekError;
+        if (weekError) {
+          console.error('Week activity error:', weekError);
+        }
 
         const { data: monthActivity, error: monthError } = await supabase
           .from('team_activity')
@@ -119,7 +144,9 @@ export const useTeamStats = (teamId: string | null) => {
           .eq('team_id', teamId)
           .gte('created_at', monthStart.toISOString());
 
-        if (monthError) throw monthError;
+        if (monthError) {
+          console.error('Month activity error:', monthError);
+        }
 
         setStats({
           memberCount: members?.length || 0,
@@ -139,64 +166,75 @@ export const useTeamStats = (teamId: string | null) => {
       }
     };
 
-    fetchStats();
+    checkAuth();
 
-    // Set up real-time subscriptions
-    const membersChannel = supabase
-      .channel('team-members-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'team_members',
-        filter: `team_id=eq.${teamId}`
-      }, fetchStats)
-      .subscribe();
+    // Set up real-time subscriptions only if authenticated
+    const setupSubscriptions = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-    const projectsChannel = supabase
-      .channel('team-projects-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'projects',
-        filter: `team_id=eq.${teamId}`
-      }, fetchStats)
-      .subscribe();
+      const membersChannel = supabase
+        .channel('team-members-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'team_members',
+          filter: `team_id=eq.${teamId}`
+        }, () => checkAuth())
+        .subscribe();
 
-    const tasksChannel = supabase
-      .channel('team-tasks-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'project_schedule_of_works'
-      }, fetchStats)
-      .subscribe();
+      const projectsChannel = supabase
+        .channel('team-projects-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'projects',
+          filter: `team_id=eq.${teamId}`
+        }, () => checkAuth())
+        .subscribe();
 
-    const commentsChannel = supabase
-      .channel('team-comments-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'comments',
-        filter: `team_id=eq.${teamId}`
-      }, fetchStats)
-      .subscribe();
+      const tasksChannel = supabase
+        .channel('team-tasks-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'project_schedule_of_works'
+        }, () => checkAuth())
+        .subscribe();
 
-    const activityChannel = supabase
-      .channel('team-activity-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'team_activity',
-        filter: `team_id=eq.${teamId}`
-      }, fetchStats)
-      .subscribe();
+      const commentsChannel = supabase
+        .channel('team-comments-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'comments',
+          filter: `team_id=eq.${teamId}`
+        }, () => checkAuth())
+        .subscribe();
+
+      const activityChannel = supabase
+        .channel('team-activity-changes')
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'team_activity',
+          filter: `team_id=eq.${teamId}`
+        }, () => checkAuth())
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(membersChannel);
+        supabase.removeChannel(projectsChannel);
+        supabase.removeChannel(tasksChannel);
+        supabase.removeChannel(commentsChannel);
+        supabase.removeChannel(activityChannel);
+      };
+    };
+
+    const subscriptionCleanup = setupSubscriptions();
 
     return () => {
-      supabase.removeChannel(membersChannel);
-      supabase.removeChannel(projectsChannel);
-      supabase.removeChannel(tasksChannel);
-      supabase.removeChannel(commentsChannel);
-      supabase.removeChannel(activityChannel);
+      subscriptionCleanup.then(cleanup => cleanup?.());
     };
   }, [teamId]);
 
