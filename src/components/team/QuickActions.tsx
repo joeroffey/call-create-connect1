@@ -53,7 +53,7 @@ const QuickActions = ({
     {
       id: 'invite',
       title: 'Invite Members',
-      description: 'Add new team members',
+      description: 'Add team members',
       icon: <UserPlus className="w-5 h-5" />,
       action: () => setShowInviteModal(true),
       color: 'text-emerald-400',
@@ -62,7 +62,7 @@ const QuickActions = ({
     {
       id: 'project',
       title: 'New Project',
-      description: 'Start a new project',
+      description: 'Create project',
       icon: <FolderPlus className="w-5 h-5" />,
       action: () => onCreateProject?.(),
       color: 'text-blue-400',
@@ -71,7 +71,7 @@ const QuickActions = ({
     {
       id: 'task',
       title: 'Assign Task',
-      description: 'Create and assign tasks',
+      description: 'Create tasks',
       icon: <ListTodo className="w-5 h-5" />,
       action: () => onCreateTask?.(),
       color: 'text-orange-400',
@@ -80,7 +80,7 @@ const QuickActions = ({
     {
       id: 'upload',
       title: 'Share Document',
-      description: 'Upload files to share',
+      description: 'Upload files',
       icon: <Upload className="w-5 h-5" />,
       action: () => onUploadDocument?.(),
       color: 'text-purple-400',
@@ -89,7 +89,7 @@ const QuickActions = ({
     {
       id: 'settings',
       title: 'Team Settings',
-      description: 'Manage team preferences',
+      description: 'Manage settings',
       icon: <Settings className="w-5 h-5" />,
       action: () => onTeamSettings?.(),
       color: 'text-gray-400',
@@ -111,7 +111,7 @@ const QuickActions = ({
         </CardHeader>
         
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3">
             {quickActions.map((action, index) => (
               <motion.div
                 key={action.id}
@@ -123,14 +123,14 @@ const QuickActions = ({
                   variant="ghost"
                   onClick={action.action}
                   className={`
-                    w-full h-auto p-3 md:p-4 flex flex-col items-start gap-2 
+                    w-full h-auto p-3 flex flex-col items-start gap-2 
                     ${action.bgColor} border border-gray-600/50 
                     hover:border-gray-500 transition-all group
-                    text-left justify-start min-h-[100px] md:min-h-[120px]
+                    text-left justify-start min-h-[90px]
                   `}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <div className={`p-1.5 md:p-2 rounded-lg ${action.bgColor} ${action.color} flex-shrink-0`}>
+                    <div className={`p-1.5 rounded-lg ${action.bgColor} ${action.color} flex-shrink-0`}>
                       {action.icon}
                     </div>
                     {action.badge && (
@@ -142,11 +142,11 @@ const QuickActions = ({
                       </Badge>
                     )}
                   </div>
-                  <div className="space-y-1 w-full min-w-0">
-                    <h4 className="text-white font-medium text-sm md:text-base group-hover:text-gray-200 leading-tight">
+                  <div className="space-y-0.5 w-full min-w-0">
+                    <h4 className="text-white font-medium text-sm group-hover:text-gray-200 leading-tight">
                       {action.title}
                     </h4>
-                    <p className="text-gray-400 text-xs md:text-sm leading-tight break-words">
+                    <p className="text-gray-400 text-xs leading-tight break-words overflow-hidden">
                       {action.description}
                     </p>
                   </div>
