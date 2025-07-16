@@ -505,7 +505,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-x-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 pb-32 w-full">{/* Added pb-32 for mobile nav spacing */}
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

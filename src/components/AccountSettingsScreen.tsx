@@ -120,7 +120,7 @@ const AccountSettingsScreen = ({ user, onBack }: AccountSettingsScreenProps) => 
 
   return (
     <div className="flex-1 overflow-y-auto bg-black text-white">
-      <div className="px-6 py-8">
+      <div className="px-6 py-8 pb-32">{/* Added pb-32 for mobile nav spacing */}
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

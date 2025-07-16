@@ -139,7 +139,7 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
 
   return (
     <div className="h-full bg-gradient-to-br rounded-xl from-gray-900 via-black to-gray-900 text-white overflow-hidden">
-      <div className="p-4 sm:p-6 space-y-6 min-h-full overflow-y-auto">
+      <div className="p-4 sm:p-6 pb-32 space-y-6 min-h-full overflow-y-auto">{/* Added pb-32 for mobile nav spacing */}
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

@@ -466,7 +466,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       </div>
 
       {/* Projects Grid */}
-      <div className="flex-1 p-6 overflow-y-auto">
+      <div className="flex-1 p-6 pb-32 overflow-y-auto">{/* Added pb-32 for mobile nav spacing */}
         {projects.length === 0 ? (
           <EmptyProjectsState onCreateProject={() => setShowCreateModal(true)} />
         ) : filteredProjects.length === 0 ? (

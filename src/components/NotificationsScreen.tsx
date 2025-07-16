@@ -162,7 +162,7 @@ const NotificationsScreen = () => {
 
   return (
     <div className="h-full bg-transparent text-white overflow-y-auto">
-      <div className="px-6 py-8">
+      <div className="px-6 py-8 pb-32">{/* Added pb-32 for mobile nav spacing */}
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
