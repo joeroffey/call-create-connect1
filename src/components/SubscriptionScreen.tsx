@@ -191,9 +191,9 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
             <ArrowLeft className="w-6 h-6" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
+            <h1 className="text-3xl font-bold text-white">Tiers</h1>
             <p className="text-gray-400">
-              Professional building regulations assistance
+              Professional building regulations tiers
               {!hasUsedTrial && !hasActiveSubscription && " with 7-day free trial"}
               {isNative && (
                 <span className="block text-sm text-emerald-400 mt-1">
@@ -228,13 +228,13 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                   <div className="flex-1 pr-20">
                     <div className="flex items-center gap-3 mb-3">
                       <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                      <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Subscription</span>
+                      <span className="text-sm font-medium text-emerald-300 uppercase tracking-wider">Active Tier</span>
                     </div>
                     <h3 className="text-3xl font-bold text-white mb-6">
                       {getPlanDisplayName()} Plan
                     </h3>
                     <p className="text-gray-300 text-base mb-8 leading-relaxed">
-                      Your premium subscription is active and ready to use. You have full access to all advanced features, priority support, enhanced building tools, and extended chat history. Enjoy unlimited access to our comprehensive building regulations assistance.
+                      Your tier is active with full access to all features.
                     </p>
                     
                     <div className="flex flex-col sm:flex-row gap-6 mb-6">
@@ -264,7 +264,7 @@ const SubscriptionScreen = ({ user, onBack }: SubscriptionScreenProps) => {
                           Loading...
                         </>
                       ) : (
-                        'Manage Subscription'
+                        'Manage Tier'
                       )}
                     </Button>
                   </div>
