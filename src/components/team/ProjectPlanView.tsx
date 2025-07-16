@@ -92,38 +92,41 @@ export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={onBack}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">{projectName}</h2>
-            <p className="text-muted-foreground">Project Plan & Timeline</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl md:text-2xl font-bold text-foreground truncate">{projectName}</h2>
+            <p className="text-sm text-muted-foreground">Project Plan & Timeline</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setView(view === 'timeline' ? 'list' : 'timeline')}
+            className="w-full sm:w-auto"
           >
             {view === 'timeline' ? <Calendar className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
-            {view === 'timeline' ? 'List View' : 'Timeline View'}
+            <span className="ml-2">{view === 'timeline' ? 'List View' : 'Timeline View'}</span>
           </Button>
           
-          {phases.length === 0 && (
-            <Button onClick={handleGenerateAIPlan} disabled={saving}>
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate AI Plan
+          <div className="flex flex-col sm:flex-row gap-2">
+            {phases.length === 0 && (
+              <Button onClick={handleGenerateAIPlan} disabled={saving} size="sm" className="w-full sm:w-auto">
+                <Sparkles className="h-4 w-4" />
+                <span className="ml-2 sm:inline">Generate AI Plan</span>
+              </Button>
+            )}
+            
+            <Button onClick={() => setShowPhaseEditor(true)} disabled={saving} size="sm" className="w-full sm:w-auto">
+              <Plus className="h-4 w-4" />
+              <span className="ml-2">Add Phase</span>
             </Button>
-          )}
-          
-          <Button onClick={() => setShowPhaseEditor(true)} disabled={saving}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Phase
-          </Button>
+          </div>
         </div>
       </div>
 
