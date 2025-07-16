@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTeamStats } from '@/hooks/useTeamStats';
 import { 
   UserPlus, 
   FolderPlus, 
@@ -46,6 +47,7 @@ const QuickActions = ({
   onCreateTestInvitation
 }: QuickActionsProps) => {
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const stats = useTeamStats(teamId);
 
   const quickActions: QuickAction[] = [
     {
@@ -55,8 +57,7 @@ const QuickActions = ({
       icon: <UserPlus className="w-5 h-5" />,
       action: () => setShowInviteModal(true),
       color: 'text-emerald-400',
-      bgColor: 'bg-emerald-500/20 hover:bg-emerald-500/30',
-      badge: 'Popular'
+      bgColor: 'bg-emerald-500/20 hover:bg-emerald-500/30'
     },
     {
       id: 'project',
@@ -158,15 +159,21 @@ const QuickActions = ({
           <div className="pt-4 border-t border-gray-700">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-2xl font-bold text-emerald-400">5</p>
+                <p className="text-2xl font-bold text-emerald-400">
+                  {stats.loading ? '-' : stats.actionsToday}
+                </p>
                 <p className="text-xs text-gray-500">Actions Today</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-blue-400">12</p>
+                <p className="text-2xl font-bold text-blue-400">
+                  {stats.loading ? '-' : stats.actionsThisWeek}
+                </p>
                 <p className="text-xs text-gray-500">This Week</p>
               </div>
               <div>
-                <p className="text-2xl font-bold text-purple-400">38</p>
+                <p className="text-2xl font-bold text-purple-400">
+                  {stats.loading ? '-' : stats.actionsThisMonth}
+                </p>
                 <p className="text-xs text-gray-500">This Month</p>
               </div>
             </div>

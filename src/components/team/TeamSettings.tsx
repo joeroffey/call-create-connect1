@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTeamStats } from '@/hooks/useTeamStats';
 import { Trash2, Save, AlertTriangle, Users, Settings } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ const TeamSettings = ({ team, onTeamUpdate, onTeamDelete, onCreateTeam, isOwner 
   const [loading, setLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const { toast } = useToast();
+  const stats = useTeamStats(team?.id);
 
   const handleSave = async () => {
     if (!name.trim()) return;
@@ -170,24 +172,36 @@ const TeamSettings = ({ team, onTeamUpdate, onTeamDelete, onCreateTeam, isOwner 
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-400">
+                {stats.loading ? '-' : stats.memberCount}
+              </div>
+              <div className="text-sm text-gray-400">Team Members</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-400">
+                {stats.loading ? '-' : stats.projectCount}
+              </div>
+              <div className="text-sm text-gray-400">Active Projects</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-400">
+                {stats.loading ? '-' : stats.completedTaskCount}
+              </div>
+              <div className="text-sm text-gray-400">Completed Tasks</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-400">
+                {stats.loading ? '-' : stats.totalActivityCount}
+              </div>
+              <div className="text-sm text-gray-400">Total Activity</div>
+            </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-emerald-400">
                 {team.created_at ? new Date(team.created_at).toLocaleDateString() : 'N/A'}
               </div>
               <div className="text-sm text-gray-400">Created</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">0</div>
-              <div className="text-sm text-gray-400">Active Projects</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-400">0</div>
-              <div className="text-sm text-gray-400">Completed Tasks</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-orange-400">0</div>
-              <div className="text-sm text-gray-400">Total Activity</div>
             </div>
           </div>
         </CardContent>
