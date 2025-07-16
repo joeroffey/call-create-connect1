@@ -65,7 +65,7 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
 
   if (!query.text && results.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 pb-32">{/* Added pb-32 for mobile nav spacing */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -93,7 +93,7 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
 
   if (results.length === 0 && query.text) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 pb-32">{/* Added pb-32 for mobile nav spacing */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,7 +123,7 @@ const SearchResults = ({ results, isSearching, query, favorites, onToggleFavorit
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="p-6">
+      <div className="p-6 pb-32">{/* Added pb-32 for mobile nav spacing */}
         {/* Results Header */}
         <div className="mb-6">
           <h2 className="text-xl font-semibold text-white mb-2">
