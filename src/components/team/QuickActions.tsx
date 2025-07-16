@@ -53,7 +53,7 @@ const QuickActions = ({
     {
       id: 'invite',
       title: 'Invite Members',
-      description: 'Add new team members to collaborate',
+      description: 'Add new team members',
       icon: <UserPlus className="w-5 h-5" />,
       action: () => setShowInviteModal(true),
       color: 'text-emerald-400',
@@ -62,7 +62,7 @@ const QuickActions = ({
     {
       id: 'project',
       title: 'New Project',
-      description: 'Start a new team project',
+      description: 'Start a new project',
       icon: <FolderPlus className="w-5 h-5" />,
       action: () => onCreateProject?.(),
       color: 'text-blue-400',
@@ -71,7 +71,7 @@ const QuickActions = ({
     {
       id: 'task',
       title: 'Assign Task',
-      description: 'Create and assign tasks quickly',
+      description: 'Create and assign tasks',
       icon: <ListTodo className="w-5 h-5" />,
       action: () => onCreateTask?.(),
       color: 'text-orange-400',
@@ -80,7 +80,7 @@ const QuickActions = ({
     {
       id: 'upload',
       title: 'Share Document',
-      description: 'Upload files to share with team',
+      description: 'Upload files to share',
       icon: <Upload className="w-5 h-5" />,
       action: () => onUploadDocument?.(),
       color: 'text-purple-400',
@@ -89,7 +89,7 @@ const QuickActions = ({
     {
       id: 'settings',
       title: 'Team Settings',
-      description: 'Manage team preferences and permissions',
+      description: 'Manage team preferences',
       icon: <Settings className="w-5 h-5" />,
       action: () => onTeamSettings?.(),
       color: 'text-gray-400',
