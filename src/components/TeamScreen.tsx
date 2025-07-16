@@ -380,7 +380,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
               onCreateProject={() => setActiveView('projects')}
               onCreateTask={() => setActiveView('tasks')}
               onUploadDocument={() => setActiveView('completion-docs')}
-              onScheduleMeeting={() => setActiveView('schedule')}
               onTeamSettings={() => setActiveView('settings')}
               onInviteMember={inviteMember}
               onCreateTestInvitation={createTestInvitation}

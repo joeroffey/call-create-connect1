@@ -6,7 +6,6 @@ import {
   ListTodo, 
   Upload,
   MessageSquare,
-  Calendar,
   Settings,
   Zap
 } from 'lucide-react';
@@ -32,7 +31,6 @@ interface QuickActionsProps {
   onCreateProject?: () => void;
   onCreateTask?: () => void;
   onUploadDocument?: () => void;
-  onScheduleMeeting?: () => void;
   onTeamSettings?: () => void;
   onInviteMember?: (email: string, role: 'admin' | 'member' | 'viewer') => Promise<void>;
   onCreateTestInvitation?: (email: string, role: 'admin' | 'member' | 'viewer') => Promise<string>;
@@ -43,7 +41,6 @@ const QuickActions = ({
   onCreateProject,
   onCreateTask,
   onUploadDocument,
-  onScheduleMeeting,
   onTeamSettings,
   onInviteMember,
   onCreateTestInvitation
@@ -89,15 +86,6 @@ const QuickActions = ({
       bgColor: 'bg-purple-500/20 hover:bg-purple-500/30'
     },
     {
-      id: 'meeting',
-      title: 'Schedule Meeting',
-      description: 'Plan team meetings and events',
-      icon: <Calendar className="w-5 h-5" />,
-      action: () => onScheduleMeeting?.(),
-      color: 'text-pink-400',
-      bgColor: 'bg-pink-500/20 hover:bg-pink-500/30'
-    },
-    {
       id: 'settings',
       title: 'Team Settings',
       description: 'Manage team preferences and permissions',
@@ -134,30 +122,30 @@ const QuickActions = ({
                   variant="ghost"
                   onClick={action.action}
                   className={`
-                    w-full h-auto p-4 flex flex-col items-start gap-2 
+                    w-full h-auto p-3 md:p-4 flex flex-col items-start gap-2 
                     ${action.bgColor} border border-gray-600/50 
                     hover:border-gray-500 transition-all group
-                    text-left justify-start
+                    text-left justify-start min-h-[100px] md:min-h-[120px]
                   `}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <div className={`p-2 rounded-lg ${action.bgColor} ${action.color}`}>
+                    <div className={`p-1.5 md:p-2 rounded-lg ${action.bgColor} ${action.color} flex-shrink-0`}>
                       {action.icon}
                     </div>
                     {action.badge && (
                       <Badge 
                         variant="outline" 
-                        className="text-xs border-emerald-500/50 text-emerald-400"
+                        className="text-xs border-emerald-500/50 text-emerald-400 flex-shrink-0"
                       >
                         {action.badge}
                       </Badge>
                     )}
                   </div>
-                  <div className="space-y-1 w-full">
-                    <h4 className="text-white font-medium text-sm group-hover:text-gray-200">
+                  <div className="space-y-1 w-full min-w-0">
+                    <h4 className="text-white font-medium text-sm md:text-base group-hover:text-gray-200 leading-tight">
                       {action.title}
                     </h4>
-                    <p className="text-gray-400 text-xs leading-tight">
+                    <p className="text-gray-400 text-xs md:text-sm leading-tight break-words">
                       {action.description}
                     </p>
                   </div>
