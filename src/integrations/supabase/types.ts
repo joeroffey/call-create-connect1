@@ -1197,6 +1197,44 @@ export type Database = {
         }
         Relationships: []
       }
+      user_widget_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          team_id: string | null
+          updated_at: string
+          user_id: string
+          widget_layout: Json
+          workspace_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          team_id?: string | null
+          updated_at?: string
+          user_id: string
+          widget_layout?: Json
+          workspace_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          team_id?: string | null
+          updated_at?: string
+          user_id?: string
+          widget_layout?: Json
+          workspace_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_widget_preferences_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

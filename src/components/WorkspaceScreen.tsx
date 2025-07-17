@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 // Import existing components
 import ProjectsScreen from './ProjectsScreen';
 import TeamScreen from './TeamScreen';
-import PersonalOverviewDashboard from './personal/PersonalOverviewDashboard';
+import Dashboard from './widgets/Dashboard';
 import PersonalCompletionDocsView from './personal/PersonalCompletionDocsView';
 import PersonalProjectPlanView from './personal/PersonalProjectPlanView';
 import { useTeams } from '@/hooks/useTeams';
@@ -142,8 +142,9 @@ const WorkspaceScreen = ({
         );
       case 'overview':
         return (
-          <PersonalOverviewDashboard
-            userId={user?.id}
+          <Dashboard
+            userId={user?.id || ''}
+            workspaceType="personal"
             onCreateProject={() => setPersonalView('projects')}
             onViewProject={(projectId) => onStartNewChat(projectId)}
           />
