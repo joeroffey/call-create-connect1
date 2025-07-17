@@ -147,7 +147,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* Widgets Grid - Responsive grid layout */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max min-h-[400px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max pb-4 md:pb-6">
         <AnimatePresence>
           {widgets.map(renderWidget)}
         </AnimatePresence>
