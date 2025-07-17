@@ -78,7 +78,10 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
                   Configure
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={onRemove}
+                  onClick={() => {
+                    console.log('Remove clicked for widget:', id);
+                    onRemove?.();
+                  }}
                   className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
                 >
                   <X className="w-4 h-4 mr-2" />
