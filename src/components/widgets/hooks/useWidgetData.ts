@@ -15,7 +15,17 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
       // Normalize teamId - handle all possible null-like values
       const normalizedTeamId = (!teamId || teamId === "null" || teamId === "" || teamId === "undefined") ? null : teamId;
       
-      console.log('Fetching widgets with normalized teamId:', normalizedTeamId);
+      console.log('🔍 Fetching widgets with normalized teamId:', normalizedTeamId, 'userId:', userId);
+      
+      // First, let's see all records for this user to debug
+      const debugQuery = supabase
+        .from('user_widget_preferences')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('workspace_type', workspaceType);
+      
+      const { data: allRecords } = await debugQuery;
+      console.log('🔍 All records for user:', allRecords);
       
       let query = supabase
         .from('user_widget_preferences')
@@ -30,14 +40,18 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
       }
       
       const { data, error } = await query.maybeSingle();
+      
+      console.log('🔍 Fetch query result:', { data, error });
 
       if (error) {
         throw error;
       }
 
       if (data?.widget_layout && Array.isArray(data.widget_layout) && data.widget_layout.length > 0) {
+        console.log('🔍 Found existing widgets:', data.widget_layout.length);
         setWidgets(data.widget_layout as unknown as WidgetLayout[]);
       } else {
+        console.log('🔍 No widgets found, using defaults');
         // Set default widgets for new users
         const defaultWidgets = getDefaultWidgets(workspaceType);
         setWidgets(defaultWidgets);
