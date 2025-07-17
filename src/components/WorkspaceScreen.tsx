@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Users, User, Settings, Plus } from 'lucide-react';
+import { ChevronDown, Users, User, Settings, Plus, FileText, CheckCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -162,23 +162,24 @@ const WorkspaceScreen = ({
   };
 
   const renderPersonalNavigation = () => (
-    <div className="border-b border-white/10 px-6">
-      <div className="flex space-x-8">
+    <div className="border-b border-white/10 px-4 py-2">
+      <div className="flex gap-2">
         {[
-          { id: 'projects', label: 'Projects', icon: 'clipboard' },
-          { id: 'overview', label: 'Overview', icon: 'layout-dashboard' },
-          { id: 'completion-docs', label: 'Completion Docs', icon: 'check-circle' },
-          { id: 'project-plans', label: 'Project Plans', icon: 'calendar' },
+          { id: 'overview', label: 'Overview', icon: FileText },
+          { id: 'projects', label: 'Projects', icon: FileText },
+          { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+          { id: 'project-plans', label: 'Project Plans', icon: BarChart3 },
         ].map((item) => (
           <button
             key={item.id}
             onClick={() => setPersonalView(item.id as any)}
-            className={`py-4 px-2 border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
               personalView === item.id
-                ? 'border-emerald-500 text-emerald-500'
-                : 'border-transparent text-gray-400 hover:text-gray-300'
+                ? 'bg-emerald-500 text-white shadow-lg'
+                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
             }`}
           >
+            <item.icon className="w-4 h-4" />
             {item.label}
           </button>
         ))}
