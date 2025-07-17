@@ -14,6 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 // Import existing components
 import ProjectsScreen from './ProjectsScreen';
 import TeamScreen from './TeamScreen';
+import PersonalOverviewDashboard from './personal/PersonalOverviewDashboard';
+import PersonalCompletionDocsView from './personal/PersonalCompletionDocsView';
+import PersonalProjectPlanView from './personal/PersonalProjectPlanView';
 import { useTeams } from '@/hooks/useTeams';
 
 interface WorkspaceScreenProps {
@@ -139,24 +142,19 @@ const WorkspaceScreen = ({
         );
       case 'overview':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Personal Overview</h2>
-            <p className="text-gray-400">Personal workspace overview coming soon...</p>
-          </div>
+          <PersonalOverviewDashboard
+            userId={user?.id}
+            onCreateProject={() => setPersonalView('projects')}
+            onViewProject={(projectId) => onStartNewChat(projectId)}
+          />
         );
       case 'completion-docs':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Completion Documents</h2>
-            <p className="text-gray-400">Personal completion documents coming soon...</p>
-          </div>
+          <PersonalCompletionDocsView userId={user?.id} />
         );
       case 'project-plans':
         return (
-          <div className="p-6">
-            <h2 className="text-2xl font-bold mb-4">Project Plans</h2>
-            <p className="text-gray-400">Personal project plans coming soon...</p>
-          </div>
+          <PersonalProjectPlanView userId={user?.id} />
         );
       default:
         return null;
