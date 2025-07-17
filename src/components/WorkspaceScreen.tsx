@@ -217,7 +217,7 @@ const WorkspaceScreen = ({
         </div>
 
         {/* Swipe Indicator for Mobile */}
-        <div className="md:hidden absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-8">
+        <div className="md:hidden absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-12">
           <div className="flex items-center gap-1 text-xs text-gray-500">
             <ChevronLeft className="w-3 h-3" />
             <span>Swipe</span>
