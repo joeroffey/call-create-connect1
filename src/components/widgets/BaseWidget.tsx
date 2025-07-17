@@ -63,32 +63,35 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
           </CardTitle>
           
           {isEditing && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                <DropdownMenuItem 
-                  onClick={() => onConfigChange?.(config)}
-                  className="text-gray-300 hover:text-white hover:bg-gray-700"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Configure
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => {
-                    console.log('Remove clicked for widget:', id);
-                    onRemove?.();
-                  }}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Remove
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <>
+              {console.log('Widget in editing mode:', id, 'isEditing:', isEditing)}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-400 hover:text-white">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
+                  <DropdownMenuItem 
+                    onClick={() => onConfigChange?.(config)}
+                    className="text-gray-300 hover:text-white hover:bg-gray-700"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Configure
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      console.log('Remove clicked for widget:', id);
+                      onRemove?.();
+                    }}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Remove
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
         </CardHeader>
         
