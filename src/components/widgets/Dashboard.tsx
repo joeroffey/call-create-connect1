@@ -133,7 +133,6 @@ const Dashboard: React.FC<DashboardProps> = ({
             <Button
               onClick={refetch}
               variant="outline"
-              size="sm"
               className="text-gray-400 hover:text-white flex-1 sm:flex-initial"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
