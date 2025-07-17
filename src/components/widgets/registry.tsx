@@ -26,6 +26,16 @@ import RecentActivityWidget from './components/RecentActivityWidget';
 import QuickCreateWidget from './components/QuickCreateWidget';
 import UpcomingDeadlinesWidget from './components/UpcomingDeadlinesWidget';
 import TeamPerformanceWidget from './components/TeamPerformanceWidget';
+import DocumentAnalyticsWidget from './components/DocumentAnalyticsWidget';
+import CalendarViewWidget from './components/CalendarViewWidget';
+import NavigationShortcutsWidget from './components/NavigationShortcutsWidget';
+import ProjectProgressWidget from './components/ProjectProgressWidget';
+import ProjectTimelineWidget from './components/ProjectTimelineWidget';
+import StatusIndicatorsWidget from './components/StatusIndicatorsWidget';
+import CollaborationStatsWidget from './components/CollaborationStatsWidget';
+import CustomNotesWidget from './components/CustomNotesWidget';
+import ProductivityMetricsWidget from './components/ProductivityMetricsWidget';
+import MotivationalQuotesWidget from './components/MotivationalQuotesWidget';
 
 export const widgetRegistry: WidgetRegistry = {
   // Statistics & Metrics
@@ -54,7 +64,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'medium',
     minSize: 'small',
     maxSize: 'large',
-    component: ProjectStatsWidget // Placeholder
+    component: DocumentAnalyticsWidget
   },
   'productivity-metrics': {
     name: 'Productivity Metrics',
@@ -63,7 +73,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'large',
     minSize: 'medium',
     maxSize: 'large',
-    component: ProjectStatsWidget // Placeholder
+    component: ProductivityMetricsWidget
   },
 
   // Calendar & Timeline
@@ -83,7 +93,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'large',
     minSize: 'medium',
     maxSize: 'large',
-    component: ProjectStatsWidget // Placeholder
+    component: ProjectTimelineWidget
   },
   'calendar-view': {
     name: 'Calendar View',
@@ -92,7 +102,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'medium',
     minSize: 'small',
     maxSize: 'medium',
-    component: ProjectStatsWidget // Placeholder
+    component: CalendarViewWidget
   },
 
   // Quick Actions
@@ -112,7 +122,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'medium',
     minSize: 'small',
     maxSize: 'medium',
-    component: ProjectStatsWidget // Placeholder
+    component: NavigationShortcutsWidget
   },
 
   // Progress & Status
@@ -123,7 +133,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'large',
     minSize: 'medium',
     maxSize: 'large',
-    component: ProjectStatsWidget // Placeholder
+    component: ProjectProgressWidget
   },
   'recent-activity': {
     name: 'Recent Activity',
@@ -141,7 +151,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'medium',
     minSize: 'small',
     maxSize: 'medium',
-    component: ProjectStatsWidget // Placeholder
+    component: StatusIndicatorsWidget
   },
 
   // Team Specific
@@ -161,7 +171,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'medium',
     minSize: 'small',
     maxSize: 'large',
-    component: ProjectStatsWidget // Placeholder
+    component: CollaborationStatsWidget
   },
 
   // Personal
@@ -172,7 +182,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'medium',
     minSize: 'small',
     maxSize: 'large',
-    component: ProjectStatsWidget // Placeholder
+    component: CustomNotesWidget
   },
   'motivational-quotes': {
     name: 'Motivational Quotes',
@@ -181,7 +191,7 @@ export const widgetRegistry: WidgetRegistry = {
     defaultSize: 'small',
     minSize: 'small',
     maxSize: 'medium',
-    component: ProjectStatsWidget // Placeholder
+    component: MotivationalQuotesWidget
   }
 };
 
