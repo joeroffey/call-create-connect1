@@ -12,8 +12,8 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
     try {
       setLoading(true);
       
-      // Ensure teamId is properly handled - convert undefined to null
-      const normalizedTeamId = teamId || null;
+      // Ensure teamId is properly handled - convert string "null", undefined, and empty string to null
+      const normalizedTeamId = teamId === "null" || teamId === "" || !teamId ? null : teamId;
       
       const { data, error } = await supabase
         .from('user_widget_preferences')
@@ -46,8 +46,8 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
 
   const saveWidgets = useCallback(async (newWidgets: WidgetLayout[]) => {
     try {      
-      // Ensure teamId is properly handled - convert undefined to null
-      const normalizedTeamId = teamId || null;
+      // Ensure teamId is properly handled - convert string "null", undefined, and empty string to null
+      const normalizedTeamId = teamId === "null" || teamId === "" || !teamId ? null : teamId;
       
       // First, try to update existing record
       const { data: existingData, error: fetchError } = await supabase
