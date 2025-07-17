@@ -33,14 +33,12 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   // Refetch widgets when component becomes visible (user navigates back to overview)
   useEffect(() => {
-    console.log('🔄 Dashboard component mounted/updated, refetching widgets...');
     if (userId) {
       refetch();
     }
   }, [userId, teamId, workspaceType, refetch]);
 
   const handleAddWidget = async (type: WidgetType) => {
-    console.log('➕ Dashboard: Adding widget of type:', type);
     const widgetInfo = widgetRegistry[type];
     const newWidget: WidgetLayout = {
       id: `${type}-${Date.now()}`,
@@ -56,9 +54,8 @@ const Dashboard: React.FC<DashboardProps> = ({
     try {
       await addWidget(newWidget);
       setShowWidgetGallery(false);
-      console.log('✅ Dashboard: Widget added successfully');
     } catch (error) {
-      console.error('❌ Dashboard: Failed to add widget:', error);
+      // Error handling is done in addWidget
     }
   };
 
@@ -171,16 +168,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           </Button>
         </div>
       </div>
-
-      {/* Debug info when editing */}
-      {isEditing && (
-        <div className="bg-gray-800/50 p-3 rounded-lg text-sm text-gray-400">
-          <div>Debug: User ID: {userId}</div>
-          <div>Debug: Team ID: {teamId || 'null'}</div>
-          <div>Debug: Workspace: {workspaceType}</div>
-          <div>Debug: Widget count: {widgets.length}</div>
-        </div>
-      )}
 
       {/* Widgets Grid - Responsive grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max pb-4 md:pb-6">
