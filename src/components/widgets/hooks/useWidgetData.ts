@@ -47,11 +47,11 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
         throw error;
       }
 
-      if (data?.widget_layout && Array.isArray(data.widget_layout) && data.widget_layout.length > 0) {
-        console.log('🔍 Found existing widgets:', data.widget_layout.length);
+      if (data?.widget_layout && Array.isArray(data.widget_layout)) {
+        console.log('🔍 Found saved widget layout with', data.widget_layout.length, 'widgets');
         setWidgets(data.widget_layout as unknown as WidgetLayout[]);
       } else {
-        console.log('🔍 No widgets found, using defaults');
+        console.log('🔍 No saved layout found, using defaults');
         // Set default widgets for new users
         const defaultWidgets = getDefaultWidgets(workspaceType);
         setWidgets(defaultWidgets);
