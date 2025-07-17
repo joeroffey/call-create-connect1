@@ -103,11 +103,15 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
   }, [widgets, saveWidgets]);
 
   const removeWidget = useCallback(async (widgetId: string) => {
+    console.log('Removing widget:', widgetId);
     const newWidgets = widgets.filter(w => w.id !== widgetId);
+    console.log('New widgets after removal:', newWidgets);
     
     try {
       await saveWidgets(newWidgets);
+      console.log('Widget removed successfully');
     } catch (error) {
+      console.error('Error removing widget:', error);
       // Error handling is done in saveWidgets
     }
   }, [widgets, saveWidgets]);
