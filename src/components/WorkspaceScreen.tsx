@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronLeft, ChevronRight, Users, User, Settings, Plus, FileText, CheckCircle, BarChart3 } from 'lucide-react';
@@ -163,7 +164,7 @@ const WorkspaceScreen = ({
   };
 
   const renderPersonalNavigation = () => (
-    <div className="border-b border-white/10">
+    <div className="border-b border-white/10 relative">
       <div className='relative'>
         {/* Scrollable Container with Fade Gradients */}
         <div className="relative overflow-hidden">
@@ -215,14 +216,14 @@ const WorkspaceScreen = ({
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Swipe Indicator for Mobile */}
-        <div className="md:hidden absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-20">
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <ChevronLeft className="w-3 h-3" />
-            <span>Swipe</span>
-            <ChevronRight className="w-3 h-3" />
-          </div>
+      {/* Swipe Indicator for Mobile - moved below the navigation */}
+      <div className="md:hidden flex justify-center py-2">
+        <div className="flex items-center gap-1 text-xs text-gray-500">
+          <ChevronLeft className="w-3 h-3" />
+          <span>Swipe</span>
+          <ChevronRight className="w-3 h-3" />
         </div>
       </div>
     </div>
