@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MoreVertical, Settings, X } from 'lucide-react';
+import { MoreVertical, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -11,7 +11,6 @@ interface BaseWidgetProps {
   title: string;
   size: WidgetSize;
   config: WidgetConfig;
-  onConfigChange?: (config: WidgetConfig) => void;
   onRemove?: () => void;
   isEditing?: boolean;
   children: React.ReactNode;
@@ -30,7 +29,6 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
   title,
   size,
   config,
-  onConfigChange,
   onRemove,
   isEditing = false,
   children,
@@ -70,13 +68,6 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-gray-800 border-gray-700">
-                <DropdownMenuItem 
-                  onClick={() => onConfigChange?.(config)}
-                  className="text-gray-300 hover:text-white hover:bg-gray-700"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Configure
-                </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={onRemove}
                   className="text-red-400 hover:text-red-300 hover:bg-red-900/20"
