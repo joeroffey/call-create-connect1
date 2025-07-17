@@ -55,6 +55,7 @@ import TeamActivityFeed from '@/components/team/TeamActivityFeed';
 import { RoleSelect } from '@/components/team/RoleSelect';
 import TeamProjectsDashboard from '@/components/team/TeamProjectsDashboard';
 import QuickActions from '@/components/team/QuickActions';
+import Dashboard from '@/components/widgets/Dashboard';
 
 interface TeamScreenProps {
   user: any;
@@ -292,7 +293,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     }
   };
 
-  const renderOverview = () => 
+  const renderOverview = () => (
     selectedTeamId ? (
       <Dashboard
         userId={user?.id || ''}
@@ -301,18 +302,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
         onCreateProject={() => setActiveView('projects')}
         onViewProject={(projectId) => onStartNewChat(projectId)}
       />
-    ) : null;
-    selectedTeamId && (
-      <Dashboard
-        userId={user?.id || ''}
-        teamId={selectedTeamId}
-        workspaceType="team"
-        onCreateProject={() => setActiveView('projects')}
-        onViewProject={(projectId) => {
-          onStartNewChat(projectId);
-        }}
-      />
-    )
+    ) : null
   );
 
   const renderMembers = () => (
