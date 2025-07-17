@@ -138,7 +138,7 @@ export const widgetRegistry: WidgetRegistry = {
   'recent-activity': {
     name: 'Recent Activity',
     description: 'Latest actions, updates, and team activities',
-    category: 'progress',
+    category: 'team',
     defaultSize: 'large',
     minSize: 'medium',
     maxSize: 'large',

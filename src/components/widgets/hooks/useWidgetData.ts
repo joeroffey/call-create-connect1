@@ -93,7 +93,41 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
 };
 
 const getDefaultWidgets = (workspaceType: WorkspaceType): WidgetLayout[] => {
-  const baseWidgets: WidgetLayout[] = [
+  if (workspaceType === 'personal') {
+    return [
+      {
+        id: 'project-stats',
+        type: 'project-stats',
+        position: { x: 0, y: 0 },
+        size: 'medium',
+        config: { refreshRate: 'hour', dataRange: 'all' }
+      },
+      {
+        id: 'task-performance',
+        type: 'task-performance',
+        position: { x: 2, y: 0 },
+        size: 'medium',
+        config: { refreshRate: 'hour', dataRange: 'week' }
+      },
+      {
+        id: 'quick-create',
+        type: 'quick-create',
+        position: { x: 0, y: 1 },
+        size: 'medium',
+        config: { refreshRate: 'manual' }
+      },
+      {
+        id: 'upcoming-deadlines',
+        type: 'upcoming-deadlines',
+        position: { x: 2, y: 1 },
+        size: 'medium',
+        config: { refreshRate: 'hour', dataRange: 'week' }
+      }
+    ];
+  }
+
+  // Team workspace widgets
+  return [
     {
       id: 'project-stats',
       type: 'project-stats',
@@ -121,18 +155,13 @@ const getDefaultWidgets = (workspaceType: WorkspaceType): WidgetLayout[] => {
       position: { x: 2, y: 1 },
       size: 'medium',
       config: { refreshRate: 'manual' }
-    }
-  ];
-
-  if (workspaceType === 'team') {
-    baseWidgets.push({
+    },
+    {
       id: 'team-performance',
       type: 'team-performance',
       position: { x: 0, y: 2 },
       size: 'wide',
       config: { refreshRate: 'hour', dataRange: 'week' }
-    });
-  }
-
-  return baseWidgets;
+    }
+  ];
 };
