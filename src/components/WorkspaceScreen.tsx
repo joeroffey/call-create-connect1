@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Users, User, Settings, Plus, FileText, CheckCircle, BarChart3 } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Users, User, Settings, Plus, FileText, CheckCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -163,27 +163,47 @@ const WorkspaceScreen = ({
 
   const renderPersonalNavigation = () => (
     <div className="border-b border-white/10">
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2">
-        <div className="flex gap-2 min-w-max">
-          {[
-            { id: 'overview', label: 'Overview', icon: FileText },
-            { id: 'projects', label: 'Projects', icon: FileText },
-            { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
-            { id: 'project-plans', label: 'Project Plans', icon: BarChart3 },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setPersonalView(item.id as any)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-                personalView === item.id
-                  ? 'bg-emerald-500 text-white shadow-lg'
-                  : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </button>
-          ))}
+      <div className='relative'>
+        {/* Scrollable Container with Fade Gradients */}
+        <div className="relative overflow-hidden">
+          {/* Left Fade Gradient */}
+          <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none" />
+          
+          {/* Right Fade Gradient */}
+          <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-gray-900 via-gray-900/80 to-transparent z-10 pointer-events-none" />
+          
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2">
+            <div className="flex gap-2 min-w-max">
+              {[
+                { id: 'overview', label: 'Overview', icon: FileText },
+                { id: 'projects', label: 'Projects', icon: FileText },
+                { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+                { id: 'project-plans', label: 'Project Plans', icon: BarChart3 },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setPersonalView(item.id as any)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    personalView === item.id
+                      ? 'bg-emerald-500 text-white shadow-lg'
+                      : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                  }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Swipe Indicator for Mobile */}
+        <div className="md:hidden absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-6">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
+            <ChevronLeft className="w-3 h-3" />
+            <span>Swipe</span>
+            <ChevronRight className="w-3 h-3" />
+          </div>
         </div>
       </div>
     </div>
