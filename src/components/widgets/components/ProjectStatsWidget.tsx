@@ -1,22 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, BarChart3 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { FileText, FolderOpen, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import BaseWidget from '../BaseWidget';
 import { BaseWidgetProps } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectStats {
   total: number;
-  active: number;
-  completed: number;
-  planning: number;
+  byStatus: {
+    planning: number;
+    active: number;
+    on_hold: number;
+    completed: number;
+  };
+  overdue: number;
 }
 
 const ProjectStatsWidget: React.FC<BaseWidgetProps> = (props) => {
   const [stats, setStats] = useState<ProjectStats>({
     total: 0,
-    active: 0,
-    completed: 0,
-    planning: 0
+    byStatus: { planning: 0, active: 0, on_hold: 0, completed: 0 },
+    overdue: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -26,33 +29,33 @@ const ProjectStatsWidget: React.FC<BaseWidgetProps> = (props) => {
 
   const fetchProjectStats = async () => {
     try {
-      setLoading(true);
-      
-      // Get total projects count
-      const { count: total } = await supabase
-        .from('projects')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .is('team_id', null);
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
 
-      // Get projects by status
+      // Get all projects user has access to
       const { data: projects } = await supabase
         .from('projects')
-        .select('status')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .is('team_id', null);
+        .select('status, created_at')
+        .order('created_at', { ascending: false });
 
-      const statusCounts = projects?.reduce((acc, project) => {
-        acc[project.status] = (acc[project.status] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>) || {};
+      if (projects) {
+        const total = projects.length;
+        const byStatus = {
+          planning: projects.filter(p => p.status === 'planning').length,
+          active: projects.filter(p => p.status === 'active').length,
+          on_hold: projects.filter(p => p.status === 'on_hold').length,
+          completed: projects.filter(p => p.status === 'completed').length,
+        };
 
-      setStats({
-        total: total || 0,
-        active: statusCounts['active'] || 0,
-        completed: statusCounts['completed'] || 0,
-        planning: statusCounts['planning'] || 0
-      });
+        // Calculate overdue (simplified - projects active for more than 6 months)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const overdue = projects.filter(p => 
+          p.status === 'active' && new Date(p.created_at) < sixMonthsAgo
+        ).length;
+
+        setStats({ total, byStatus, overdue });
+      }
     } catch (error) {
       console.error('Error fetching project stats:', error);
     } finally {
@@ -60,53 +63,70 @@ const ProjectStatsWidget: React.FC<BaseWidgetProps> = (props) => {
     }
   };
 
-  if (loading) {
-    return (
-      <BaseWidget {...props} title="Project Statistics" icon={FileText}>
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'planning': return <FolderOpen className="w-4 h-4" />;
+      case 'active': return <Clock className="w-4 h-4" />;
+      case 'completed': return <CheckCircle className="w-4 h-4" />;
+      case 'on_hold': return <AlertCircle className="w-4 h-4" />;
+      default: return <FileText className="w-4 h-4" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'planning': return 'text-blue-400';
+      case 'active': return 'text-green-400';
+      case 'completed': return 'text-emerald-400';
+      case 'on_hold': return 'text-yellow-400';
+      default: return 'text-gray-400';
+    }
+  };
+
+  return (
+    <BaseWidget
+      {...props}
+      title="Project Statistics"
+      icon={FileText}
+    >
+      {loading ? (
         <div className="flex items-center justify-center h-32">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div>
         </div>
-      </BaseWidget>
-    );
-  }
+      ) : (
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">{stats.total}</div>
+            <div className="text-sm text-gray-400">Total Projects</div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-3">
+            {Object.entries(stats.byStatus).map(([status, count]) => (
+              <div key={status} className="flex items-center justify-between p-2 bg-gray-800/30 rounded">
+                <div className="flex items-center gap-2">
+                  <span className={getStatusColor(status)}>
+                    {getStatusIcon(status)}
+                  </span>
+                  <span className="text-xs text-gray-300 capitalize">
+                    {status.replace('_', ' ')}
+                  </span>
+                </div>
+                <span className="font-semibold text-white">{count}</span>
+              </div>
+            ))}
+          </div>
 
-  return (
-    <BaseWidget {...props} title="Project Statistics" icon={FileText}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-white">{stats.total}</div>
-            <div className="text-xs text-gray-400">Total Projects</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-400">{stats.active}</div>
-            <div className="text-xs text-gray-400">Active</div>
-          </div>
+          {stats.overdue > 0 && (
+            <div className="flex items-center justify-between p-2 bg-red-900/20 border border-red-500/30 rounded">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400" />
+                <span className="text-xs text-red-300">Overdue</span>
+              </div>
+              <span className="font-semibold text-red-400">{stats.overdue}</span>
+            </div>
+          )}
         </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-400">{stats.completed}</div>
-            <div className="text-xs text-gray-400">Completed</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-yellow-400">{stats.planning}</div>
-            <div className="text-xs text-gray-400">Planning</div>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-emerald-500 transition-all duration-300"
-              style={{ width: `${stats.total > 0 ? (stats.completed / stats.total) * 100 : 0}%` }}
-            />
-          </div>
-          <div className="text-xs text-gray-400 mt-1">
-            {stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0}% Completion Rate
-          </div>
-        </div>
-      </div>
+      )}
     </BaseWidget>
   );
 };

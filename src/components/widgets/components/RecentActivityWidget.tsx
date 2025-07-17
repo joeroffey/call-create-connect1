@@ -1,16 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Activity, FileText, CheckSquare, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Activity, FileText, CheckSquare, Upload } from 'lucide-react';
 import BaseWidget from '../BaseWidget';
 import { BaseWidgetProps } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ActivityItem {
   id: string;
-  type: 'project' | 'task' | 'document';
+  type: 'task_completed' | 'document_uploaded' | 'project_created';
   title: string;
-  action: string;
+  description: string;
   timestamp: string;
-  projectName?: string;
 }
 
 const RecentActivityWidget: React.FC<BaseWidgetProps> = (props) => {
@@ -23,86 +22,78 @@ const RecentActivityWidget: React.FC<BaseWidgetProps> = (props) => {
 
   const fetchRecentActivity = async () => {
     try {
-      setLoading(true);
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) return;
-
-      const activities: ActivityItem[] = [];
-
-      // Get recent projects
-      const { data: projects } = await supabase
-        .from('projects')
-        .select('id, name, updated_at, status')
-        .eq('user_id', user.id)
-        .is('team_id', null)
-        .order('updated_at', { ascending: false })
-        .limit(5);
-
-      projects?.forEach(project => {
-        activities.push({
-          id: project.id,
-          type: 'project',
-          title: project.name,
-          action: `Project ${project.status}`,
-          timestamp: project.updated_at
-        });
-      });
-
-      // Get recent tasks
-      const { data: tasks } = await supabase
+      // Fetch recent completed tasks
+      const { data: recentTasks } = await supabase
         .from('project_schedule_of_works')
         .select(`
           id,
           title,
-          updated_at,
-          completed,
-          projects!inner(name, user_id, team_id)
+          completed_at,
+          projects!inner(name)
         `)
-        .eq('projects.user_id', user.id)
-        .is('projects.team_id', null)
-        .order('updated_at', { ascending: false })
-        .limit(5);
+        .eq('completed', true)
+        .not('completed_at', 'is', null)
+        .order('completed_at', { ascending: false })
+        .limit(3);
 
-      tasks?.forEach(task => {
-        activities.push({
-          id: task.id,
-          type: 'task',
-          title: task.title,
-          action: task.completed ? 'Task completed' : 'Task updated',
-          timestamp: task.updated_at,
-          projectName: task.projects.name
-        });
-      });
-
-      // Get recent documents
-      const { data: documents } = await supabase
-        .from('project_documents')
+      // Fetch recent documents
+      const { data: recentDocs } = await supabase
+        .from('project_completion_documents')
         .select(`
           id,
           file_name,
           created_at,
-          projects!inner(name, user_id, team_id)
+          projects!inner(name)
         `)
-        .eq('projects.user_id', user.id)
-        .is('projects.team_id', null)
         .order('created_at', { ascending: false })
         .limit(3);
 
-      documents?.forEach(doc => {
+      // Fetch recent projects
+      const { data: recentProjects } = await supabase
+        .from('projects')
+        .select('id, name, created_at')
+        .order('created_at', { ascending: false })
+        .limit(2);
+
+      const activities: ActivityItem[] = [];
+
+      // Add task completions
+      recentTasks?.forEach(task => {
         activities.push({
-          id: doc.id,
-          type: 'document',
-          title: doc.file_name,
-          action: 'Document uploaded',
-          timestamp: doc.created_at,
-          projectName: doc.projects.name
+          id: `task-${task.id}`,
+          type: 'task_completed',
+          title: 'Task Completed',
+          description: `${task.title} in ${task.projects?.name}`,
+          timestamp: task.completed_at
         });
       });
 
-      // Sort all activities by timestamp
+      // Add document uploads
+      recentDocs?.forEach(doc => {
+        activities.push({
+          id: `doc-${doc.id}`,
+          type: 'document_uploaded',
+          title: 'Document Uploaded',
+          description: `${doc.file_name} to ${doc.projects?.name}`,
+          timestamp: doc.created_at
+        });
+      });
+
+      // Add project creations
+      recentProjects?.forEach(project => {
+        activities.push({
+          id: `project-${project.id}`,
+          type: 'project_created',
+          title: 'Project Created',
+          description: project.name,
+          timestamp: project.created_at
+        });
+      });
+
+      // Sort by timestamp and take top 5
       activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
-      setActivities(activities.slice(0, 8));
+      setActivities(activities.slice(0, 5));
+
     } catch (error) {
       console.error('Error fetching recent activity:', error);
     } finally {
@@ -112,78 +103,60 @@ const RecentActivityWidget: React.FC<BaseWidgetProps> = (props) => {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'project': return FileText;
-      case 'task': return CheckSquare;
-      case 'document': return FileText;
-      default: return Activity;
-    }
-  };
-
-  const getActivityColor = (type: string) => {
-    switch (type) {
-      case 'project': return 'text-blue-400';
-      case 'task': return 'text-green-400';
-      case 'document': return 'text-purple-400';
-      default: return 'text-gray-400';
+      case 'task_completed': return <CheckSquare className="w-4 h-4 text-green-400" />;
+      case 'document_uploaded': return <Upload className="w-4 h-4 text-blue-400" />;
+      case 'project_created': return <FileText className="w-4 h-4 text-emerald-400" />;
+      default: return <Activity className="w-4 h-4 text-gray-400" />;
     }
   };
 
   const formatTimeAgo = (timestamp: string) => {
     const now = new Date();
     const time = new Date(timestamp);
-    const diffInHours = Math.floor((now.getTime() - time.getTime()) / (1000 * 60 * 60));
+    const diffHours = Math.floor((now.getTime() - time.getTime()) / (1000 * 60 * 60));
     
-    if (diffInHours < 1) return 'Just now';
-    if (diffInHours < 24) return `${diffInHours}h ago`;
-    if (diffInHours < 48) return 'Yesterday';
-    return `${Math.floor(diffInHours / 24)}d ago`;
+    if (diffHours < 1) return 'Just now';
+    if (diffHours === 1) return '1 hour ago';
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return '1 day ago';
+    return `${diffDays} days ago`;
   };
 
-  if (loading) {
-    return (
-      <BaseWidget {...props} title="Recent Activity" icon={Activity}>
+  return (
+    <BaseWidget
+      {...props}
+      title="Recent Activity"
+      icon={Activity}
+    >
+      {loading ? (
         <div className="flex items-center justify-center h-32">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div>
         </div>
-      </BaseWidget>
-    );
-  }
-
-  return (
-    <BaseWidget {...props} title="Recent Activity" icon={Activity}>
-      <div className="space-y-3 max-h-64 overflow-y-auto">
-        {activities.length > 0 ? (
-          activities.map((activity) => {
-            const Icon = getActivityIcon(activity.type);
-            return (
-              <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-gray-800/50 transition-colors">
-                <div className={`p-1.5 rounded-lg bg-gray-800/50`}>
-                  <Icon className={`w-3 h-3 ${getActivityColor(activity.type)}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white font-medium truncate">
-                    {activity.title}
-                  </div>
-                  <div className="text-xs text-gray-400">
-                    {activity.action}
-                    {activity.projectName && (
-                      <span className="text-gray-500"> • {activity.projectName}</span>
-                    )}
-                  </div>
-                </div>
-                <div className="text-xs text-gray-500 whitespace-nowrap">
-                  {formatTimeAgo(activity.timestamp)}
-                </div>
+      ) : activities.length === 0 ? (
+        <div className="text-center py-8">
+          <Activity className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+          <p className="text-gray-400 text-sm">No recent activity</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {activities.map(activity => (
+            <div key={activity.id} className="flex items-start gap-3 p-2 rounded hover:bg-gray-800/30 transition-colors">
+              <div className="flex-shrink-0 mt-0.5">
+                {getActivityIcon(activity.type)}
               </div>
-            );
-          })
-        ) : (
-          <div className="text-center py-8">
-            <Activity className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">No recent activity</p>
-          </div>
-        )}
-      </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-medium text-white text-sm">{activity.title}</h4>
+                <p className="text-xs text-gray-400 truncate">{activity.description}</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  {formatTimeAgo(activity.timestamp)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </BaseWidget>
   );
 };

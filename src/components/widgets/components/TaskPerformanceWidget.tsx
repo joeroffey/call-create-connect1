@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { CheckSquare, Clock, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { CheckSquare, Clock, AlertTriangle, TrendingUp } from 'lucide-react';
 import BaseWidget from '../BaseWidget';
 import { BaseWidgetProps } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TaskStats {
-  active: number;
+  total: number;
   completed: number;
   overdue: number;
   completionRate: number;
+  recentCompleted: number;
 }
 
 const TaskPerformanceWidget: React.FC<BaseWidgetProps> = (props) => {
   const [stats, setStats] = useState<TaskStats>({
-    active: 0,
+    total: 0,
     completed: 0,
     overdue: 0,
-    completionRate: 0
+    completionRate: 0,
+    recentCompleted: 0
   });
   const [loading, setLoading] = useState(true);
 
@@ -26,50 +28,29 @@ const TaskPerformanceWidget: React.FC<BaseWidgetProps> = (props) => {
 
   const fetchTaskStats = async () => {
     try {
-      setLoading(true);
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) return;
-
-      // Get active tasks
-      const { count: active } = await supabase
+      // Get all tasks from accessible projects
+      const { data: tasks } = await supabase
         .from('project_schedule_of_works')
-        .select('*, projects!inner(*)', { count: 'exact', head: true })
-        .eq('projects.user_id', user.id)
-        .is('projects.team_id', null)
-        .eq('completed', false);
+        .select('completed, due_date, completed_at')
+        .order('created_at', { ascending: false });
 
-      // Get completed tasks (this week)
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-      
-      const { count: completed } = await supabase
-        .from('project_schedule_of_works')
-        .select('*, projects!inner(*)', { count: 'exact', head: true })
-        .eq('projects.user_id', user.id)
-        .is('projects.team_id', null)
-        .eq('completed', true)
-        .gte('completed_at', weekAgo.toISOString());
+      if (tasks) {
+        const now = new Date();
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
 
-      // Get overdue tasks
-      const today = new Date().toISOString().split('T')[0];
-      const { count: overdue } = await supabase
-        .from('project_schedule_of_works')
-        .select('*, projects!inner(*)', { count: 'exact', head: true })
-        .eq('projects.user_id', user.id)
-        .is('projects.team_id', null)
-        .eq('completed', false)
-        .lt('due_date', today);
+        const total = tasks.length;
+        const completed = tasks.filter(t => t.completed).length;
+        const overdue = tasks.filter(t => 
+          !t.completed && t.due_date && new Date(t.due_date) < now
+        ).length;
+        const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+        const recentCompleted = tasks.filter(t => 
+          t.completed && t.completed_at && new Date(t.completed_at) > weekAgo
+        ).length;
 
-      // Calculate completion rate
-      const total = (active || 0) + (completed || 0);
-      const completionRate = total > 0 ? ((completed || 0) / total) * 100 : 0;
-
-      setStats({
-        active: active || 0,
-        completed: completed || 0,
-        overdue: overdue || 0,
-        completionRate
-      });
+        setStats({ total, completed, overdue, completionRate, recentCompleted });
+      }
     } catch (error) {
       console.error('Error fetching task stats:', error);
     } finally {
@@ -77,67 +58,68 @@ const TaskPerformanceWidget: React.FC<BaseWidgetProps> = (props) => {
     }
   };
 
-  if (loading) {
-    return (
-      <BaseWidget {...props} title="Task Performance" icon={CheckSquare}>
+  return (
+    <BaseWidget
+      {...props}
+      title="Task Performance"
+      icon={CheckSquare}
+    >
+      {loading ? (
         <div className="flex items-center justify-center h-32">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div>
         </div>
-      </BaseWidget>
-    );
-  }
+      ) : (
+        <div className="space-y-4">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">{stats.completionRate}%</div>
+            <div className="text-sm text-gray-400">Completion Rate</div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <CheckSquare className="w-4 h-4 text-green-400" />
+                <span className="text-sm text-gray-300">Completed</span>
+              </div>
+              <span className="font-semibold text-white">{stats.completed}</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-400" />
+                <span className="text-sm text-gray-300">Total Tasks</span>
+              </div>
+              <span className="font-semibold text-white">{stats.total}</span>
+            </div>
 
-  return (
-    <BaseWidget {...props} title="Task Performance" icon={CheckSquare}>
-      <div className="space-y-4">
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <div className="text-xl font-bold text-blue-400">{stats.active}</div>
-            <div className="text-xs text-gray-400 flex items-center justify-center gap-1">
-              <Clock className="w-3 h-3" />
-              Active
-            </div>
-          </div>
-          <div>
-            <div className="text-xl font-bold text-green-400">{stats.completed}</div>
-            <div className="text-xs text-gray-400 flex items-center justify-center gap-1">
-              <CheckSquare className="w-3 h-3" />
-              This Week
-            </div>
-          </div>
-          <div>
-            <div className="text-xl font-bold text-red-400">{stats.overdue}</div>
-            <div className="text-xs text-gray-400 flex items-center justify-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              Overdue
-            </div>
-          </div>
-        </div>
+            {stats.overdue > 0 && (
+              <div className="flex items-center justify-between p-2 bg-red-900/20 border border-red-500/30 rounded">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <span className="text-sm text-red-300">Overdue</span>
+                </div>
+                <span className="font-semibold text-red-400">{stats.overdue}</span>
+              </div>
+            )}
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-xs text-gray-400">Completion Rate</span>
-            <span className="text-xs text-white font-medium">
-              {Math.round(stats.completionRate)}%
-            </span>
+            <div className="flex items-center justify-between p-2 bg-emerald-900/20 border border-emerald-500/30 rounded">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <span className="text-sm text-emerald-300">This Week</span>
+              </div>
+              <span className="font-semibold text-emerald-400">{stats.recentCompleted}</span>
+            </div>
           </div>
-          <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+
+          {/* Progress bar */}
+          <div className="w-full bg-gray-700 rounded-full h-2">
             <div 
-              className="h-full bg-emerald-500 transition-all duration-300"
+              className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${stats.completionRate}%` }}
             />
           </div>
         </div>
-
-        {stats.overdue > 0 && (
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-2">
-            <div className="text-xs text-red-300 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              {stats.overdue} task{stats.overdue > 1 ? 's' : ''} overdue
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </BaseWidget>
   );
 };

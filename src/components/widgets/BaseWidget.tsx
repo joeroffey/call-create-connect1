@@ -36,6 +36,16 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
   children,
   icon: Icon
 }) => {
+  const getGridSpan = () => {
+    switch (size) {
+      case 'small': return 'col-span-3';
+      case 'medium': return 'col-span-6';
+      case 'large': return 'col-span-6 row-span-2';
+      case 'wide': return 'col-span-12';
+      default: return 'col-span-6';
+    }
+  };
+
   return (
     <motion.div
       layout
@@ -43,7 +53,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
-      className={`${sizeClasses[size]} min-h-[200px]`}
+      className={`${getGridSpan()} min-h-[200px]`}
     >
       <Card className="h-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all">
         <CardHeader className="flex flex-row items-center justify-between pb-3">

@@ -46,7 +46,8 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
           workspace_type: workspaceType,
           widget_layout: newWidgets as unknown as any
         }, {
-          onConflict: 'user_id,team_id,workspace_type'
+          onConflict: 'user_id,team_id,workspace_type',
+          ignoreDuplicates: false
         });
 
       if (error) throw error;

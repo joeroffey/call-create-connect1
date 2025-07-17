@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, AlertCircle, Calendar } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Clock, Calendar, AlertCircle } from 'lucide-react';
 import BaseWidget from '../BaseWidget';
 import { BaseWidgetProps } from '../types';
 import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
 
-interface Deadline {
+interface DeadlineItem {
   id: string;
   title: string;
-  dueDate: string;
-  projectName: string;
-  isOverdue: boolean;
-  daysUntilDue: number;
+  due_date: string;
+  project_name: string;
+  is_overdue: boolean;
+  days_until: number;
 }
 
 const UpcomingDeadlinesWidget: React.FC<BaseWidgetProps> = (props) => {
-  const [deadlines, setDeadlines] = useState<Deadline[]>([]);
+  const [deadlines, setDeadlines] = useState<DeadlineItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,49 +23,39 @@ const UpcomingDeadlinesWidget: React.FC<BaseWidgetProps> = (props) => {
 
   const fetchUpcomingDeadlines = async () => {
     try {
-      setLoading(true);
-      const user = (await supabase.auth.getUser()).data.user;
-      if (!user) return;
-
       const { data: tasks } = await supabase
         .from('project_schedule_of_works')
         .select(`
           id,
           title,
           due_date,
-          projects!inner(name, user_id, team_id)
+          completed,
+          projects!inner(name)
         `)
-        .eq('projects.user_id', user.id)
-        .is('projects.team_id', null)
         .eq('completed', false)
         .not('due_date', 'is', null)
         .order('due_date', { ascending: true })
-        .limit(10);
+        .limit(5);
 
-      const now = new Date();
-      const deadlinesList: Deadline[] = tasks?.map(task => {
-        const dueDate = new Date(task.due_date);
-        const diffTime = dueDate.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        
-        return {
-          id: task.id,
-          title: task.title,
-          dueDate: task.due_date,
-          projectName: task.projects.name,
-          isOverdue: diffDays < 0,
-          daysUntilDue: diffDays
-        };
-      }) || [];
+      if (tasks) {
+        const now = new Date();
+        const formattedDeadlines = tasks.map(task => {
+          const dueDate = new Date(task.due_date);
+          const diffTime = dueDate.getTime() - now.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          return {
+            id: task.id,
+            title: task.title,
+            due_date: task.due_date,
+            project_name: task.projects?.name || 'Unknown Project',
+            is_overdue: diffDays < 0,
+            days_until: diffDays
+          };
+        });
 
-      // Sort by urgency: overdue first, then by days until due
-      deadlinesList.sort((a, b) => {
-        if (a.isOverdue && !b.isOverdue) return -1;
-        if (!a.isOverdue && b.isOverdue) return 1;
-        return a.daysUntilDue - b.daysUntilDue;
-      });
-
-      setDeadlines(deadlinesList.slice(0, 6));
+        setDeadlines(formattedDeadlines);
+      }
     } catch (error) {
       console.error('Error fetching deadlines:', error);
     } finally {
@@ -74,91 +63,71 @@ const UpcomingDeadlinesWidget: React.FC<BaseWidgetProps> = (props) => {
     }
   };
 
-  const getDueDateBadge = (deadline: Deadline) => {
-    if (deadline.isOverdue) {
-      return (
-        <Badge variant="destructive" className="text-xs">
-          <AlertCircle className="w-3 h-3 mr-1" />
-          Overdue
-        </Badge>
-      );
+  const formatDueDate = (daysUntil: number) => {
+    if (daysUntil < 0) {
+      return `${Math.abs(daysUntil)} days overdue`;
+    } else if (daysUntil === 0) {
+      return 'Due today';
+    } else if (daysUntil === 1) {
+      return 'Due tomorrow';
+    } else {
+      return `Due in ${daysUntil} days`;
     }
-    
-    if (deadline.daysUntilDue === 0) {
-      return (
-        <Badge className="text-xs bg-orange-500 hover:bg-orange-600">
-          <Clock className="w-3 h-3 mr-1" />
-          Today
-        </Badge>
-      );
-    }
-    
-    if (deadline.daysUntilDue === 1) {
-      return (
-        <Badge className="text-xs bg-yellow-500 hover:bg-yellow-600">
-          <Clock className="w-3 h-3 mr-1" />
-          Tomorrow
-        </Badge>
-      );
-    }
-    
-    if (deadline.daysUntilDue <= 7) {
-      return (
-        <Badge variant="secondary" className="text-xs">
-          {deadline.daysUntilDue}d
-        </Badge>
-      );
-    }
-    
-    return (
-      <Badge variant="outline" className="text-xs border-gray-600">
-        {deadline.daysUntilDue}d
-      </Badge>
-    );
   };
 
-  if (loading) {
-    return (
-      <BaseWidget {...props} title="Upcoming Deadlines" icon={Clock}>
+  const getUrgencyColor = (daysUntil: number, isOverdue: boolean) => {
+    if (isOverdue) return 'text-red-400 border-red-500/30 bg-red-900/20';
+    if (daysUntil <= 1) return 'text-orange-400 border-orange-500/30 bg-orange-900/20';
+    if (daysUntil <= 7) return 'text-yellow-400 border-yellow-500/30 bg-yellow-900/20';
+    return 'text-blue-400 border-blue-500/30 bg-blue-900/20';
+  };
+
+  return (
+    <BaseWidget
+      {...props}
+      title="Upcoming Deadlines"
+      icon={Clock}
+    >
+      {loading ? (
         <div className="flex items-center justify-center h-32">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div>
         </div>
-      </BaseWidget>
-    );
-  }
-
-  return (
-    <BaseWidget {...props} title="Upcoming Deadlines" icon={Clock}>
-      <div className="space-y-3 max-h-64 overflow-y-auto">
-        {deadlines.length > 0 ? (
-          deadlines.map((deadline) => (
+      ) : deadlines.length === 0 ? (
+        <div className="text-center py-8">
+          <Calendar className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+          <p className="text-gray-400 text-sm">No upcoming deadlines</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {deadlines.map(deadline => (
             <div 
-              key={deadline.id} 
-              className="flex items-start justify-between p-2 rounded-lg hover:bg-gray-800/50 transition-colors"
+              key={deadline.id}
+              className={`p-3 rounded border ${getUrgencyColor(deadline.days_until, deadline.is_overdue)}`}
             >
-              <div className="flex-1 min-w-0">
-                <div className="text-sm text-white font-medium truncate">
-                  {deadline.title}
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-white text-sm truncate">
+                    {deadline.title}
+                  </h4>
+                  <p className="text-xs text-gray-400 truncate">
+                    {deadline.project_name}
+                  </p>
                 </div>
-                <div className="text-xs text-gray-400 truncate">
-                  {deadline.projectName}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  Due: {new Date(deadline.dueDate).toLocaleDateString()}
+                <div className="flex items-center gap-1">
+                  {deadline.is_overdue && (
+                    <AlertCircle className="w-3 h-3 text-red-400" />
+                  )}
                 </div>
               </div>
-              <div className="ml-2 flex-shrink-0">
-                {getDueDateBadge(deadline)}
+              <div className="mt-1">
+                <span className="text-xs font-medium">
+                  {formatDueDate(deadline.days_until)}
+                </span>
               </div>
             </div>
-          ))
-        ) : (
-          <div className="text-center py-8">
-            <Calendar className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">No upcoming deadlines</p>
-          </div>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </BaseWidget>
   );
 };
