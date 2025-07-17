@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Bell, Crown, Wrench, FolderOpen, Users } from 'lucide-react';
+import { MessageCircle, Search, User, Bell, Crown, Wrench, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
@@ -9,10 +9,9 @@ import AccountSettingsScreen from '../components/AccountSettingsScreen';
 import AuthScreen from '../components/AuthScreen';
 import AdvancedSearchInterface from '../components/AdvancedSearchInterface';
 import AppsScreen from '../components/AppsScreen';
-import ProjectsScreen from '../components/ProjectsScreen';
+import WorkspaceScreen from '../components/WorkspaceScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
 import NotificationsScreen from '../components/NotificationsScreen';
-import TeamScreen from '../components/TeamScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
@@ -41,7 +40,7 @@ const Index = () => {
   // Set up deep linking for mobile app
   useDeepLinking();
 
-  // Handle URL parameters for project navigation from notifications
+  // Handle URL parameters for workspace navigation from notifications
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
@@ -53,19 +52,19 @@ const Index = () => {
     console.log('🔍 Current activeTab:', activeTab);
     console.log('🔍 Current pendingProjectModal:', pendingProjectModal);
     
-    // Handle project navigation (existing logic)
-    if (tab === 'projects' && projectId && view === 'schedule') {
-      console.log('🎯 Project notification navigation detected:', { tab, projectId, view, teamId });
+    // Handle project/team navigation - redirect to workspace
+    if ((tab === 'projects' || tab === 'team') && (projectId || teamId)) {
+      console.log('🎯 Workspace notification navigation detected:', { tab, projectId, view, teamId });
       console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
-      console.log('🔄 About to set activeTab to:', tab);
-      console.log('🔄 About to set pendingProjectModal to:', { projectId, view });
+      console.log('🔄 About to set activeTab to: workspace');
       
-      // Force set the active tab to projects regardless of subscription 
-      // The projects screen will handle the subscription check
-      setActiveTab(tab);
-      setPendingProjectModal({ projectId, view });
+      // Set the active tab to workspace and pass project modal if needed
+      setActiveTab('workspace');
+      if (projectId && view) {
+        setPendingProjectModal({ projectId, view });
+      }
       
-      console.log('✅ State updated - activeTab and pendingProjectModal set');
+      console.log('✅ State updated - activeTab set to workspace');
       
       // Clean up URL parameters after a short delay to ensure processing
       setTimeout(() => {
@@ -73,20 +72,6 @@ const Index = () => {
         window.history.replaceState({}, document.title, newUrl);
         console.log('✅ URL cleaned');
       }, 100);
-    }
-    
-    // Handle team navigation (new logic for task assignment notifications)
-    if (tab === 'team' && view && teamId) {
-      console.log('🎯 Team notification navigation detected:', { tab, view, teamId, projectId });
-      console.log('👤 User subscription tier:', hasActiveSubscription ? subscription?.plan_type : 'none');
-      console.log('🔄 About to set activeTab to:', tab);
-      
-      // Set the active tab to team - URL parameters will be handled by TeamScreen
-      setActiveTab(tab);
-      
-      console.log('✅ State updated - activeTab set to team');
-      
-      // Don't clean up URL parameters here - let TeamScreen handle them
     }
   }, []); // Remove dependencies to ensure this always runs on URL changes
 
@@ -226,7 +211,7 @@ const Index = () => {
     }
   };
 
-  // Define available tabs based on subscription - replaced Updates with Team
+  // Define available tabs based on subscription - unified workspace approach
   const getAvailableTabs = () => {
     const baseTabs = [
       { id: 'chat', icon: MessageCircle, label: 'Chat' },
@@ -240,11 +225,10 @@ const Index = () => {
     // Advanced Search only for ProMax
     if (hasActiveSubscription && subscription && subscription.plan_type === 'enterprise') {
       baseTabs.push({ id: 'search', icon: Search, label: 'Search' });
-      baseTabs.push({ id: 'projects', icon: FolderOpen, label: 'Projects' });
     }
 
-    // Team tab available for all subscription levels (will show upgrade prompt if needed)
-    baseTabs.push({ id: 'team', icon: Users, label: 'Team' });
+    // Workspace tab (combines Projects and Team) - available for all subscription levels
+    baseTabs.push({ id: 'workspace', icon: Briefcase, label: 'Workspace' });
 
     // Always available tabs
     baseTabs.push(
@@ -258,10 +242,10 @@ const Index = () => {
   const tabs = getAvailableTabs();
 
   // Reset active tab if it's not available in current subscription
-  // BUT allow 'projects' if there's a pending project modal from notification
+  // BUT allow 'workspace' if there's a pending project modal from notification
   useEffect(() => {
     const availableTabIds = tabs.map(tab => tab.id);
-    if (!availableTabIds.includes(activeTab) && !(activeTab === 'projects' && pendingProjectModal)) {
+    if (!availableTabIds.includes(activeTab) && !(activeTab === 'workspace' && pendingProjectModal)) {
       setActiveTab('chat');
     }
   }, [subscriptionTier, activeTab, pendingProjectModal]);
@@ -369,40 +353,15 @@ const Index = () => {
           </div>;
         }
         return <AppsScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} />;
-      case 'projects':
-        // If there's a pending project modal from notification, show it regardless of subscription
-        // This allows users to view their project schedule even without enterprise subscription
-        if (pendingProjectModal && pendingProjectModal.projectId) {
-          return <ProjectsScreen 
-            user={user} 
-            onStartNewChat={handleStartNewChat} 
-            pendingProjectModal={pendingProjectModal}
-            onProjectModalHandled={() => setPendingProjectModal(null)}
-          />;
-        }
-        
-        if (subscriptionTier !== 'enterprise') {
-          return <div className="flex-1 flex items-center justify-center p-8 text-center">
-            <div>
-              <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
-              <p className="text-gray-400 mb-6">Projects feature is only available for EezyBuild ProMax subscribers.</p>
-              <button
-                onClick={handleViewPlans}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
-              >
-                Upgrade to ProMax
-              </button>
-            </div>
-          </div>;
-        }
-        return <ProjectsScreen 
-          user={user} 
-          onStartNewChat={handleStartNewChat} 
+      case 'workspace':
+        return <WorkspaceScreen 
+          user={user}
+          subscriptionTier={subscriptionTier}
+          onViewPlans={handleViewPlans}
+          onStartNewChat={handleStartNewChat}
           pendingProjectModal={pendingProjectModal}
           onProjectModalHandled={() => setPendingProjectModal(null)}
         />;
-      case 'team':
-        return <TeamScreen user={user} subscriptionTier={subscriptionTier} onViewPlans={handleViewPlans} onStartNewChat={handleStartNewChat} />;
       case 'profile':
         return (
           <ProfileScreen
