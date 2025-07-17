@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -74,13 +73,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
   const { members, loading: membersLoading, inviteMember, createTestInvitation, updateMemberRole, removeMember } = useTeamMembers(selectedTeamId);
   const teamStats = useTeamStats(selectedTeamId);
 
-  console.log('TeamScreen render:', {
-    teamsCount: teams.length,
-    selectedTeamId,
-    teamsLoading,
-    userId: user?.id
-  });
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollTabs = (direction: "left" | "right") => {
@@ -95,21 +87,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
 
   // Use passed selectedTeamId prop or auto-select first team
   React.useEffect(() => {
-    console.log('TeamScreen useEffect - teams/props changed:', {
-      teamsLength: teams.length,
-      selectedTeamId,
-      propsSelectedTeamId,
-      firstTeamId: teams[0]?.id
-    });
-
     // If we have a props team ID and it's different from current, use it
     if (propsSelectedTeamId && propsSelectedTeamId !== selectedTeamId) {
-      console.log('Using props selected team ID:', propsSelectedTeamId);
       setSelectedTeamId(propsSelectedTeamId);
     }
     // Otherwise, auto-select first team if none selected
     else if (teams.length > 0 && !selectedTeamId) {
-      console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
     }
   }, [teams, selectedTeamId, propsSelectedTeamId]);
@@ -118,14 +101,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
 
   // Update current logo URL when selected team changes
   React.useEffect(() => {
-    console.log('Team changed effect:', {
-      selectedTeam: selectedTeam?.name,
-      logoUrl: selectedTeam?.logo_url,
-      currentLogoUrl
-    });
     if (selectedTeam) {
       setCurrentLogoUrl(selectedTeam.logo_url);
-      console.log('Setting current logo URL to:', selectedTeam.logo_url);
     }
   }, [selectedTeam]);
 
@@ -135,11 +112,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     const view = urlParams.get('view');
     const teamId = urlParams.get('team');
     
-    console.log('🔍 TeamScreen URL params check:', { view, teamId, currentSelectedTeamId: selectedTeamId });
-    
     // If there's a view parameter and we're on the team tab, set the active view
     if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'completion-docs', 'settings'].includes(view)) {
-      console.log('🎯 Setting activeView from URL parameter:', view);
       setActiveView(view as any);
     }
     
@@ -147,7 +121,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     if (teamId && teams.length > 0) {
       const teamExists = teams.find(team => team.id === teamId);
       if (teamExists && selectedTeamId !== teamId) {
-        console.log('🎯 Setting selectedTeamId from URL parameter:', teamId);
         setSelectedTeamId(teamId);
       }
     }
@@ -157,16 +130,9 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
       setTimeout(() => {
         const newUrl = window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
-        console.log('✅ TeamScreen URL cleaned');
       }, 100);
     }
   }, [teams, selectedTeamId]); // Depend on teams and selectedTeamId to ensure we can process team selection
-
-  console.log('TeamScreen render:', {
-    selectedTeam: selectedTeam?.name,
-    currentLogoUrl,
-    teamLogoUrl: selectedTeam?.logo_url
-  });
 
   // Check if user has team access
   const hasTeamAccess = subscriptionTier === 'enterprise';
@@ -186,10 +152,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
   };
 
   const handleLogoUpdate = (logoUrl: string | null) => {
-    console.log('handleLogoUpdate called with:', logoUrl);
     // Immediately update the local logo state for instant UI feedback
     setCurrentLogoUrl(logoUrl);
-    console.log('Updated currentLogoUrl state to:', logoUrl);
     // Also refetch to ensure data is in sync
     refetchTeams();
   };
@@ -257,7 +221,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     );
   }
 
-
   // Helper function to determine if current user can remove a specific member
   const canRemoveMember = (member: any) => {
     const currentUserMember = members.find(m => m.user_id === user?.id);
@@ -287,7 +250,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
   const handleRemoveMember = async (memberId: string, memberName: string) => {
     try {
       await removeMember(memberId);
-      console.log(`Successfully removed member: ${memberName}`);
     } catch (error) {
       console.error('Error removing member:', error);
     }
@@ -444,23 +406,6 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
             </div>
           </div>
 
-          {/* Team Selector */}
-          {teams.length > 1 && (
-            <div className="mb-6">
-              <select
-                value={selectedTeamId || ''}
-                onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="bg-gray-800/50 border border-gray-600 text-white px-4 py-3 rounded-xl hover:border-gray-500 transition-colors"
-              >
-                {teams.map((team) => (
-                  <option key={team.id} value={team.id}>
-                    {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
           {/* Navigation Tabs */}
           <div className='relative'>
             {/* Scrollable Container with Fade Gradients */}
@@ -538,15 +483,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
           {activeView === 'overview' && renderOverview()}
           {activeView === 'members' && renderMembers()}
           {activeView === 'projects' && (() => {
-            console.log('Projects view check:', {
-              activeView,
-              selectedTeamId,
-              selectedTeam: selectedTeam?.name,
-              hasUser: !!user
-            });
-
             if (!selectedTeamId || !selectedTeam) {
-              console.log('Missing team data for projects view');
               return (
                 <div className="text-center py-12 text-white">
                   <p>Loading team data...</p>
