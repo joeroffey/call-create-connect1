@@ -12,12 +12,15 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
     try {
       setLoading(true);
       
+      // Ensure teamId is properly handled - convert undefined to null
+      const normalizedTeamId = teamId || null;
+      
       const { data, error } = await supabase
         .from('user_widget_preferences')
         .select('widget_layout')
         .eq('user_id', userId)
         .eq('workspace_type', workspaceType)
-        .eq('team_id', teamId || null)
+        .eq('team_id', normalizedTeamId)
         .maybeSingle();
 
       if (error) {
@@ -43,13 +46,16 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
 
   const saveWidgets = useCallback(async (newWidgets: WidgetLayout[]) => {
     try {      
+      // Ensure teamId is properly handled - convert undefined to null
+      const normalizedTeamId = teamId || null;
+      
       // First, try to update existing record
       const { data: existingData, error: fetchError } = await supabase
         .from('user_widget_preferences')
         .select('id')
         .eq('user_id', userId)
         .eq('workspace_type', workspaceType)
-        .eq('team_id', teamId || null)
+        .eq('team_id', normalizedTeamId)
         .maybeSingle();
 
       if (fetchError) {
@@ -73,7 +79,7 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
           .from('user_widget_preferences')
           .insert({
             user_id: userId,
-            team_id: teamId || null,
+            team_id: normalizedTeamId,
             workspace_type: workspaceType,
             widget_layout: newWidgets as unknown as any
           });
@@ -87,6 +93,7 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
       setWidgets(newWidgets);
       
     } catch (err) {
+      console.error('Error saving widgets:', err);
       setError(err instanceof Error ? err.message : 'Failed to save widgets');
       throw err;
     }
@@ -103,15 +110,11 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
   }, [widgets, saveWidgets]);
 
   const removeWidget = useCallback(async (widgetId: string) => {
-    console.log('Removing widget:', widgetId);
     const newWidgets = widgets.filter(w => w.id !== widgetId);
-    console.log('New widgets after removal:', newWidgets);
     
     try {
       await saveWidgets(newWidgets);
-      console.log('Widget removed successfully');
     } catch (error) {
-      console.error('Error removing widget:', error);
       // Error handling is done in saveWidgets
     }
   }, [widgets, saveWidgets]);
