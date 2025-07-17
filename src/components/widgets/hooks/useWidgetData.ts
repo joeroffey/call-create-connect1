@@ -54,12 +54,25 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
 
   const saveWidgets = useCallback(async (newWidgets: WidgetLayout[]) => {
     try {      
+      // Check if user is authenticated
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      console.log('💾 User authenticated:', user.id, 'Provided userId:', userId);
+      
+      // Verify userId matches authenticated user
+      if (user.id !== userId) {
+        throw new Error('User ID mismatch - authentication issue');
+      }
+      
       // Normalize teamId - handle all possible null-like values
       const normalizedTeamId = (!teamId || teamId === "null" || teamId === "" || teamId === "undefined") ? null : teamId;
       
       console.log('💾 Saving widgets with normalized teamId:', normalizedTeamId, 'Widget count:', newWidgets.length);
       
-      // First, delete any existing record
+      // First, delete any existing record with detailed error checking
       const deleteQuery = supabase
         .from('user_widget_preferences')
         .delete()
@@ -72,17 +85,17 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
         deleteQuery.eq('team_id', normalizedTeamId);
       }
       
-      const { error: deleteError } = await deleteQuery;
+      const deleteResult = await deleteQuery;
       
-      if (deleteError) {
-        console.error('💾 Error deleting existing widgets:', deleteError);
-        throw deleteError;
+      if (deleteResult.error) {
+        console.error('💾 Delete error details:', deleteResult.error);
+        throw deleteResult.error;
       }
       
-      console.log('💾 Deleted existing widgets, now inserting new ones...');
+      console.log('💾 Delete result:', deleteResult);
       
-      // Insert new record
-      const { error: insertError } = await supabase
+      // Insert new record with detailed error checking
+      const insertResult = await supabase
         .from('user_widget_preferences')
         .insert({
           user_id: userId,
@@ -91,11 +104,12 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
           widget_layout: newWidgets as unknown as any
         });
 
-      if (insertError) {
-        console.error('💾 Error inserting widgets:', insertError);
-        throw insertError;
+      if (insertResult.error) {
+        console.error('💾 Insert error details:', insertResult.error);
+        throw insertResult.error;
       }
       
+      console.log('💾 Insert result:', insertResult);
       console.log('💾 Successfully saved widgets to database');
       
       // Update local state
@@ -103,7 +117,7 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
       setError(null);
       
     } catch (err) {
-      console.error('💾 Error saving widgets:', err);
+      console.error('💾 Detailed error saving widgets:', err);
       setError(err instanceof Error ? err.message : 'Failed to save widgets');
       throw err;
     }
