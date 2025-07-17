@@ -12,16 +12,24 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
     try {
       setLoading(true);
       
-      // Ensure teamId is properly handled - convert string "null", undefined, and empty string to null
-      const normalizedTeamId = teamId === "null" || teamId === "" || !teamId ? null : teamId;
+      // Normalize teamId - handle all possible null-like values
+      const normalizedTeamId = (!teamId || teamId === "null" || teamId === "" || teamId === "undefined") ? null : teamId;
       
-      const { data, error } = await supabase
+      console.log('Fetching widgets with normalized teamId:', normalizedTeamId);
+      
+      let query = supabase
         .from('user_widget_preferences')
         .select('widget_layout')
         .eq('user_id', userId)
-        .eq('workspace_type', workspaceType)
-        .eq('team_id', normalizedTeamId)
-        .maybeSingle();
+        .eq('workspace_type', workspaceType);
+      
+      if (normalizedTeamId === null) {
+        query = query.is('team_id', null);
+      } else {
+        query = query.eq('team_id', normalizedTeamId);
+      }
+      
+      const { data, error } = await query.maybeSingle();
 
       if (error) {
         throw error;
@@ -46,17 +54,25 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
 
   const saveWidgets = useCallback(async (newWidgets: WidgetLayout[]) => {
     try {      
-      // Ensure teamId is properly handled - convert string "null", undefined, and empty string to null
-      const normalizedTeamId = teamId === "null" || teamId === "" || !teamId ? null : teamId;
+      // Normalize teamId - handle all possible null-like values
+      const normalizedTeamId = (!teamId || teamId === "null" || teamId === "" || teamId === "undefined") ? null : teamId;
       
-      // First, try to update existing record
-      const { data: existingData, error: fetchError } = await supabase
+      console.log('Saving widgets with normalized teamId:', normalizedTeamId, 'Widget count:', newWidgets.length);
+      
+      // Build query to find existing record
+      let query = supabase
         .from('user_widget_preferences')
         .select('id')
         .eq('user_id', userId)
-        .eq('workspace_type', workspaceType)
-        .eq('team_id', normalizedTeamId)
-        .maybeSingle();
+        .eq('workspace_type', workspaceType);
+      
+      if (normalizedTeamId === null) {
+        query = query.is('team_id', null);
+      } else {
+        query = query.eq('team_id', normalizedTeamId);
+      }
+      
+      const { data: existingData, error: fetchError } = await query.maybeSingle();
 
       if (fetchError) {
         throw fetchError;
