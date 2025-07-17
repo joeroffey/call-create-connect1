@@ -128,44 +128,46 @@ const Dashboard: React.FC<DashboardProps> = ({
           {workspaceType === 'personal' ? 'Personal' : 'Team'} Dashboard
         </h2>
         
-        <div className="flex gap-2 self-start sm:self-auto">
-          <Button
-            onClick={refetch}
-            variant="outline"
-            size="sm"
-            className="text-gray-400 hover:text-white"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto self-start sm:self-auto">
+          <div className="flex gap-2">
+            <Button
+              onClick={refetch}
+              variant="outline"
+              size="sm"
+              className="text-gray-400 hover:text-white flex-1 sm:flex-initial"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Refresh
+            </Button>
+            
+            <Button
+              onClick={() => setIsEditing(!isEditing)}
+              variant={isEditing ? "default" : "outline"}
+              className={`flex-1 sm:flex-initial ${isEditing ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+            >
+              {isEditing ? (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Done
+                </>
+              ) : (
+                <>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Customize
+                </>
+              )}
+            </Button>
+          </div>
           
           {isEditing && (
             <Button
               onClick={() => setShowWidgetGallery(true)}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
             >
               <Plus className="w-4 h-4 mr-2" />
               Add Widget
             </Button>
           )}
-          
-          <Button
-            onClick={() => setIsEditing(!isEditing)}
-            variant={isEditing ? "default" : "outline"}
-            className={isEditing ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-          >
-            {isEditing ? (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Done
-              </>
-            ) : (
-              <>
-                <Settings className="w-4 h-4 mr-2" />
-                Customize
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
