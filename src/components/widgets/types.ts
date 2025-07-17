@@ -44,8 +44,7 @@ export type WidgetType =
   | 'collaboration-stats'
   
   // Personal
-  | 'custom-notes'
-  | 'motivational-quotes';
+  | 'custom-notes';
 
 export interface BaseWidgetProps {
   id: string;

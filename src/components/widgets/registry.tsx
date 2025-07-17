@@ -35,7 +35,7 @@ import StatusIndicatorsWidget from './components/StatusIndicatorsWidget';
 import CollaborationStatsWidget from './components/CollaborationStatsWidget';
 import CustomNotesWidget from './components/CustomNotesWidget';
 import ProductivityMetricsWidget from './components/ProductivityMetricsWidget';
-import MotivationalQuotesWidget from './components/MotivationalQuotesWidget';
+
 
 export const widgetRegistry: WidgetRegistry = {
   // Statistics & Metrics
@@ -184,15 +184,6 @@ export const widgetRegistry: WidgetRegistry = {
     maxSize: 'large',
     component: CustomNotesWidget
   },
-  'motivational-quotes': {
-    name: 'Motivational Quotes',
-    description: 'Daily inspiration and productivity tips',
-    category: 'personal',
-    defaultSize: 'small',
-    minSize: 'small',
-    maxSize: 'medium',
-    component: MotivationalQuotesWidget
-  }
 };
 
 export const getWidgetIcon = (type: string) => {
@@ -212,7 +203,7 @@ export const getWidgetIcon = (type: string) => {
     'team-performance': Users,
     'collaboration-stats': MessageSquare,
     'custom-notes': StickyNote,
-    'motivational-quotes': Quote
+    
   };
   
   return iconMap[type] || FileText;
