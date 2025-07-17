@@ -38,11 +38,11 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
 }) => {
   const getGridSpan = () => {
     switch (size) {
-      case 'small': return 'col-span-3';
-      case 'medium': return 'col-span-6';
-      case 'large': return 'col-span-6 row-span-2';
-      case 'wide': return 'col-span-12';
-      default: return 'col-span-6';
+      case 'small': return 'col-span-1';
+      case 'medium': return 'col-span-1 md:col-span-2';
+      case 'large': return 'col-span-1 md:col-span-2 lg:col-span-2';
+      case 'wide': return 'col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4';
+      default: return 'col-span-1 md:col-span-2';
     }
   };
 
@@ -53,7 +53,7 @@ const BaseWidget: React.FC<BaseWidgetProps> = ({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.2 }}
-      className={`${getGridSpan()} min-h-[200px]`}
+      className={`${getGridSpan()} min-h-[180px] md:min-h-[200px]`}
     >
       <Card className="h-full bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700 hover:border-gray-600 transition-all">
         <CardHeader className="flex flex-row items-center justify-between pb-3">

@@ -108,14 +108,14 @@ const Dashboard: React.FC<DashboardProps> = ({
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-white">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-white">
           {workspaceType === 'personal' ? 'Personal' : 'Team'} Dashboard
         </h2>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 self-start sm:self-auto">
           {isEditing && (
             <Button
               onClick={() => setShowWidgetGallery(true)}
@@ -146,8 +146,8 @@ const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* Widgets Grid - Using CSS Grid with proper positioning */}
-      <div className="grid grid-cols-12 gap-4 auto-rows-max min-h-[400px]">
+      {/* Widgets Grid - Responsive grid layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max min-h-[400px]">
         <AnimatePresence>
           {widgets.map(renderWidget)}
         </AnimatePresence>
