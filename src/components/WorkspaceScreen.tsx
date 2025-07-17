@@ -187,7 +187,7 @@ const WorkspaceScreen = ({
                   <button
                     key={item.id}
                     onClick={() => setPersonalView(item.id as any)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                    className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                       personalView === item.id
                         ? 'bg-emerald-500 text-white shadow-lg'
                         : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
@@ -203,7 +203,7 @@ const WorkspaceScreen = ({
               <div className="flex gap-2 ml-4">
                 <button
                   onClick={() => setPersonalView('settings' as any)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
                     personalView === 'settings'
                       ? 'bg-emerald-500 text-white shadow-lg'
                       : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
