@@ -126,7 +126,7 @@ const WorkspaceScreen = ({
     </div>
   );
 
-  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'completion-docs' | 'project-plans' | 'settings'>('projects');
+  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'completion-docs' | 'project-plans' | 'settings'>('overview');
 
   const renderPersonalContent = () => {
     switch (personalView) {
