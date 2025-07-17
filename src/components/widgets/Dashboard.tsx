@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Plus, X, Save } from 'lucide-react';
+import { Settings, Plus, X, Save, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useWidgetData } from './hooks/useWidgetData';
 import { widgetRegistry, getWidgetIcon } from './registry';
@@ -24,13 +25,22 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [showWidgetGallery, setShowWidgetGallery] = useState(false);
-  const { widgets, loading, addWidget, removeWidget, updateWidget } = useWidgetData(
+  const { widgets, loading, addWidget, removeWidget, updateWidget, refetch } = useWidgetData(
     userId, 
     teamId, 
     workspaceType
   );
 
-  const handleAddWidget = (type: WidgetType) => {
+  // Refetch widgets when component becomes visible (user navigates back to overview)
+  useEffect(() => {
+    console.log('🔄 Dashboard component mounted/updated, refetching widgets...');
+    if (userId) {
+      refetch();
+    }
+  }, [userId, teamId, workspaceType, refetch]);
+
+  const handleAddWidget = async (type: WidgetType) => {
+    console.log('➕ Dashboard: Adding widget of type:', type);
     const widgetInfo = widgetRegistry[type];
     const newWidget: WidgetLayout = {
       id: `${type}-${Date.now()}`,
@@ -42,8 +52,14 @@ const Dashboard: React.FC<DashboardProps> = ({
         dataRange: 'week'
       }
     };
-    addWidget(newWidget);
-    setShowWidgetGallery(false);
+    
+    try {
+      await addWidget(newWidget);
+      setShowWidgetGallery(false);
+      console.log('✅ Dashboard: Widget added successfully');
+    } catch (error) {
+      console.error('❌ Dashboard: Failed to add widget:', error);
+    }
   };
 
   const renderWidget = (widget: WidgetLayout) => {
@@ -116,6 +132,16 @@ const Dashboard: React.FC<DashboardProps> = ({
         </h2>
         
         <div className="flex gap-2 self-start sm:self-auto">
+          <Button
+            onClick={refetch}
+            variant="outline"
+            size="sm"
+            className="text-gray-400 hover:text-white"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          
           {isEditing && (
             <Button
               onClick={() => setShowWidgetGallery(true)}
@@ -145,6 +171,16 @@ const Dashboard: React.FC<DashboardProps> = ({
           </Button>
         </div>
       </div>
+
+      {/* Debug info when editing */}
+      {isEditing && (
+        <div className="bg-gray-800/50 p-3 rounded-lg text-sm text-gray-400">
+          <div>Debug: User ID: {userId}</div>
+          <div>Debug: Team ID: {teamId || 'null'}</div>
+          <div>Debug: Workspace: {workspaceType}</div>
+          <div>Debug: Widget count: {widgets.length}</div>
+        </div>
+      )}
 
       {/* Widgets Grid - Responsive grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-max pb-4 md:pb-6">
