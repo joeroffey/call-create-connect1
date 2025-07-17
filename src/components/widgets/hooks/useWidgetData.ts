@@ -57,59 +57,53 @@ export const useWidgetData = (userId: string, teamId?: string, workspaceType: Wo
       // Normalize teamId - handle all possible null-like values
       const normalizedTeamId = (!teamId || teamId === "null" || teamId === "" || teamId === "undefined") ? null : teamId;
       
-      console.log('Saving widgets with normalized teamId:', normalizedTeamId, 'Widget count:', newWidgets.length);
+      console.log('💾 Saving widgets with normalized teamId:', normalizedTeamId, 'Widget count:', newWidgets.length);
       
-      // Build query to find existing record
-      let query = supabase
+      // First, delete any existing record
+      const deleteQuery = supabase
         .from('user_widget_preferences')
-        .select('id')
+        .delete()
         .eq('user_id', userId)
         .eq('workspace_type', workspaceType);
       
       if (normalizedTeamId === null) {
-        query = query.is('team_id', null);
+        deleteQuery.is('team_id', null);
       } else {
-        query = query.eq('team_id', normalizedTeamId);
+        deleteQuery.eq('team_id', normalizedTeamId);
       }
       
-      const { data: existingData, error: fetchError } = await query.maybeSingle();
-
-      if (fetchError) {
-        throw fetchError;
-      }
-
-      let saveResult;
+      const { error: deleteError } = await deleteQuery;
       
-      if (existingData) {
-        // Update existing record
-        saveResult = await supabase
-          .from('user_widget_preferences')
-          .update({
-            widget_layout: newWidgets as unknown as any,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingData.id);
-      } else {
-        // Insert new record
-        saveResult = await supabase
-          .from('user_widget_preferences')
-          .insert({
-            user_id: userId,
-            team_id: normalizedTeamId,
-            workspace_type: workspaceType,
-            widget_layout: newWidgets as unknown as any
-          });
+      if (deleteError) {
+        console.error('💾 Error deleting existing widgets:', deleteError);
+        throw deleteError;
       }
+      
+      console.log('💾 Deleted existing widgets, now inserting new ones...');
+      
+      // Insert new record
+      const { error: insertError } = await supabase
+        .from('user_widget_preferences')
+        .insert({
+          user_id: userId,
+          team_id: normalizedTeamId,
+          workspace_type: workspaceType,
+          widget_layout: newWidgets as unknown as any
+        });
 
-      if (saveResult.error) {
-        throw saveResult.error;
+      if (insertError) {
+        console.error('💾 Error inserting widgets:', insertError);
+        throw insertError;
       }
+      
+      console.log('💾 Successfully saved widgets to database');
       
       // Update local state
       setWidgets(newWidgets);
+      setError(null);
       
     } catch (err) {
-      console.error('Error saving widgets:', err);
+      console.error('💾 Error saving widgets:', err);
       setError(err instanceof Error ? err.message : 'Failed to save widgets');
       throw err;
     }
