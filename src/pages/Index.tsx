@@ -523,7 +523,7 @@ const Index = () => {
                   whileTap={{ scale: 0.96 }}
                   whileHover={{ scale: 1.02 }}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex flex-col items-center py-2 px-4 rounded-xl transition-all duration-200 flex-1 min-w-0 ${isActive
+                  className={`relative flex flex-col items-center py-2 px-6 rounded-xl transition-all duration-200 flex-1 min-w-0 ${isActive
                     ? 'bg-emerald-500/15 text-emerald-300 backdrop-blur-sm border border-emerald-500/20'
                     : 'text-gray-400 hover:text-emerald-300 hover:bg-emerald-500/5'
                     }`}
