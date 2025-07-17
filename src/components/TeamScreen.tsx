@@ -61,11 +61,12 @@ interface TeamScreenProps {
   subscriptionTier: string;
   onViewPlans: () => void;
   onStartNewChat: (projectId: string, conversationId?: string) => void;
+  selectedTeamId?: string | null; // Add optional prop for pre-selected team
 }
 
-const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: TeamScreenProps) => {
+const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selectedTeamId: propsSelectedTeamId }: TeamScreenProps) => {
   const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'completion-docs' | 'settings'>('overview');
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(propsSelectedTeamId || null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
 
   const { teams, loading: teamsLoading, createTeam, refetch: refetchTeams } = useTeams(user?.id);
@@ -91,19 +92,26 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat }: Tea
     }
   };
 
-  // Select first team by default when teams are loaded
+  // Use passed selectedTeamId prop or auto-select first team
   React.useEffect(() => {
-    console.log('TeamScreen useEffect - teams changed:', {
+    console.log('TeamScreen useEffect - teams/props changed:', {
       teamsLength: teams.length,
       selectedTeamId,
+      propsSelectedTeamId,
       firstTeamId: teams[0]?.id
     });
 
-    if (teams.length > 0 && !selectedTeamId) {
+    // If we have a props team ID and it's different from current, use it
+    if (propsSelectedTeamId && propsSelectedTeamId !== selectedTeamId) {
+      console.log('Using props selected team ID:', propsSelectedTeamId);
+      setSelectedTeamId(propsSelectedTeamId);
+    }
+    // Otherwise, auto-select first team if none selected
+    else if (teams.length > 0 && !selectedTeamId) {
       console.log('Auto-selecting first team:', teams[0].id);
       setSelectedTeamId(teams[0].id);
     }
-  }, [teams, selectedTeamId]);
+  }, [teams, selectedTeamId, propsSelectedTeamId]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
 

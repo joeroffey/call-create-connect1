@@ -178,6 +178,7 @@ const WorkspaceScreen = ({
           subscriptionTier={subscriptionTier}
           onViewPlans={onViewPlans}
           onStartNewChat={onStartNewChat}
+          selectedTeamId={selectedTeamId} // Pass the selected team ID
         />
       );
     }
