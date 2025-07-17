@@ -162,27 +162,29 @@ const WorkspaceScreen = ({
   };
 
   const renderPersonalNavigation = () => (
-    <div className="border-b border-white/10 px-4 py-2">
-      <div className="flex gap-2">
-        {[
-          { id: 'overview', label: 'Overview', icon: FileText },
-          { id: 'projects', label: 'Projects', icon: FileText },
-          { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
-          { id: 'project-plans', label: 'Project Plans', icon: BarChart3 },
-        ].map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setPersonalView(item.id as any)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
-              personalView === item.id
-                ? 'bg-emerald-500 text-white shadow-lg'
-                : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-            }`}
-          >
-            <item.icon className="w-4 h-4" />
-            {item.label}
-          </button>
-        ))}
+    <div className="border-b border-white/10">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-4 py-2">
+        <div className="flex gap-2 min-w-max">
+          {[
+            { id: 'overview', label: 'Overview', icon: FileText },
+            { id: 'projects', label: 'Projects', icon: FileText },
+            { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+            { id: 'project-plans', label: 'Project Plans', icon: BarChart3 },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setPersonalView(item.id as any)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${
+                personalView === item.id
+                  ? 'bg-emerald-500 text-white shadow-lg'
+                  : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+              }`}
+            >
+              <item.icon className="w-4 h-4" />
+              {item.label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
