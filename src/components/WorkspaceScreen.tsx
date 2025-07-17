@@ -123,16 +123,80 @@ const WorkspaceScreen = ({
     </div>
   );
 
+  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'completion-docs' | 'project-plans'>('projects');
+
+  const renderPersonalContent = () => {
+    switch (personalView) {
+      case 'projects':
+        return (
+          <ProjectsScreen
+            user={user}
+            onStartNewChat={onStartNewChat}
+            pendingProjectModal={pendingProjectModal}
+            onProjectModalHandled={onProjectModalHandled}
+            workspaceContext="personal"
+          />
+        );
+      case 'overview':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Personal Overview</h2>
+            <p className="text-gray-400">Personal workspace overview coming soon...</p>
+          </div>
+        );
+      case 'completion-docs':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Completion Documents</h2>
+            <p className="text-gray-400">Personal completion documents coming soon...</p>
+          </div>
+        );
+      case 'project-plans':
+        return (
+          <div className="p-6">
+            <h2 className="text-2xl font-bold mb-4">Project Plans</h2>
+            <p className="text-gray-400">Personal project plans coming soon...</p>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  const renderPersonalNavigation = () => (
+    <div className="border-b border-white/10 px-6">
+      <div className="flex space-x-8">
+        {[
+          { id: 'projects', label: 'Projects', icon: 'clipboard' },
+          { id: 'overview', label: 'Overview', icon: 'layout-dashboard' },
+          { id: 'completion-docs', label: 'Completion Docs', icon: 'check-circle' },
+          { id: 'project-plans', label: 'Project Plans', icon: 'calendar' },
+        ].map((item) => (
+          <button
+            key={item.id}
+            onClick={() => setPersonalView(item.id as any)}
+            className={`py-4 px-2 border-b-2 transition-colors ${
+              personalView === item.id
+                ? 'border-emerald-500 text-emerald-500'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   const renderContent = () => {
     if (context === 'personal') {
       return (
-        <ProjectsScreen
-          user={user}
-          onStartNewChat={onStartNewChat}
-          pendingProjectModal={pendingProjectModal}
-          onProjectModalHandled={onProjectModalHandled}
-          workspaceContext="personal"
-        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {renderPersonalNavigation()}
+          <div className="flex-1 overflow-auto">
+            {renderPersonalContent()}
+          </div>
+        </div>
       );
     }
 
