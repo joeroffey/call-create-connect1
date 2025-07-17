@@ -34,9 +34,10 @@ interface ProjectsScreenProps {
   onStartNewChat: (projectId: string, conversationId?: string) => void;
   pendingProjectModal?: {projectId: string, view: string} | null;
   onProjectModalHandled?: () => void;
+  workspaceContext?: 'personal' | 'team' | 'all'; // New prop to filter projects
 }
 
-const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectModalHandled }: ProjectsScreenProps) => {
+const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectModalHandled, workspaceContext = 'all' }: ProjectsScreenProps) => {
   console.log('ProjectsScreen: Component starting to render');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,7 +55,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
   const [showProjectDetails, setShowProjectDetails] = useState(false);
   const [activeTab, setActiveTab] = useState('chats');
   const [filters, setFilters] = useState<ProjectFilters>({
-    context: 'all',
+    context: workspaceContext === 'personal' ? 'personal' : workspaceContext === 'team' ? 'team' : 'all',
     projectType: 'all',
     status: 'all',
     search: ''
@@ -87,7 +88,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       return;
     }
     
-    console.log('Fetching projects for user:', user.id);
+    console.log('Fetching projects for user:', user.id, 'workspace context:', workspaceContext);
     setLoading(true);
     try {
       // First get user's team IDs
@@ -99,7 +100,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       const userTeamIds = teamMembers?.map(tm => tm.team_id) || [];
       console.log('User team IDs:', userTeamIds);
       
-      // Build query to get both personal projects and team projects
+      // Build query based on workspace context
       let query = supabase
         .from('projects')
         .select(`
@@ -110,12 +111,22 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
           )
         `);
       
-      // Add filter for projects user can access
-      if (userTeamIds.length > 0) {
-        // User has teams - get personal projects OR team projects they're a member of
-        query = query.or(`user_id.eq.${user.id},team_id.in.(${userTeamIds.join(',')})`);
+      // Filter based on workspace context
+      if (workspaceContext === 'personal') {
+        // Personal workspace: only show personal projects (team_id is null)
+        query = query.eq('user_id', user.id).is('team_id', null);
+      } else if (workspaceContext === 'team' && userTeamIds.length > 0) {
+        // Team workspace: only show team projects user is a member of
+        query = query.in('team_id', userTeamIds);
+      } else if (workspaceContext === 'all') {
+        // All projects (default behavior): personal projects OR team projects
+        if (userTeamIds.length > 0) {
+          query = query.or(`user_id.eq.${user.id},team_id.in.(${userTeamIds.join(',')})`);
+        } else {
+          query = query.eq('user_id', user.id);
+        }
       } else {
-        // User has no teams - only get personal projects
+        // Fallback: only personal projects
         query = query.eq('user_id', user.id);
       }
       
@@ -440,8 +451,15 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       <div className="p-6 border-b border-gray-800/30">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Projects</h1>
-            <p className="text-gray-400 mt-1">Manage your building regulation projects</p>
+            <h1 className="text-2xl font-bold text-white">
+              {workspaceContext === 'personal' ? 'Personal Projects' : 
+               workspaceContext === 'team' ? 'Team Projects' : 'Projects'}
+            </h1>
+            <p className="text-gray-400 mt-1">
+              {workspaceContext === 'personal' ? 'Manage your personal building regulation projects' :
+               workspaceContext === 'team' ? 'Manage your team building regulation projects' :
+               'Manage your building regulation projects'}
+            </p>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -460,7 +478,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
         <ProjectFiltersComponent
           filters={filters}
           onFiltersChange={setFilters}
-          showContextFilter={true}
+          showContextFilter={workspaceContext === 'all'} // Only show context filter when in 'all' mode
           projectCount={filteredProjects.length}
         />
       </div>

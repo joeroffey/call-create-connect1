@@ -131,6 +131,7 @@ const WorkspaceScreen = ({
           onStartNewChat={onStartNewChat}
           pendingProjectModal={pendingProjectModal}
           onProjectModalHandled={onProjectModalHandled}
+          workspaceContext="personal"
         />
       );
     }
