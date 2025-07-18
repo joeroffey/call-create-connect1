@@ -115,8 +115,7 @@ const TimberGuide = ({ onBack }: TimberGuideProps) => {
             onClick={onBack}
             className="text-gray-400 hover:text-white"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500/20 to-yellow-500/20 flex items-center justify-center border border-orange-500/20">

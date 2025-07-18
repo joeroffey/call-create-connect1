@@ -314,8 +314,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
                 onClick={handleBackToFilters}
                 className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white w-full md:w-auto"
               >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                Back to Filters
+                <ChevronLeft className="w-4 h-4" />
               </Button>
             )}
           </div>

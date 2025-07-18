@@ -538,8 +538,7 @@ export default function DrawingScaler({ onBack }: DrawingScalerProps) {
         >
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" onClick={onBack} className="text-white hover:bg-white/10">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold flex items-center space-x-3">

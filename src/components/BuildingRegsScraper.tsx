@@ -303,8 +303,7 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
               size="sm"
               className="text-gray-400 hover:text-white hover:bg-gray-800"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-white">Building Regulations Scraper</h1>
