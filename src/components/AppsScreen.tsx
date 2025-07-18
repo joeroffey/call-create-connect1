@@ -102,14 +102,24 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
 
   const handleAppClick = (appId: string) => {
     setActiveApp(appId);
-    // Scroll to top when opening a tool
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to top when opening a tool - target the main content container
+    setTimeout(() => {
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   const handleBackToApps = () => {
     setActiveApp(null);
-    // Scroll to top when returning to apps list
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to top when returning to apps list - target the main content container
+    setTimeout(() => {
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   // Show the specific app if one is active
