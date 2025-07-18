@@ -102,6 +102,8 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
 
   const handleAppClick = (appId: string) => {
     setActiveApp(appId);
+    // Scroll to top when opening a tool
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBackToApps = () => {
