@@ -62,11 +62,46 @@ export default function TeamDocumentsView({ teamId, preSelectedProjectId }: Team
         setSelectedProject(preSelectedProjectId);
         // Scroll to top when navigating to a specific project's documents
         setTimeout(() => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          // Try multiple scroll targets to ensure we scroll to top
+          const mainContent = document.querySelector('main');
+          const appContent = document.querySelector('[data-scroll-container]');
+          const bodyContent = document.querySelector('.min-h-screen');
+          
+          if (mainContent) {
+            mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (appContent) {
+            appContent.scrollTo({ top: 0, behavior: 'smooth' });
+          } else if (bodyContent) {
+            bodyContent.scrollTo({ top: 0, behavior: 'smooth' });
+          } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }, 100);
       }
     }
   }, [preSelectedProjectId, teamProjects]);
+
+  // Also scroll to top when any project is manually selected
+  useEffect(() => {
+    if (selectedProject) {
+      setTimeout(() => {
+        // Try multiple scroll targets to ensure we scroll to top
+        const mainContent = document.querySelector('main');
+        const appContent = document.querySelector('[data-scroll-container]');
+        const bodyContent = document.querySelector('.min-h-screen');
+        
+        if (mainContent) {
+          mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (appContent) {
+          appContent.scrollTo({ top: 0, behavior: 'smooth' });
+        } else if (bodyContent) {
+          bodyContent.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [selectedProject]);
 
   // Fetch folders when project or folder changes
   useEffect(() => {
