@@ -185,9 +185,9 @@ const PersonalProjectPlanView = ({ userId }: PersonalProjectPlanViewProps) => {
 
   return (
     <div className="space-y-8 p-6 pb-24 md:pb-6">
-      <div className="flex justify-between items-center">
+      <div className="space-y-2">
         <h2 className="text-3xl font-bold text-white">Project Plans</h2>
-        <p className="text-gray-400">Manage your personal project schedules and milestones</p>
+        <p className="text-gray-400 text-lg">Track progress and manage timelines for your projects</p>
       </div>
 
       {/* Project Overview */}
