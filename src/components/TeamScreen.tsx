@@ -62,10 +62,11 @@ interface TeamScreenProps {
   onViewPlans: () => void;
   onStartNewChat: (projectId: string, conversationId?: string) => void;
   selectedTeamId?: string | null; // Add optional prop for pre-selected team
+  initialView?: string; // Add optional prop for initial view
 }
 
-const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selectedTeamId: propsSelectedTeamId }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'documents' | 'settings'>('overview');
+const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selectedTeamId: propsSelectedTeamId, initialView }: TeamScreenProps) => {
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'documents' | 'settings'>(initialView as any || 'overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(propsSelectedTeamId || null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
 
@@ -96,6 +97,13 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
       setSelectedTeamId(teams[0].id);
     }
   }, [teams, selectedTeamId, propsSelectedTeamId]);
+
+  // Update active view when initialView prop changes
+  React.useEffect(() => {
+    if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'documents', 'settings'].includes(initialView)) {
+      setActiveView(initialView as any);
+    }
+  }, [initialView]);
 
   const selectedTeam = teams.find(team => team.id === selectedTeamId);
 

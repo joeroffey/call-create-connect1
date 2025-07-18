@@ -40,6 +40,7 @@ const WorkspaceScreen = ({
 }: WorkspaceScreenProps) => {
   const [context, setContext] = useState<WorkspaceContext>('personal');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [teamInitialView, setTeamInitialView] = useState<string | undefined>(undefined);
   
   const { teams, loading: teamsLoading } = useTeams(user?.id);
 
@@ -89,9 +90,15 @@ const WorkspaceScreen = ({
         const parts = hash.split('/');
         if (parts.length >= 3) {
           const teamId = parts[1];
-          console.log('🏢 Setting team ID to:', teamId);
+          console.log('🏢 Setting team ID to:', teamId, 'and switching to documents view');
           setContext('team');
           setSelectedTeamId(teamId);
+          setTeamInitialView('documents');
+          
+          // Clear the initial view after a brief delay to allow TeamScreen to process it
+          setTimeout(() => {
+            setTeamInitialView(undefined);
+          }, 500);
         }
       }
     };
@@ -283,6 +290,7 @@ const WorkspaceScreen = ({
           onViewPlans={onViewPlans}
           onStartNewChat={onStartNewChat}
           selectedTeamId={selectedTeamId} // Pass the selected team ID
+          initialView={teamInitialView} // Pass the initial view to show
         />
       );
     }
