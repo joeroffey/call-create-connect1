@@ -106,35 +106,37 @@ const AppsScreen = ({ user, subscriptionTier = 'none', onViewPlans }: AppsScreen
 
   const handleBackToApps = () => {
     setActiveApp(null);
+    // Scroll to top when returning to apps list
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Show the specific app if one is active
   if (activeApp === 'timber-calculator') {
-    return <TimberCalculator onBack={() => setActiveApp(null)} />;
+    return <TimberCalculator onBack={handleBackToApps} />;
   }
   
   if (activeApp === 'volumetric-calculator') {
-    return <VolumetricCalculator onBack={() => setActiveApp(null)} />;
+    return <VolumetricCalculator onBack={handleBackToApps} />;
   }
   
   if (activeApp === 'ready-reckoner') {
-    return <ReadyReckoner onBack={() => setActiveApp(null)} />;
+    return <ReadyReckoner onBack={handleBackToApps} />;
   }
 
   if (activeApp === 'timber-guide') {
-    return <TimberGuide onBack={() => setActiveApp(null)} />;
+    return <TimberGuide onBack={handleBackToApps} />;
   }
 
   if (activeApp === 'roof-tiles-calculator') {
-    return <RoofTilesCalculator onBack={() => setActiveApp(null)} />;
+    return <RoofTilesCalculator onBack={handleBackToApps} />;
   }
 
   if (activeApp === 'brick-calculator') {
-    return <BrickCalculator onBack={() => setActiveApp(null)} />;
+    return <BrickCalculator onBack={handleBackToApps} />;
   }
 
   if (activeApp === 'drawing-scaler') {
-    return <DrawingScaler onBack={() => setActiveApp(null)} />;
+    return <DrawingScaler onBack={handleBackToApps} />;
   }
 
   return (
