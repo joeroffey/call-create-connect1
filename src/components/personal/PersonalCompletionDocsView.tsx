@@ -242,7 +242,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="space-y-4">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -250,23 +250,23 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
               setSelectedProject(null);
               setCurrentFolderId(null);
             }}
-            className="text-gray-400 hover:text-white"
+            className="text-gray-400 hover:text-white flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Projects
           </Button>
-          <div>
-            <h2 className="text-2xl font-bold text-white">{selectedProjectData?.name}</h2>
-            <p className="text-gray-400">Completion Documents</p>
+          <div className="min-w-0 flex-1">
+            <h2 className="text-xl md:text-2xl font-bold text-white truncate">{selectedProjectData?.name}</h2>
+            <p className="text-gray-400 text-sm">Completion Documents</p>
           </div>
         </div>
         
-        <div className="flex gap-2">
-          <Button onClick={() => setShowCreateFolderModal(true)} variant="outline">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button onClick={() => setShowCreateFolderModal(true)} variant="outline" className="flex-shrink-0">
             <FolderPlus className="w-4 h-4 mr-2" />
             New Folder
           </Button>
-          <Button onClick={() => setShowUploadModal(true)}>
+          <Button onClick={() => setShowUploadModal(true)} className="flex-shrink-0">
             <Upload className="w-4 h-4 mr-2" />
             Upload Documents
           </Button>
