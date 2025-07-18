@@ -509,8 +509,14 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
                 onProjectStatsClick={handleProjectStatsClick}
                 onStatusChange={handleStatusChange}
                 onDocumentsClick={(project) => {
-                  // Navigate to personal documents page for this project
-                  window.location.hash = `#documents/${project.id}`;
+                  console.log('ProjectsScreen: onDocumentsClick called for project:', project.id);
+                  // First navigate to workspace tab, then set hash
+                  if (typeof window !== 'undefined') {
+                    console.log('Setting hash and forcing workspace navigation');
+                    window.location.hash = `#documents/${project.id}`;
+                    // Use postMessage to notify parent to switch to workspace tab
+                    window.postMessage({ type: 'NAVIGATE_TO_WORKSPACE', hash: `documents/${project.id}` }, '*');
+                  }
                 }}
               />
             ))}

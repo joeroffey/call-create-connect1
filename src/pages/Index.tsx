@@ -257,6 +257,21 @@ const Index = () => {
     }
   }, [activeTab]);
 
+  // Listen for workspace navigation messages from child components
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'NAVIGATE_TO_WORKSPACE') {
+        console.log('📨 Received workspace navigation message:', event.data);
+        setActiveTab('workspace');
+        // The hash is already set by the child component
+        console.log('✅ Switched to workspace tab, hash:', window.location.hash);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
   const handleStartNewChat = (projectId: string, conversationId?: string) => {
     console.log('Starting new chat for project:', projectId, 'conversation:', conversationId);
     setCurrentProjectId(projectId);

@@ -325,7 +325,14 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
                 }}
                 onDocumentsClick={(project) => {
                   // Navigate to team documents page
-                  window.location.hash = `#team-documents/${teamId}/${project.id}`;
+                  console.log('TeamProjectsView: onDocumentsClick called for project:', project.id);
+                  // Navigate to team documents page and notify parent
+                  if (typeof window !== 'undefined') {
+                    console.log('Setting team documents hash and forcing workspace navigation');
+                    window.location.hash = `#team-documents/${teamId}/${project.id}`;
+                    // Use postMessage to notify parent to switch to workspace tab
+                    window.postMessage({ type: 'NAVIGATE_TO_WORKSPACE', hash: `team-documents/${teamId}/${project.id}` }, '*');
+                  }
                 }}
               />
             ))}

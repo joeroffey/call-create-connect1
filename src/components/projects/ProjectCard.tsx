@@ -265,7 +265,16 @@ const ProjectCard = ({
           <div className="text-xs text-gray-400">Chats</div>
         </button>
         <button
-          onClick={() => onDocumentsClick ? onDocumentsClick(project) : onProjectStatsClick(project, 'documents')}
+          onClick={() => {
+            console.log('Docs button clicked - starting navigation');
+            if (onDocumentsClick) {
+              console.log('Calling onDocumentsClick handler');
+              onDocumentsClick(project);
+            } else {
+              console.log('Calling onProjectStatsClick fallback');
+              onProjectStatsClick(project, 'documents');
+            }
+          }}
           className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
         >
           <div className="flex items-center justify-center mb-1">
