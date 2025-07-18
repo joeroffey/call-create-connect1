@@ -265,19 +265,8 @@ const ProjectCard = ({
           <div className="text-xs text-gray-400">Chats</div>
         </button>
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Docs button clicked', { onDocumentsClick: !!onDocumentsClick, project });
-            alert('Docs button clicked!'); // Visible debug
-            if (onDocumentsClick) {
-              onDocumentsClick(project);
-            } else {
-              onProjectStatsClick(project, 'documents');
-            }
-          }}
+          onClick={() => onDocumentsClick ? onDocumentsClick(project) : onProjectStatsClick(project, 'documents')}
           className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
-          style={{ cursor: 'pointer' }}
         >
           <div className="flex items-center justify-center mb-1">
             <FileText className="w-4 h-4 text-blue-400 group-hover/stat:text-blue-300" />

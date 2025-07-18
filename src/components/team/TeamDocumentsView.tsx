@@ -25,9 +25,10 @@ const categoryLabels = {
 
 interface TeamDocumentsViewProps {
   teamId: string;
+  preSelectedProjectId?: string | null;
 }
 
-export default function TeamDocumentsView({ teamId }: TeamDocumentsViewProps) {
+export default function TeamDocumentsView({ teamId, preSelectedProjectId }: TeamDocumentsViewProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +53,16 @@ export default function TeamDocumentsView({ teamId }: TeamDocumentsViewProps) {
 
   // Get user permissions for the selected project
   const { permissions } = useProjectPermissions(selectedProject);
+
+  // Auto-select project if preSelectedProjectId is provided
+  useEffect(() => {
+    if (preSelectedProjectId && teamProjects.length > 0) {
+      const project = teamProjects.find(p => p.id === preSelectedProjectId);
+      if (project) {
+        setSelectedProject(preSelectedProjectId);
+      }
+    }
+  }, [preSelectedProjectId, teamProjects]);
 
   // Fetch folders when project or folder changes
   useEffect(() => {

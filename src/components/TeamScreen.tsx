@@ -522,7 +522,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
             />
           )}
           {activeView === 'documents' && selectedTeamId && (
-            <TeamDocumentsView teamId={selectedTeamId} />
+            (() => {
+              // Check if there's a specific project ID in the hash for team documents
+              const teamDocumentsMatch = window.location.hash.match(/#team-documents\/([^/]+)\/(.+)/);
+              const projectId = teamDocumentsMatch && teamDocumentsMatch[1] === selectedTeamId ? teamDocumentsMatch[2] : null;
+              return <TeamDocumentsView teamId={selectedTeamId} preSelectedProjectId={projectId} />;
+            })()
           )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings
