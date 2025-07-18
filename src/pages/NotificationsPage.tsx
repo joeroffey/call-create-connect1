@@ -38,9 +38,7 @@ const NotificationsPage = () => {
               onClick={() => navigate('/')}
               className="text-gray-300 hover:text-white text-sm sm:text-base"
             >
-              <ArrowLeft className="w-4 h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Back</span>
-              <span className="sm:hidden">Back</span>
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             
             {/* Subscription Badge */}

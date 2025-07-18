@@ -162,8 +162,7 @@ const PersonalProjectPlanView = ({ userId }: PersonalProjectPlanViewProps) => {
             onClick={() => setSelectedProject(null)}
             className="text-gray-400 hover:text-white flex-shrink-0"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Projects
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <div className="min-w-0 flex-1">
             <h2 className="text-xl md:text-2xl font-bold text-white truncate">{selectedProject.name}</h2>
