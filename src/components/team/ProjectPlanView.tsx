@@ -92,7 +92,7 @@ export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 md:pb-6">
       {/* Header */}
       {!hideHeader && (
         <div className="space-y-4">
