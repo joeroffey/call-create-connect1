@@ -166,7 +166,7 @@ export default function PersonalDocumentsView({ userId, preSelectedProjectId }: 
 
   if (!selectedProject) {
     return (
-      <div className="p-6">
+      <div className="p-6 pb-24 md:pb-6">
         <h2 className="text-3xl font-bold text-white mb-6">Documents</h2>
         
         {projects.length === 0 ? (
@@ -214,7 +214,7 @@ export default function PersonalDocumentsView({ userId, preSelectedProjectId }: 
   const selectedProjectData = projects.find(p => p.id === selectedProject);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 pb-24 md:pb-6">
       {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center gap-4">

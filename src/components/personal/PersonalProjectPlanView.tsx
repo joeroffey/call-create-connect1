@@ -155,7 +155,7 @@ const PersonalProjectPlanView = ({ userId }: PersonalProjectPlanViewProps) => {
   // If a specific project is selected, show the detailed project plan view
   if (selectedProject) {
     return (
-      <div className="p-6">
+      <div className="p-6 pb-24 md:pb-6">
         <div className="flex items-center gap-4 mb-6">
           <Button
             variant="ghost"
@@ -184,7 +184,7 @@ const PersonalProjectPlanView = ({ userId }: PersonalProjectPlanViewProps) => {
   }
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8 p-6 pb-24 md:pb-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-white">Project Plans</h2>
         <p className="text-gray-400">Manage your personal project schedules and milestones</p>
