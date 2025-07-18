@@ -118,9 +118,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({ phases, onPhaseClick }) 
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h3 className="text-lg font-semibold text-foreground">Project Timeline</h3>
-        <div className="flex items-center gap-4 text-sm">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-3 sm:gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-gray-500 rounded opacity-60"></div>
             <span className="text-muted-foreground">Not Started</span>
