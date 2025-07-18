@@ -14,6 +14,7 @@ interface ProjectPlanViewProps {
   projectName: string;
   projectDescription?: string;
   onBack: () => void;
+  hideHeader?: boolean;
 }
 
 export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
@@ -22,6 +23,7 @@ export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
   projectName,
   projectDescription,
   onBack,
+  hideHeader = false,
 }) => {
   const [showPhaseEditor, setShowPhaseEditor] = useState(false);
   const [editingPhase, setEditingPhase] = useState(null);
@@ -92,17 +94,48 @@ export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="min-w-0 flex-1">
-            <h2 className="text-xl md:text-2xl font-bold text-foreground truncate">{projectName}</h2>
-            <p className="text-sm text-muted-foreground">Project Plan & Timeline</p>
+      {!hideHeader && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={onBack}>
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl md:text-2xl font-bold text-foreground truncate">{projectName}</h2>
+              <p className="text-sm text-muted-foreground">Project Plan & Timeline</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setView(view === 'timeline' ? 'list' : 'timeline')}
+              className="w-full sm:w-auto"
+            >
+              {view === 'timeline' ? <Calendar className="h-4 w-4" /> : <BarChart3 className="h-4 w-4" />}
+              <span className="ml-2">{view === 'timeline' ? 'List View' : 'Timeline View'}</span>
+            </Button>
+            
+            <div className="flex flex-col sm:flex-row gap-2">
+              {phases.length === 0 && (
+                <Button onClick={handleGenerateAIPlan} disabled={saving} size="sm" className="w-full sm:w-auto">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="ml-2 sm:inline">Generate AI Plan</span>
+                </Button>
+              )}
+              
+              <Button onClick={() => setShowPhaseEditor(true)} disabled={saving} size="sm" className="w-full sm:w-auto">
+                <Plus className="h-4 w-4" />
+                <span className="ml-2">Add Phase</span>
+              </Button>
+            </div>
           </div>
         </div>
+      )}
 
+      {/* View Toggle and Actions for when header is hidden */}
+      {hideHeader && (
         <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
           <Button
             variant="outline"
@@ -128,7 +161,7 @@ export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
             </Button>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Empty State */}
       {phases.length === 0 && (
@@ -145,14 +178,18 @@ export const ProjectPlanView: React.FC<ProjectPlanViewProps> = ({
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3">
-                <Button onClick={handleGenerateAIPlan} disabled={saving}>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Generate AI Plan
-                </Button>
-                <Button variant="outline" onClick={() => setShowPhaseEditor(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Phase Manually
-                </Button>
+                {!hideHeader && (
+                  <>
+                    <Button onClick={handleGenerateAIPlan} disabled={saving}>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate AI Plan
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowPhaseEditor(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Phase Manually
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </CardContent>

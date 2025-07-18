@@ -176,6 +176,7 @@ const PersonalProjectPlanView = ({ userId }: PersonalProjectPlanViewProps) => {
           projectName={selectedProject.name}
           projectDescription={selectedProject.description || undefined}
           onBack={() => setSelectedProject(null)}
+          hideHeader={true}
         />
       </div>
     );
