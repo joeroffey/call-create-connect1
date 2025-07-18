@@ -35,6 +35,7 @@ interface ProjectCardProps {
   onProjectStatsClick: (project: Project, section: string) => void;
   onStatusChange: (projectId: string, newStatus: string) => void;
   onManageAccess?: (project: Project) => void;
+  onDocumentsClick?: (project: Project) => void;
 }
 
 const ProjectCard = ({
@@ -49,7 +50,8 @@ const ProjectCard = ({
   onTogglePin,
   onProjectStatsClick,
   onStatusChange,
-  onManageAccess
+  onManageAccess,
+  onDocumentsClick
 }: ProjectCardProps) => {
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
@@ -263,7 +265,7 @@ const ProjectCard = ({
           <div className="text-xs text-gray-400">Chats</div>
         </button>
         <button
-          onClick={() => onProjectStatsClick(project, 'documents')}
+          onClick={() => onDocumentsClick ? onDocumentsClick(project) : onProjectStatsClick(project, 'documents')}
           className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
         >
           <div className="flex items-center justify-center mb-1">

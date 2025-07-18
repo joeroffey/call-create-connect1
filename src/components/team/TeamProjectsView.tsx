@@ -323,6 +323,10 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
                   setSelectedProjectForAccess(teamProject);
                   setShowProjectAccessModal(true);
                 }}
+                onDocumentsClick={(project) => {
+                  // Navigate to team documents page
+                  window.location.hash = `#team-documents/${teamId}/${project.id}`;
+                }}
               />
             ))}
           </div>

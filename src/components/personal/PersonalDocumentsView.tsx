@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,7 +14,7 @@ import { CreateFolderModal } from '../team/CreateFolderModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-interface PersonalCompletionDocsViewProps {
+interface PersonalDocumentsViewProps {
   userId: string;
 }
 
@@ -35,7 +34,7 @@ const categoryLabels = {
   'other': 'Other',
 };
 
-export default function PersonalCompletionDocsView({ userId }: PersonalCompletionDocsViewProps) {
+export default function PersonalDocumentsView({ userId }: PersonalDocumentsViewProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -166,7 +165,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
   if (!selectedProject) {
     return (
       <div className="p-6">
-        <h2 className="text-3xl font-bold text-white mb-6">Completion Documents</h2>
+        <h2 className="text-3xl font-bold text-white mb-6">Documents</h2>
         
         {projects.length === 0 ? (
           <Card className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-700">
@@ -174,13 +173,13 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
               <Files className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">No Projects Found</h3>
               <p className="text-gray-400 mb-4">
-                Create your first project to start managing completion documents.
+                Create your first project to start managing documents.
               </p>
             </CardContent>
           </Card>
         ) : (
           <div>
-            <p className="text-gray-400 mb-6">Select a project to view and manage completion documents.</p>
+            <p className="text-gray-400 mb-6">Select a project to view and manage documents.</p>
             <div className="grid gap-4">
               {projects.map((project) => (
                 <Card 
@@ -230,7 +229,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
           </Button>
           <div className="min-w-0 flex-1">
             <h2 className="text-xl md:text-2xl font-bold text-white truncate">{selectedProjectData?.name}</h2>
-            <p className="text-gray-400 text-sm">Completion Documents</p>
+            <p className="text-gray-400 text-sm">Documents</p>
           </div>
         </div>
         

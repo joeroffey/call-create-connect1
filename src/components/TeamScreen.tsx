@@ -48,7 +48,7 @@ import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamProjectPlanView from '@/components/team/TeamProjectPlanView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
-import TeamCompletionDocsView from '@/components/team/TeamCompletionDocsView';
+import TeamDocumentsView from '@/components/team/TeamDocumentsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 import TeamActivityFeed from '@/components/team/TeamActivityFeed';
 import { RoleSelect } from '@/components/team/RoleSelect';
@@ -65,7 +65,7 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selectedTeamId: propsSelectedTeamId }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'completion-docs' | 'settings'>('overview');
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'documents' | 'settings'>('overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(propsSelectedTeamId || null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
 
@@ -113,7 +113,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     const teamId = urlParams.get('team');
     
     // If there's a view parameter and we're on the team tab, set the active view
-    if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'completion-docs', 'settings'].includes(view)) {
+    if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'documents', 'settings'].includes(view)) {
       setActiveView(view as any);
     }
     
@@ -422,7 +422,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
                     {[
                       { id: 'overview', label: 'Overview', icon: FileText },
                       { id: 'projects', label: 'Projects', icon: FileText },
-                      { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+                      { id: 'documents', label: 'Documents', icon: CheckCircle },
                       { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                       { id: 'schedule', label: 'Project Plans', icon: BarChart3 },
                       { id: 'comments', label: 'Comments', icon: MessageSquare }
@@ -521,8 +521,8 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
               teamName={selectedTeam.name}
             />
           )}
-          {activeView === 'completion-docs' && selectedTeamId && (
-            <TeamCompletionDocsView teamId={selectedTeamId} />
+          {activeView === 'documents' && selectedTeamId && (
+            <TeamDocumentsView teamId={selectedTeamId} />
           )}
           {activeView === 'settings' && selectedTeam && (
             <TeamSettings

@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ProjectsScreen from './ProjectsScreen';
 import TeamScreen from './TeamScreen';
 import Dashboard from './widgets/Dashboard';
-import PersonalCompletionDocsView from './personal/PersonalCompletionDocsView';
+import PersonalDocumentsView from './personal/PersonalDocumentsView';
 import PersonalProjectPlanView from './personal/PersonalProjectPlanView';
 import { useTeams } from '@/hooks/useTeams';
 
@@ -127,7 +127,7 @@ const WorkspaceScreen = ({
     </div>
   );
 
-  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'completion-docs' | 'project-plans' | 'settings'>('overview');
+  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'documents' | 'project-plans' | 'settings'>('overview');
 
   const renderPersonalContent = () => {
     switch (personalView) {
@@ -150,9 +150,9 @@ const WorkspaceScreen = ({
             onViewProject={(projectId) => onStartNewChat(projectId)}
           />
         );
-      case 'completion-docs':
+      case 'documents':
         return (
-          <PersonalCompletionDocsView userId={user?.id} />
+          <PersonalDocumentsView userId={user?.id} />
         );
       case 'project-plans':
         return (
@@ -169,7 +169,7 @@ const WorkspaceScreen = ({
         {[
           { id: 'overview', label: 'Overview', icon: FileText },
           { id: 'projects', label: 'Projects', icon: FileText },
-          { id: 'completion-docs', label: 'Completion Docs', icon: CheckCircle },
+          { id: 'documents', label: 'Documents', icon: CheckCircle },
           { id: 'project-plans', label: 'Project Plans', icon: BarChart3 },
         ].map((item) => (
           <button

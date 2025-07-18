@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useProjectDocuments } from '@/hooks/useProjectDocuments';
+// Documents functionality moved to dedicated Documents page
 import { useProjectSchedule } from '@/hooks/useProjectSchedule';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -49,10 +49,9 @@ const ProjectDetailsModal = ({
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskDueDate, setNewTaskDueDate] = useState('');
   const [newTaskAssignedTo, setNewTaskAssignedTo] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // File input functionality moved to dedicated Documents page
 
-  // Use dedicated hooks for documents and schedule
-  const documentsHook = useProjectDocuments(project?.id, user?.id);
+  // Use dedicated hook for schedule
   const scheduleHook = useProjectSchedule(project?.id, user?.id);
   const teamMembersHook = useTeamMembers(project?.team_id);
 
@@ -93,20 +92,7 @@ const ProjectDetailsModal = ({
     onClose();
   };
 
-  // Document upload functionality
-  const handleDocumentUpload = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const file = files[0];
-      documentsHook.uploadDocument(file);
-    }
-  };
+  // Documents functionality moved to dedicated Documents page
 
   // Task management functionality
   const handleAddTask = async () => {
@@ -254,14 +240,10 @@ const ProjectDetailsModal = ({
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
               {/* Tabs Header */}
               <div className="px-6 pt-4 pb-2 border-b border-gray-800/30">
-                <TabsList className="grid w-full grid-cols-3 bg-gray-900/50">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-900/50">
                   <TabsTrigger value="chats" className="flex items-center justify-center space-x-2">
                     <MessageCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">{getProjectConversationCount(project.id)}</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="documents" className="flex items-center justify-center space-x-2">
-                    <FileText className="w-4 h-4" />
-                    <span className="text-sm font-medium">{getProjectDocumentCount(project.id)}</span>
                   </TabsTrigger>
                   <TabsTrigger value="schedule" className="flex items-center justify-center space-x-2">
                     <CheckSquare className="w-4 h-4" />
@@ -331,57 +313,7 @@ const ProjectDetailsModal = ({
                   </div>
                 )}
 
-                {/* Documents Tab */}
-                {activeTab === 'documents' && (
-                  <div className="h-full flex flex-col">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-white">Project Documents</h3>
-                      <Button 
-                        onClick={handleDocumentUpload}
-                        disabled={documentsHook.isUploading}
-                        size="sm"
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
-                      >
-                        <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
-                        {documentsHook.isUploading ? 'Uploading...' : 'Upload Document'}
-                      </Button>
-                    </div>
-                    
-                    {documentsHook.documents.length === 0 ? (
-                      <div className="flex-1 flex items-center justify-center">
-                        <div className="text-center">
-                          <FileText className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-                          <h4 className="text-lg font-medium text-gray-300 mb-2">No documents uploaded</h4>
-                          <p className="text-gray-500 mb-6">Upload documents to share them with your project team</p>
-                          <Button 
-                            onClick={handleDocumentUpload}
-                            disabled={documentsHook.isUploading}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50"
-                          >
-                            <Upload className={`w-4 h-4 mr-2 ${documentsHook.isUploading ? 'animate-pulse' : ''}`} />
-                            {documentsHook.isUploading ? 'Uploading...' : 'Upload First Document'}
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 overflow-y-auto space-y-3">
-                        {documentsHook.documents.map((doc: any) => (
-                          <div key={doc.id} className="bg-gray-900/50 border border-gray-800/50 rounded-lg p-4">
-                            <div className="flex items-center justify-between">
-                              <div className="min-w-0 flex-1">
-                                <h4 className="font-medium text-white truncate">{doc.file_name}</h4>
-                                <p className="text-sm text-gray-400">
-                                  {(doc.file_size / 1024).toFixed(1)} KB • {formatDate(doc.created_at)}
-                                </p>
-                              </div>
-                              <FileText className="w-5 h-5 text-blue-400 ml-3" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* Documents functionality moved to dedicated Documents page */}
 
                 {/* Schedule Tab */}
                 {activeTab === 'schedule' && (
@@ -653,14 +585,7 @@ const ProjectDetailsModal = ({
         </motion.div>
       </motion.div>
 
-      {/* Hidden file input for document upload */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        onChange={handleFileSelect}
-        style={{ display: 'none' }}
-        accept="image/*,.pdf,.doc,.docx,.txt,.csv,.json,.xml"
-      />
+      {/* File input and documents functionality moved to dedicated Documents page */}
     </AnimatePresence>
   );
 };
