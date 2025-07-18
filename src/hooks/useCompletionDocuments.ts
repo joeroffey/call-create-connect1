@@ -82,31 +82,35 @@ export const useCompletionDocuments = (projectId?: string | null) => {
       console.log('Current user:', user?.id, 'User error:', userError);
       if (!user) throw new Error('User not authenticated');
 
-      // Get project details to get team_id
+      // Get project details to determine if it's personal or team project
       const { data: project, error: projectError } = await supabase
         .from('projects')
-        .select('team_id')
+        .select('team_id, user_id')
         .eq('id', projectId)
         .single();
 
       console.log('Project query result:', { project, projectError });
       
       if (projectError) throw projectError;
-      if (!project?.team_id) {
-        throw new Error('Project is not associated with a team');
-      }
 
-      // Check if user is a team member
-      const { data: teamMember, error: teamError } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('team_id', project.team_id)
-        .eq('user_id', user.id)
-        .single();
+      // For personal projects (team_id is null), check if user owns the project
+      if (!project.team_id) {
+        if (project.user_id !== user.id) {
+          throw new Error('You do not have permission to upload to this project');
+        }
+      } else {
+        // For team projects, check team membership
+        const { data: teamMember, error: teamError } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('team_id', project.team_id)
+          .eq('user_id', user.id)
+          .single();
 
-      console.log('Team member check:', { teamMember, teamError });
-      if (teamError || !teamMember) {
-        throw new Error('User is not a member of this team');
+        console.log('Team member check:', { teamMember, teamError });
+        if (teamError || !teamMember) {
+          throw new Error('User is not a member of this team');
+        }
       }
 
       // Upload file to storage
@@ -131,7 +135,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
         throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
 
-      // Create document record
+      // Create document record - use empty string for team_id if personal project
       const { data: document, error: createError } = await supabase
         .from('project_completion_documents')
         .insert({
@@ -144,7 +148,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
           description,
           display_name: displayName || file.name,
           uploaded_by: user.id,
-          team_id: project.team_id,
+          team_id: project.team_id || '', // Use empty string for personal projects
           folder_id: folderId,
         })
         .select()

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, ArrowRight, CheckSquare, Clock, User, Plus, ArrowLeft } from 'lucide-react';
@@ -172,7 +173,7 @@ const PersonalProjectPlanView = ({ userId }: PersonalProjectPlanViewProps) => {
         
         <ProjectPlanView 
           projectId={selectedProject.id}
-          teamId=""
+          teamId={null} // Personal projects don't have team_id
           projectName={selectedProject.name}
           projectDescription={selectedProject.description || undefined}
           onBack={() => setSelectedProject(null)}

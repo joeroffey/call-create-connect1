@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +19,7 @@ export interface ProjectPhase {
   updated_at: string;
 }
 
-export const useProjectPlan = (projectId: string | undefined, teamId: string | undefined) => {
+export const useProjectPlan = (projectId: string | undefined, teamId?: string | null | undefined) => {
   const [phases, setPhases] = useState<ProjectPhase[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -56,22 +57,34 @@ export const useProjectPlan = (projectId: string | undefined, teamId: string | u
     description?: string;
     color?: string;
   }) => {
-    if (!projectId || !teamId) return false;
+    if (!projectId) return false;
 
     setSaving(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.id) throw new Error('User not authenticated');
+
+      // Get project details to determine team_id
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select('team_id')
+        .eq('id', projectId)
+        .single();
+
+      if (projectError) throw projectError;
+
       const { data, error } = await supabase
         .from('project_plan_phases')
         .insert({
           project_id: projectId,
-          team_id: teamId,
+          team_id: project.team_id || '', // Use empty string for personal projects
           phase_name: phaseData.phase_name,
           start_date: phaseData.start_date,
           end_date: phaseData.end_date,
           description: phaseData.description,
           color: phaseData.color || '#3b82f6',
           order_index: phases.length,
-          created_by: (await supabase.auth.getUser()).data.user?.id || '',
+          created_by: user.id,
         })
         .select()
         .single();
@@ -123,8 +136,8 @@ export const useProjectPlan = (projectId: string | undefined, teamId: string | u
         phase.id === phaseId ? { ...phase, ...data } as ProjectPhase : phase
       ));
 
-      // Trigger notification for status change if status was updated
-      if (currentPhase && updates.status && currentPhase.status !== updates.status) {
+      // Only trigger notification for team projects (not personal projects)
+      if (currentPhase && currentPhase.team_id && updates.status && currentPhase.status !== updates.status) {
         try {
           await supabase.rpc('create_phase_status_notification', {
             p_phase_id: phaseId,
@@ -184,7 +197,7 @@ export const useProjectPlan = (projectId: string | undefined, teamId: string | u
   };
 
   const generatePlan = async (projectName: string, projectDescription?: string, projectType?: string) => {
-    if (!projectId || !teamId) return false;
+    if (!projectId) return false;
 
     setSaving(true);
     try {

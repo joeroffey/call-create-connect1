@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { usePersonalProjects } from '@/hooks/usePersonalProjects';
+import { useCompletionDocuments } from '@/hooks/useCompletionDocuments';
 import { CompletionDocsUpload } from '../team/CompletionDocsUpload';
 import { CompletionDocsViewer } from '../team/CompletionDocsViewer';
 import { CompletionDocsList } from '../team/CompletionDocsList';
@@ -44,24 +45,28 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
   const [showCreateFolderModal, setShowCreateFolderModal] = useState(false);
   
   const [projects, setProjects] = useState<any[]>([]);
-  const [documents, setDocuments] = useState<any[]>([]);
   const [folders, setFolders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
   
   const { toast } = useToast();
+  
+  // Use the completion documents hook
+  const { 
+    data: documents, 
+    isLoading: loading, 
+    uploadDocument, 
+    refetch: refetchDocuments 
+  } = useCompletionDocuments(selectedProject);
 
   // Fetch personal projects
   useEffect(() => {
     fetchPersonalProjects();
   }, [userId]);
 
-  // Fetch documents when project changes
+  // Fetch folders when project changes
   useEffect(() => {
     if (selectedProject) {
-      fetchDocuments();
       fetchFolders();
     } else {
-      setDocuments([]);
       setFolders([]);
     }
   }, [selectedProject, currentFolderId]);
@@ -84,38 +89,6 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
         title: "Error loading projects",
         description: "Please try again later.",
       });
-    }
-  };
-
-  const fetchDocuments = async () => {
-    if (!selectedProject) return;
-
-    setLoading(true);
-    try {
-      const query = supabase
-        .from('project_completion_documents')
-        .select('*')
-        .eq('project_id', selectedProject);
-
-      if (currentFolderId) {
-        query.eq('folder_id', currentFolderId);
-      } else {
-        query.is('folder_id', null);
-      }
-
-      const { data, error } = await query.order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setDocuments(data || []);
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      toast({
-        variant: "destructive",
-        title: "Error loading documents",
-        description: "Please try again later.",
-      });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -144,7 +117,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
   };
 
   const handleUploadSuccess = () => {
-    fetchDocuments();
+    refetchDocuments();
     setShowUploadModal(false);
   };
 
@@ -157,7 +130,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
         .insert({
           name,
           project_id: selectedProject,
-          team_id: '', // Personal projects don't have teams, but field is required
+          team_id: '', // Personal projects use empty string for team_id
           parent_folder_id: currentFolderId,
           created_by: userId
         });
