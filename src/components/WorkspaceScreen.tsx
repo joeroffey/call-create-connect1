@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronLeft, ChevronRight, Users, User, Settings, Plus, FileText, CheckCircle, BarChart3 } from 'lucide-react';
@@ -69,6 +68,45 @@ const WorkspaceScreen = ({
     }
   };
 
+  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'documents' | 'project-plans' | 'settings'>('overview');
+
+  // Add hash monitoring effect to handle navigation from "Docs" button
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.slice(1); // Remove the # character
+      console.log('🔍 Hash changed to:', hash);
+
+      if (hash.startsWith('documents/')) {
+        console.log('📄 Switching to personal documents view');
+        setContext('personal');
+        setPersonalView('documents');
+      } else if (hash.startsWith('project-plans/')) {
+        console.log('📋 Switching to personal project plans view');
+        setContext('personal');
+        setPersonalView('project-plans');
+      } else if (hash.startsWith('team-documents/')) {
+        console.log('👥 Switching to team documents view');
+        const parts = hash.split('/');
+        if (parts.length >= 3) {
+          const teamId = parts[1];
+          console.log('🏢 Setting team ID to:', teamId);
+          setContext('team');
+          setSelectedTeamId(teamId);
+        }
+      }
+    };
+
+    // Listen for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Also check hash on component mount
+    handleHashChange();
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
   const renderContextSelector = () => (
     <div className="flex items-center gap-4 p-6 border-b border-white/10">
       <div className="flex items-center gap-2">
@@ -126,8 +164,6 @@ const WorkspaceScreen = ({
       )}
     </div>
   );
-
-  const [personalView, setPersonalView] = useState<'projects' | 'overview' | 'documents' | 'project-plans' | 'settings'>('overview');
 
   const renderPersonalContent = () => {
     switch (personalView) {
