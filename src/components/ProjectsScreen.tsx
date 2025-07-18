@@ -448,14 +448,14 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-950 via-black to-gray-950 overflow-hidden">
       {/* Header */}
-      <div className="p-6 border-b border-gray-800/30">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-white">
+      <div className="px-8 py-6 border-b border-gray-800/30">
+        <div className="flex items-start justify-between gap-6">
+          <div className="flex-1 max-w-2xl">
+            <h1 className="text-3xl font-bold text-white mb-2">
               {workspaceContext === 'personal' ? 'Personal Projects' : 
                workspaceContext === 'team' ? 'Team Projects' : 'Projects'}
             </h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-gray-400 text-lg leading-relaxed">
               {workspaceContext === 'personal' ? 'Manage your personal building regulation projects' :
                workspaceContext === 'team' ? 'Manage your team building regulation projects' :
                'Manage your building regulation projects'}
@@ -465,7 +465,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-all duration-300 shadow-lg"
+            className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-8 py-4 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-lg shadow-emerald-500/20 font-medium text-lg"
           >
             <Plus className="w-5 h-5" />
             <span>New Project</span>
@@ -474,7 +474,7 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       </div>
 
       {/* Project Filters */}
-      <div className="px-6">
+      <div className="px-8 py-6 bg-gray-900/30 border-b border-gray-800/20">
         <ProjectFiltersComponent
           filters={filters}
           onFiltersChange={setFilters}
@@ -484,16 +484,16 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       </div>
 
       {/* Projects Grid */}
-      <div className="flex-1 p-6 pb-32 overflow-y-auto">{/* Added pb-32 for mobile nav spacing */}
+      <div className="flex-1 px-8 py-6 pb-32 overflow-y-auto">{/* Added pb-32 for mobile nav spacing */}
         {projects.length === 0 ? (
           <EmptyProjectsState onCreateProject={() => setShowCreateModal(true)} />
         ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-12 bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl">
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No projects match your filters</h3>
-            <p className="text-sm text-gray-400">Try adjusting your filter criteria or clearing all filters</p>
+          <div className="text-center py-16 bg-gray-900/40 backdrop-blur-sm border border-gray-800/30 rounded-2xl">
+            <h3 className="text-xl font-medium text-gray-300 mb-3">No projects match your filters</h3>
+            <p className="text-gray-400">Try adjusting your filter criteria or clearing all filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}
