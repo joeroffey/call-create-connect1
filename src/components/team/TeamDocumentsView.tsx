@@ -60,6 +60,10 @@ export default function TeamDocumentsView({ teamId, preSelectedProjectId }: Team
       const project = teamProjects.find(p => p.id === preSelectedProjectId);
       if (project) {
         setSelectedProject(preSelectedProjectId);
+        // Scroll to top when navigating to a specific project's documents
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
       }
     }
   }, [preSelectedProjectId, teamProjects]);
