@@ -448,43 +448,38 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-950 via-black to-gray-950 overflow-hidden">
       {/* Header */}
-      <div className="px-8 py-6 border-b border-gray-800/30">
-        <div className="flex items-start justify-between gap-6">
-          <div className="flex-1 max-w-2xl">
-            <h1 className="text-3xl font-bold text-white mb-2">
+      <div className="px-6 py-6 border-b border-gray-800/20">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-white">
               {workspaceContext === 'personal' ? 'Personal Projects' : 
                workspaceContext === 'team' ? 'Team Projects' : 'Projects'}
             </h1>
-            <p className="text-gray-400 text-lg leading-relaxed">
-              {workspaceContext === 'personal' ? 'Manage your personal building regulation projects' :
-               workspaceContext === 'team' ? 'Manage your team building regulation projects' :
-               'Manage your building regulation projects'}
-            </p>
           </div>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white px-8 py-4 rounded-xl flex items-center gap-3 transition-all duration-300 shadow-lg shadow-emerald-500/20 font-medium text-lg"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-lg flex items-center gap-2 transition-colors font-medium"
           >
-            <Plus className="w-5 h-5" />
-            <span>New Project</span>
+            <Plus className="w-4 h-4" />
+            New Project
           </motion.button>
         </div>
       </div>
 
       {/* Project Filters */}
-      <div className="px-8 py-6 bg-gray-900/30 border-b border-gray-800/20">
+      <div className="px-6 py-4">
         <ProjectFiltersComponent
           filters={filters}
           onFiltersChange={setFilters}
-          showContextFilter={workspaceContext === 'all'} // Only show context filter when in 'all' mode
+          showContextFilter={workspaceContext === 'all'}
           projectCount={filteredProjects.length}
         />
       </div>
 
       {/* Projects Grid */}
-      <div className="flex-1 px-8 py-6 pb-32 overflow-y-auto">{/* Added pb-32 for mobile nav spacing */}
+      <div className="flex-1 px-6 py-4 pb-32 overflow-y-auto">
         {projects.length === 0 ? (
           <EmptyProjectsState onCreateProject={() => setShowCreateModal(true)} />
         ) : filteredProjects.length === 0 ? (
