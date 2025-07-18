@@ -77,7 +77,7 @@ export const useProjectPlan = (projectId: string | undefined, teamId?: string | 
         .from('project_plan_phases')
         .insert({
           project_id: projectId,
-          team_id: project.team_id || '', // Use empty string for personal projects
+          team_id: project.team_id, // Use null for personal projects
           phase_name: phaseData.phase_name,
           start_date: phaseData.start_date,
           end_date: phaseData.end_date,

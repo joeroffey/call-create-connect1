@@ -130,7 +130,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
         .insert({
           name,
           project_id: selectedProject,
-          team_id: '', // Personal projects use empty string for team_id
+          team_id: null, // Personal projects use null for team_id
           parent_folder_id: currentFolderId,
           created_by: userId
         });
@@ -321,7 +321,7 @@ export default function PersonalCompletionDocsView({ userId }: PersonalCompletio
           isOpen={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           projectId={selectedProject}
-          teamId="" // Personal projects don't have teams
+          teamId={null} // Personal projects don't have teams
           folderId={currentFolderId}
           onUploadComplete={handleUploadSuccess}
         />

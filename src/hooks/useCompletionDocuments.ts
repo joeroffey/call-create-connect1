@@ -148,7 +148,7 @@ export const useCompletionDocuments = (projectId?: string | null) => {
           description,
           display_name: displayName || file.name,
           uploaded_by: user.id,
-          team_id: project.team_id || '', // Use empty string for personal projects
+          team_id: project.team_id, // Use null for personal projects
           folder_id: folderId,
         })
         .select()

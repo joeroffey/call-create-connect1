@@ -73,7 +73,7 @@ export type Database = {
           name: string
           parent_folder_id: string | null
           project_id: string
-          team_id: string
+          team_id: string | null
           updated_at: string
         }
         Insert: {
@@ -83,7 +83,7 @@ export type Database = {
           name: string
           parent_folder_id?: string | null
           project_id: string
-          team_id: string
+          team_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -93,7 +93,7 @@ export type Database = {
           name?: string
           parent_folder_id?: string | null
           project_id?: string
-          team_id?: string
+          team_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -560,7 +560,7 @@ export type Database = {
           folder_id: string | null
           id: string
           project_id: string
-          team_id: string
+          team_id: string | null
           updated_at: string
           uploaded_by: string
         }
@@ -576,7 +576,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           project_id: string
-          team_id: string
+          team_id?: string | null
           updated_at?: string
           uploaded_by: string
         }
@@ -592,7 +592,7 @@ export type Database = {
           folder_id?: string | null
           id?: string
           project_id?: string
-          team_id?: string
+          team_id?: string | null
           updated_at?: string
           uploaded_by?: string
         }
@@ -728,7 +728,7 @@ export type Database = {
           project_id: string
           start_date: string
           status: string
-          team_id: string
+          team_id: string | null
           updated_at: string
         }
         Insert: {
@@ -743,7 +743,7 @@ export type Database = {
           project_id: string
           start_date: string
           status?: string
-          team_id: string
+          team_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -758,7 +758,7 @@ export type Database = {
           project_id?: string
           start_date?: string
           status?: string
-          team_id?: string
+          team_id?: string | null
           updated_at?: string
         }
         Relationships: [
