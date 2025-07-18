@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, MapPin, Briefcase, Calendar, ArrowRight, Check } from 'lucide-react';
+import { User, MapPin, Briefcase, Calendar, ArrowRight, Check, ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -281,7 +281,7 @@ const OnboardingScreen = ({ user, onComplete }: OnboardingScreenProps) => {
                 onClick={() => setStep(step - 1)}
                 className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
               >
-                Back
+                <ChevronLeft className="w-4 h-4" />
               </Button>
             )}
             
