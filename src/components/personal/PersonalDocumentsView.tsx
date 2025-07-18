@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface PersonalDocumentsViewProps {
   userId: string;
+  preSelectedProjectId?: string | null;
 }
 
 const categoryIcons = {
@@ -34,7 +35,7 @@ const categoryLabels = {
   'other': 'Other',
 };
 
-export default function PersonalDocumentsView({ userId }: PersonalDocumentsViewProps) {
+export default function PersonalDocumentsView({ userId, preSelectedProjectId }: PersonalDocumentsViewProps) {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -61,14 +62,15 @@ export default function PersonalDocumentsView({ userId }: PersonalDocumentsViewP
     fetchPersonalProjects();
   }, [userId]);
 
-  // Fetch folders when project changes
+  // Auto-select project if preSelectedProjectId is provided
   useEffect(() => {
-    if (selectedProject) {
-      fetchFolders();
-    } else {
-      setFolders([]);
+    if (preSelectedProjectId && projects.length > 0) {
+      const project = projects.find(p => p.id === preSelectedProjectId);
+      if (project) {
+        setSelectedProject(preSelectedProjectId);
+      }
     }
-  }, [selectedProject, currentFolderId]);
+  }, [preSelectedProjectId, projects]);
 
   const fetchPersonalProjects = async () => {
     try {

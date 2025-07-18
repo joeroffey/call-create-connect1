@@ -151,8 +151,11 @@ const WorkspaceScreen = ({
           />
         );
       case 'documents':
+        // Check if there's a specific project ID in the hash
+        const projectIdMatch = window.location.hash.match(/#documents\/(.+)/);
+        const projectId = projectIdMatch ? projectIdMatch[1] : null;
         return (
-          <PersonalDocumentsView userId={user?.id} />
+          <PersonalDocumentsView userId={user?.id} preSelectedProjectId={projectId} />
         );
       case 'project-plans':
         return (

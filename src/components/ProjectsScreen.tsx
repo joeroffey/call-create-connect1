@@ -508,6 +508,10 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
                 onTogglePin={togglePinProject}
                 onProjectStatsClick={handleProjectStatsClick}
                 onStatusChange={handleStatusChange}
+                onDocumentsClick={(project) => {
+                  // Navigate to personal documents page for this project
+                  window.location.hash = `#documents/${project.id}`;
+                }}
               />
             ))}
           </div>
