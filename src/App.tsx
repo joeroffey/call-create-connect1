@@ -9,6 +9,9 @@ import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/NotificationsPage";
 import TeamInvitePage from "./pages/TeamInvitePage";
 import PasswordResetPage from "./pages/PasswordResetPage";
+import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
+import FeaturesPage from "./pages/FeaturesPage";
 import { ENVIRONMENT, initializeViewportCSS } from "./utils/environment";
 
 const queryClient = new QueryClient();
@@ -71,12 +74,28 @@ const App = () => {
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/team-invite" element={<TeamInvitePage />} />
-            <Route path="/password-reset" element={<PasswordResetPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
+            {/* Mobile apps go directly to the app */}
+            {ENVIRONMENT.IS_MOBILE_APP ? (
+              <>
+                <Route path="/" element={<Index />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/team-invite" element={<TeamInvitePage />} />
+                <Route path="/password-reset" element={<PasswordResetPage />} />
+                <Route path="*" element={<NotFound />} />
+              </>
+            ) : (
+              <>
+                {/* Web browsers get the landing page */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/features" element={<FeaturesPage />} />
+                <Route path="/app" element={<Index />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/team-invite" element={<TeamInvitePage />} />
+                <Route path="/password-reset" element={<PasswordResetPage />} />
+                <Route path="*" element={<NotFound />} />
+              </>
+            )}
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
