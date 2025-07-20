@@ -11,7 +11,7 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground font-inter flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground font-inter">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -22,7 +22,7 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
                 <div className="w-10 h-10 flex items-center">
                   <img 
                     src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png" 
-                    alt="EezyBuild" 
+                    alt="Logo" 
                     className="w-full h-full object-contain hover:opacity-80 transition-opacity"
                   />
                 </div>
@@ -65,10 +65,8 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 flex-1 overflow-y-auto">
-        <div className="min-h-full">
-          {children}
-        </div>
+      <main className="pt-16">
+        {children}
       </main>
 
       {/* Footer */}
