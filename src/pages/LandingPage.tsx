@@ -41,7 +41,7 @@ const LandingPage = () => {
 
   return (
     <LandingLayout>
-      <div className="overflow-y-auto h-full">
+      <div>
         {/* Hero Section */}
         <section className="relative py-20 lg:py-32">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

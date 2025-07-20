@@ -90,7 +90,7 @@ const FeaturesPage = () => {
 
   return (
     <LandingLayout>
-      <div className="overflow-y-auto h-full">
+      <div>
         {/* Hero Section */}
         <section className="py-20 lg:py-32">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

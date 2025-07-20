@@ -11,7 +11,7 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground font-inter">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground font-inter flex flex-col">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,8 +65,10 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
       </header>
 
       {/* Main Content */}
-      <main className="pt-16 min-h-screen">
-        {children}
+      <main className="pt-16 flex-1 overflow-y-auto">
+        <div className="min-h-full">
+          {children}
+        </div>
       </main>
 
       {/* Footer */}
