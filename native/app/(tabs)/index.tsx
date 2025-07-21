@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,58 +8,89 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-
-interface Message {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: Date;
-}
+import { supabase } from '../../services/supabase';
+import { ChatService, ChatMessage } from '../../services/ChatService';
 
 export default function ChatScreen() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hello! I\'m your AI assistant for UK building regulations. How can I help you today?',
-      isUser: false,
-      timestamp: new Date(),
-    },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const flatListRef = useRef<FlatList>(null);
+  const chatService = ChatService.getInstance();
 
-  const sendMessage = async () => {
-    if (!inputText.trim()) return;
+  useEffect(() => {
+    initializeChat();
+  }, []);
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputText.trim(),
-      isUser: true,
-      timestamp: new Date(),
-    };
+  const initializeChat = async () => {
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        Alert.alert('Error', 'Please log in to use the chat');
+        return;
+      }
+      setUser(user);
 
-    setMessages(prev => [...prev, userMessage]);
-    setInputText('');
-    setLoading(true);
-
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: `Thank you for your question about: "${userMessage.text}". I'm here to help with UK building regulations. Could you provide more specific details about your project?`,
+      // Add welcome message
+      const welcomeMessage: ChatMessage = {
+        id: 'welcome',
+        text: 'Hello! I\'m your AI assistant for UK building regulations. How can I help you today?',
         isUser: false,
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, aiResponse]);
-      setLoading(false);
-    }, 1500);
+      setMessages([welcomeMessage]);
+    } catch (error) {
+      console.error('Error initializing chat:', error);
+    }
   };
 
-  const renderMessage = ({ item }: { item: Message }) => (
+  const sendMessage = async () => {
+    if (!inputText.trim() || !user) return;
+
+    const messageText = inputText.trim();
+    setInputText('');
+    setLoading(true);
+
+    try {
+      const result = await chatService.sendMessage(
+        currentConversationId,
+        messageText,
+        user.id
+      );
+
+      // Update conversation ID if this is a new conversation
+      if (!currentConversationId) {
+        setCurrentConversationId(result.conversationId);
+      }
+
+      // Add both user and AI messages to the state
+      setMessages(prev => {
+        const newMessages = [...prev, result.userMessage];
+        if (result.aiMessage) {
+          newMessages.push(result.aiMessage);
+        }
+        return newMessages;
+      });
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      Alert.alert('Error', 'Failed to send message. Please try again.');
+      
+      // Re-add the user message to input if sending failed
+      setInputText(messageText);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderMessage = ({ item }: { item: ChatMessage }) => (
     <View style={[
       styles.messageContainer,
       item.isUser ? styles.userMessage : styles.aiMessage
@@ -79,12 +110,41 @@ export default function ChatScreen() {
     </View>
   );
 
+  const startNewConversation = async () => {
+    if (!user) return;
+    
+    try {
+      const conversationId = await chatService.createConversation(user.id);
+      setCurrentConversationId(conversationId);
+      setMessages([{
+        id: 'welcome-new',
+        text: 'Hello! I\'m ready to help with your building regulations questions.',
+        isUser: false,
+        timestamp: new Date(),
+      }]);
+    } catch (error) {
+      console.error('Error creating new conversation:', error);
+      Alert.alert('Error', 'Failed to create new conversation');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
+        {/* Header with new conversation button */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.newChatButton}
+            onPress={startNewConversation}
+          >
+            <Ionicons name="add" size={20} color="#ffffff" />
+            <Text style={styles.newChatText}>New Chat</Text>
+          </TouchableOpacity>
+        </View>
+
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -110,16 +170,17 @@ export default function ChatScreen() {
             placeholderTextColor="#9ca3af"
             multiline
             maxLength={500}
+            editable={!!user}
           />
           <TouchableOpacity
-            style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+            style={[styles.sendButton, (!inputText.trim() || !user) && styles.sendButtonDisabled]}
             onPress={sendMessage}
-            disabled={!inputText.trim() || loading}
+            disabled={!inputText.trim() || loading || !user}
           >
             <Ionicons 
               name="send" 
               size={20} 
-              color={inputText.trim() ? '#ffffff' : '#9ca3af'} 
+              color={(inputText.trim() && user) ? '#ffffff' : '#9ca3af'} 
             />
           </TouchableOpacity>
         </View>
@@ -135,6 +196,27 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
+  },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  newChatButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#10b981',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  newChatText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    marginLeft: 4,
+    fontSize: 14,
   },
   messagesList: {
     flex: 1,
