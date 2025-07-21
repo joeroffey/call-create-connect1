@@ -77,25 +77,6 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Quick Stats Section */}
-        <section className="py-12 sm:py-16 bg-black/10 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-              <div className="text-center p-4 sm:p-6 rounded-lg bg-black/40 border border-white/10">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">10k+</div>
-                <p className="text-muted-foreground text-sm sm:text-base">Questions Answered</p>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-lg bg-black/40 border border-white/10">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">24/7</div>
-                <p className="text-muted-foreground text-sm sm:text-base">AI Support Available</p>
-              </div>
-              <div className="text-center p-4 sm:p-6 rounded-lg bg-black/40 border border-white/10">
-                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">100%</div>
-                <p className="text-muted-foreground text-sm sm:text-base">UK Regulations Covered</p>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Features Section */}
         <section className="py-16 sm:py-20 bg-black/20 px-4 sm:px-6 lg:px-8">
@@ -184,8 +165,7 @@ const LandingPage = () => {
                   Why Choose EezyBuild?
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8">
-                  Join thousands of construction professionals who trust EezyBuild to navigate 
-                  UK building regulations efficiently and accurately.
+                  Streamline your building regulation compliance with our comprehensive AI-powered platform.
                 </p>
                 <ul className="space-y-3 sm:space-y-4">
                   {benefits.map((benefit, index) => (
@@ -220,44 +200,6 @@ const LandingPage = () => {
           </div>
         </section>
 
-        {/* Testimonial Section */}
-        <section className="py-16 sm:py-20 bg-black/10 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-8 sm:mb-12">
-              What Our Users Say
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-              <div className="bg-black/40 border border-white/10 rounded-xl p-6 sm:p-8">
-                <p className="text-muted-foreground mb-4 italic text-sm sm:text-base">
-                  "EezyBuild has saved me hours of research time. The AI answers are incredibly accurate and the document management is a game-changer."
-                </p>
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold text-sm sm:text-base">SM</span>
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm sm:text-base">Sarah Mitchell</p>
-                    <p className="text-muted-foreground text-xs sm:text-sm">Project Manager</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-black/40 border border-white/10 rounded-xl p-6 sm:p-8">
-                <p className="text-muted-foreground mb-4 italic text-sm sm:text-base">
-                  "The team collaboration features have transformed how we handle building compliance. Highly recommend for any construction business."
-                </p>
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center">
-                    <span className="text-primary-foreground font-bold text-sm sm:text-base">DT</span>
-                  </div>
-                  <div>
-                    <p className="text-white font-semibold text-sm sm:text-base">David Thompson</p>
-                    <p className="text-muted-foreground text-xs sm:text-sm">Construction Director</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* CTA Section */}
         <section className="py-16 sm:py-20 bg-primary/10 px-4 sm:px-6 lg:px-8">

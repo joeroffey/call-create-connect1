@@ -274,7 +274,7 @@ const SubscriptionsPage = () => {
                 Ready to streamline your building projects?
               </h2>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Join thousands of professionals who trust EezyBuild for their UK Building Regulations needs
+                Experience streamlined building regulation compliance with our comprehensive platform
               </p>
               <Button
                 onClick={() => navigate('/app?signup=true')}

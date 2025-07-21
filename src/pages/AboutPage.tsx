@@ -129,8 +129,7 @@ const AboutPage = () => {
               Ready to Experience the Difference?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join our community of construction professionals who trust EezyBuild 
-              for their building regulation needs.
+              Experience streamlined building regulation compliance with our comprehensive platform.
             </p>
             <Button 
               size="lg"
