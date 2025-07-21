@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { LinearGradient } from 'expo-linear-gradient';
 import { NotificationCard } from '../shared/components';
 import { Notification } from '../shared/types';
 
@@ -26,6 +27,13 @@ const notifications: Notification[] = [
     time: '1 day ago',
     type: 'info'
   },
+  {
+    id: '4',
+    title: 'Compliance Alert',
+    message: 'Part L energy efficiency requirements updated',
+    time: '2 days ago',
+    type: 'info'
+  },
 ];
 
 export default function NotificationsScreen() {
@@ -34,38 +42,54 @@ export default function NotificationsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
-        <Text style={styles.title}>Notifications</Text>
-      </View>
-      <FlatList
-        data={notifications}
-        renderItem={renderNotification}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
-    </SafeAreaView>
+    <LinearGradient 
+      colors={['#0f172a', '#000000', '#0f172a']} 
+      style={styles.container}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="light" />
+        <View style={styles.header}>
+          <Text style={styles.title}>Notifications</Text>
+          <Text style={styles.subtitle}>Stay updated with your projects</Text>
+        </View>
+        <FlatList
+          data={notifications}
+          renderItem={renderNotification}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
-    padding: 20,
-    paddingBottom: 10,
+    padding: 24,
+    paddingBottom: 16,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontWeight: '400',
   },
   list: {
-    padding: 20,
-    paddingTop: 10,
+    padding: 24,
+    paddingTop: 8,
   },
 });
