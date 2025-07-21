@@ -4,16 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LandingLayout from "@/components/landing/LandingLayout";
 import { 
-  MessageSquare, 
-  FileText, 
-  Search, 
+  Building2, 
+  FolderOpen, 
+  Calendar, 
   Users, 
-  Shield, 
+  BarChart3, 
   Clock, 
-  BookOpen, 
+  FileText, 
   CheckCircle,
   ArrowRight,
-  Zap
+  Brain,
+  Layout,
+  Target,
+  GitBranch
 } from "lucide-react";
 
 const FeaturesPage = () => {
@@ -21,70 +24,70 @@ const FeaturesPage = () => {
 
   const mainFeatures = [
     {
-      icon: MessageSquare,
-      title: "AI Chat Assistant",
-      description: "Get instant answers to complex building regulation questions with our intelligent AI assistant trained on UK building codes.",
+      icon: Layout,
+      title: "Individual & Team Workspaces",
+      description: "Create dedicated workspaces for personal projects or collaborate with your team in shared workspaces. Switch seamlessly between individual and team environments.",
       benefits: [
-        "24/7 availability",
-        "Instant responses", 
-        "Context-aware answers",
-        "Multi-language support"
+        "Personal workspace for individual projects",
+        "Team workspaces for collaborative work",
+        "Role-based access control",
+        "Seamless workspace switching"
+      ]
+    },
+    {
+      icon: Building2,
+      title: "Project Management",
+      description: "Organize and manage all your construction projects with comprehensive project tracking, status updates, and milestone management.",
+      benefits: [
+        "Complete project lifecycle management",
+        "Status tracking and updates",
+        "Project milestone management",
+        "Team collaboration within projects"
       ]
     },
     {
       icon: FileText,
-      title: "Document Management",
-      description: "Organize, store, and manage all your building regulation documents in one secure, searchable location.",
+      title: "Document Management & AI Analysis",
+      description: "Store, organize, and analyze all your project documents with AI-powered insights. Upload completion documents and get intelligent analysis.",
       benefits: [
-        "Cloud storage",
-        "Version control",
-        "Smart categorization",
-        "Easy sharing"
-      ]
-    },
-    {
-      icon: Users,
-      title: "Team Collaboration",
-      description: "Share projects, assign tasks, and collaborate with team members seamlessly across all your building projects.",
-      benefits: [
-        "Real-time collaboration",
-        "Role-based access",
-        "Project timelines",
-        "Team notifications"
+        "Secure cloud document storage",
+        "AI-powered document analysis",
+        "Completion document management",
+        "Smart categorization and search"
       ]
     }
   ];
 
   const additionalFeatures = [
     {
-      icon: Search,
-      title: "Smart Search",
-      description: "Find relevant regulations and guidance quickly with AI-powered search capabilities."
-    },
-    {
-      icon: Shield,
-      title: "Compliance Tracking",
-      description: "Track compliance status and get alerts for upcoming deadlines and requirements."
+      icon: Calendar,
+      title: "Schedule Management",
+      description: "Create and manage detailed project schedules with task assignments, deadlines, and progress tracking."
     },
     {
       icon: Clock,
       title: "Project Timelines",
-      description: "Manage project milestones and regulatory approval timelines in one place."
+      description: "Visualize project timelines with Gantt charts, milestone tracking, and deadline management."
     },
     {
-      icon: BookOpen,
-      title: "Regulation Library",
-      description: "Access the complete UK building regulations library with smart categorization."
+      icon: BarChart3,
+      title: "Widget Statistics",
+      description: "Get real-time insights with customizable dashboard widgets showing project progress and team performance."
     },
     {
-      icon: Zap,
-      title: "Quick Actions",
-      description: "Perform common tasks quickly with smart shortcuts and automation features."
+      icon: Users,
+      title: "Team Collaboration",
+      description: "Collaborate seamlessly with team members through shared workspaces, comments, and real-time updates."
     },
     {
-      icon: CheckCircle,
-      title: "Compliance Checklist",
-      description: "Never miss a requirement with automated compliance checklists for your projects."
+      icon: FolderOpen,
+      title: "Completion Documents",
+      description: "Manage project completion documentation with structured folders and automated organization."
+    },
+    {
+      icon: Brain,
+      title: "AI Document Analysis",
+      description: "Get intelligent insights and analysis from your uploaded documents using advanced AI technology."
     }
   ];
 
@@ -95,12 +98,12 @@ const FeaturesPage = () => {
         <section className="py-20 lg:py-32">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 animate-fade-in">
-              Powerful Features for
-              <span className="text-primary block">Building Compliance</span>
+              Complete Project Management
+              <span className="text-primary block">& Team Collaboration</span>
             </h1>
             <p className="text-xl text-muted-foreground mb-8 animate-fade-in">
-              Discover all the tools and capabilities that make EezyBuild the most comprehensive 
-              building regulations assistant for UK construction professionals.
+              Discover all the tools and capabilities that make our platform the most comprehensive 
+              project management solution for construction teams and professionals.
             </p>
           </div>
         </section>
@@ -110,10 +113,10 @@ const FeaturesPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Core Features That Drive Results
+                Core Features That Drive Productivity
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Everything you need to streamline your building regulation workflow
+                Everything you need to manage projects, collaborate with teams, and track progress
               </p>
             </div>
             
@@ -169,10 +172,10 @@ const FeaturesPage = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                Additional Powerful Tools
+                Advanced Project Tools
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Even more features to enhance your building regulation workflow
+                Enhanced features to optimize your project management and team collaboration
               </p>
             </div>
             
@@ -200,20 +203,20 @@ const FeaturesPage = () => {
         <section className="py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-              The EezyBuild Advantage
+              The Platform Advantage
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <div className="text-center p-6 rounded-lg bg-black/40 border border-white/10">
-                <div className="text-4xl font-bold text-primary mb-2">90%</div>
-                <p className="text-muted-foreground">Time Saved on Research</p>
+                <div className="text-4xl font-bold text-primary mb-2">85%</div>
+                <p className="text-muted-foreground">Faster Project Setup</p>
               </div>
               <div className="text-center p-6 rounded-lg bg-black/40 border border-white/10">
                 <div className="text-4xl font-bold text-primary mb-2">24/7</div>
-                <p className="text-muted-foreground">AI Assistant Availability</p>
+                <p className="text-muted-foreground">Team Collaboration</p>
               </div>
               <div className="text-center p-6 rounded-lg bg-black/40 border border-white/10">
                 <div className="text-4xl font-bold text-primary mb-2">100%</div>
-                <p className="text-muted-foreground">UK Regulation Coverage</p>
+                <p className="text-muted-foreground">Project Visibility</p>
               </div>
             </div>
           </div>
@@ -226,7 +229,7 @@ const FeaturesPage = () => {
               Experience All Features Today
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Start your free trial and discover how EezyBuild can transform your building regulation workflow.
+              Start your free trial and discover how our platform can transform your project management workflow.
             </p>
             <Button 
               size="lg"
