@@ -10,58 +10,64 @@ const SubscriptionsPage = () => {
   const plans = [
     {
       name: "EezyBuild Basic",
-      price: "£0",
-      period: "forever",
-      description: "Perfect for getting started with basic building regulations",
+      price: "£15",
+      period: "per month",
+      description: "Essential building regulations assistant",
       features: [
-        "Basic UK Building Regulations search",
-        "Up to 10 searches per month",
-        "Basic document access",
-        "Community support"
+        "Unlimited Building Regulation Chats",
+        "Chat History",
+        "Email Support",
+        "Limited Advanced Tools"
       ],
-      limitations: [
-        "Limited AI chat sessions",
-        "No team collaboration",
-        "No project management",
-        "No advanced calculators"
-      ],
-      buttonText: "Get Started",
+      limitations: [],
+      buttonText: "Start Free Trial",
       popular: false
     },
     {
       name: "EezyBuild Pro",
-      price: "£29",
+      price: "£30",
       period: "per month",
-      description: "Ideal for professionals who need comprehensive tools",
+      description: "Advanced features for professionals",
       features: [
-        "Unlimited Building Regulations search",
-        "Advanced AI chat assistant",
-        "Project management tools",
-        "Team collaboration (up to 5 members)",
-        "Building calculators",
-        "Document management",
-        "Priority support",
-        "Export capabilities"
+        "Everything in EezyBuild Basic",
+        "Advanced Building Tools",
+        "Document upload",
+        "Extended Chat History",
+        "Priority response time"
+      ],
+      limitations: [],
+      buttonText: "Start Free Trial",
+      popular: false
+    },
+    {
+      name: "EezyBuild Pro Max",
+      price: "£60",
+      period: "per month",
+      description: "Complete solution for teams and enterprises",
+      features: [
+        "Everything in EezyBuild Pro",
+        "Advanced Building regulation search",
+        "Project Management",
+        "Team collaboration",
+        "Full category of Advanced Building Tools",
+        "Advanced Analytics",
+        "Project Plans"
       ],
       limitations: [],
       buttonText: "Start Free Trial",
       popular: true
     },
     {
-      name: "EezyBuild ProMax",
-      price: "£99",
-      period: "per month",
-      description: "For large teams and organizations",
+      name: "EezyBuild Enterprise",
+      price: "Custom",
+      period: "",
+      description: "Please Contact the EezyBuild team to see our competitive Enterprise subscription prices",
       features: [
-        "Everything in EezyBuild Pro",
-        "Unlimited team members",
-        "Advanced analytics",
+        "Everything in EezyBuild Pro Max",
         "Custom integrations",
-        "Dedicated account manager",
-        "SLA guarantees",
-        "Custom training sessions",
-        "White-label options",
-        "Advanced security features"
+        "Dedicated support",
+        "Custom pricing",
+        "SLA guarantees"
       ],
       limitations: [],
       buttonText: "Contact Sales",
@@ -84,7 +90,7 @@ const SubscriptionsPage = () => {
           </div>
 
           {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {plans.map((plan, index) => (
               <div
                 key={plan.name}
@@ -106,7 +112,7 @@ const SubscriptionsPage = () => {
                   <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
                   <div className="mb-4">
                     <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    <span className="text-muted-foreground ml-2">/{plan.period}</span>
+                    {plan.period && <span className="text-muted-foreground ml-2">/{plan.period}</span>}
                   </div>
                   <p className="text-muted-foreground">{plan.description}</p>
                 </div>
@@ -118,13 +124,6 @@ const SubscriptionsPage = () => {
                       <span className="text-muted-foreground">{feature}</span>
                     </div>
                   ))}
-                  
-                  {plan.limitations.map((limitation, limitationIndex) => (
-                    <div key={limitationIndex} className="flex items-start space-x-3">
-                      <X className="text-red-500 mt-1 flex-shrink-0" size={16} />
-                      <span className="text-muted-foreground line-through opacity-60">{limitation}</span>
-                    </div>
-                  ))}
                 </div>
 
                 <Button
@@ -132,6 +131,8 @@ const SubscriptionsPage = () => {
                   className={`w-full ${
                     plan.popular
                       ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                      : plan.buttonText === "Contact Sales"
+                      ? "bg-purple-600 hover:bg-purple-700 text-white"
                       : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   }`}
                 >
@@ -139,6 +140,25 @@ const SubscriptionsPage = () => {
                 </Button>
               </div>
             ))}
+          </div>
+
+          {/* Free Trial Information */}
+          <div className="mt-16 text-center">
+            <div className="bg-emerald-500/10 rounded-2xl p-8 border border-emerald-500/20 max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold text-white mb-4">
+                7-Day Free Trial Available
+              </h2>
+              <p className="text-muted-foreground mb-6">
+                Try any plan free for 7 days. No credit card required upfront. Cancel anytime during your trial period with no charges.
+              </p>
+              <Button
+                onClick={() => navigate('/app')}
+                size="lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
+              >
+                Start Your Free Trial
+              </Button>
+            </div>
           </div>
 
           {/* FAQ Section */}
@@ -163,7 +183,7 @@ const SubscriptionsPage = () => {
                     Is there a free trial?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes, we offer a 14-day free trial for the EezyBuild Pro plan with no credit card required.
+                    Yes, we offer a 14-day free trial for all paid plans with no credit card required.
                   </p>
                 </div>
                 
@@ -172,7 +192,7 @@ const SubscriptionsPage = () => {
                     What payment methods do you accept?
                   </h3>
                   <p className="text-muted-foreground">
-                    We accept all major credit cards, PayPal, and bank transfers for EezyBuild ProMax customers.
+                    We accept all major credit cards, PayPal, and bank transfers for Enterprise customers.
                   </p>
                 </div>
               </div>
@@ -192,7 +212,7 @@ const SubscriptionsPage = () => {
                     Do you offer discounts for annual plans?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes, save 20% when you choose annual billing. Contact us for custom EezyBuild ProMax pricing.
+                    Yes, save 20% when you choose annual billing. Contact us for custom Enterprise pricing.
                   </p>
                 </div>
                 
