@@ -19,7 +19,7 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
             {/* Logo */}
             <div className="flex items-center">
               <Link to="/" className="flex items-center">
-                <div className="w-10 h-10 flex items-center">
+                <div className="w-40 h-24 flex items-center">
                   <img 
                     src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png" 
                     alt="Logo" 
