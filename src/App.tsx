@@ -12,6 +12,7 @@ import PasswordResetPage from "./pages/PasswordResetPage";
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
 import FeaturesPage from "./pages/FeaturesPage";
+import SubscriptionsPage from "./pages/SubscriptionsPage";
 import { ENVIRONMENT, initializeViewportCSS } from "./utils/environment";
 
 const queryClient = new QueryClient();
@@ -89,6 +90,7 @@ const App = () => {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
+                <Route path="/subscriptions" element={<SubscriptionsPage />} />
                 <Route path="/app" element={<Index />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/team-invite" element={<TeamInvitePage />} />

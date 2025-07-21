@@ -101,6 +101,13 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
                 Features
               </Link>
               <Link 
+                to="/subscriptions" 
+                className="text-muted-foreground hover:text-primary transition-colors py-2 story-link"
+                onClick={closeMenu}
+              >
+                Subscriptions
+              </Link>
+              <Link 
                 to="/about" 
                 className="text-muted-foreground hover:text-primary transition-colors py-2 story-link"
                 onClick={closeMenu}
