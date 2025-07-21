@@ -19,6 +19,11 @@ import { useDeepLinking } from '@/hooks/useDeepLinking';
 import { useNotifications } from '@/hooks/useNotifications';
 
 const Index = () => {
+  // Set app mode for body styles
+  useEffect(() => {
+    document.body.classList.remove('landing-mode');
+    document.body.classList.add('app-mode');
+  }, []);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
   const [isAuthenticated, setIsAuthenticated] = useState(false);

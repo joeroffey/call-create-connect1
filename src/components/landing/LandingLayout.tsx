@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
@@ -8,6 +8,17 @@ interface LandingLayoutProps {
 }
 
 const LandingLayout = ({ children }: LandingLayoutProps) => {
+  useEffect(() => {
+    // Set body class for landing pages to enable scrolling
+    document.body.classList.remove('app-mode');
+    document.body.classList.add('landing-mode');
+    
+    return () => {
+      // Cleanup on unmount
+      document.body.classList.remove('landing-mode');
+      document.body.classList.add('app-mode');
+    };
+  }, []);
   const navigate = useNavigate();
 
   return (
@@ -51,11 +62,27 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
               </Link>
             </nav>
 
+            {/* Mobile Navigation Menu */}
+            <nav className="flex md:hidden items-center space-x-4">
+              <Link 
+                to="/features" 
+                className="text-muted-foreground hover:text-primary transition-colors text-sm"
+              >
+                Features
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-muted-foreground hover:text-primary transition-colors text-sm"
+              >
+                About
+              </Link>
+            </nav>
+
             {/* Sign In Button */}
             <div className="flex items-center">
               <Button 
                 onClick={() => navigate('/app')}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm sm:text-base px-3 sm:px-4"
               >
                 Sign In
               </Button>

@@ -122,16 +122,29 @@
     max-height: var(--max-viewport-height, 100vh);
   }
 
-  body {
+  /* App body styles - only for the main app routes */
+  body.app-mode {
     overflow-y: hidden;
-    overscroll-behavior: none; /* Prevent bounce scrolling on mobile */
+    overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
     position: fixed;
     width: 100%;
     height: var(--viewport-height, 100vh);
   }
 
-  #root {
+  /* Landing page body styles - allow normal scrolling */
+  body.landing-mode {
+    overflow-y: auto;
+    overscroll-behavior: auto;
+    -webkit-overflow-scrolling: touch;
+    position: static;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* App root styles */
+  body.app-mode #root {
     height: var(--viewport-height, 100vh);
     max-height: var(--max-viewport-height, 100vh);
     overflow: hidden;
@@ -139,6 +152,16 @@
     width: 100%;
     top: 0;
     left: 0;
+  }
+
+  /* Landing page root styles */
+  body.landing-mode #root {
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
+    overflow: visible;
+    position: static;
+    width: 100%;
   }
 
   /* Browser-specific viewport handling */

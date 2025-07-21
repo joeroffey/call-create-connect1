@@ -41,17 +41,17 @@ const LandingPage = () => {
 
   return (
     <LandingLayout>
-      <div>
+      <div className="overflow-x-hidden">
         {/* Hero Section */}
-        <section className="relative py-20 lg:py-32">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section className="relative py-12 sm:py-20 lg:py-32 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
             <div className="text-center">
-              <h1 className="text-4xl sm:text-6xl font-bold text-white mb-6 animate-fade-in">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fade-in">
                 Your AI-Powered
-                <span className="text-primary block">Building Regulations</span>
+                <span className="text-primary block mt-2">Building Regulations</span>
                 Assistant
               </h1>
-              <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto animate-fade-in">
+              <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto animate-fade-in leading-relaxed">
                 Navigate UK building regulations with confidence. Get instant answers, manage documents, 
                 and ensure compliance with our intelligent AI assistant.
               </p>
@@ -59,7 +59,7 @@ const LandingPage = () => {
                 <Button 
                   size="lg" 
                   onClick={() => navigate('/app')}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-4 font-semibold"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 font-semibold w-full sm:w-auto"
                 >
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -68,7 +68,7 @@ const LandingPage = () => {
                   size="lg" 
                   variant="outline"
                   onClick={() => navigate('/features')}
-                  className="text-lg px-8 py-4 border-white/20 text-white hover:bg-white/10"
+                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 border-white/20 text-white hover:bg-white/10 w-full sm:w-auto"
                 >
                   Learn More
                 </Button>
@@ -77,31 +77,51 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Quick Stats Section */}
+        <section className="py-12 sm:py-16 bg-black/10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+              <div className="text-center p-4 sm:p-6 rounded-lg bg-black/40 border border-white/10">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">10k+</div>
+                <p className="text-muted-foreground text-sm sm:text-base">Questions Answered</p>
+              </div>
+              <div className="text-center p-4 sm:p-6 rounded-lg bg-black/40 border border-white/10">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">24/7</div>
+                <p className="text-muted-foreground text-sm sm:text-base">AI Support Available</p>
+              </div>
+              <div className="text-center p-4 sm:p-6 rounded-lg bg-black/40 border border-white/10">
+                <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">100%</div>
+                <p className="text-muted-foreground text-sm sm:text-base">UK Regulations Covered</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Features Section */}
-        <section className="py-20 bg-black/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+        <section className="py-16 sm:py-20 bg-black/20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
                 Everything You Need for Building Compliance
               </h2>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
                 Streamline your building regulation workflow with powerful AI-driven tools
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {features.map((feature, index) => (
                 <Card key={index} className="bg-black/40 border-white/10 hover:border-primary/50 transition-all duration-300 animate-fade-in backdrop-blur-sm">
-                  <CardContent className="p-6 text-center">
+                  <CardContent className="p-4 sm:p-6 text-center">
                     <div className="mb-4 flex justify-center">
                       <div className="p-3 bg-primary/20 rounded-full">
-                        <feature.icon className="h-8 w-8 text-primary" />
+                        <feature.icon className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                       </div>
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                    <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
                       {feature.title}
                     </h3>
-                    <p className="text-muted-foreground">
+                    <p className="text-sm sm:text-base text-muted-foreground">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -111,41 +131,85 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* How It Works Section */}
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4">
+                How EezyBuild Works
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+                Get started in minutes with our simple three-step process
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+              <div className="text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <span className="text-xl sm:text-2xl font-bold text-primary-foreground">1</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Ask Your Question</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Simply type your building regulation question in plain English. Our AI understands context and technical terminology.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <span className="text-xl sm:text-2xl font-bold text-primary-foreground">2</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Get Instant Answers</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Receive detailed, accurate responses based on the latest UK building regulations and approved documents.
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <span className="text-xl sm:text-2xl font-bold text-primary-foreground">3</span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold text-white mb-3">Stay Compliant</h3>
+                <p className="text-sm sm:text-base text-muted-foreground">
+                  Use our tools to manage documents, track compliance, and ensure your projects meet all requirements.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Benefits Section */}
-        <section className="py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <section className="py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
               <div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
                   Why Choose EezyBuild?
                 </h2>
-                <p className="text-xl text-muted-foreground mb-8">
+                <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8">
                   Join thousands of construction professionals who trust EezyBuild to navigate 
                   UK building regulations efficiently and accurately.
                 </p>
-                <ul className="space-y-4">
+                <ul className="space-y-3 sm:space-y-4">
                   {benefits.map((benefit, index) => (
                     <li key={index} className="flex items-center space-x-3">
-                      <CheckCircle className="h-6 w-6 text-primary flex-shrink-0" />
-                      <span className="text-lg text-white">{benefit}</span>
+                      <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+                      <span className="text-base sm:text-lg text-white">{benefit}</span>
                     </li>
                   ))}
                 </ul>
               </div>
               <div className="relative">
-                <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-                  <div className="bg-black/60 rounded-lg p-6 shadow-lg border border-white/5">
+                <div className="bg-black/40 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white/10">
+                  <div className="bg-black/60 rounded-lg p-4 sm:p-6 shadow-lg border border-white/5">
                     <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                        <BookOpen className="w-4 h-4 text-primary-foreground" />
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary rounded-full flex items-center justify-center">
+                        <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
                       </div>
-                      <span className="font-semibold text-white">Building Regulations Query</span>
+                      <span className="font-semibold text-white text-sm sm:text-base">Building Regulations Query</span>
                     </div>
-                    <p className="text-muted-foreground mb-4">
+                    <p className="text-muted-foreground mb-4 text-sm sm:text-base">
                       "What are the requirements for Part L energy efficiency in new residential builds?"
                     </p>
-                    <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-                      <p className="text-sm text-white">
+                    <div className="bg-primary/10 rounded-lg p-3 sm:p-4 border border-primary/20">
+                      <p className="text-xs sm:text-sm text-white">
                         Part L of the Building Regulations covers energy efficiency and requires new dwellings to achieve specific SAP ratings...
                       </p>
                     </div>
@@ -156,19 +220,58 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* Testimonial Section */}
+        <section className="py-16 sm:py-20 bg-black/10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-8 sm:mb-12">
+              What Our Users Say
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              <div className="bg-black/40 border border-white/10 rounded-xl p-6 sm:p-8">
+                <p className="text-muted-foreground mb-4 italic text-sm sm:text-base">
+                  "EezyBuild has saved me hours of research time. The AI answers are incredibly accurate and the document management is a game-changer."
+                </p>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold text-sm sm:text-base">SM</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm sm:text-base">Sarah Mitchell</p>
+                    <p className="text-muted-foreground text-xs sm:text-sm">Project Manager</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-black/40 border border-white/10 rounded-xl p-6 sm:p-8">
+                <p className="text-muted-foreground mb-4 italic text-sm sm:text-base">
+                  "The team collaboration features have transformed how we handle building compliance. Highly recommend for any construction business."
+                </p>
+                <div className="flex items-center justify-center space-x-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-primary rounded-full flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold text-sm sm:text-base">DT</span>
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm sm:text-base">David Thompson</p>
+                    <p className="text-muted-foreground text-xs sm:text-sm">Construction Director</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* CTA Section */}
-        <section className="py-20 bg-primary/10">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+        <section className="py-16 sm:py-20 bg-primary/10 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-4 sm:mb-6">
               Ready to Simplify Building Regulations?
             </h2>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8">
               Start your free trial today and experience the power of AI-assisted building compliance.
             </p>
             <Button 
               size="lg"
               onClick={() => navigate('/app')}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground text-lg px-8 py-4 font-semibold"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 font-semibold w-full sm:w-auto"
             >
               Start Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
