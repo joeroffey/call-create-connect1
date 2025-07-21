@@ -162,7 +162,16 @@ const SubscriptionsPage = () => {
                   </div>
 
                   <Button
-                    onClick={() => navigate('/app')}
+                    onClick={() => {
+                      // Navigate to app with signup intent for trial buttons
+                      if (plan.buttonText === "Start Free Trial") {
+                        navigate('/app?signup=true');
+                      } else if (plan.buttonText === "Contact Sales") {
+                        window.open('mailto:support@eezybuild.com?subject=Enterprise Subscription Inquiry', '_blank');
+                      } else {
+                        navigate('/app?signup=true');
+                      }
+                    }}
                     className={`w-full ${colorScheme.button} text-white`}
                   >
                     {plan.buttonText}
@@ -182,7 +191,7 @@ const SubscriptionsPage = () => {
                 Try any plan of your choice free for 7 days. Card details required to start your trial. Cancel anytime during your trial period and you won't be charged.
               </p>
               <Button
-                onClick={() => navigate('/app')}
+                onClick={() => navigate('/app?signup=true')}
                 size="lg"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-8"
               >
@@ -268,7 +277,7 @@ const SubscriptionsPage = () => {
                 Join thousands of professionals who trust EezyBuild for their UK Building Regulations needs
               </p>
               <Button
-                onClick={() => navigate('/app')}
+                onClick={() => navigate('/app?signup=true')}
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-8"
               >
