@@ -9,7 +9,7 @@ const SubscriptionsPage = () => {
 
   const plans = [
     {
-      name: "Free",
+      name: "EezyBuild Basic",
       price: "£0",
       period: "forever",
       description: "Perfect for getting started with basic building regulations",
@@ -29,7 +29,7 @@ const SubscriptionsPage = () => {
       popular: false
     },
     {
-      name: "Professional",
+      name: "EezyBuild Pro",
       price: "£29",
       period: "per month",
       description: "Ideal for professionals who need comprehensive tools",
@@ -48,12 +48,12 @@ const SubscriptionsPage = () => {
       popular: true
     },
     {
-      name: "Enterprise",
+      name: "EezyBuild ProMax",
       price: "£99",
       period: "per month",
       description: "For large teams and organizations",
       features: [
-        "Everything in Professional",
+        "Everything in EezyBuild Pro",
         "Unlimited team members",
         "Advanced analytics",
         "Custom integrations",
@@ -163,7 +163,7 @@ const SubscriptionsPage = () => {
                     Is there a free trial?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes, we offer a 14-day free trial for the Professional plan with no credit card required.
+                    Yes, we offer a 14-day free trial for the EezyBuild Pro plan with no credit card required.
                   </p>
                 </div>
                 
@@ -172,7 +172,7 @@ const SubscriptionsPage = () => {
                     What payment methods do you accept?
                   </h3>
                   <p className="text-muted-foreground">
-                    We accept all major credit cards, PayPal, and bank transfers for Enterprise customers.
+                    We accept all major credit cards, PayPal, and bank transfers for EezyBuild ProMax customers.
                   </p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ const SubscriptionsPage = () => {
                     Do you offer discounts for annual plans?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes, save 20% when you choose annual billing. Contact us for custom enterprise pricing.
+                    Yes, save 20% when you choose annual billing. Contact us for custom EezyBuild ProMax pricing.
                   </p>
                 </div>
                 
