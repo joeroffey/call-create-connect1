@@ -26,14 +26,17 @@ export default function HomeScreen({ navigation }) {
             <ActionCard
               title="Projects"
               description="View and manage projects"
+              onPress={() => navigation.navigate('Projects')}
             />
             <ActionCard
               title="Documents"
               description="Access building documents"
+              onPress={() => navigation.navigate('Documents')}
             />
             <ActionCard
               title="Team"
               description="Collaborate with team members"
+              onPress={() => navigation.navigate('Team')}
             />
             <ActionCard
               title="Notifications"
