@@ -91,55 +91,85 @@ const SubscriptionsPage = () => {
 
           {/* Pricing Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {plans.map((plan, index) => (
-              <div
-                key={plan.name}
-                className={`relative bg-black/40 backdrop-blur-sm border rounded-2xl p-8 ${
-                  plan.popular 
-                    ? "border-primary ring-2 ring-primary/20 scale-105" 
-                    : "border-white/10"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                    <div className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                      Most Popular
-                    </div>
-                  </div>
-                )}
+            {plans.map((plan, index) => {
+              // Define color scheme for each plan
+              const getColorScheme = () => {
+                switch(plan.name) {
+                  case 'EezyBuild Basic':
+                    return {
+                      border: 'border-amber-500',
+                      bg: 'bg-amber-500/10',
+                      button: 'bg-amber-600 hover:bg-amber-700'
+                    };
+                  case 'EezyBuild Pro':
+                    return {
+                      border: 'border-cyan-500',
+                      bg: 'bg-cyan-500/10',
+                      button: 'bg-cyan-600 hover:bg-cyan-700'
+                    };
+                  case 'EezyBuild Pro Max':
+                    return {
+                      border: 'border-blue-500',
+                      bg: 'bg-blue-500/10',
+                      button: 'bg-blue-600 hover:bg-blue-700'
+                    };
+                  case 'EezyBuild Enterprise':
+                    return {
+                      border: 'border-purple-500',
+                      bg: 'bg-purple-500/10',
+                      button: 'bg-purple-600 hover:bg-purple-700'
+                    };
+                  default:
+                    return {
+                      border: 'border-white/10',
+                      bg: 'bg-black/40',
+                      button: 'bg-white/10 hover:bg-white/20'
+                    };
+                }
+              };
 
-                <div className="text-center mb-8">
-                  <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
-                  <div className="mb-4">
-                    <span className="text-4xl font-bold text-white">{plan.price}</span>
-                    {plan.period && <span className="text-muted-foreground ml-2">/{plan.period}</span>}
-                  </div>
-                  <p className="text-muted-foreground">{plan.description}</p>
-                </div>
+              const colorScheme = getColorScheme();
 
-                <div className="space-y-4 mb-8">
-                  {plan.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="flex items-start space-x-3">
-                      <Check className="text-green-500 mt-1 flex-shrink-0" size={16} />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <Button
-                  onClick={() => navigate('/app')}
-                  className={`w-full ${
-                    plan.popular
-                      ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                      : plan.buttonText === "Contact Sales"
-                      ? "bg-purple-600 hover:bg-purple-700 text-white"
-                      : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                  }`}
+              return (
+                <div
+                  key={plan.name}
+                  className={`relative backdrop-blur-sm border-2 rounded-2xl p-8 ${colorScheme.border} ${colorScheme.bg}`}
                 >
-                  {plan.buttonText}
-                </Button>
-              </div>
-            ))}
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center space-x-1">
+                        <span>Most Popular</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="text-center mb-8">
+                    <h3 className="text-2xl font-bold text-white mb-2">{plan.name}</h3>
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold text-white">{plan.price}</span>
+                      {plan.period && <span className="text-muted-foreground ml-2">/{plan.period}</span>}
+                    </div>
+                    <p className="text-muted-foreground">{plan.description}</p>
+                  </div>
+
+                  <div className="space-y-4 mb-8">
+                    {plan.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-start space-x-3">
+                        <Check className="text-green-500 mt-1 flex-shrink-0" size={16} />
+                        <span className="text-muted-foreground">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <Button
+                    onClick={() => navigate('/app')}
+                    className={`w-full ${colorScheme.button} text-white`}
+                  >
+                    {plan.buttonText}
+                  </Button>
+                </div>
+              );
+            })}
           </div>
 
           {/* Free Trial Information */}
