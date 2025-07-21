@@ -179,7 +179,7 @@ const SubscriptionsPage = () => {
                 7-Day Free Trial Available
               </h2>
               <p className="text-muted-foreground mb-6">
-                Try any plan free for 7 days. No credit card required upfront. Cancel anytime during your trial period with no charges.
+                Try any plan of your choice free for 7 days. Card details required to start your trial. Cancel anytime during your trial period and you won't be charged.
               </p>
               <Button
                 onClick={() => navigate('/app')}
@@ -213,7 +213,7 @@ const SubscriptionsPage = () => {
                     Is there a free trial?
                   </h3>
                   <p className="text-muted-foreground">
-                    Yes, we offer a 14-day free trial for all paid plans with no credit card required.
+                    Yes, we offer a 7-day free trial for any plan of your choice. Card details are required to start the trial, but you won't be charged if you cancel during the trial period.
                   </p>
                 </div>
                 
