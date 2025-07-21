@@ -12,17 +12,17 @@ const AboutPage = () => {
     {
       icon: Target,
       title: "Our Mission",
-      description: "To simplify UK building regulations and make compliance accessible to everyone in the construction industry."
+      description: "Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder."
     },
     {
       icon: Users,
       title: "Our Team",
-      description: "Expert building professionals and AI specialists working together to revolutionize regulatory compliance."
+      description: "Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder."
     },
     {
       icon: Award,
       title: "Our Commitment",
-      description: "Providing accurate, up-to-date information and exceptional support to help you succeed in your projects."
+      description: "Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder."
     }
   ];
 
@@ -36,8 +36,8 @@ const AboutPage = () => {
               About EezyBuild
             </h1>
             <p className="text-xl text-muted-foreground mb-8 animate-fade-in">
-              We're transforming how construction professionals navigate UK building regulations 
-              through innovative AI technology and expert knowledge.
+              Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+              placeholder placeholder placeholder placeholder placeholder placeholder.
             </p>
           </div>
         </section>
@@ -48,20 +48,20 @@ const AboutPage = () => {
             <div className="prose prose-lg max-w-none">
               <h2 className="text-3xl font-bold text-white mb-6">Our Story</h2>
               <p className="text-muted-foreground mb-6">
-                EezyBuild was born from the frustration experienced by countless construction professionals 
-                who spend hours navigating complex building regulations. We recognized that accessing 
-                accurate, relevant information about UK building codes shouldn't be a barrier to 
-                successful project completion.
+                Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder placeholder placeholder placeholder. Placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder.
               </p>
               <p className="text-muted-foreground mb-6">
-                Our team combines deep expertise in UK building regulations with cutting-edge AI technology 
-                to create an intelligent assistant that understands your specific needs and provides 
-                instant, accurate guidance.
+                Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder.
               </p>
               <p className="text-muted-foreground">
-                Today, EezyBuild serves thousands of construction professionals, from independent builders 
-                to large construction firms, helping them save time, reduce risks, and ensure compliance 
-                with confidence.
+                Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder.
               </p>
             </div>
           </div>
@@ -75,7 +75,7 @@ const AboutPage = () => {
                 What Drives Us
               </h2>
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                Our core values guide everything we do and shape how we serve our community
+                Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder
               </p>
             </div>
             
@@ -108,16 +108,16 @@ const AboutPage = () => {
               Built by Experts, For Experts
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Our team includes qualified building control professionals, experienced construction 
-              managers, and AI specialists who understand both the technical requirements and 
-              practical challenges of building regulation compliance.
+              Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+              placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder 
+              placeholder placeholder placeholder placeholder placeholder.
             </p>
             <div className="bg-black/40 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
               <blockquote className="text-lg text-muted-foreground italic mb-4">
-                "We've walked in your shoes. We understand the pressure of deadlines, the complexity 
-                of regulations, and the importance of getting it right the first time."
+                "Placeholder placeholder placeholder placeholder. Placeholder placeholder placeholder placeholder placeholder placeholder 
+                placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder."
               </blockquote>
-              <cite className="text-white font-semibold">- The EezyBuild Team</cite>
+              <cite className="text-white font-semibold">- Placeholder Placeholder Placeholder</cite>
             </div>
           </div>
         </section>
@@ -129,7 +129,7 @@ const AboutPage = () => {
               Ready to Experience the Difference?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Experience streamlined building regulation compliance with our comprehensive platform.
+              Placeholder placeholder placeholder placeholder placeholder placeholder placeholder placeholder.
             </p>
             <Button 
               size="lg"
