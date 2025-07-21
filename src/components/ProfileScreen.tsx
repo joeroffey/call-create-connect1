@@ -141,7 +141,7 @@ const ProfileScreen = ({ user, onNavigateToSettings }: ProfileScreenProps) => {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-black text-white">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
       <div className="px-6 py-8 pb-32">{/* Added pb-32 for mobile nav spacing */}
         {/* Header */}
         <motion.div

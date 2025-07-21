@@ -292,7 +292,7 @@ const BuildingRegsScraper = ({ onBack }: BuildingRegsScraper) => {
   );
 
   return (
-    <div className="flex-1 bg-black text-white">
+    <div className="flex-1 bg-gradient-to-br from-gray-950 via-black to-gray-950 text-white">
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="border-b border-gray-800 p-4">
