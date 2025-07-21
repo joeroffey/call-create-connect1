@@ -1,12 +1,15 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
 
 interface LandingLayoutProps {
   children: React.ReactNode;
 }
 
 const LandingLayout = ({ children }: LandingLayoutProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   useEffect(() => {
     // Set body class for landing pages to enable scrolling
     document.body.classList.remove('app-mode');
@@ -20,6 +23,14 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
   }, []);
 
   const navigate = useNavigate();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground font-inter">
@@ -40,56 +51,66 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
-              <Link 
-                to="/" 
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Home
-              </Link>
-              <Link 
-                to="/features" 
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                Features
-              </Link>
-              <Link 
-                to="/about" 
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                About
-              </Link>
-            </nav>
-
-            {/* Mobile Navigation Menu */}
-            <nav className="flex md:hidden items-center space-x-4">
-              <Link 
-                to="/features" 
-                className="text-muted-foreground hover:text-primary transition-colors text-sm"
-              >
-                Features
-              </Link>
-              <Link 
-                to="/about" 
-                className="text-muted-foreground hover:text-primary transition-colors text-sm"
-              >
-                About
-              </Link>
-            </nav>
-
-            {/* Sign In Button */}
-            <div className="flex items-center">
+            {/* Right side - Hamburger Menu and Sign In */}
+            <div className="flex items-center space-x-4">
+              {/* Sign In Button */}
               <Button 
                 onClick={() => navigate('/app')}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium text-sm sm:text-base px-3 sm:px-4"
               >
                 Sign In
               </Button>
+
+              {/* Hamburger Menu Button */}
+              <button
+                onClick={toggleMenu}
+                className="p-2 rounded-md text-muted-foreground hover:text-primary hover:bg-white/5 transition-colors"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+            onClick={closeMenu}
+          />
+          
+          {/* Menu Panel */}
+          <div className="fixed top-16 right-0 w-64 h-full bg-black/90 border-l border-white/10 animate-slide-in-right">
+            <nav className="flex flex-col p-6 space-y-4">
+              <Link 
+                to="/" 
+                className="text-muted-foreground hover:text-primary transition-colors py-2 story-link"
+                onClick={closeMenu}
+              >
+                Home
+              </Link>
+              <Link 
+                to="/features" 
+                className="text-muted-foreground hover:text-primary transition-colors py-2 story-link"
+                onClick={closeMenu}
+              >
+                Features
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-muted-foreground hover:text-primary transition-colors py-2 story-link"
+                onClick={closeMenu}
+              >
+                About
+              </Link>
+            </nav>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="pt-16">
