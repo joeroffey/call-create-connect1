@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -19,6 +18,7 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
       document.body.classList.add('app-mode');
     };
   }, []);
+
   const navigate = useNavigate();
 
   return (
