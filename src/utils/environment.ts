@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 /**
  * Environment Detection Utilities
@@ -21,36 +21,59 @@ declare global {
 // Platform Detection
 export const ENVIRONMENT = {
   // Platform detection
-  IS_BROWSER: typeof window !== 'undefined' && !(window as any).Capacitor,
+  IS_BROWSER: typeof window !== "undefined" && !(window as any).Capacitor,
   IS_MOBILE_APP: typeof window !== 'undefined' && !!(window as any).Capacitor,
-  IS_IOS_APP: typeof window !== 'undefined' && !!(window as any).Capacitor && (window as any).Capacitor.getPlatform() === 'ios',
-  IS_ANDROID_APP: typeof window !== 'undefined' && !!(window as any).Capacitor && (window as any).Capacitor.getPlatform() === 'android',
-  
+  // IS_MOBILE_APP: true,
+  IS_IOS_APP:
+    typeof window !== "undefined" &&
+    !!(window as any).Capacitor &&
+    (window as any).Capacitor.getPlatform() === "ios",
+  IS_ANDROID_APP:
+    typeof window !== "undefined" &&
+    !!(window as any).Capacitor &&
+    (window as any).Capacitor.getPlatform() === "android",
+
   // Browser-specific detection
-  IS_MOBILE_BROWSER: typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-  IS_DESKTOP_BROWSER: typeof window !== 'undefined' && !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-  
+  IS_MOBILE_BROWSER:
+    typeof window !== "undefined" &&
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ),
+  IS_DESKTOP_BROWSER:
+    typeof window !== "undefined" &&
+    !/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    ),
+
   // Specific browser detection
-  IS_SAFARI: typeof window !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
-  IS_CHROME: typeof window !== 'undefined' && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor),
-  IS_FIREFOX: typeof window !== 'undefined' && navigator.userAgent.toLowerCase().indexOf('firefox') > -1,
-  
+  IS_SAFARI:
+    typeof window !== "undefined" &&
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
+  IS_CHROME:
+    typeof window !== "undefined" &&
+    /Chrome/.test(navigator.userAgent) &&
+    /Google Inc/.test(navigator.vendor),
+  IS_FIREFOX:
+    typeof window !== "undefined" &&
+    navigator.userAgent.toLowerCase().indexOf("firefox") > -1,
+
   // PWA detection
-  IS_PWA: typeof window !== 'undefined' && (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (navigator as any).standalone ||
-    document.referrer.includes('android-app://')
-  ),
-  
+  IS_PWA:
+    typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      (navigator as any).standalone ||
+      document.referrer.includes("android-app://")),
+
   // Development environment
-  IS_DEVELOPMENT: process.env.NODE_ENV === 'development',
-  IS_PRODUCTION: process.env.NODE_ENV === 'production',
+  IS_DEVELOPMENT: process.env.NODE_ENV === "development",
+  IS_PRODUCTION: process.env.NODE_ENV === "production",
 } as const;
 
 // Keyboard Management for Mobile Apps
 export class KeyboardManager {
   private static instance: KeyboardManager;
-  private listeners: Set<(isVisible: boolean, keyboardHeight: number) => void> = new Set();
+  private listeners: Set<(isVisible: boolean, keyboardHeight: number) => void> =
+    new Set();
   private isKeyboardVisible = false;
   private keyboardHeight = 0;
   private visualViewportSupported = false;
@@ -67,7 +90,7 @@ export class KeyboardManager {
   }
 
   private init() {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Check for visual viewport support
     this.visualViewportSupported = !!window.visualViewport;
@@ -90,30 +113,30 @@ export class KeyboardManager {
     // Import Capacitor keyboard plugin dynamically
     try {
       // Check if keyboard plugin is available
-      if (typeof window !== 'undefined' && window.Capacitor) {
+      if (typeof window !== "undefined" && window.Capacitor) {
         // Use dynamic import to avoid build errors
         const loadKeyboard = async () => {
           try {
-            const { Keyboard } = await import('@capacitor/keyboard');
-            Keyboard.addListener('keyboardWillShow', (info: any) => {
+            const { Keyboard } = await import("@capacitor/keyboard");
+            Keyboard.addListener("keyboardWillShow", (info: any) => {
               this.isKeyboardVisible = true;
               this.keyboardHeight = info.keyboardHeight;
               this.notifyListeners(true, info.keyboardHeight);
             });
 
-            Keyboard.addListener('keyboardWillHide', () => {
+            Keyboard.addListener("keyboardWillHide", () => {
               this.isKeyboardVisible = false;
               this.keyboardHeight = 0;
               this.notifyListeners(false, 0);
             });
           } catch (error) {
-            console.warn('Keyboard plugin not available:', error);
+            console.warn("Keyboard plugin not available:", error);
           }
         };
         loadKeyboard();
       }
     } catch (error) {
-      console.warn('Capacitor keyboard setup failed:', error);
+      console.warn("Capacitor keyboard setup failed:", error);
     }
   }
 
@@ -132,7 +155,7 @@ export class KeyboardManager {
       }
     };
 
-    window.visualViewport.addEventListener('resize', handleViewportChange);
+    window.visualViewport.addEventListener("resize", handleViewportChange);
   }
 
   private setupFallbackKeyboard() {
@@ -151,14 +174,16 @@ export class KeyboardManager {
       }
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
   }
 
   private notifyListeners(isVisible: boolean, height: number) {
-    this.listeners.forEach(listener => listener(isVisible, height));
+    this.listeners.forEach((listener) => listener(isVisible, height));
   }
 
-  onKeyboardToggle(callback: (isVisible: boolean, keyboardHeight: number) => void) {
+  onKeyboardToggle(
+    callback: (isVisible: boolean, keyboardHeight: number) => void
+  ) {
     this.listeners.add(callback);
     return () => {
       this.listeners.delete(callback);
@@ -168,7 +193,7 @@ export class KeyboardManager {
   getKeyboardInfo() {
     return {
       isVisible: this.isKeyboardVisible,
-      height: this.keyboardHeight
+      height: this.keyboardHeight,
     };
   }
 }
@@ -177,34 +202,34 @@ export class KeyboardManager {
 export const getViewportHeight = (): string => {
   if (ENVIRONMENT.IS_MOBILE_APP) {
     // Mobile apps have stable viewport
-    return '100vh';
+    return "100vh";
   } else if (ENVIRONMENT.IS_MOBILE_BROWSER) {
     // Mobile browsers need special handling for address bar
-    return '100dvh'; // Dynamic viewport height (better than svh)
+    return "100dvh"; // Dynamic viewport height (better than svh)
   } else {
     // Desktop browsers
-    return '100vh';
+    return "100vh";
   }
 };
 
 export const getViewportHeightWithFallback = (): string => {
   if (ENVIRONMENT.IS_MOBILE_APP) {
-    return '100vh';
+    return "100vh";
   } else if (ENVIRONMENT.IS_MOBILE_BROWSER) {
     // Use dynamic viewport height with fallback
-    return 'min(100vh, 100dvh)';
+    return "min(100vh, 100dvh)";
   } else {
-    return '100vh';
+    return "100vh";
   }
 };
 
 export const getMaxViewportHeight = (): string => {
   if (ENVIRONMENT.IS_MOBILE_APP) {
-    return '100vh';
+    return "100vh";
   } else if (ENVIRONMENT.IS_MOBILE_BROWSER) {
-    return '100dvh';
+    return "100dvh";
   } else {
-    return '100vh';
+    return "100vh";
   }
 };
 
@@ -212,11 +237,13 @@ export const getMaxViewportHeight = (): string => {
 export const generateViewportCSS = (): string => {
   const height = getViewportHeight();
   const maxHeight = getMaxViewportHeight();
-  
+
   return `
     --viewport-height: ${height};
     --max-viewport-height: ${maxHeight};
-    --safe-viewport-height: ${ENVIRONMENT.IS_MOBILE_BROWSER ? 'calc(100dvh - 60px)' : height};
+    --safe-viewport-height: ${
+      ENVIRONMENT.IS_MOBILE_BROWSER ? "calc(100dvh - 60px)" : height
+    };
     --keyboard-height: 0px;
     --available-height: ${height};
   `;
@@ -226,42 +253,42 @@ export const generateViewportCSS = (): string => {
 export const getChatInterfaceHeight = (): string => {
   if (ENVIRONMENT.IS_MOBILE_APP) {
     // Mobile apps: Full height minus navigation and keyboard
-    return 'calc(var(--viewport-height) - var(--navigation-height) - var(--keyboard-height))';
+    return "calc(var(--viewport-height) - var(--navigation-height) - var(--keyboard-height))";
   } else if (ENVIRONMENT.IS_MOBILE_BROWSER) {
     // Mobile browsers: Account for address bar and navigation
-    return 'calc(100dvh - 140px - var(--keyboard-height))';
+    return "calc(100dvh - 140px - var(--keyboard-height))";
   } else {
     // Desktop: Full height minus navigation
-    return 'calc(100vh - 80px)';
+    return "calc(100vh - 80px)";
   }
 };
 
 export const getTextInputHeight = (): string => {
   if (ENVIRONMENT.IS_MOBILE_APP) {
     // Mobile apps: Fixed position from bottom
-    return 'auto';
+    return "auto";
   } else if (ENVIRONMENT.IS_MOBILE_BROWSER) {
     // Mobile browsers: Account for virtual keyboard
-    return 'auto';
+    return "auto";
   } else {
     // Desktop: Standard height
-    return 'auto';
+    return "auto";
   }
 };
 
 // Navigation Bar Heights
 export const getNavigationHeight = (): string => {
   if (ENVIRONMENT.IS_MOBILE_APP || ENVIRONMENT.IS_MOBILE_BROWSER) {
-    return '80px'; // Larger touch targets on mobile
+    return "80px"; // Larger touch targets on mobile
   } else {
-    return '60px'; // Smaller on desktop
+    return "60px"; // Smaller on desktop
   }
 };
 
 // Initialize CSS Custom Properties
 export const initializeViewportCSS = (): void => {
-  if (typeof document !== 'undefined') {
-    const style = document.createElement('style');
+  if (typeof document !== "undefined") {
+    const style = document.createElement("style");
     style.textContent = `
       :root {
         ${generateViewportCSS()}
@@ -287,7 +314,9 @@ export const initializeViewportCSS = (): void => {
       }
       
       /* Mobile app specific styles */
-      ${ENVIRONMENT.IS_MOBILE_APP ? `
+      ${
+        ENVIRONMENT.IS_MOBILE_APP
+          ? `
         .mobile-app-input {
           position: fixed;
           bottom: calc(env(safe-area-inset-bottom) + 8px);
@@ -305,18 +334,24 @@ export const initializeViewportCSS = (): void => {
         .mobile-app-keyboard-visible .mobile-app-content {
           padding-bottom: calc(80px + var(--keyboard-height) + env(safe-area-inset-bottom));
         }
-      ` : ''}
+      `
+          : ""
+      }
       
       /* Text input positioning */
       .text-input-container {
-        ${ENVIRONMENT.IS_MOBILE_BROWSER ? `
+        ${
+          ENVIRONMENT.IS_MOBILE_BROWSER
+            ? `
           position: fixed;
           bottom: calc(env(safe-area-inset-bottom) + var(--keyboard-height));
           left: 0;
           right: 0;
           z-index: 1000;
           transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        ` : ''}
+        `
+            : ""
+        }
       }
       
       /* Enhanced keyboard handling */
@@ -325,7 +360,9 @@ export const initializeViewportCSS = (): void => {
       }
       
       /* Browser-specific fixes */
-      ${ENVIRONMENT.IS_MOBILE_BROWSER ? `
+      ${
+        ENVIRONMENT.IS_MOBILE_BROWSER
+          ? `
         @supports (height: 100dvh) {
           .dynamic-viewport {
             height: 100dvh;
@@ -344,10 +381,14 @@ export const initializeViewportCSS = (): void => {
             --chat-interface-height: calc(100dvh - 120px - var(--keyboard-height));
           }
         }
-      ` : ''}
+      `
+          : ""
+      }
       
       /* Touch improvements for mobile apps */
-      ${ENVIRONMENT.IS_MOBILE_APP ? `
+      ${
+        ENVIRONMENT.IS_MOBILE_APP
+          ? `
         .touch-optimized {
           -webkit-touch-callout: none;
           -webkit-user-select: none;
@@ -380,17 +421,25 @@ export const initializeViewportCSS = (): void => {
           min-height: 44px;
           min-width: 44px;
         }
-      ` : ''}
+      `
+          : ""
+      }
     `;
     document.head.appendChild(style);
-    
+
     // Initialize keyboard manager for mobile apps
     if (ENVIRONMENT.IS_MOBILE_APP) {
       const keyboardManager = KeyboardManager.getInstance();
       keyboardManager.onKeyboardToggle((isVisible, height) => {
-        document.documentElement.style.setProperty('--keyboard-height', `${height}px`);
-        document.body.classList.toggle('keyboard-visible', isVisible);
-        document.body.classList.toggle('mobile-app-keyboard-visible', isVisible);
+        document.documentElement.style.setProperty(
+          "--keyboard-height",
+          `${height}px`
+        );
+        document.body.classList.toggle("keyboard-visible", isVisible);
+        document.body.classList.toggle(
+          "mobile-app-keyboard-visible",
+          isVisible
+        );
       });
     }
   }
@@ -398,40 +447,43 @@ export const initializeViewportCSS = (): void => {
 
 // Reactive viewport height (for dynamic changes)
 export const useViewportHeight = () => {
-  if (typeof window === 'undefined') return getViewportHeight();
-  
+  if (typeof window === "undefined") return getViewportHeight();
+
   const [height, setHeight] = useState(getViewportHeight());
-  
+
   useEffect(() => {
     const updateHeight = () => {
       setHeight(getViewportHeight());
     };
-    
+
     // Listen for viewport changes (orientation, keyboard, etc.)
-    window.addEventListener('resize', updateHeight);
-    window.addEventListener('orientationchange', updateHeight);
-    
+    window.addEventListener("resize", updateHeight);
+    window.addEventListener("orientationchange", updateHeight);
+
     // For mobile browsers, listen for visual viewport changes
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateHeight);
+      window.visualViewport.addEventListener("resize", updateHeight);
     }
-    
+
     return () => {
-      window.removeEventListener('resize', updateHeight);
-      window.removeEventListener('orientationchange', updateHeight);
+      window.removeEventListener("resize", updateHeight);
+      window.removeEventListener("orientationchange", updateHeight);
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateHeight);
+        window.visualViewport.removeEventListener("resize", updateHeight);
       }
     };
   }, []);
-  
+
   return height;
 };
 
 // Hook for keyboard state
 export const useKeyboard = () => {
-  const [keyboardState, setKeyboardState] = useState({ isVisible: false, height: 0 });
-  
+  const [keyboardState, setKeyboardState] = useState({
+    isVisible: false,
+    height: 0,
+  });
+
   useEffect(() => {
     if (ENVIRONMENT.IS_MOBILE_APP) {
       const keyboardManager = KeyboardManager.getInstance();
@@ -441,7 +493,7 @@ export const useKeyboard = () => {
       return cleanup;
     }
   }, []);
-  
+
   return keyboardState;
 };
 

@@ -1,12 +1,12 @@
-#Sun Jul 13 15:08:11 UTC 2025
-base.0=/workspace/android/app/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
-base.1=/workspace/android/app/build/intermediates/dex/debug/mergeLibDexDebug/0/classes.dex
-base.2=/workspace/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/0/classes.dex
-base.3=/workspace/android/app/build/intermediates/dex/debug/mergeProjectDexDebug/9/classes.dex
+#Tue Jul 22 21:04:20 PKT 2025
+base.0=D\:\\moaviz Practice\\2025 - projcets\\call-create-connect1\\android\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
+base.1=D\:\\moaviz Practice\\2025 - projcets\\call-create-connect1\\android\\app\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\0\\classes.dex
+base.2=D\:\\moaviz Practice\\2025 - projcets\\call-create-connect1\\android\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.3=D\:\\moaviz Practice\\2025 - projcets\\call-create-connect1\\android\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\7\\classes.dex
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=0/classes.dex
-path.3=9/classes.dex
+path.3=7/classes.dex
 renamed.0=classes.dex
 renamed.1=classes2.dex
 renamed.2=classes3.dex

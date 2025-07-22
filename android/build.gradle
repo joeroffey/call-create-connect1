@@ -1,8 +1,4 @@
-
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
-
-// import org.jetbrains.kotlin.gradle.tasks.KotlinCompile // Not available at configuration when Kotlin plugin not on classpath
-// import org.gradle.api.JavaVersion
 
 buildscript {
     
@@ -11,8 +7,8 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.0'
-        classpath 'com.google.gms:google-services:4.3.15'
+        classpath 'com.android.tools.build:gradle:8.7.2'
+        classpath 'com.google.gms:google-services:4.4.2'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -26,28 +22,7 @@ allprojects {
         google()
         mavenCentral()
     }
-    
-    // Force Java 17 for all modules
-    tasks.withType(JavaCompile) {
-        options.compilerArgs += ['-Xlint:deprecation', '-Xlint:unchecked']
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-    
-    // Force Java 17 for Kotlin as well (disabled in CI to avoid missing class when Kotlin plugin not loaded)
-    //     tasks.withType(KotlinCompile) {
-    //         kotlinOptions {
-    //             jvmTarget = "17"
-    //         }
-    //     }
 }
-
-// Set Java 17 globally (disabled in CI - java plugin not applied to root project)
-// java {
-//     toolchain {
-//         languageVersion = JavaLanguageVersion.of(17)
-//     }
-// }
 
 task clean(type: Delete) {
     delete rootProject.buildDir

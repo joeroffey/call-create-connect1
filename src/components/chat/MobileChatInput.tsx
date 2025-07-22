@@ -72,9 +72,9 @@ const MobileChatInput: React.FC<MobileChatInputProps> = ({
   useEffect(() => {
     if (ENVIRONMENT.IS_MOBILE_APP && textareaRef.current) {
       // Small delay to ensure the component is fully mounted
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
+      // setTimeout(() => {
+      //   textareaRef.current?.focus();
+      // }, 100);
     }
   }, []);
 
@@ -176,11 +176,7 @@ const MobileChatInput: React.FC<MobileChatInputProps> = ({
               ${isFocused ? 'placeholder-opacity-50' : ''}
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
-            style={{
-              height: `${textareaHeight}px`,
-              minHeight: '48px',
-              maxHeight: '120px',
-            }}
+            
           />
           
           {/* Send button */}
@@ -210,7 +206,7 @@ const MobileChatInput: React.FC<MobileChatInputProps> = ({
         </div>
 
         {/* Voice input button (mobile only) */}
-        {ENVIRONMENT.IS_MOBILE_APP && (
+        {/* {ENVIRONMENT.IS_MOBILE_APP && (
           <Button
             variant="ghost"
             size="sm"
@@ -224,16 +220,16 @@ const MobileChatInput: React.FC<MobileChatInputProps> = ({
           >
             <Mic className="w-5 h-5" />
           </Button>
-        )}
+        )} */}
       </div>
 
       {/* Keyboard spacer for mobile apps */}
-      {ENVIRONMENT.IS_MOBILE_APP && keyboardState.isVisible && (
+      {/* {ENVIRONMENT.IS_MOBILE_APP && keyboardState.isVisible && (
         <div 
           className="keyboard-spacer"
           style={{ height: `${keyboardState.height}px` }}
         />
-      )}
+      )} */}
     </motion.div>
   );
 };

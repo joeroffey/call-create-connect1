@@ -1,4 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">CallCreateConnect</string>
+    <string name="app_name">EezyBuild</string>
+    <string name="title_activity_main">EezyBuild</string>
+    <string name="package_name">com.eezybuild.app</string>
+    <string name="custom_url_scheme">com.eezybuild.app</string>
 </resources>

@@ -665,8 +665,8 @@
   -moz-appearance: none;
   appearance: none;
   border-radius: 12px;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 35px;
+  min-width: 35px;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -754,13 +754,14 @@
 
 .mobile-app .chat-input {
   background: rgba(0, 0, 0, 0.9);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 12px 20px;
+  border-radius: 45px;
+  padding: 10px 10px 4px 10px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  /* gap: 12px; */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
