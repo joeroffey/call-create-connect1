@@ -35,6 +35,7 @@ const Index = () => {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [pendingProjectModal, setPendingProjectModal] = useState<{projectId: string, view: string} | null>(null);
+  const [teams, setTeams] = useState<any[]>([]);
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Get subscription info
@@ -172,6 +173,30 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Fetch teams when user is authenticated
+  useEffect(() => {
+    const fetchTeams = async () => {
+      if (user?.id) {
+        try {
+          const { data, error } = await supabase.rpc('get_teams_for_user', {
+            p_user_id: user.id
+          });
+          
+          if (error) {
+            console.error('Error fetching teams:', error);
+            return;
+          }
+          
+          setTeams(data || []);
+        } catch (error) {
+          console.error('Error fetching teams:', error);
+        }
+      }
+    };
+
+    fetchTeams();
+  }, [user?.id]);
 
   const handleOnboardingComplete = async (userData: any) => {
     // Update user metadata to mark onboarding as completed
@@ -334,10 +359,17 @@ const Index = () => {
           <HomeScreen
             user={user}
             subscriptionTier={subscriptionTier}
+            teams={teams}
             onNavigateToChat={() => setActiveTab('chat')}
             onNavigateToSearch={() => setActiveTab('search')}
             onNavigateToApps={() => setActiveTab('apps')}
-            onNavigateToWorkspace={() => setActiveTab('workspace')}
+            onNavigateToPersonalWorkspace={() => setActiveTab('workspace')}
+            onNavigateToTeamWorkspace={(teamId) => {
+              // Navigate to workspace with team context
+              window.location.hash = `team/${teamId}`;
+              setActiveTab('workspace');
+            }}
+            onNavigateToNotifications={() => navigate('/notifications')}
             onViewPlans={handleViewPlans}
           />
         );
@@ -411,10 +443,17 @@ const Index = () => {
           <HomeScreen
             user={user}
             subscriptionTier={subscriptionTier}
+            teams={teams}
             onNavigateToChat={() => setActiveTab('chat')}
             onNavigateToSearch={() => setActiveTab('search')}
             onNavigateToApps={() => setActiveTab('apps')}
-            onNavigateToWorkspace={() => setActiveTab('workspace')}
+            onNavigateToPersonalWorkspace={() => setActiveTab('workspace')}
+            onNavigateToTeamWorkspace={(teamId) => {
+              // Navigate to workspace with team context
+              window.location.hash = `team/${teamId}`;
+              setActiveTab('workspace');
+            }}
+            onNavigateToNotifications={() => navigate('/notifications')}
             onViewPlans={handleViewPlans}
           />
         );

@@ -1,25 +1,37 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { MessageCircle, Search, Wrench, FileText, Calculator, Building, Users, Settings } from 'lucide-react';
+import { MessageCircle, Search, Wrench, FileText, Calculator, Building, Users, Settings, Bell } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+
+interface Team {
+  id: string;
+  name: string;
+  logo_url?: string;
+}
 
 interface HomeScreenProps {
   user: any;
   subscriptionTier: string;
+  teams?: Team[];
   onNavigateToChat: () => void;
   onNavigateToSearch: () => void;
   onNavigateToApps: () => void;
-  onNavigateToWorkspace: () => void;
+  onNavigateToPersonalWorkspace: () => void;
+  onNavigateToTeamWorkspace: (teamId: string) => void;
+  onNavigateToNotifications: () => void;
   onViewPlans: () => void;
 }
 
 const HomeScreen = ({ 
   user, 
-  subscriptionTier, 
+  subscriptionTier,
+  teams = [],
   onNavigateToChat, 
   onNavigateToSearch, 
   onNavigateToApps, 
-  onNavigateToWorkspace,
+  onNavigateToPersonalWorkspace,
+  onNavigateToTeamWorkspace,
+  onNavigateToNotifications,
   onViewPlans 
 }: HomeScreenProps) => {
   // Get user's first name
@@ -53,19 +65,30 @@ const HomeScreen = ({
       requiresUpgrade: subscriptionTier === 'none'
     },
     {
-      title: 'Workspace',
-      description: 'Manage your projects, teams, and collaboration',
-      icon: Users,
-      action: onNavigateToWorkspace,
+      title: 'Personal Workspace',
+      description: 'Manage your personal projects and documents',
+      icon: Building,
+      action: onNavigateToPersonalWorkspace,
       available: true,
       gradient: 'from-orange-500 to-orange-600'
     }
   ];
 
   const recentActivities = [
-    { title: 'Recent project updates', icon: Building, count: 3 },
-    { title: 'New regulations added', icon: FileText, count: 12 },
-    { title: 'Team notifications', icon: Users, count: 2 }
+    { 
+      title: 'Recent project updates', 
+      icon: Building, 
+      count: 3, 
+      action: onNavigateToPersonalWorkspace,
+      clickable: true 
+    },
+    { 
+      title: 'Team notifications', 
+      icon: Bell, 
+      count: 2, 
+      action: onNavigateToNotifications,
+      clickable: true 
+    }
   ];
 
   return (
@@ -153,6 +176,56 @@ const HomeScreen = ({
         </div>
       </motion.div>
 
+      {/* Team Workspaces */}
+      {teams.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.15, ease: [0.4, 0, 0.2, 1] }}
+          className="space-y-4"
+        >
+          <h2 className="text-xl font-semibold text-white">Team Workspaces</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {teams.map((team, index) => (
+              <motion.div
+                key={team.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-all duration-200 cursor-pointer group"
+                  onClick={() => onNavigateToTeamWorkspace(team.id)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="p-3 rounded-lg bg-gradient-to-r from-indigo-500 to-indigo-600 group-hover:scale-110 transition-transform duration-200">
+                        {team.logo_url ? (
+                          <img 
+                            src={team.logo_url} 
+                            alt={`${team.name} logo`}
+                            className="w-6 h-6 object-contain"
+                          />
+                        ) : (
+                          <Users className="w-6 h-6 text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-2">
+                          {team.name}
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          Collaborate with your team members
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
       {/* Recent Activity */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -172,7 +245,12 @@ const HomeScreen = ({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
               >
-                <Card className="bg-gray-900/30 border-gray-800 hover:border-gray-700 transition-colors">
+                <Card 
+                  className={`bg-gray-900/30 border-gray-800 transition-colors ${
+                    activity.clickable ? 'hover:border-gray-700 cursor-pointer hover:bg-gray-900/50' : ''
+                  }`}
+                  onClick={activity.clickable ? activity.action : undefined}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
