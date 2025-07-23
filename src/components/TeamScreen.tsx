@@ -67,7 +67,15 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selectedTeamId: propsSelectedTeamId, initialView }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'discussions' | 'documents' | 'settings'>(initialView as any || 'overview');
+  // Initialize activeView based on initialView prop - this ensures immediate state update
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'discussions' | 'documents' | 'settings'>(() => {
+    if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(initialView)) {
+      console.log('🎯 TeamScreen initializing with activeView:', initialView);
+      return initialView as any;
+    }
+    return 'overview';
+  });
+  
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(propsSelectedTeamId || null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
 
@@ -99,13 +107,11 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     }
   }, [teams, selectedTeamId, propsSelectedTeamId]);
 
-  // Update active view when initialView prop changes (higher priority than URL params)
+  // PRIORITY 1: Handle initialView prop changes - this takes precedence over URL params
   React.useEffect(() => {
-    console.log('🎯 TeamScreen initialView changed:', initialView);
     if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(initialView)) {
-      console.log('✅ Setting active view to:', initialView);
+      console.log('🎯 TeamScreen initialView prop changed, setting activeView to:', initialView);
       setActiveView(initialView as any);
-      return; // Exit early to prevent URL param override
     }
   }, [initialView]);
 
