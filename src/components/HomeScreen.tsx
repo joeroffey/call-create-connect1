@@ -313,39 +313,6 @@ const HomeScreen = ({
         </div>
       </motion.div>
 
-      {/* Subscription Status */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3, ease: [0.4, 0, 0.2, 1] }}
-      >
-        <Card className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/20">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-white mb-2">
-                  Current Plan: {subscriptionTier === 'none' ? 'Free Trial' : 
-                    subscriptionTier === 'basic' ? 'EezyBuild' :
-                    subscriptionTier === 'pro' ? 'Pro' :
-                    subscriptionTier === 'enterprise' ? 'ProMax' : 'Free Trial'}
-                </h3>
-                <p className="text-gray-400 text-sm">
-                  {subscriptionTier === 'none' ? 'Upgrade to access more features' :
-                   'Thank you for being a subscriber!'}
-                </p>
-              </div>
-              {subscriptionTier === 'none' && (
-                <button
-                  onClick={onViewPlans}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200"
-                >
-                  Upgrade
-                </button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
     </div>
   );
 };
