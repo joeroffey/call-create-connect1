@@ -44,7 +44,7 @@ const LandingPage = () => {
     <LandingLayout>
       <div className="overflow-x-hidden">
         {/* Hero Section */}
-        <section className="relative py-12 sm:py-20 lg:py-32 px-4 sm:px-6 lg:px-8">
+        <section className="relative pt-4 pb-12 sm:pt-8 sm:pb-20 lg:pt-12 lg:pb-32 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center lg:items-start">
               {/* Left Column - Text Content */}
