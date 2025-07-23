@@ -101,7 +101,9 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
 
   // Update active view when initialView prop changes
   React.useEffect(() => {
+    console.log('🎯 TeamScreen initialView changed:', initialView);
     if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(initialView)) {
+      console.log('✅ Setting active view to:', initialView);
       setActiveView(initialView as any);
     }
   }, [initialView]);

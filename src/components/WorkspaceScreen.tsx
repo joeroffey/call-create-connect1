@@ -110,10 +110,11 @@ const WorkspaceScreen = ({
           setSelectedTeamId(teamId);
           setTeamInitialView('discussions');
           
-          // Clear the initial view after a brief delay to allow TeamScreen to process it
+          // Clear the initial view after a longer delay to ensure TeamScreen processes it
           setTimeout(() => {
+            console.log('🧹 Clearing teamInitialView after team discussions navigation');
             setTeamInitialView(undefined);
-          }, 500);
+          }, 1000);
         }
       } else if (hash.startsWith('team/')) {
         console.log('👥 Switching to team workspace view');
