@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Search, User, Bell, Crown, Wrench, Briefcase } from 'lucide-react';
+import { Home, User, Bell, Crown, Wrench, Briefcase } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ChatInterfaceWithSubscription from '../components/ChatInterfaceWithSubscription';
 import ProfileScreen from '../components/ProfileScreen';
@@ -12,6 +12,7 @@ import AppsScreen from '../components/AppsScreen';
 import WorkspaceScreen from '../components/WorkspaceScreen';
 import OnboardingScreen from '../components/OnboardingScreen';
 import NotificationsScreen from '../components/NotificationsScreen';
+import HomeScreen from '../components/HomeScreen';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
 import { useSubscription } from '../hooks/useSubscription';
@@ -25,7 +26,7 @@ const Index = () => {
     document.body.classList.add('app-mode');
   }, []);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState('home');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -219,17 +220,12 @@ const Index = () => {
   // Define available tabs based on subscription - unified workspace approach
   const getAvailableTabs = () => {
     const baseTabs = [
-      { id: 'chat', icon: MessageCircle, label: 'Chat' },
+      { id: 'home', icon: Home, label: 'Home' },
     ];
 
     // Tools available for EezyBuild (basic), Pro and ProMax
     if (hasActiveSubscription && subscription && (subscription.plan_type === 'basic' || subscription.plan_type === 'pro' || subscription.plan_type === 'enterprise')) {
       baseTabs.push({ id: 'apps', icon: Wrench, label: 'Tools' });
-    }
-
-    // Advanced Search only for ProMax
-    if (hasActiveSubscription && subscription && subscription.plan_type === 'enterprise') {
-      baseTabs.push({ id: 'search', icon: Search, label: 'Search' });
     }
 
     // Workspace tab (combines Projects and Team) - available for all subscription levels
@@ -251,7 +247,7 @@ const Index = () => {
   useEffect(() => {
     const availableTabIds = tabs.map(tab => tab.id);
     if (!availableTabIds.includes(activeTab) && !(activeTab === 'workspace' && pendingProjectModal)) {
-      setActiveTab('chat');
+      setActiveTab('home');
     }
   }, [subscriptionTier, activeTab, pendingProjectModal]);
 
@@ -331,6 +327,18 @@ const Index = () => {
     console.log('🖥️ Rendering content for activeTab:', activeTab);
 
     switch (activeTab) {
+      case 'home':
+        return (
+          <HomeScreen
+            user={user}
+            subscriptionTier={subscriptionTier}
+            onNavigateToChat={() => setActiveTab('chat')}
+            onNavigateToSearch={() => setActiveTab('search')}
+            onNavigateToApps={() => setActiveTab('apps')}
+            onNavigateToWorkspace={() => setActiveTab('workspace')}
+            onViewPlans={handleViewPlans}
+          />
+        );
       case 'chat':
         return (
           <ChatInterfaceWithSubscription
@@ -396,8 +404,18 @@ const Index = () => {
       case 'account-settings':
         return <AccountSettingsScreen user={user} onBack={() => setActiveTab('profile')} />;
       default:
-        console.log('🔄 Default case - rendering ChatInterfaceWithSubscription');
-        return <ChatInterfaceWithSubscription user={user} onViewPlans={handleViewPlans} />;
+        console.log('🔄 Default case - rendering HomeScreen');
+        return (
+          <HomeScreen
+            user={user}
+            subscriptionTier={subscriptionTier}
+            onNavigateToChat={() => setActiveTab('chat')}
+            onNavigateToSearch={() => setActiveTab('search')}
+            onNavigateToApps={() => setActiveTab('apps')}
+            onNavigateToWorkspace={() => setActiveTab('workspace')}
+            onViewPlans={handleViewPlans}
+          />
+        );
     }
   };
 
@@ -421,7 +439,7 @@ const Index = () => {
                   src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png"
                   alt="EezyBuild Logo"
                   className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => setActiveTab('chat')}
+                  onClick={() => setActiveTab('home')}
                 />
                 <div className="ml-4 z-50">
                   {currentProjectId && (
