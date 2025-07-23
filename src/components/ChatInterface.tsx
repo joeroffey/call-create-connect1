@@ -744,6 +744,7 @@ Would you like me to help you plan any work items or discuss project timeline ma
         onExitProjectChat={handleExitProjectChat}
         isProjectChat={!!projectId}
         showBackButton={!projectId}
+        onBackToHome={() => window.parent?.postMessage({ type: 'NAVIGATE_TO_HOME' }, '*')}
       />
 
       {/* Main Chat Area */}

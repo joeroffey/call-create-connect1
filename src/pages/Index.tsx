@@ -285,7 +285,7 @@ const Index = () => {
     }
   }, [activeTab]);
 
-  // Listen for workspace navigation messages from child components
+  // Listen for navigation messages from child components
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'NAVIGATE_TO_WORKSPACE') {
@@ -293,6 +293,9 @@ const Index = () => {
         setActiveTab('workspace');
         // The hash is already set by the child component
         console.log('✅ Switched to workspace tab, hash:', window.location.hash);
+      } else if (event.data?.type === 'NAVIGATE_TO_HOME') {
+        console.log('📨 Received home navigation message');
+        setActiveTab('home');
       }
     };
 
@@ -411,7 +414,7 @@ const Index = () => {
             </div>
           </div>;
         }
-        return <AdvancedSearchInterface user={user} />;
+        return <AdvancedSearchInterface user={user} onBackToHome={() => setActiveTab('home')} />;
       case 'apps':
         if (subscriptionTier === 'none') {
           return <div className="flex-1 flex items-center justify-center p-8 text-center">

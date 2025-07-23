@@ -35,10 +35,10 @@ interface SearchResult {
 
 interface AdvancedSearchInterfaceProps {
   user: any;
+  onBackToHome?: () => void;
 }
 
-const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
-  const navigate = useNavigate();
+const AdvancedSearchInterface = ({ user, onBackToHome }: AdvancedSearchInterfaceProps) => {
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({ text: '' });
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -304,7 +304,7 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
             <div className="flex items-center gap-4">
               <motion.button
                 whileTap={{ scale: 0.95 }}
-                onClick={() => navigate('/app')}
+                onClick={onBackToHome}
                 className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
               >
                 <ArrowLeft className="w-5 h-5" />

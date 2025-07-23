@@ -13,6 +13,7 @@ interface ChatHeaderProps {
   onExitProjectChat?: () => void;
   isProjectChat?: boolean;
   showBackButton?: boolean;
+  onBackToHome?: () => void;
 }
 
 const ChatHeader = ({ 
@@ -23,9 +24,9 @@ const ChatHeader = ({
   onNewConversation,
   onExitProjectChat,
   isProjectChat = false,
-  showBackButton = false
+  showBackButton = false,
+  onBackToHome
 }: ChatHeaderProps) => {
-  const navigate = useNavigate();
   const handleNewChat = () => {
     if (isProjectChat && onExitProjectChat) {
       onExitProjectChat();
@@ -44,7 +45,7 @@ const ChatHeader = ({
         {showBackButton ? (
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/app')}
+            onClick={onBackToHome}
             className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
           >
             <ArrowLeft className="w-5 h-5" />
