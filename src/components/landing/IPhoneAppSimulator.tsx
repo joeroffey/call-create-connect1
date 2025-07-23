@@ -253,12 +253,18 @@ const IPhoneAppSimulator = () => {
               {/* App Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/95 backdrop-blur flex-shrink-0">
                 <div className="flex items-center space-x-2">
-                  <div className="w-7 h-7 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
-                    <span className="text-primary-foreground font-bold text-sm">E</span>
+                  <div className="w-32 h-12 flex items-center">
+                    <img 
+                      src="/lovable-uploads/60efe7f3-1624-45e4-bea6-55cacb90fa21.png" 
+                      alt="EezyBuild Logo" 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
-                  <span className="font-bold text-sm text-foreground">EEZYBUILD</span>
                 </div>
-                <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-medium">Pro</span>
+                <div className="flex items-center space-x-2 bg-primary/10 backdrop-blur-sm px-3 py-1 rounded-full border border-primary/20">
+                  <Crown className="w-3 h-3 text-primary" />
+                  <span className="text-xs text-primary font-medium">Pro</span>
+                </div>
               </div>
 
               {/* Main Content */}
