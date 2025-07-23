@@ -221,7 +221,7 @@ const IPhoneAppSimulator = () => {
   };
 
   return (
-    <div className="relative max-w-xs mx-auto scale-[0.65] md:scale-75 lg:scale-[0.85]">
+    <div className="relative max-w-xs mx-auto scale-[0.55] md:scale-[0.65] lg:scale-75">
       {/* iPhone 14 Pro Frame */}
       <div className="relative">
         {/* Outer frame with metallic finish */}
