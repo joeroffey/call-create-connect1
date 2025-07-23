@@ -79,30 +79,30 @@ const DemoChatSidebar = ({
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="absolute left-0 top-0 h-full w-80 bg-gray-950/95 backdrop-blur-xl border-r border-gray-800/50 z-50 flex flex-col"
+            className="absolute left-0 top-0 h-full w-72 bg-background/95 backdrop-blur-xl border-r border-border z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-gray-800/50">
-              <h2 className="text-lg font-semibold text-white">Chat History</h2>
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-lg font-semibold text-foreground">Chat History</h2>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="text-gray-400 hover:text-white lg:hidden"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
 
             {/* Search */}
-            <div className="p-4 border-b border-gray-800/50">
+            <div className="p-4 border-b border-border">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
                   placeholder="Search conversations..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-gray-900/50 border-gray-700 text-white placeholder-gray-400"
+                  className="pl-10"
                 />
               </div>
             </div>
@@ -119,24 +119,24 @@ const DemoChatSidebar = ({
                     whileTap={{ scale: 0.98 }}
                   >
                     <Card 
-                      className={`cursor-pointer transition-all duration-200 border-gray-700/50 hover:border-emerald-500/40 ${
+                      className={`cursor-pointer transition-all duration-200 ${
                         currentConversationId === conversation.id 
-                          ? 'bg-emerald-500/10 border-emerald-500/40' 
-                          : 'bg-gray-900/40 hover:bg-gray-800/60'
+                          ? 'bg-primary/10 border-primary/40' 
+                          : 'hover:bg-muted/60'
                       }`}
                       onClick={() => onSelectConversation(conversation.id)}
                     >
                       <CardContent className="p-3">
                         <div className="flex items-start space-x-3">
-                          <MessageSquare className="w-4 h-4 text-emerald-400 mt-1 flex-shrink-0" />
+                          <MessageSquare className="w-4 h-4 text-primary mt-1 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium text-white truncate">
+                            <h3 className="text-sm font-medium text-foreground truncate">
                               {conversation.title}
                             </h3>
-                            <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                               {conversation.preview}
                             </p>
-                            <div className="flex items-center mt-2 text-xs text-gray-500">
+                            <div className="flex items-center mt-2 text-xs text-muted-foreground">
                               <Clock className="w-3 h-3 mr-1" />
                               {conversation.timestamp}
                             </div>
@@ -153,20 +153,20 @@ const DemoChatSidebar = ({
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-4 border-t border-gray-800/50"
+              className="p-4 border-t border-border"
             >
-              <Card className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border-emerald-500/20">
+              <Card className="bg-gradient-to-r from-primary/10 to-primary/20 border-primary/20">
                 <CardContent className="p-4 text-center">
-                  <Crown className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
-                  <h3 className="text-sm font-semibold text-white mb-1">
+                  <Crown className="w-6 h-6 text-primary mx-auto mb-2" />
+                  <h3 className="text-sm font-semibold text-foreground mb-1">
                     Unlimited History
                   </h3>
-                  <p className="text-xs text-gray-400 mb-3">
+                  <p className="text-xs text-muted-foreground mb-3">
                     Access all your conversations with Pro
                   </p>
                   <Button 
                     size="sm" 
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-xs"
+                    className="w-full text-xs"
                     onClick={onViewPlans}
                   >
                     Upgrade Now

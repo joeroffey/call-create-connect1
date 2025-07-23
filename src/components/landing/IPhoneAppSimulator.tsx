@@ -148,7 +148,7 @@ const IPhoneAppSimulator = () => {
           onSelectConversation={() => {}}
         />
         
-        <div className="flex-1 flex flex-col relative">
+        <div className="flex-1 flex flex-col relative overflow-hidden">
           {/* Chat Header */}
           <div className="flex items-center justify-between p-3 border-b border-border">
             <Button
