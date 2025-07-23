@@ -103,12 +103,15 @@ const WorkspaceScreen = ({
       } else if (hash.startsWith('team-discussions/')) {
         console.log('💬 Switching to team discussions view');
         const parts = hash.split('/');
+        console.log('🔍 Hash parts:', parts);
         if (parts.length >= 2) {
           const teamId = parts[1];
           console.log('🏢 Setting team ID to:', teamId, 'and switching to discussions view');
+          console.log('📋 Current context:', context, 'Current teamInitialView:', teamInitialView);
           setContext('team');
           setSelectedTeamId(teamId);
           setTeamInitialView('discussions');
+          console.log('✅ Set teamInitialView to discussions for team:', teamId);
           
           // Clear the initial view after a longer delay to ensure TeamScreen processes it
           setTimeout(() => {
@@ -144,6 +147,23 @@ const WorkspaceScreen = ({
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
+  }, [context, selectedTeamId, teamInitialView]); // Add dependencies to re-run when state changes
+
+  // Force check hash on every render when context changes
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    console.log('🔄 Force checking hash on context/state change:', hash, 'context:', context);
+    if (hash.startsWith('team-discussions/') && context !== 'team') {
+      console.log('🚀 Force processing team-discussions hash');
+      const parts = hash.split('/');
+      if (parts.length >= 2) {
+        const teamId = parts[1];
+        console.log('🚀 Force setting team context and discussions view for:', teamId);
+        setContext('team');
+        setSelectedTeamId(teamId);
+        setTeamInitialView('discussions');
+      }
+    }
   }, []);
 
   const renderContextSelector = () => (
@@ -315,6 +335,7 @@ const WorkspaceScreen = ({
       }
 
       // Show full team functionality for ProMax users
+      console.log('🎯 Rendering TeamScreen with selectedTeamId:', selectedTeamId, 'initialView:', teamInitialView);
       return (
         <TeamScreen
           user={user}
