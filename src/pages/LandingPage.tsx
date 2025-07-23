@@ -250,7 +250,7 @@ const LandingPage = () => {
                       Smart Document Management
                     </h3>
                     <p className="text-lg sm:text-xl text-muted-foreground leading-relaxed">
-                      Organize all your building regulation documents with intelligent categorization. Upload, search, and manage Architectural Drawings, Completion Documents, Project Photos, and Receipts. Keep your team aligned with easy document sharing and version control.
+                      Organize all your building regulation documents with intelligent categorization. Create custom folders, upload, search, and manage Architectural Drawings, Completion Documents, Project Photos, and Receipts. Keep your team aligned with easy document sharing and version control.
                     </p>
                     <div className="flex flex-wrap gap-3">
                       <span className="px-3 py-1 bg-white/10 rounded-full text-sm text-white">Smart Categories</span>
