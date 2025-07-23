@@ -322,9 +322,6 @@ const IPhoneAppSimulator = () => {
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <p className="text-sm text-muted-foreground">Interactive Demo</p>
         </motion.div>
-        <p className="text-xs text-muted-foreground/70">
-          Try the chat, tools, and features!
-        </p>
       </div>
     </div>
   );
