@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import LandingLayout from "@/components/landing/LandingLayout";
-import InteractivePhoneDemo from "@/components/landing/InteractivePhoneDemo";
+import IPhoneAppSimulator from "@/components/landing/iPhoneAppSimulator";
 import { BookOpen, Shield, Zap, Users, CheckCircle, ArrowRight } from "lucide-react";
 
 const LandingPage = () => {
@@ -80,7 +80,7 @@ const LandingPage = () => {
               
               {/* Right Column - Interactive Phone Demo */}
               <div className="flex justify-center lg:justify-end mt-8 lg:mt-0 animate-fade-in">
-                <InteractivePhoneDemo />
+                <IPhoneAppSimulator />
               </div>
             </div>
           </div>
