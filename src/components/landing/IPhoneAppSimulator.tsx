@@ -312,7 +312,7 @@ const IPhoneAppSimulator = () => {
       </div>
 
       {/* Demo Labels */}
-      <div className="absolute -bottom-12 left-0 right-0 text-center space-y-2">
+      <div className="absolute -bottom-6 left-0 right-0 text-center space-y-2">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
