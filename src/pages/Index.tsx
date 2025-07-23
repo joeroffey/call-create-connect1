@@ -244,9 +244,11 @@ const Index = () => {
 
   // Reset active tab if it's not available in current subscription
   // BUT allow 'workspace' if there's a pending project modal from notification
+  // AND allow 'chat' and 'search' as they're accessible through home navigation
   useEffect(() => {
     const availableTabIds = tabs.map(tab => tab.id);
-    if (!availableTabIds.includes(activeTab) && !(activeTab === 'workspace' && pendingProjectModal)) {
+    const allowedTabs = [...availableTabIds, 'chat', 'search']; // Add chat and search as allowed
+    if (!allowedTabs.includes(activeTab) && !(activeTab === 'workspace' && pendingProjectModal)) {
       setActiveTab('home');
     }
   }, [subscriptionTier, activeTab, pendingProjectModal]);
@@ -356,10 +358,10 @@ const Index = () => {
               <h2 className="text-xl font-bold text-white mb-4">ProMax Required</h2>
               <p className="text-gray-400 mb-6">Advanced Search is only available for EezyBuild ProMax subscribers.</p>
               <button
-                onClick={() => setActiveTab('profile')}
+                onClick={() => setActiveTab('home')}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-6 py-2 rounded-lg"
               >
-                Upgrade to ProMax
+                Back to Home
               </button>
             </div>
           </div>;
