@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import LandingLayout from "@/components/landing/LandingLayout";
-import IPhoneAppSimulator from "@/components/landing/iPhoneAppSimulator";
+import IPhoneAppSimulator from "@/components/landing/IPhoneAppSimulator";
 import { BookOpen, Shield, Zap, Users, CheckCircle, ArrowRight } from "lucide-react";
 
 const LandingPage = () => {
