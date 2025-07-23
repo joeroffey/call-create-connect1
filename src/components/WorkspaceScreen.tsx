@@ -100,6 +100,21 @@ const WorkspaceScreen = ({
             setTeamInitialView(undefined);
           }, 500);
         }
+      } else if (hash.startsWith('team-discussions/')) {
+        console.log('💬 Switching to team discussions view');
+        const parts = hash.split('/');
+        if (parts.length >= 3) {
+          const teamId = parts[1];
+          console.log('🏢 Setting team ID to:', teamId, 'and switching to discussions view');
+          setContext('team');
+          setSelectedTeamId(teamId);
+          setTeamInitialView('discussions');
+          
+          // Clear the initial view after a brief delay to allow TeamScreen to process it
+          setTimeout(() => {
+            setTeamInitialView(undefined);
+          }, 500);
+        }
       } else if (hash.startsWith('team/')) {
         console.log('👥 Switching to team workspace view');
         const parts = hash.split('/');

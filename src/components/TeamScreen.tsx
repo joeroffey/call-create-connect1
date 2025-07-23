@@ -48,6 +48,7 @@ import TeamProjectsView from '@/components/team/TeamProjectsView';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamProjectPlanView from '@/components/team/TeamProjectPlanView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
+import TeamDiscussionsView from '@/components/team/TeamDiscussionsView';
 import TeamDocumentsView from '@/components/team/TeamDocumentsView';
 import { useTeamStats } from '@/hooks/useTeamStats';
 import TeamActivityFeed from '@/components/team/TeamActivityFeed';
@@ -66,7 +67,7 @@ interface TeamScreenProps {
 }
 
 const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selectedTeamId: propsSelectedTeamId, initialView }: TeamScreenProps) => {
-  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'comments' | 'documents' | 'settings'>(initialView as any || 'overview');
+  const [activeView, setActiveView] = useState<'overview' | 'projects' | 'members' | 'schedule' | 'tasks' | 'discussions' | 'documents' | 'settings'>(initialView as any || 'overview');
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(propsSelectedTeamId || null);
   const [currentLogoUrl, setCurrentLogoUrl] = useState<string | null>(null);
 
@@ -100,7 +101,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
 
   // Update active view when initialView prop changes
   React.useEffect(() => {
-    if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'documents', 'settings'].includes(initialView)) {
+    if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(initialView)) {
       setActiveView(initialView as any);
     }
   }, [initialView]);
@@ -121,7 +122,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     const teamId = urlParams.get('team');
     
     // If there's a view parameter and we're on the team tab, set the active view
-    if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'comments', 'documents', 'settings'].includes(view)) {
+    if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(view)) {
       setActiveView(view as any);
     }
     
@@ -433,7 +434,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
                       { id: 'documents', label: 'Documents', icon: CheckCircle },
                       { id: 'tasks', label: 'Active Tasks', icon: Calendar },
                       { id: 'schedule', label: 'Project Plans', icon: BarChart3 },
-                      { id: 'comments', label: 'Comments', icon: MessageSquare }
+                      { id: 'discussions', label: 'Discussions', icon: MessageSquare }
                     ].map((tab) => (
                       <button
                         key={tab.id}
@@ -523,11 +524,13 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
               teamName={selectedTeam.name}
             />
           )}
-          {activeView === 'comments' && selectedTeamId && selectedTeam && (
-            <TeamCommentsView
-              teamId={selectedTeamId}
-              teamName={selectedTeam.name}
-            />
+          {activeView === 'discussions' && selectedTeamId && (
+            (() => {
+              // Check if there's a specific project ID in the hash for team discussions
+              const teamDiscussionsMatch = window.location.hash.match(/#team-discussions\/([^/]+)\/(.+)/);
+              const projectId = teamDiscussionsMatch && teamDiscussionsMatch[1] === selectedTeamId ? teamDiscussionsMatch[2] : null;
+              return <TeamDiscussionsView teamId={selectedTeamId} preSelectedProjectId={projectId} />;
+            })()
           )}
           {activeView === 'documents' && selectedTeamId && (
             (() => {

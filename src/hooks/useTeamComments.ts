@@ -125,7 +125,7 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
       
       const commentTargetId = targetType === 'team' ? teamId : targetId;
       
-      const { error } = await supabase
+      const { data: newComment, error } = await supabase
         .from('comments')
         .insert({
           content: content.trim(),
@@ -134,9 +134,33 @@ export const useTeamComments = (teamId: string | null, targetType: 'team' | 'pro
           target_type: targetType,
           parent_id: parentId || null,
           author_id: user.id
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Create notification for the team
+      if (newComment) {
+        try {
+          const { error: notificationError } = await supabase.rpc('create_comment_notification', {
+            p_comment_id: newComment.id,
+            p_author_id: user.id,
+            p_team_id: teamId,
+            p_target_id: commentTargetId,
+            p_target_type: targetType,
+            p_content: content.trim()
+          });
+          
+          if (notificationError) {
+            console.warn('Failed to create comment notification:', notificationError);
+            // Don't throw here as the comment was successfully created
+          }
+        } catch (notificationError) {
+          console.warn('Error creating comment notification:', notificationError);
+          // Don't throw here as the comment was successfully created
+        }
+      }
 
       toast({
         title: "Comment added",
