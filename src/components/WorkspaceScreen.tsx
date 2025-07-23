@@ -149,21 +149,26 @@ const WorkspaceScreen = ({
     };
   }, [context, selectedTeamId, teamInitialView]); // Add dependencies to re-run when state changes
 
-  // Force check hash on every render when context changes
+  // Listen for direct navigation events (bypass hash system)
   useEffect(() => {
-    const hash = window.location.hash.slice(1);
-    console.log('🔄 Force checking hash on context/state change:', hash, 'context:', context);
-    if (hash.startsWith('team-discussions/') && context !== 'team') {
-      console.log('🚀 Force processing team-discussions hash');
-      const parts = hash.split('/');
-      if (parts.length >= 2) {
-        const teamId = parts[1];
-        console.log('🚀 Force setting team context and discussions view for:', teamId);
-        setContext('team');
-        setSelectedTeamId(teamId);
-        setTeamInitialView('discussions');
-      }
-    }
+    const handleDirectNavigation = (event: CustomEvent) => {
+      const { teamId } = event.detail;
+      console.log('🎯 Direct navigation event received for team:', teamId);
+      setContext('team');
+      setSelectedTeamId(teamId);
+      setTeamInitialView('discussions');
+      
+      setTimeout(() => {
+        console.log('🧹 Clearing teamInitialView after direct navigation');
+        setTeamInitialView(undefined);
+      }, 1000);
+    };
+
+    window.addEventListener('navigate-to-team-discussions', handleDirectNavigation as EventListener);
+    
+    return () => {
+      window.removeEventListener('navigate-to-team-discussions', handleDirectNavigation as EventListener);
+    };
   }, []);
 
   const renderContextSelector = () => (

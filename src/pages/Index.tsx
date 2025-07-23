@@ -370,9 +370,17 @@ const Index = () => {
               setActiveTab('workspace');
             }}
             onNavigateToTeamDiscussions={(teamId) => {
-              // Navigate to team discussions
-              window.location.hash = `team-discussions/${teamId}`;
+              // Navigate to team discussions directly without using hash
+              console.log('🚀 Direct navigation to team discussions for:', teamId);
               setActiveTab('workspace');
+              // Use a timeout to ensure the workspace tab is active before setting context
+              setTimeout(() => {
+                // Directly trigger the team discussions view
+                const event = new CustomEvent('navigate-to-team-discussions', { 
+                  detail: { teamId } 
+                });
+                window.dispatchEvent(event);
+              }, 100);
             }}
             onNavigateToNotifications={() => navigate('/notifications')}
             onViewPlans={handleViewPlans}
@@ -459,9 +467,17 @@ const Index = () => {
               setActiveTab('workspace');
             }}
             onNavigateToTeamDiscussions={(teamId) => {
-              // Navigate to team discussions
-              window.location.hash = `team-discussions/${teamId}`;
+              // Navigate to team discussions directly without using hash
+              console.log('🚀 Direct navigation to team discussions for:', teamId);
               setActiveTab('workspace');
+              // Use a timeout to ensure the workspace tab is active before setting context
+              setTimeout(() => {
+                // Directly trigger the team discussions view
+                const event = new CustomEvent('navigate-to-team-discussions', { 
+                  detail: { teamId } 
+                });
+                window.dispatchEvent(event);
+              }, 100);
             }}
             onNavigateToNotifications={() => navigate('/notifications')}
             onViewPlans={handleViewPlans}
