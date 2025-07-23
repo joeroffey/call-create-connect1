@@ -86,8 +86,8 @@ const App = () => {
               </>
             ) : (
               <>
-                {/* Web browsers get the landing page */}
-                <Route path="/" element={<LandingPage />} />
+                {/* Web browsers go directly to the app */}
+                <Route path="/" element={<Index />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />
