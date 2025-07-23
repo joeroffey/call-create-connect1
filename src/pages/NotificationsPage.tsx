@@ -35,7 +35,7 @@ const NotificationsPage = () => {
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
               variant="ghost"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/app')}
               className="text-gray-300 hover:text-white text-sm sm:text-base"
             >
               <ArrowLeft className="w-4 h-4" />
