@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import ChatInterface from "@/components/ChatInterface";
-import AppsScreen from "@/components/AppsScreen";
-import WorkspaceScreen from "@/components/WorkspaceScreen";
+import DemoAppsScreen from "@/components/demo/DemoAppsScreen";
+import DemoWorkspaceScreen from "@/components/demo/DemoWorkspaceScreen";
 import ProfileScreen from "@/components/ProfileScreen";
 import SubscriptionScreen from "@/components/SubscriptionScreen";
+import DemoChatSidebar from "@/components/demo/DemoChatSidebar";
 
 // Demo user with subscription
 const demoUser = {
@@ -36,8 +37,8 @@ const IPhoneAppSimulator = () => {
     switch (activeTab) {
       case 'chat':
         return (
-          <div className="h-full">
-            <ChatInterface 
+          <div className="h-full flex flex-col">
+            <DemoChatInterface 
               user={demoUser} 
               onViewPlans={() => setActiveTab('subscription')}
             />
@@ -45,30 +46,24 @@ const IPhoneAppSimulator = () => {
         );
       case 'tools':
         return (
-          <div className="h-full">
-            <AppsScreen 
-              user={demoUser} 
-              subscriptionTier="pro"
-              onViewPlans={() => setActiveTab('subscription')}
-            />
-          </div>
+          <DemoAppsScreen 
+            user={demoUser} 
+            subscriptionTier="pro"
+            onViewPlans={() => setActiveTab('subscription')}
+          />
         );
       case 'workspace':
         return (
-          <div className="h-full">
-            <WorkspaceScreen 
-              user={demoUser}
-              subscriptionTier="pro"
-              onViewPlans={() => setActiveTab('subscription')}
-              onStartNewChat={(projectId) => setActiveTab('chat')}
-              pendingProjectModal={null}
-              onProjectModalHandled={() => {}}
-            />
-          </div>
+          <DemoWorkspaceScreen 
+            user={demoUser}
+            subscriptionTier="pro"
+            onViewPlans={() => setActiveTab('subscription')}
+            onStartNewChat={() => setActiveTab('chat')}
+          />
         );
       case 'profile':
         return (
-          <div className="h-full">
+          <div className="h-full overflow-y-auto">
             <ProfileScreen
               user={demoUser}
               onNavigateToSettings={() => setActiveTab('subscription')}
@@ -78,7 +73,7 @@ const IPhoneAppSimulator = () => {
         );
       case 'subscription':
         return (
-          <div className="h-full">
+          <div className="h-full overflow-y-auto">
             <SubscriptionScreen 
               user={demoUser} 
               onBack={() => setActiveTab('profile')} 
@@ -87,14 +82,142 @@ const IPhoneAppSimulator = () => {
         );
       default:
         return (
-          <div className="h-full">
-            <ChatInterface 
+          <div className="h-full flex flex-col">
+            <DemoChatInterface 
               user={demoUser} 
               onViewPlans={() => setActiveTab('subscription')}
             />
           </div>
         );
     }
+  };
+
+  // Demo Chat Interface Component
+  const DemoChatInterface = ({ user, onViewPlans }: { user: any, onViewPlans: () => void }) => {
+    const [messages, setMessages] = useState<Array<{
+      id: string;
+      text: string;
+      sender: 'user' | 'assistant';
+      timestamp: Date;
+    }>>([
+      {
+        id: 'welcome',
+        text: `Hi ${user.name}! 👋 Welcome to EezyBuild!\n\nI'm your UK Building Regulations specialist. I can help with:\n\n• Building Regulations compliance\n• Planning permission requirements\n• Fire safety regulations\n• Energy efficiency standards\n• And much more!\n\nTry asking me something like "What are Part L requirements?"`,
+        sender: 'assistant',
+        timestamp: new Date(),
+      }
+    ]);
+    const [newMessage, setNewMessage] = useState('');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleSendMessage = () => {
+      if (!newMessage.trim()) return;
+      
+      const userMessage = {
+        id: Date.now().toString(),
+        text: newMessage,
+        sender: 'user' as const,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, userMessage]);
+      setNewMessage('');
+      setIsLoading(true);
+      
+      // Simulate AI response
+      setTimeout(() => {
+        const aiMessage = {
+          id: (Date.now() + 1).toString(),
+          text: `Thank you for your question about "${newMessage}". This is a demo response showing how EezyBuild would provide detailed guidance on UK Building Regulations.\n\nIn the full app, I would give you:\n• Specific regulatory requirements\n• Step-by-step compliance guidance\n• Relevant document references\n• Best practice recommendations\n\nUpgrade to access the full AI assistant!`,
+          sender: 'assistant' as const,
+          timestamp: new Date(),
+        };
+        setMessages(prev => [...prev, aiMessage]);
+        setIsLoading(false);
+      }, 1500);
+    };
+
+    return (
+      <>
+        <DemoChatSidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          onViewPlans={onViewPlans}
+          currentConversationId={null}
+          onSelectConversation={() => {}}
+        />
+        
+        <div className="flex-1 flex flex-col relative">
+          {/* Chat Header */}
+          <div className="flex items-center justify-between p-3 border-b border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="text-muted-foreground"
+            >
+              ☰
+            </Button>
+            <span className="text-sm font-medium">AI Assistant</span>
+            <div className="w-8" />
+          </div>
+          
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 mb-16">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                    message.sender === 'user'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap">{message.text}</p>
+                </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-2xl px-3 py-2 text-sm">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Input */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur border-t border-border">
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Ask about building regulations..."
+                className="flex-1 px-3 py-2 rounded-lg bg-muted border border-border text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none text-sm"
+              />
+              <Button
+                size="sm"
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || isLoading}
+                className="px-3"
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
   };
 
   return (
