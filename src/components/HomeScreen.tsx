@@ -18,6 +18,7 @@ interface HomeScreenProps {
   onNavigateToApps: () => void;
   onNavigateToPersonalWorkspace: () => void;
   onNavigateToTeamWorkspace: (teamId: string) => void;
+  onNavigateToTeamDiscussions: (teamId: string) => void;
   onNavigateToNotifications: () => void;
   onViewPlans: () => void;
 }
@@ -31,6 +32,7 @@ const HomeScreen = ({
   onNavigateToApps, 
   onNavigateToPersonalWorkspace,
   onNavigateToTeamWorkspace,
+  onNavigateToTeamDiscussions,
   onNavigateToNotifications,
   onViewPlans 
 }: HomeScreenProps) => {
@@ -215,6 +217,48 @@ const HomeScreen = ({
                         </h3>
                         <p className="text-gray-400 text-sm">
                           Collaborate with your team members
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Team Discussions */}
+      {teams.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.18, ease: [0.4, 0, 0.2, 1] }}
+          className="space-y-4"
+        >
+          <h2 className="text-xl font-semibold text-white">Team Discussions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {teams.map((team, index) => (
+              <motion.div
+                key={`discussions-${team.id}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <Card className="bg-gray-900/50 border-gray-800 hover:border-gray-700 transition-all duration-200 cursor-pointer group"
+                  onClick={() => onNavigateToTeamDiscussions(team.id)}
+                >
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="p-3 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 group-hover:scale-110 transition-transform duration-200">
+                        <MessageCircle className="w-6 h-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-white mb-2">
+                          {team.name} Discussions
+                        </h3>
+                        <p className="text-gray-400 text-sm">
+                          Join project discussions with your team
                         </p>
                       </div>
                     </div>

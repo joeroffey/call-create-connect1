@@ -369,6 +369,11 @@ const Index = () => {
               window.location.hash = `team/${teamId}`;
               setActiveTab('workspace');
             }}
+            onNavigateToTeamDiscussions={(teamId) => {
+              // Navigate to team discussions
+              window.location.hash = `team-discussions/${teamId}`;
+              setActiveTab('workspace');
+            }}
             onNavigateToNotifications={() => navigate('/notifications')}
             onViewPlans={handleViewPlans}
           />
@@ -451,6 +456,11 @@ const Index = () => {
             onNavigateToTeamWorkspace={(teamId) => {
               // Navigate to workspace with team context
               window.location.hash = `team/${teamId}`;
+              setActiveTab('workspace');
+            }}
+            onNavigateToTeamDiscussions={(teamId) => {
+              // Navigate to team discussions
+              window.location.hash = `team-discussions/${teamId}`;
               setActiveTab('workspace');
             }}
             onNavigateToNotifications={() => navigate('/notifications')}
