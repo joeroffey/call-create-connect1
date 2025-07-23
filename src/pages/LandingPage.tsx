@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import LandingLayout from "@/components/landing/LandingLayout";
+import InteractivePhoneDemo from "@/components/landing/InteractivePhoneDemo";
 import { BookOpen, Shield, Zap, Users, CheckCircle, ArrowRight } from "lucide-react";
 
 const LandingPage = () => {
@@ -45,33 +46,41 @@ const LandingPage = () => {
         {/* Hero Section */}
         <section className="relative py-12 sm:py-20 lg:py-32 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="text-center">
-              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fade-in">
-                Your AI-Powered
-                <span className="text-primary block mt-2">Building Regulations</span>
-                Assistant
-              </h1>
-              <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-3xl mx-auto animate-fade-in leading-relaxed">
-                Navigate UK building regulations with confidence. Get instant answers, manage documents, 
-                and ensure compliance with our intelligent AI assistant.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in">
-                <Button 
-                  size="lg" 
-                  onClick={() => navigate('/app')}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 font-semibold w-full sm:w-auto"
-                >
-                  Get Started Free
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  onClick={() => navigate('/features')}
-                  className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 border-white/20 text-white hover:bg-white/10 w-full sm:w-auto"
-                >
-                  Learn More
-                </Button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+              {/* Left Column - Text Content */}
+              <div className="text-center lg:text-left">
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fade-in">
+                  Your AI-Powered
+                  <span className="text-primary block mt-2">Building Regulations</span>
+                  Assistant
+                </h1>
+                <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 animate-fade-in leading-relaxed">
+                  Navigate UK building regulations with confidence. Get instant answers, manage documents, 
+                  and ensure compliance with our intelligent AI assistant.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start animate-fade-in">
+                  <Button 
+                    size="lg" 
+                    onClick={() => navigate('/app')}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 font-semibold w-full sm:w-auto"
+                  >
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    onClick={() => navigate('/features')}
+                    className="text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 border-white/20 text-white hover:bg-white/10 w-full sm:w-auto"
+                  >
+                    Learn More
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Right Column - Interactive Phone Demo */}
+              <div className="flex justify-center lg:justify-end mt-8 lg:mt-0 animate-fade-in">
+                <InteractivePhoneDemo />
               </div>
             </div>
           </div>
