@@ -22,64 +22,66 @@ const ProjectDocumentsTab = ({ project, user }: ProjectDocumentsTabProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium text-white">Project Documents</h3>
-          <p className="text-gray-400 text-sm">Manage documents, drawings, and files for this project</p>
+          <h3 className="text-2xl font-semibold text-foreground">Project Documents</h3>
+          <p className="text-muted-foreground mt-1">Manage documents, drawings, and files for this project</p>
         </div>
         <Button
           onClick={handleNavigateToDocuments}
-          className="bg-emerald-600 hover:bg-emerald-500"
+          size="lg"
+          className="bg-primary hover:bg-primary/90"
         >
-          <FolderOpen className="w-4 h-4 mr-2" />
+          <FolderOpen className="w-5 h-5 mr-2" />
           Open Documents
         </Button>
       </div>
 
       {/* Document Management Info */}
-      <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-            <FileText className="w-6 h-6 text-emerald-400" />
+      <div className="bg-card/30 backdrop-blur border border-border/30 rounded-2xl p-8">
+        <div className="flex items-start gap-6">
+          <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
+            <FileText className="w-8 h-8 text-primary" />
           </div>
           <div className="flex-1">
-            <h4 className="font-medium text-white mb-2">Smart Document Management</h4>
-            <p className="text-gray-400 text-sm mb-4">
+            <h4 className="text-xl font-semibold text-foreground mb-4">Smart Document Management</h4>
+            <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
               Organize all your building regulation documents with intelligent categorization. 
               Upload, search, and manage Architectural Drawings, Completion Documents, Project Photos, 
               Receipts, and create custom folders. Keep your team aligned with easy document sharing 
               and version control.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <Upload className="w-4 h-4 text-emerald-400" />
-                Upload Files
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="flex items-center gap-3 text-foreground">
+                <Upload className="w-5 h-5 text-primary" />
+                <span className="font-medium">Upload Files</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <FolderOpen className="w-4 h-4 text-emerald-400" />
-                Organize Folders
+              <div className="flex items-center gap-3 text-foreground">
+                <FolderOpen className="w-5 h-5 text-primary" />
+                <span className="font-medium">Organize Folders</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <FileText className="w-4 h-4 text-emerald-400" />
-                Auto Categorize
+              <div className="flex items-center gap-3 text-foreground">
+                <FileText className="w-5 h-5 text-primary" />
+                <span className="font-medium">Auto Categorize</span>
               </div>
-              <div className="flex items-center gap-2 text-sm text-gray-300">
-                <Plus className="w-4 h-4 text-emerald-400" />
-                Custom Folders
+              <div className="flex items-center gap-3 text-foreground">
+                <Plus className="w-5 h-5 text-primary" />
+                <span className="font-medium">Custom Folders</span>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="mt-6 pt-6 border-t border-gray-800/50">
+        <div className="mt-8 pt-8 border-t border-border/50">
           <Button
             onClick={handleNavigateToDocuments}
             variant="outline"
+            size="lg"
             className="w-full"
           >
-            <FolderOpen className="w-4 h-4 mr-2" />
+            <FolderOpen className="w-5 h-5 mr-2" />
             Open Full Document Manager
           </Button>
         </div>

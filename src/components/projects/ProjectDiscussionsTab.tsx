@@ -17,19 +17,20 @@ const ProjectDiscussionsTab = ({ project, user }: ProjectDiscussionsTabProps) =>
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-medium text-white">Team Discussions</h3>
-          <p className="text-gray-400 text-sm">Collaborate and discuss project details with your team</p>
+          <h3 className="text-2xl font-semibold text-foreground">Team Discussions</h3>
+          <p className="text-muted-foreground mt-1">Collaborate and discuss project details with your team</p>
         </div>
         {project.team_id && (
           <Button
             onClick={handleNavigateToDiscussions}
-            className="bg-emerald-600 hover:bg-emerald-500"
+            size="lg"
+            className="bg-primary hover:bg-primary/90"
           >
-            <MessageSquare className="w-4 h-4 mr-2" />
+            <MessageSquare className="w-5 h-5 mr-2" />
             Open Discussions
           </Button>
         )}
@@ -37,52 +38,53 @@ const ProjectDiscussionsTab = ({ project, user }: ProjectDiscussionsTabProps) =>
 
       {/* Content */}
       {project.team_id ? (
-        <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl p-6">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-emerald-400" />
+        <div className="bg-card/30 backdrop-blur border border-border/30 rounded-2xl p-8">
+          <div className="flex items-start gap-6">
+            <div className="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center">
+              <Users className="w-8 h-8 text-primary" />
             </div>
             <div className="flex-1">
-              <h4 className="font-medium text-white mb-2">Team Collaboration Hub</h4>
-              <p className="text-gray-400 text-sm mb-4">
+              <h4 className="text-xl font-semibold text-foreground mb-4">Team Collaboration Hub</h4>
+              <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
                 Join your team discussions to collaborate on project decisions, share updates, 
                 and coordinate work. All discussions are organized by team for easy navigation.
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <MessageSquare className="w-4 h-4 text-emerald-400" />
-                  Real-time Chat
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex items-center gap-3 text-foreground">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  <span className="font-medium">Real-time Chat</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <Users className="w-4 h-4 text-emerald-400" />
-                  Team Members
+                <div className="flex items-center gap-3 text-foreground">
+                  <Users className="w-5 h-5 text-primary" />
+                  <span className="font-medium">Team Members</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <MessageSquare className="w-4 h-4 text-emerald-400" />
-                  Project Updates
+                <div className="flex items-center gap-3 text-foreground">
+                  <MessageSquare className="w-5 h-5 text-primary" />
+                  <span className="font-medium">Project Updates</span>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="mt-6 pt-6 border-t border-gray-800/50">
+          <div className="mt-8 pt-8 border-t border-border/50">
             <Button
               onClick={handleNavigateToDiscussions}
               variant="outline"
+              size="lg"
               className="w-full"
             >
-              <MessageSquare className="w-4 h-4 mr-2" />
+              <MessageSquare className="w-5 h-5 mr-2" />
               Join Team Discussions
             </Button>
           </div>
         </div>
       ) : (
-        <div className="text-center py-12 bg-gray-900/50 backdrop-blur-sm border border-gray-800/50 rounded-xl">
-          <div className="w-16 h-16 bg-gray-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-8 h-8 text-gray-400" />
+        <div className="text-center py-16 bg-card/30 backdrop-blur border border-border/30 rounded-2xl">
+          <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Users className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium text-gray-300 mb-2">Team Discussions Available for Team Projects</h3>
-          <p className="text-sm text-gray-400">
+          <h3 className="text-xl font-semibold text-foreground mb-3">Team Discussions Available for Team Projects</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
             This is a personal project. Team discussions are available for projects shared with your team.
           </p>
         </div>
