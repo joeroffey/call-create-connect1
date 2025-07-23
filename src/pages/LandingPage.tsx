@@ -44,11 +44,11 @@ const LandingPage = () => {
     <LandingLayout>
       <div className="overflow-x-hidden">
         {/* Hero Section */}
-        <section className="relative pt-0 pb-12 sm:pt-2 sm:pb-20 lg:pt-4 lg:pb-32 px-4 sm:px-6 lg:px-8">
+        <section className="relative pt-0 pb-12 sm:pb-20 lg:pb-32 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center lg:items-start">
               {/* Left Column - Text Content */}
-              <div className="text-center lg:text-left">
+              <div className="text-center lg:text-left mt-12 sm:mt-16 lg:mt-20">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fade-in">
                   Your AI-Powered
                   <span className="text-primary block mt-2">Building Regulations</span>
