@@ -44,7 +44,7 @@ const ChatHeader = ({
         {showBackButton ? (
           <motion.button
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/app')}
             className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
           >
             <ArrowLeft className="w-5 h-5" />
