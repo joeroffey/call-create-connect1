@@ -99,12 +99,13 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     }
   }, [teams, selectedTeamId, propsSelectedTeamId]);
 
-  // Update active view when initialView prop changes
+  // Update active view when initialView prop changes (higher priority than URL params)
   React.useEffect(() => {
     console.log('🎯 TeamScreen initialView changed:', initialView);
     if (initialView && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(initialView)) {
       console.log('✅ Setting active view to:', initialView);
       setActiveView(initialView as any);
+      return; // Exit early to prevent URL param override
     }
   }, [initialView]);
 
@@ -123,9 +124,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
     const view = urlParams.get('view');
     const teamId = urlParams.get('team');
     
-    // If there's a view parameter and we're on the team tab, set the active view
-    if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(view)) {
-      setActiveView(view as any);
+    // Handle URL parameters only if no initialView prop is provided
+    if (!initialView) {
+      // If there's a view parameter and we're on the team tab, set the active view
+      if (view && ['overview', 'projects', 'members', 'schedule', 'tasks', 'discussions', 'documents', 'settings'].includes(view)) {
+        setActiveView(view as any);
+      }
     }
     
     // If there's a specific team ID in the URL and it exists in our teams, select it
@@ -143,7 +147,7 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
         window.history.replaceState({}, document.title, newUrl);
       }, 100);
     }
-  }, [teams, selectedTeamId]); // Depend on teams and selectedTeamId to ensure we can process team selection
+  }, [teams, selectedTeamId, initialView]); // Added initialView to dependencies
 
   // Check if user has team access
   const hasTeamAccess = subscriptionTier === 'enterprise';
