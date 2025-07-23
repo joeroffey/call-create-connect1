@@ -158,7 +158,7 @@ export default function ProjectDiscussionView({
       ) : (
         <div className="space-y-4">
           <AnimatePresence>
-            {comments.map((comment, index) => (
+            {[...comments].reverse().map((comment, index) => (
               <motion.div
                 key={comment.id}
                 initial={{ opacity: 0, y: 20 }}
