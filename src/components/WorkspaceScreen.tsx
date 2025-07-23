@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 // Import existing components
-import ProjectsScreen from './ProjectsScreen';
+import ProjectsPage from './projects/ProjectsPage';
 import TeamScreen from './TeamScreen';
 import Dashboard from './widgets/Dashboard';
 import PersonalDocumentsView from './personal/PersonalDocumentsView';
@@ -233,12 +233,12 @@ const WorkspaceScreen = ({
     switch (personalView) {
       case 'projects':
         return (
-          <ProjectsScreen
+          <ProjectsPage
             user={user}
             onStartNewChat={onStartNewChat}
+            workspaceContext="personal"
             pendingProjectModal={pendingProjectModal}
             onProjectModalHandled={onProjectModalHandled}
-            workspaceContext="personal"
           />
         );
       case 'overview':

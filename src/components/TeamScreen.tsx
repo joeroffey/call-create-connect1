@@ -44,7 +44,7 @@ import InviteMemberModal from '@/components/team/InviteMemberModal';
 import TeamLogoUpload from '@/components/team/TeamLogoUpload';
 import TeamSettings from '@/components/team/TeamSettings';
 import BasicTeamWork from '@/components/team/BasicTeamWork';
-import TeamProjectsView from '@/components/team/TeamProjectsView';
+import ProjectsPage from '@/components/projects/ProjectsPage';
 import TeamTasksView from '@/components/team/TeamTasksView';
 import TeamProjectPlanView from '@/components/team/TeamProjectPlanView';
 import TeamCommentsView from '@/components/team/TeamCommentsView';
@@ -516,11 +516,12 @@ const TeamScreen = ({ user, subscriptionTier, onViewPlans, onStartNewChat, selec
             }
 
             return (
-              <TeamProjectsView
+              <ProjectsPage
                 user={user}
                 teamId={selectedTeamId}
                 teamName={selectedTeam.name}
                 onStartNewChat={onStartNewChat}
+                workspaceContext="team"
               />
             );
           })()}
