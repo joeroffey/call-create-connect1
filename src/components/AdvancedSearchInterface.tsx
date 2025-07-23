@@ -7,9 +7,10 @@ import SearchHistory from './search/SearchHistory';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ArrowLeft } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface SearchQuery {
   text: string;
@@ -37,6 +38,7 @@ interface AdvancedSearchInterfaceProps {
 }
 
 const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState<SearchQuery>({ text: '' });
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -299,13 +301,22 @@ const AdvancedSearchInterface = ({ user }: AdvancedSearchInterfaceProps) => {
           className="glass border-b border-white/10 px-6 py-8"
         >
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-2">
-              <h1 className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
-                Advanced Search
-              </h1>
-              <p className="text-gray-300 text-sm md:text-base leading-relaxed">
-                Search through UK Building Regulations with advanced filters and tools
-              </p>
+            <div className="flex items-center gap-4">
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/')}
+                className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </motion.button>
+              <div className="space-y-2">
+                <h1 className="text-2xl md:text-3xl font-semibold bg-gradient-to-r from-emerald-400 to-green-300 bg-clip-text text-transparent">
+                  Advanced Search
+                </h1>
+                <p className="text-gray-300 text-sm md:text-base leading-relaxed">
+                  Search through UK Building Regulations with advanced filters and tools
+                </p>
+              </div>
             </div>
 
             {!showFilters && searchResults.length > 0 && (

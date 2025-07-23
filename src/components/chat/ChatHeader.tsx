@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Menu, Plus, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatHeaderProps {
   title?: string;
@@ -11,6 +12,7 @@ interface ChatHeaderProps {
   onNewConversation: () => void;
   onExitProjectChat?: () => void;
   isProjectChat?: boolean;
+  showBackButton?: boolean;
 }
 
 const ChatHeader = ({ 
@@ -20,8 +22,10 @@ const ChatHeader = ({
   sidebarOpen, 
   onNewConversation,
   onExitProjectChat,
-  isProjectChat = false
+  isProjectChat = false,
+  showBackButton = false
 }: ChatHeaderProps) => {
+  const navigate = useNavigate();
   const handleNewChat = () => {
     if (isProjectChat && onExitProjectChat) {
       onExitProjectChat();
@@ -37,13 +41,23 @@ const ChatHeader = ({
       className={`glass border-b border-white/5 px-4 py-3 flex items-center justify-between ${isProjectChat && 'flex-wrap gap-4'}`}
     >
       <div className="flex items-center space-x-3">
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={onToggleSidebar}
-          className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
-        >
-          <Menu className="w-5 h-5" />
-        </motion.button>
+        {showBackButton ? (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/')}
+            className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </motion.button>
+        ) : (
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={onToggleSidebar}
+            className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
+          >
+            <Menu className="w-5 h-5" />
+          </motion.button>
+        )}
         
         <div className="flex items-center space-x-3">
           <div>

@@ -736,13 +736,14 @@ Would you like me to help you plan any work items or discuss project timeline ma
       className="flex flex-col h-full bg-gradient-to-br from-gray-950 via-black to-gray-950">
       {/* Header */}
       <ChatHeader
-        title={projectId && project ? project.name : ""}
-        subtitle={projectId && project ? `Building regulations assistance for ${project.name}` : ""}
+        title={projectId && project ? project.name : "AI Assistant"}
+        subtitle={projectId && project ? `Building regulations assistance for ${project.name}` : "Ask about building regulations, planning, or general construction"}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         sidebarOpen={isSidebarOpen}
         onNewConversation={handleNewConversation}
         onExitProjectChat={handleExitProjectChat}
         isProjectChat={!!projectId}
+        showBackButton={!projectId}
       />
 
       {/* Main Chat Area */}
