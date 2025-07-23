@@ -70,7 +70,7 @@ const DemoChatSidebar = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="absolute inset-0 bg-black/50 z-40"
           />
           
           {/* Sidebar */}
@@ -79,7 +79,7 @@ const DemoChatSidebar = ({
             animate={{ x: 0 }}
             exit={{ x: -300 }}
             transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            className="fixed left-0 top-0 h-full w-80 bg-gray-950/95 backdrop-blur-xl border-r border-gray-800/50 z-50 lg:relative lg:z-0 flex flex-col"
+            className="absolute left-0 top-0 h-full w-80 bg-gray-950/95 backdrop-blur-xl border-r border-gray-800/50 z-50 flex flex-col"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-800/50">
