@@ -46,7 +46,7 @@ const LandingPage = () => {
         {/* Hero Section */}
         <section className="relative py-12 sm:py-20 lg:py-32 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center lg:items-start">
               {/* Left Column - Text Content */}
               <div className="text-center lg:text-left">
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 sm:mb-6 animate-fade-in">
