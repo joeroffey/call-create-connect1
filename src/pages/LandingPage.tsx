@@ -79,7 +79,7 @@ const LandingPage = () => {
               </div>
               
               {/* Right Column - Interactive Phone Demo */}
-              <div className="flex justify-center lg:justify-end mt-8 lg:mt-0 animate-fade-in">
+              <div className="flex justify-center lg:justify-end mt-8 lg:-mt-12 animate-fade-in">
                 <IPhoneAppSimulator />
               </div>
             </div>
