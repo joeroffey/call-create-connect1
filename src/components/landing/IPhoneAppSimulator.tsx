@@ -124,16 +124,16 @@ const IPhoneAppSimulator = () => {
           {/* App Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/95 backdrop-blur flex-shrink-0">
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xs">E</span>
+              <div className="w-7 h-7 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-primary-foreground font-bold text-sm">E</span>
               </div>
-              <span className="font-bold text-sm">EEZYBUILD</span>
+              <span className="font-bold text-sm text-foreground">EEZYBUILD</span>
             </div>
-            <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">Pro</span>
+            <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full font-medium">Pro</span>
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-hidden min-h-0">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
@@ -141,7 +141,7 @@ const IPhoneAppSimulator = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="h-full"
+                className="h-full min-h-full"
               >
                 {renderContent()}
               </motion.div>
