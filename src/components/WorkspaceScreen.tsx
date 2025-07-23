@@ -100,6 +100,22 @@ const WorkspaceScreen = ({
             setTeamInitialView(undefined);
           }, 500);
         }
+      } else if (hash.startsWith('team/')) {
+        console.log('👥 Switching to team workspace view');
+        const parts = hash.split('/');
+        if (parts.length >= 2) {
+          const teamId = parts[1];
+          console.log('🏢 Setting team ID to:', teamId, 'and switching to team view');
+          setContext('team');
+          setSelectedTeamId(teamId);
+          
+          // Clear hash after processing to avoid confusion
+          setTimeout(() => {
+            if (window.location.hash === `#team/${teamId}`) {
+              window.location.hash = '';
+            }
+          }, 100);
+        }
       }
     };
 
