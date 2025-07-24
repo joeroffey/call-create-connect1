@@ -95,7 +95,8 @@ const ProjectsPage = ({
     updateProject,
     deleteProject,
     togglePinProject,
-    handleStatusChange
+    handleStatusChange,
+    refetch
   } = projectsHook;
 
   const {
@@ -738,20 +739,31 @@ const ProjectsPage = ({
       <CreateProjectModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onCreateProject={(data) => { handleCreateProject(data); }}
-        workspaceContext={workspaceContext}
-        teamName={teamName}
+        newProject={{
+          name: '',
+          description: '',
+          label: '',
+          customer_name: '',
+          customer_address: '',
+          customer_phone: ''
+        }}
+        setNewProject={() => {}}
+        onCreateProject={() => {}}
+        onProjectCreated={() => {
+          setShowCreateModal(false);
+          refetch();
+        }}
       />
 
       {editingProject && (
         <EditProjectModal
-          isOpen={!!editingProject}
+          editingProject={editingProject}
           onClose={() => setEditingProject(null)}
-          project={editingProject}
-          onUpdateProject={async (projectId, updates) => { await updateProject(projectId, updates); }}
-          onDeleteProject={async (projectId, projectName) => { await deleteProject(projectId, projectName); }}
-          onTogglePinProject={async (projectId, currentPinned) => { await togglePinProject(projectId, currentPinned); }}
-          onStatusChange={async (projectId, newStatus) => { await handleStatusChange(projectId, newStatus); }}
+          setEditingProject={setEditingProject}
+          onUpdateProject={() => {
+            setEditingProject(null);
+            refetch();
+          }}
         />
       )}
     </div>
