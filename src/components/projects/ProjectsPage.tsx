@@ -198,15 +198,15 @@ const ProjectsPage = ({
           >
             {/* Professional Header */}
             <div className="border-b border-border bg-card/50 backdrop-blur-sm">
-              <div className="px-6 py-8">
+              <div className="px-4 sm:px-6 py-6 sm:py-8">
                 <div className="max-w-7xl mx-auto">
-                  <div className="flex items-center justify-between mb-8">
-                    <div className="space-y-3">
-                      <h1 className="text-3xl font-bold text-foreground tracking-tight">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+                    <div className="space-y-2 sm:space-y-3 flex-1 min-w-0">
+                      <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
                         {workspaceContext === 'personal' ? 'My Projects' : 
                          workspaceContext === 'team' ? teamName : 'All Projects'}
                       </h1>
-                      <p className="text-muted-foreground text-lg">
+                      <p className="text-muted-foreground text-base sm:text-lg">
                         {workspaceContext === 'team' 
                           ? `Collaborate on building regulation projects with your team`
                           : 'Manage and organize your building regulation projects'
@@ -216,98 +216,100 @@ const ProjectsPage = ({
                     <Button
                       onClick={() => setShowCreateModal(true)}
                       size="lg"
-                      className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg transition-all duration-200 w-full sm:w-auto shrink-0 min-h-[44px] touch-manipulation"
                     >
                       <Plus className="w-5 h-5 mr-2" />
-                      New Project
+                      <span className="sm:inline">New Project</span>
                     </Button>
                   </div>
 
                   {/* Enhanced Stats Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-6 hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-3xl font-bold text-foreground">{projects.length}</p>
-                          <p className="text-sm text-muted-foreground font-medium">Total Projects</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4 sm:p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-2xl sm:text-3xl font-bold text-foreground">{projects.length}</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Total Projects</p>
                         </div>
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                          <Building2 className="w-6 h-6 text-primary" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                          <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                         </div>
                       </div>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-6 hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-3xl font-bold text-foreground">
+                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4 sm:p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-2xl sm:text-3xl font-bold text-foreground">
                             {projects.filter(p => p.status !== 'completed' && p.status !== 'on_hold').length}
                           </p>
-                          <p className="text-sm text-muted-foreground font-medium">Active</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Active</p>
                         </div>
-                        <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                          <TrendingUp className="w-6 h-6 text-blue-500" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500/10 rounded-xl flex items-center justify-center shrink-0">
+                          <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
                         </div>
                       </div>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-6 hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-3xl font-bold text-foreground">
+                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4 sm:p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-2xl sm:text-3xl font-bold text-foreground">
                             {projects.filter(p => p.status === 'completed').length}
                           </p>
-                          <p className="text-sm text-muted-foreground font-medium">Completed</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Completed</p>
                         </div>
-                        <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                          <CheckSquare className="w-6 h-6 text-green-500" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-xl flex items-center justify-center shrink-0">
+                          <CheckSquare className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
                         </div>
                       </div>
                     </div>
                     
-                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-6 hover:shadow-md transition-all duration-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-3xl font-bold text-foreground">
+                    <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-4 sm:p-6 hover:shadow-md transition-all duration-200">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-2xl sm:text-3xl font-bold text-foreground">
                             {projects.filter(p => p.pinned).length}
                           </p>
-                          <p className="text-sm text-muted-foreground font-medium">Starred</p>
+                          <p className="text-xs sm:text-sm text-muted-foreground font-medium">Starred</p>
                         </div>
-                        <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center">
-                          <Star className="w-6 h-6 text-yellow-500" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center shrink-0">
+                          <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Professional Search and Controls */}
-                  <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-                    <div className="flex-1 max-w-md">
+                  <div className="flex flex-col gap-4">
+                    <div className="w-full">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           placeholder="Search projects..."
                           value={filters.search}
                           onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                          className="pl-10 bg-background border-border focus:border-primary/50 focus:ring-primary/20"
+                          className="pl-10 bg-background border-border focus:border-primary/50 focus:ring-primary/20 h-12 text-base touch-manipulation"
                         />
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-3">
-                      <ProjectFiltersComponent
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                        showContextFilter={workspaceContext === 'all'}
-                        projectCount={filteredProjects.length}
-                      />
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                      <div className="flex-1">
+                        <ProjectFiltersComponent
+                          filters={filters}
+                          onFiltersChange={setFilters}
+                          showContextFilter={workspaceContext === 'all'}
+                          projectCount={filteredProjects.length}
+                        />
+                      </div>
                       
-                      <div className="flex items-center bg-muted/50 rounded-lg p-1 border border-border">
+                      <div className="flex items-center bg-muted/50 rounded-lg p-1 border border-border shrink-0">
                         <Button
                           variant={viewMode === 'grid' ? 'default' : 'ghost'}
                           size="sm"
                           onClick={() => setViewMode('grid')}
-                          className="px-3 py-2"
+                          className="px-3 py-2 min-h-[40px] touch-manipulation"
                         >
                           <Grid3X3 className="w-4 h-4" />
                         </Button>
@@ -315,7 +317,7 @@ const ProjectsPage = ({
                           variant={viewMode === 'list' ? 'default' : 'ghost'}
                           size="sm"
                           onClick={() => setViewMode('list')}
-                          className="px-3 py-2"
+                          className="px-3 py-2 min-h-[40px] touch-manipulation"
                         >
                           <List className="w-4 h-4" />
                         </Button>
@@ -327,7 +329,7 @@ const ProjectsPage = ({
             </div>
 
             {/* Projects Content */}
-            <div className="flex-1 p-6">
+            <div className="flex-1 p-4 sm:p-6">
               <div className="max-w-7xl mx-auto">
                 {filteredProjects.length === 0 ? (
                   <motion.div
@@ -362,7 +364,7 @@ const ProjectsPage = ({
                 ) : (
                   <div className={
                     viewMode === 'grid' 
-                      ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
                       : "space-y-4"
                   }>
                     {filteredProjects.map((project, index) => (

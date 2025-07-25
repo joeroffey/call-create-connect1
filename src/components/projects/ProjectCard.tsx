@@ -131,7 +131,7 @@ const ProjectCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
-      className={`bg-gray-900/50 backdrop-blur-sm border rounded-xl p-6 hover:border-emerald-500/30 transition-all duration-300 group relative ${
+      className={`bg-gray-900/50 backdrop-blur-sm border rounded-xl p-4 sm:p-6 hover:border-emerald-500/30 transition-all duration-300 group relative ${
         project.pinned 
           ? 'border-emerald-500/50 ring-1 ring-emerald-500/20' 
           : 'border-gray-800/50'
@@ -144,21 +144,21 @@ const ProjectCard = ({
         </div>
       )}
 
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors">
+      <div className="flex items-start justify-between mb-3 sm:mb-4">
+        <div className="flex-1 min-w-0 pr-2">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-2 group-hover:text-emerald-300 transition-colors truncate">
             {project.name}
           </h3>
           {project.description && (
-            <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+            <p className="text-gray-400 text-sm mb-2 sm:mb-3 line-clamp-2">
               {project.description}
             </p>
           )}
         </div>
-        <div className="relative">
+        <div className="relative shrink-0">
           <button 
             onClick={() => onTogglePin(project.id, project.pinned || false)}
-            className={`p-2 hover:bg-gray-800/50 rounded-lg transition-colors ${
+            className={`p-2 sm:p-2 hover:bg-gray-800/50 rounded-lg transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation ${
               project.pinned 
                 ? 'text-emerald-400 hover:text-emerald-300' 
                 : 'text-gray-400 hover:text-white'
@@ -170,12 +170,12 @@ const ProjectCard = ({
         </div>
       </div>
 
-      {/* Status and Label - Single line layout */}
-      <div className="flex items-center gap-1.5 mb-4 overflow-hidden">
+      {/* Status and Label - Mobile responsive layout */}
+      <div className="flex flex-wrap items-center gap-1.5 mb-3 sm:mb-4">
         <div className="relative flex-shrink-0">
           <button
             onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-            className={`px-2 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 ${getStatusColor(project.status)}`}
+            className={`px-2 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 hover:opacity-80 flex items-center space-x-1 min-h-[32px] touch-manipulation ${getStatusColor(project.status)}`}
           >
             <span>{getStatusLabel(project.status)}</span>
             <ChevronDown className="w-3 h-3" />
@@ -198,12 +198,12 @@ const ProjectCard = ({
           )}
         </div>
         
-        <span className={`px-2 py-1 rounded-full text-xs font-medium border flex-shrink-0 ${getLabelColor(project.label)}`}>
+        <span className={`px-2 py-1.5 rounded-full text-xs font-medium border flex-shrink-0 min-h-[32px] flex items-center ${getLabelColor(project.label)}`}>
           {project.label}
         </span>
         
         {project.team_name && (
-          <span className="px-2 py-1 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 truncate min-w-0">
+          <span className="px-2 py-1.5 rounded-full text-xs font-medium border bg-indigo-500/20 text-indigo-300 border-indigo-500/30 truncate min-w-0 min-h-[32px] flex items-center">
             {project.team_name}
           </span>
         )}
@@ -253,15 +253,15 @@ const ProjectCard = ({
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-4 py-3 border-t border-b border-gray-800/30">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4 py-3 border-t border-b border-gray-800/30">
         <button
           onClick={() => onProjectStatsClick(project, 'chats')}
-          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
+          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat min-h-[44px] touch-manipulation"
         >
           <div className="flex items-center justify-center mb-1">
             <MessageCircle className="w-4 h-4 text-emerald-400 group-hover/stat:text-emerald-300" />
           </div>
-          <div className="text-lg font-semibold text-white group-hover/stat:text-emerald-300">{conversationCount}</div>
+          <div className="text-base sm:text-lg font-semibold text-white group-hover/stat:text-emerald-300">{conversationCount}</div>
           <div className="text-xs text-gray-400">Chats</div>
         </button>
         <button
@@ -275,55 +275,57 @@ const ProjectCard = ({
               onProjectStatsClick(project, 'documents');
             }
           }}
-          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
+          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat min-h-[44px] touch-manipulation"
         >
           <div className="flex items-center justify-center mb-1">
             <FileText className="w-4 h-4 text-blue-400 group-hover/stat:text-blue-300" />
           </div>
-          <div className="text-lg font-semibold text-white group-hover/stat:text-blue-300">{documentCount}</div>
+          <div className="text-base sm:text-lg font-semibold text-white group-hover/stat:text-blue-300">{documentCount}</div>
           <div className="text-xs text-gray-400">Docs</div>
         </button>
         <button
           onClick={handleScheduleClick}
-          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat"
+          className="text-center hover:bg-gray-800/30 rounded-lg p-2 transition-colors group/stat min-h-[44px] touch-manipulation"
         >
           <div className="flex items-center justify-center mb-1">
             <Clock className="w-4 h-4 text-purple-400 group-hover/stat:text-purple-300" />
           </div>
-          <div className="text-lg font-semibold text-white group-hover/stat:text-purple-300">{scheduleOfWorksCount}</div>
+          <div className="text-base sm:text-lg font-semibold text-white group-hover/stat:text-purple-300">{scheduleOfWorksCount}</div>
           <div className="text-xs text-gray-400">Schedule</div>
         </button>
       </div>
 
       {/* Actions */}
-      <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <button
           onClick={() => onStartNewChat(project.id)}
-          className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium"
+          className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-4 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px] touch-manipulation"
         >
           Start Chat
         </button>
-        {project.team_id && onManageAccess && (
+        <div className="flex gap-2 sm:flex-shrink-0">
+          {project.team_id && onManageAccess && (
+            <button
+              onClick={() => onManageAccess(project)}
+              className="px-4 py-2.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+              title="Manage Project Access"
+            >
+              <Users className="w-4 h-4" />
+            </button>
+          )}
           <button
-            onClick={() => onManageAccess(project)}
-            className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-lg transition-all duration-200"
-            title="Manage Project Access"
+            onClick={() => onEdit(project)}
+            className="px-4 py-2.5 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 border border-gray-700/50 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
           >
-            <Users className="w-4 h-4" />
+            <Edit className="w-4 h-4" />
           </button>
-        )}
-        <button
-          onClick={() => onEdit(project)}
-          className="px-4 py-2 bg-gray-800/50 hover:bg-gray-700/50 text-gray-300 border border-gray-700/50 rounded-lg transition-all duration-200"
-        >
-          <Edit className="w-4 h-4" />
-        </button>
-        <button
-          onClick={() => onDelete(project.id, project.name)}
-          className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg transition-all duration-200"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+          <button
+            onClick={() => onDelete(project.id, project.name)}
+            className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-lg transition-all duration-200 min-h-[44px] min-w-[44px] flex items-center justify-center touch-manipulation"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Project dates and creator */}

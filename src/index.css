@@ -1082,3 +1082,43 @@ body {
   background: rgba(245, 158, 11, 0.1);
   border-color: rgba(245, 158, 11, 0.3);
 }
+
+/* Mobile-specific responsive design improvements */
+@media (max-width: 768px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding-top: env(safe-area-inset-top, 1rem);
+    padding-bottom: env(safe-area-inset-bottom, 1rem);
+  }
+  
+  .modal-content {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    max-height: calc(100vh - env(safe-area-inset-top, 1rem) - env(safe-area-inset-bottom, 1rem) - 2rem);
+  }
+  
+  .modal-scroll-area {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+  }
+}
+
+/* Touch interaction improvements */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Enhanced safe area support */
+.safe-area-bottom {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Add pointer-events-auto for calendar */
+.pointer-events-auto {
+  pointer-events: auto;
+}
