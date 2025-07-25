@@ -34,7 +34,8 @@ const CreateProjectModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-4 z-50"
+          style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}
           onClick={onClose}
         >
           <motion.div
@@ -42,22 +43,23 @@ const CreateProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md mx-auto flex flex-col safe-area-bottom"
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-t-xl sm:rounded-xl w-full max-w-md mx-auto flex flex-col"
             style={{
-              height: 'min(75vh, 600px)',
-              maxHeight: '75vh',
+              height: 'min(80vh, 700px)',
+              maxHeight: 'calc(100vh - env(safe-area-inset-top, 20px) - env(safe-area-inset-bottom, 20px) - 40px)',
             }}
           >
             <div className="p-4 flex-shrink-0 border-b border-gray-700/50">
               <h2 className="text-lg font-bold text-white truncate">Create New Project</h2>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4" 
+            <div className="flex-1 overflow-y-auto p-4 overscroll-contain" 
               style={{ 
                 WebkitOverflowScrolling: 'touch',
-                overscrollBehavior: 'contain'
+                touchAction: 'pan-y',
+                minHeight: 0
               }}>
-              <div className="space-y-4">
+              <div className="space-y-4 pb-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
                     Project Name *
@@ -159,7 +161,8 @@ const CreateProjectModal = ({
               </div>
             </div>
 
-            <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/95">
+            <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/95"
+              style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))' }}>
               <div className="flex space-x-3">
                 <button
                   onClick={onClose}
