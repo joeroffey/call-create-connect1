@@ -42,18 +42,22 @@ const CreateProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md max-h-[85vh] min-h-[400px] flex flex-col safe-area-bottom ios-momentum-scroll"
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md mx-auto flex flex-col safe-area-bottom"
             style={{
-              maxHeight: 'min(85vh, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 40px))',
+              height: 'min(75vh, 600px)',
+              maxHeight: '75vh',
             }}
           >
-            <div className="p-6 pb-4 flex-shrink-0">
-              <h2 className="text-xl font-bold text-white">Create New Project</h2>
+            <div className="p-4 flex-shrink-0 border-b border-gray-700/50">
+              <h2 className="text-lg font-bold text-white truncate">Create New Project</h2>
             </div>
             
-            <div className="flex-1 px-6 overflow-y-auto ios-momentum-scroll touch-action-pan-y" 
-              style={{ WebkitOverflowScrolling: 'touch' }}>
-              <div className="space-y-4 pb-4">
+            <div className="flex-1 overflow-y-auto p-4" 
+              style={{ 
+                WebkitOverflowScrolling: 'touch',
+                overscrollBehavior: 'contain'
+              }}>
+              <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
                     Project Name *
@@ -155,14 +159,7 @@ const CreateProjectModal = ({
               </div>
             </div>
 
-            <div className="p-6 pt-4 border-t border-gray-700/50 flex-shrink-0 safe-area-bottom"
-              style={{ 
-                position: 'sticky',
-                bottom: 0,
-                backgroundColor: 'rgb(17 24 39 / 0.95)',
-                backdropFilter: 'blur(16px)',
-                paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))'
-              }}>
+            <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/95">
               <div className="flex space-x-3">
                 <button
                   onClick={onClose}
