@@ -141,7 +141,11 @@ const EditProjectModal = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto modal-overlay"
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
           onClick={onClose}
         >
           <motion.div
@@ -149,7 +153,11 @@ const EditProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-card/95 backdrop-blur-xl border border-border rounded-xl w-full max-w-2xl h-[90vh] flex flex-col"
+            className="bg-card/95 backdrop-blur-xl border border-border rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col mx-4 my-auto overflow-hidden modal-content"
+            style={{ 
+              maxHeight: 'calc(100vh - 2rem)',
+              height: 'auto'
+            }}
           >
             <div className="p-6 pb-4 flex-shrink-0 border-b border-border">
               <div className="flex items-center justify-between">
@@ -180,7 +188,7 @@ const EditProjectModal = ({
               </div>
             </div>
             
-            <ScrollArea className="flex-1 px-6 h-0">
+            <ScrollArea className="flex-1 px-6 min-h-0 modal-scroll-area" style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="space-y-6 py-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>

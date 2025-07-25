@@ -3,6 +3,41 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
+
+/* iOS Safari Modal Scrolling Fixes */
+body {
+  /* Prevent iOS Safari zoom on input focus */
+  -webkit-text-size-adjust: 100%;
+  /* Enable momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for iOS Safari modal scrolling issues */
+.modal-overlay {
+  /* Ensure proper touch scrolling */
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  /* Prevent elastic scrolling past boundaries */
+  overscroll-behavior: contain;
+}
+
+/* iOS specific modal content fixes */
+@supports (-webkit-touch-callout: none) {
+  .modal-content {
+    /* Fix iOS Safari viewport height issues */
+    min-height: 0;
+    max-height: calc(100vh - 2rem);
+    overflow: hidden;
+  }
+  
+  .modal-scroll-area {
+    /* Ensure scrollable content works on iOS */
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+    /* Prevent content from disappearing on iOS */
+    transform: translateZ(0);
+  }
+}
 @tailwind components;
 @tailwind utilities;
 
