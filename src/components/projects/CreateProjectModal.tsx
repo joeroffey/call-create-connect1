@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createProject } from '@/lib/projects';
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -51,7 +51,7 @@ const CreateProjectModal = ({
               <h2 className="text-xl font-bold text-white">Create New Project</h2>
             </div>
             
-            <ScrollArea className="flex-1 px-6 h-0 ios-momentum-scroll touch-action-pan-y" 
+            <div className="flex-1 px-6 overflow-y-auto ios-momentum-scroll touch-action-pan-y" 
               style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="space-y-4 pb-4">
                 <div>
@@ -153,7 +153,7 @@ const CreateProjectModal = ({
                   </div>
                 </div>
               </div>
-            </ScrollArea>
+            </div>
 
             <div className="p-6 pt-4 border-t border-gray-700/50 flex-shrink-0 safe-area-bottom"
               style={{ 
