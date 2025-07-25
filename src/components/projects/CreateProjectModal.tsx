@@ -45,13 +45,17 @@ const CreateProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md h-[90vh] flex flex-col"
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md max-h-[85vh] min-h-[400px] flex flex-col safe-area-bottom ios-momentum-scroll"
+            style={{
+              maxHeight: 'min(85vh, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 40px))',
+            }}
           >
             <div className="p-6 pb-4 flex-shrink-0">
               <h2 className="text-xl font-bold text-white">Create New Project</h2>
             </div>
             
-            <ScrollArea className="flex-1 px-6 h-0">
+            <ScrollArea className="flex-1 px-6 h-0 ios-momentum-scroll touch-action-pan-y" 
+              style={{ WebkitOverflowScrolling: 'touch' }}>
               <div className="space-y-4 pb-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
@@ -62,7 +66,8 @@ const CreateProjectModal = ({
                     type="text"
                     value={newProject.name}
                     onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
+                    style={{ fontSize: '16px' }}
                     placeholder="Enter project name"
                   />
                 </div>
@@ -76,7 +81,8 @@ const CreateProjectModal = ({
                     value={newProject.description}
                     onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none"
+                    className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none mobile-input-focus"
+                    style={{ fontSize: '16px' }}
                     placeholder="Describe your project"
                   />
                 </div>
@@ -89,7 +95,8 @@ const CreateProjectModal = ({
                     id="label"
                     value={newProject.label}
                     onChange={(e) => setNewProject({ ...newProject, label: e.target.value })}
-                    className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
+                    style={{ fontSize: '16px' }}
                   >
                     <option value="Residential">Residential</option>
                     <option value="Commercial">Commercial</option>
@@ -106,42 +113,52 @@ const CreateProjectModal = ({
                        <label htmlFor="customer-name" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Name
                        </label>
-                       <NameInput
-                         id="customer-name"
-                         value={newProject.customer_name}
-                         onChange={(value) => setNewProject({ ...newProject, customer_name: value })}
-                         className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                       />
+                        <NameInput
+                          id="customer-name"
+                          value={newProject.customer_name}
+                          onChange={(value) => setNewProject({ ...newProject, customer_name: value })}
+                          className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
+                          style={{ fontSize: '16px' }}
+                        />
                      </div>
 
                      <div>
                        <label htmlFor="customer-address" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Address
                        </label>
-                       <AddressInput
-                         value={newProject.customer_address}
-                         onChange={(value) => setNewProject({ ...newProject, customer_address: value })}
-                         className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                       />
+                        <AddressInput
+                          value={newProject.customer_address}
+                          onChange={(value) => setNewProject({ ...newProject, customer_address: value })}
+                          className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
+                          style={{ fontSize: '16px' }}
+                        />
                      </div>
 
                      <div>
                        <label htmlFor="customer-phone" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Phone
                        </label>
-                       <PhoneInput
-                         id="customer-phone"
-                         value={newProject.customer_phone}
-                         onChange={(value) => setNewProject({ ...newProject, customer_phone: value })}
-                         className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                       />
+                        <PhoneInput
+                          id="customer-phone"
+                          value={newProject.customer_phone}
+                          onChange={(value) => setNewProject({ ...newProject, customer_phone: value })}
+                          className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
+                          style={{ fontSize: '16px' }}
+                        />
                      </div>
                   </div>
                 </div>
               </div>
             </ScrollArea>
 
-            <div className="p-6 pt-4 border-t border-gray-700/50 flex-shrink-0">
+            <div className="p-6 pt-4 border-t border-gray-700/50 flex-shrink-0 safe-area-bottom"
+              style={{ 
+                position: 'sticky',
+                bottom: 0,
+                backgroundColor: 'rgb(17 24 39 / 0.95)',
+                backdropFilter: 'blur(16px)',
+                paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))'
+              }}>
               <div className="flex space-x-3">
                 <button
                   onClick={onClose}
