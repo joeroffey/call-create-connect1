@@ -10,15 +10,34 @@ interface ProjectDocumentsTabProps {
 
 const ProjectDocumentsTab = ({ project, user }: ProjectDocumentsTabProps) => {
   const handleNavigateToDocuments = () => {
-    // Navigate to the dedicated documents page
-    if (project.team_id) {
-      // Team project - go to team documents
-      window.location.hash = `#team-documents/${project.team_id}/${project.id}`;
-    } else {
-      // Personal project - go to personal documents
-      window.location.hash = `#personal-documents/${project.id}`;
+    try {
+      // Navigate to the dedicated documents page
+      const hash = project.team_id 
+        ? `team-documents/${project.team_id}/${project.id}`
+        : `personal-documents/${project.id}`;
+      
+      // Update the URL hash
+      window.location.hash = `#${hash}`;
+      
+      // Post message to parent window for navigation
+      window.postMessage({ 
+        type: 'NAVIGATE_TO_WORKSPACE', 
+        hash: hash,
+        project: project
+      }, '*');
+      
+      // Additional navigation method for robustness
+      const event = new CustomEvent('navigate-to-documents', {
+        detail: { 
+          projectId: project.id, 
+          teamId: project.team_id,
+          hash: hash
+        }
+      });
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error('Error navigating to documents:', error);
     }
-    window.postMessage({ type: 'NAVIGATE_TO_WORKSPACE', hash: project.team_id ? `team-documents/${project.team_id}/${project.id}` : `personal-documents/${project.id}` }, '*');
   };
 
   return (

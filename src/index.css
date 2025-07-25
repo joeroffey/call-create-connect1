@@ -60,10 +60,10 @@ body {
     --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
 
-    /* Professional accent colors */
-    --primary: 221 83% 53%;
+    /* Professional accent colors - Green Theme */
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 98%;
-    --primary-glow: 221 83% 63%;
+    --primary-glow: 142 71% 55%;
 
     --secondary: 240 4.8% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -80,19 +80,19 @@ body {
     /* Professional borders and inputs */
     --border: 240 5.9% 10%;
     --input: 240 5.9% 10%;
-    --ring: 221 83% 53%;
+    --ring: 142 71% 45%;
 
     --radius: 0.75rem;
 
     /* Sidebar styling */
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 15.9%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 5.9% 10%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 142 71% 45%;
 
     /* Professional gradients */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
@@ -121,9 +121,9 @@ body {
     --popover: 240 10% 6%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 221 83% 53%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 98%;
-    --primary-glow: 221 83% 63%;
+    --primary-glow: 142 71% 55%;
 
     --secondary: 240 4.8% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -139,16 +139,16 @@ body {
 
     --border: 240 5.9% 10%;
     --input: 240 5.9% 10%;
-    --ring: 221 83% 53%;
+    --ring: 142 71% 45%;
 
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 240 4.8% 15.9%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 5.9% 10%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 142 71% 45%;
   }
 }
 

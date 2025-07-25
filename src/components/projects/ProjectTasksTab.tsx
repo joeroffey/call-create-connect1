@@ -6,9 +6,10 @@ import { Button } from '@/components/ui/button';
 interface ProjectTasksTabProps {
   project: any;
   user: any;
+  onTabChange?: (tab: string) => void;
 }
 
-const ProjectTasksTab = ({ project, user }: ProjectTasksTabProps) => {
+const ProjectTasksTab = ({ project, user, onTabChange }: ProjectTasksTabProps) => {
   return (
     <div className="space-y-6 h-full">
       {/* Header */}
@@ -100,9 +101,20 @@ const ProjectTasksTab = ({ project, user }: ProjectTasksTabProps) => {
             variant="outline"
             className="hover:bg-primary hover:text-primary-foreground group"
             onClick={() => {
-              // Switch to schedule tab
-              const scheduleTab = document.querySelector('[value="schedule"]') as HTMLElement;
-              scheduleTab?.click();
+              // Switch to schedule tab using callback if available
+              if (onTabChange) {
+                onTabChange('schedule');
+              } else {
+                // Fallback method
+                const scheduleTab = document.querySelector('[data-tab="schedule"]') as HTMLElement;
+                if (scheduleTab) {
+                  scheduleTab.click();
+                } else {
+                  // Alternative fallback
+                  const tabTrigger = document.querySelector('[value="schedule"]') as HTMLElement;
+                  tabTrigger?.click();
+                }
+              }
             }}
           >
             Go to Schedule

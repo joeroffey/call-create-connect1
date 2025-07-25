@@ -241,7 +241,7 @@ const ProjectsPage = ({
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-3xl font-bold text-foreground">
-                            {projects.filter(p => p.status === 'active').length}
+                            {projects.filter(p => p.status !== 'completed' && p.status !== 'on_hold').length}
                           </p>
                           <p className="text-sm text-muted-foreground font-medium">Active</p>
                         </div>
@@ -722,7 +722,11 @@ const ProjectsPage = ({
                       <ProjectScheduleTab project={selectedProject} user={user} />
                     </TabsContent>
                     <TabsContent value="tasks" className="mt-0 h-full">
-                      <ProjectTasksTab project={selectedProject} user={user} />
+                      <ProjectTasksTab 
+                        project={selectedProject} 
+                        user={user} 
+                        onTabChange={setActiveTab}
+                      />
                     </TabsContent>
                     <TabsContent value="discussions" className="mt-0 h-full">
                       <ProjectDiscussionsTab project={selectedProject} user={user} />
