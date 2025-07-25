@@ -380,7 +380,7 @@ const ProjectsPage = ({
                         className="group cursor-pointer"
                         onClick={() => handleProjectClick(project)}
                       >
-                        {viewMode === 'grid' ? (
+                          {viewMode === 'grid' ? (
                           <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex-1 min-w-0">
