@@ -42,23 +42,22 @@ const CreateProjectModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md mx-auto flex flex-col"
+            className="bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 rounded-xl w-full max-w-md mx-auto flex flex-col safe-area-bottom"
             style={{
-              maxHeight: '90vh',
-              height: 'auto',
+              height: 'min(75vh, 600px)',
+              maxHeight: '75vh',
             }}
           >
             <div className="p-4 flex-shrink-0 border-b border-gray-700/50">
               <h2 className="text-lg font-bold text-white truncate">Create New Project</h2>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-4 overscroll-contain" 
+            <div className="flex-1 overflow-y-auto p-4" 
               style={{ 
                 WebkitOverflowScrolling: 'touch',
-                touchAction: 'pan-y',
-                minHeight: 0
+                overscrollBehavior: 'contain'
               }}>
-              <div className="space-y-4 pb-4">
+              <div className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
                     Project Name *
