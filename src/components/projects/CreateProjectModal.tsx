@@ -3,9 +3,6 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createProject } from '@/lib/projects';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { NameInput } from "@/components/ui/name-input";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { AddressInput } from "@/components/ui/address-input";
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -113,12 +110,14 @@ const CreateProjectModal = ({
                        <label htmlFor="customer-name" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Name
                        </label>
-                        <NameInput
+                        <input
                           id="customer-name"
+                          type="text"
                           value={newProject.customer_name}
-                          onChange={(value) => setNewProject({ ...newProject, customer_name: value })}
+                          onChange={(e) => setNewProject({ ...newProject, customer_name: e.target.value })}
                           className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
                           style={{ fontSize: '16px' }}
+                          placeholder="Enter customer name"
                         />
                      </div>
 
@@ -126,11 +125,14 @@ const CreateProjectModal = ({
                        <label htmlFor="customer-address" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Address
                        </label>
-                        <AddressInput
+                        <textarea
+                          id="customer-address"
                           value={newProject.customer_address}
-                          onChange={(value) => setNewProject({ ...newProject, customer_address: value })}
-                          className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
+                          onChange={(e) => setNewProject({ ...newProject, customer_address: e.target.value })}
+                          rows={3}
+                          className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 resize-none mobile-input-focus"
                           style={{ fontSize: '16px' }}
+                          placeholder="Enter full address including postcode..."
                         />
                      </div>
 
@@ -138,12 +140,14 @@ const CreateProjectModal = ({
                        <label htmlFor="customer-phone" className="block text-sm font-medium text-gray-300 mb-2">
                          Customer Phone
                        </label>
-                        <PhoneInput
+                        <input
                           id="customer-phone"
+                          type="tel"
                           value={newProject.customer_phone}
-                          onChange={(value) => setNewProject({ ...newProject, customer_phone: value })}
+                          onChange={(e) => setNewProject({ ...newProject, customer_phone: e.target.value })}
                           className="w-full px-3 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500/60 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 mobile-input-focus"
                           style={{ fontSize: '16px' }}
+                          placeholder="Enter UK phone number"
                         />
                      </div>
                   </div>
