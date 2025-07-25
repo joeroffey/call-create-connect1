@@ -66,10 +66,12 @@ const EditProjectModal = ({
     
     setIsUpdating(true);
     try {
+      // Update all project fields including status
       await onUpdateProject(project.id, {
         name: editedProject.name,
         description: editedProject.description,
         label: editedProject.label,
+        status: editedProject.status,
         customer_name: editedProject.customer_name,
         customer_address: editedProject.customer_address,
         customer_phone: editedProject.customer_phone
@@ -103,14 +105,6 @@ const EditProjectModal = ({
       await onTogglePinProject(project.id, !!project.pinned);
     } catch (error) {
       console.error('Error toggling pin:', error);
-    }
-  };
-
-  const handleStatusChange = async (newStatus: string) => {
-    try {
-      await onStatusChange(project.id, newStatus);
-    } catch (error) {
-      console.error('Error changing status:', error);
     }
   };
 
@@ -203,7 +197,7 @@ const EditProjectModal = ({
                   
                   <div>
                     <Label htmlFor="edit-status">Status</Label>
-                    <Select value={project.status} onValueChange={handleStatusChange}>
+                    <Select value={editedProject.status} onValueChange={(value) => setEditedProject({ ...editedProject, status: value })}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
