@@ -199,6 +199,28 @@ const FeaturesPage = () => {
           </div>
         </section>
 
+        {/* Benefits Section */}
+        <section className="py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
+              The Platform Advantage
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              <div className="text-center p-6 rounded-lg bg-black/40 border border-white/10">
+                <div className="text-4xl font-bold text-primary mb-2">85%</div>
+                <p className="text-muted-foreground">Faster Project Setup</p>
+              </div>
+              <div className="text-center p-6 rounded-lg bg-black/40 border border-white/10">
+                <div className="text-4xl font-bold text-primary mb-2">24/7</div>
+                <p className="text-muted-foreground">Team Collaboration</p>
+              </div>
+              <div className="text-center p-6 rounded-lg bg-black/40 border border-white/10">
+                <div className="text-4xl font-bold text-primary mb-2">100%</div>
+                <p className="text-muted-foreground">Project Visibility</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* CTA Section */}
         <section className="py-20 bg-primary/10">

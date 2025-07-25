@@ -3,41 +3,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
-
-/* iOS Safari Modal Scrolling Fixes */
-body {
-  /* Prevent iOS Safari zoom on input focus */
-  -webkit-text-size-adjust: 100%;
-  /* Enable momentum scrolling on iOS */
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Fix for iOS Safari modal scrolling issues */
-.modal-overlay {
-  /* Ensure proper touch scrolling */
-  -webkit-overflow-scrolling: touch;
-  overflow-y: auto;
-  /* Prevent elastic scrolling past boundaries */
-  overscroll-behavior: contain;
-}
-
-/* iOS specific modal content fixes */
-@supports (-webkit-touch-callout: none) {
-  .modal-content {
-    /* Fix iOS Safari viewport height issues */
-    min-height: 0;
-    max-height: calc(100vh - 2rem);
-    overflow: hidden;
-  }
-  
-  .modal-scroll-area {
-    /* Ensure scrollable content works on iOS */
-    -webkit-overflow-scrolling: touch;
-    overflow-y: auto;
-    /* Prevent content from disappearing on iOS */
-    transform: translateZ(0);
-  }
-}
 @tailwind components;
 @tailwind utilities;
 
@@ -50,105 +15,82 @@ body {
 
 @layer base {
   :root {
-    /* Professional neutral palette */
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 8%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 210 40% 98%;
 
-    /* Professional accent colors - Green Theme */
-    --primary: 142 71% 45%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 142 71% 55%;
+    --primary: 142 69% 58%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 240 4.8% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 240 4.8% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 240 4.8% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 142 69% 58%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
 
-    /* Professional borders and inputs */
-    --border: 240 5.9% 10%;
-    --input: 240 5.9% 10%;
-    --ring: 142 71% 45%;
+    --border: 142 69% 58% / 0.1;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 69% 58%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Sidebar styling */
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 142 71% 45%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 5.9% 10%;
-    --sidebar-ring: 142 71% 45%;
-
-    /* Professional gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-surface: linear-gradient(145deg, hsl(var(--card)) 0%, hsl(var(--muted)) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--card)) 100%);
-
-    /* Professional shadows */
-    --shadow-subtle: 0 1px 3px 0 hsl(var(--foreground) / 0.1), 0 1px 2px 0 hsl(var(--foreground) / 0.06);
-    --shadow-medium: 0 4px 6px -1px hsl(var(--foreground) / 0.1), 0 2px 4px -1px hsl(var(--foreground) / 0.06);
-    --shadow-large: 0 10px 15px -3px hsl(var(--foreground) / 0.1), 0 4px 6px -2px hsl(var(--foreground) / 0.05);
-    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
-
-    /* Professional animations */
-    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bouncy: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 142 69% 58%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 142 69% 58% / 0.1;
+    --sidebar-ring: 142 69% 58%;
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 142 71% 45%;
-    --primary-foreground: 0 0% 98%;
-    --primary-glow: 142 71% 55%;
+    --primary: 142 69% 58%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 240 4.8% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 240 4.8% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 240 4.8% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 142 69% 58%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 240 5.9% 10%;
-    --input: 240 5.9% 10%;
-    --ring: 142 71% 45%;
-
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 142 71% 45%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 5.9% 10%;
-    --sidebar-ring: 142 71% 45%;
+    --border: 142 69% 58% / 0.1;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 142 69% 58%;
+    --sidebar-background: 0 0% 4%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 142 69% 58%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 142 69% 58% / 0.1;
+    --sidebar-ring: 142 69% 58%;
   }
 }
 
@@ -158,7 +100,7 @@ body {
   }
 
   html, body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-br from-gray-950 via-black to-gray-950 text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     font-optical-sizing: auto;
@@ -466,7 +408,7 @@ body {
 
 /* Glass morphism effect - more refined */
 .glass {
-  background: #000000;
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -1081,44 +1023,4 @@ body {
   color: #f59e0b;
   background: rgba(245, 158, 11, 0.1);
   border-color: rgba(245, 158, 11, 0.3);
-}
-
-/* Mobile-specific responsive design improvements */
-@media (max-width: 768px) {
-  .modal-overlay {
-    align-items: flex-start;
-    padding-top: env(safe-area-inset-top, 1rem);
-    padding-bottom: env(safe-area-inset-bottom, 1rem);
-  }
-  
-  .modal-content {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    max-height: calc(100vh - env(safe-area-inset-top, 1rem) - env(safe-area-inset-bottom, 1rem) - 2rem);
-  }
-  
-  .modal-scroll-area {
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-  }
-}
-
-/* Touch interaction improvements */
-.touch-manipulation {
-  touch-action: manipulation;
-}
-
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-/* Enhanced safe area support */
-.safe-area-bottom {
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-}
-
-/* Add pointer-events-auto for calendar */
-.pointer-events-auto {
-  pointer-events: auto;
 }

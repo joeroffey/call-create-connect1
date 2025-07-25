@@ -74,17 +74,17 @@ const LandingLayout = ({ children }: LandingLayoutProps) => {
         </div>
       </header>
 
-      {/* Menu Overlay - Show on all screen sizes when menu is open */}
+      {/* Mobile Menu Overlay */}
       {isMenuOpen && (
-        <div className="fixed inset-0 z-40">
+        <div className="fixed inset-0 z-40 md:hidden">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
             onClick={closeMenu}
           />
           
-          {/* Menu Panel - Responsive width and positioning */}
-          <div className="fixed top-16 right-0 w-64 md:w-80 h-full bg-black/95 backdrop-blur-lg border-l border-white/10 animate-slide-in-right">
+          {/* Menu Panel */}
+          <div className="fixed top-16 right-0 w-64 h-full bg-black/90 border-l border-white/10 animate-slide-in-right">
             <nav className="flex flex-col p-6 space-y-4">
               <Link 
                 to="/" 

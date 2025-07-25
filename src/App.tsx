@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/NotificationsPage";
 import TeamInvitePage from "./pages/TeamInvitePage";
 import PasswordResetPage from "./pages/PasswordResetPage";
-// import LandingPage from "./pages/LandingPage"; // Hidden temporarily
+import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
 import FeaturesPage from "./pages/FeaturesPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
@@ -86,8 +86,8 @@ const App = () => {
               </>
             ) : (
               <>
-                {/* Web browsers go directly to app (login/register) */}
-                <Route path="/" element={<Index />} />
+                {/* Web browsers get the landing page */}
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/features" element={<FeaturesPage />} />
                 <Route path="/subscriptions" element={<SubscriptionsPage />} />

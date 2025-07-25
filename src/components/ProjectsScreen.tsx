@@ -538,76 +538,18 @@ const ProjectsScreen = ({ user, onStartNewChat, pendingProjectModal, onProjectMo
       <CreateProjectModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        onCreateProject={async (projectData) => {
-          // Simple creation for personal projects
-          if (!user?.id || !projectData.name.trim()) return;
-          
-          const { error } = await supabase
-            .from('projects')
-            .insert([
-              {
-                user_id: user.id,
-                name: projectData.name.trim(),
-                description: projectData.description?.trim() || '',
-                label: projectData.label || 'Residential',
-                customer_name: projectData.customer_name?.trim() || '',
-                customer_address: projectData.customer_address?.trim() || '',
-                customer_phone: projectData.customer_phone?.trim() || '',
-                team_id: null // Personal projects screen doesn't have team_id
-              }
-            ]);
-
-          if (error) throw error;
-          fetchProjects();
-        }}
-        workspaceContext={workspaceContext}
-        teamName={undefined}
+        newProject={newProject}
+        setNewProject={setNewProject}
+        onCreateProject={createProject}
       />
 
       {/* Edit Project Modal */}
-      {editingProject && (
-        <EditProjectModal
-          isOpen={!!editingProject}
-          onClose={() => setEditingProject(null)}
-          project={editingProject}
-          onUpdateProject={async (projectId, updates) => {
-            const { error } = await supabase
-              .from('projects')
-              .update(updates)
-              .eq('id', projectId);
-            
-            if (error) throw error;
-            fetchProjects();
-          }}
-          onDeleteProject={async (projectId, projectName) => {
-            const { error } = await supabase
-              .from('projects')
-              .delete()
-              .eq('id', projectId);
-            
-            if (error) throw error;
-            fetchProjects();
-          }}
-          onTogglePinProject={async (projectId, currentPinned) => {
-            const { error } = await supabase
-              .from('projects')
-              .update({ pinned: !currentPinned })
-              .eq('id', projectId);
-            
-            if (error) throw error;
-            fetchProjects();
-          }}
-          onStatusChange={async (projectId, newStatus) => {
-            const { error } = await supabase
-              .from('projects')
-              .update({ status: newStatus })
-              .eq('id', projectId);
-            
-            if (error) throw error;
-            fetchProjects();
-          }}
-        />
-      )}
+      <EditProjectModal
+        editingProject={editingProject}
+        onClose={() => setEditingProject(null)}
+        setEditingProject={setEditingProject}
+        onUpdateProject={updateProject}
+      />
     </div>
   );
 };

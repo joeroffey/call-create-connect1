@@ -358,31 +358,29 @@ const TeamProjectsView = ({ user, teamId, teamName, onStartNewChat }: TeamProjec
       <CreateProjectModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
+        newProject={newProject}
+        setNewProject={setNewProject}
         onCreateProject={handleCreateProject}
-        workspaceContext="team"
-        teamName={teamName}
       />
 
       {/* Edit Project Modal */}
-      {editingProject && (
-        <EditProjectModal
-          isOpen={!!editingProject}
-          onClose={() => setEditingProject(null)}
-          project={editingProject}
-          onUpdateProject={async (projectId, updates) => {
-            await updateProject(projectId, updates);
-          }}
-          onDeleteProject={async (projectId, projectName) => {
-            await deleteProject(projectId, projectName);
-          }}
-          onTogglePinProject={async (projectId, currentPinned) => {
-            await togglePinProject(projectId, currentPinned);
-          }}
-          onStatusChange={async (projectId, newStatus) => {
-            await handleStatusChange(projectId, newStatus);
-          }}
-        />
-      )}
+      <EditProjectModal
+        editingProject={editingProject}
+        onClose={() => setEditingProject(null)}
+        setEditingProject={(project) => {
+          if (project) {
+            const teamProject: TeamProject = {
+              ...project,
+              team_id: (project as any).team_id || teamId,
+              team_name: (project as any).team_name || teamName
+            };
+            setEditingProject(teamProject);
+          } else {
+            setEditingProject(null);
+          }
+        }}
+        onUpdateProject={handleUpdateProject}
+      />
 
       {/* Project Access Modal */}
       <ProjectAccessModal

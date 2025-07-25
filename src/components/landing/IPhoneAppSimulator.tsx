@@ -221,7 +221,7 @@ const IPhoneAppSimulator = () => {
   };
 
   return (
-    <div className="relative max-w-xs mx-auto scale-[0.55] md:scale-[0.65] lg:scale-75">
+    <div className="relative max-w-sm mx-auto">
       {/* iPhone 14 Pro Frame */}
       <div className="relative">
         {/* Outer frame with metallic finish */}
@@ -231,8 +231,8 @@ const IPhoneAppSimulator = () => {
             {/* Dynamic Island - Fixed positioning within the phone frame */}
             <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-32 h-7 bg-black rounded-full z-[60] border border-gray-800"></div>
             
-            {/* Phone Screen Container with smaller dimensions for better viewport fit */}
-            <div className="bg-background rounded-[2.3rem] overflow-hidden h-[600px] w-[300px] relative flex flex-col">
+            {/* Phone Screen Container with proper overflow */}
+            <div className="bg-background rounded-[2.3rem] overflow-hidden h-[700px] w-[350px] relative flex flex-col">
               {/* Status Bar */}
               <div className="flex justify-between items-center px-6 py-2 text-xs text-muted-foreground bg-background pt-8 flex-shrink-0 relative z-50">
                 <span className="font-semibold">9:41</span>
@@ -312,7 +312,7 @@ const IPhoneAppSimulator = () => {
       </div>
 
       {/* Demo Labels */}
-      <div className="absolute -bottom-6 left-0 right-0 text-center space-y-2">
+      <div className="absolute -bottom-12 left-0 right-0 text-center space-y-2">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -322,6 +322,9 @@ const IPhoneAppSimulator = () => {
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <p className="text-sm text-muted-foreground">Interactive Demo</p>
         </motion.div>
+        <p className="text-xs text-muted-foreground/70">
+          Try the chat, tools, and features!
+        </p>
       </div>
     </div>
   );

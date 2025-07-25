@@ -61,17 +61,25 @@ const ProjectFiltersComponent = ({
   };
     
     return (
-      <div className="space-y-3 sm:space-y-4 w-full">
+      <div className="space-y-4">
+        {/* Search */}
+        <Input
+          placeholder="Search projects..."
+          value={filters.search || ''}
+          onChange={(e) => updateFilter('search', e.target.value)}
+          className="bg-gray-800/50 border-gray-700/50 text-white placeholder-gray-400"
+        />
+
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full">
+        <div className="flex flex-wrap gap-3">
           {showContextFilter && (
             <Select value={filters.context} onValueChange={(value) => updateFilter('context', value)}>
-              <SelectTrigger className="bg-background border-border text-foreground h-12 sm:h-10 w-full sm:w-40 touch-manipulation">
+              <SelectTrigger className="bg-gray-800/50 border-gray-700/50 text-white w-40">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border text-popover-foreground">
+              <SelectContent className="bg-gray-800 border-gray-700 text-white">
                 {PROJECT_CONTEXTS.map((context) => (
-                  <SelectItem key={context.value} value={context.value} className="min-h-[44px] sm:min-h-auto">
+                  <SelectItem key={context.value} value={context.value}>
                     {context.label}
                   </SelectItem>
                 ))}
@@ -80,12 +88,12 @@ const ProjectFiltersComponent = ({
           )}
 
           <Select value={filters.projectType} onValueChange={(value) => updateFilter('projectType', value)}>
-            <SelectTrigger className="bg-background border-border text-foreground h-12 sm:h-10 w-full sm:w-36 touch-manipulation">
+            <SelectTrigger className="bg-gray-800/50 border-gray-700/50 text-white w-36">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-popover border-border text-popover-foreground">
+            <SelectContent className="bg-gray-800 border-gray-700 text-white">
               {PROJECT_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value} className="min-h-[44px] sm:min-h-auto">
+                <SelectItem key={type.value} value={type.value}>
                   {type.label}
                 </SelectItem>
               ))}
@@ -93,12 +101,12 @@ const ProjectFiltersComponent = ({
           </Select>
 
           <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
-            <SelectTrigger className="bg-background border-border text-foreground h-12 sm:h-10 w-full sm:w-36 touch-manipulation">
+            <SelectTrigger className="bg-gray-800/50 border-gray-700/50 text-white w-36">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-popover border-border text-popover-foreground">
+            <SelectContent className="bg-gray-800 border-gray-700 text-white">
               {PROJECT_STATUSES.map((status) => (
-                <SelectItem key={status.value} value={status.value} className="min-h-[44px] sm:min-h-auto">
+                <SelectItem key={status.value} value={status.value}>
                   {status.label}
                 </SelectItem>
               ))}
@@ -108,7 +116,7 @@ const ProjectFiltersComponent = ({
           <Button 
             variant="outline" 
             onClick={clearFilters} 
-            className="bg-background border-border text-foreground hover:bg-muted h-12 sm:h-10 w-full sm:w-auto touch-manipulation"
+            className="bg-gray-800/50 border-gray-700/50 text-white hover:bg-gray-700/50"
           >
             Clear
           </Button>
@@ -116,7 +124,7 @@ const ProjectFiltersComponent = ({
 
         {/* Results Count */}
         {projectCount !== undefined && (
-          <p className="text-sm text-muted-foreground px-1">
+          <p className="text-sm text-gray-400">
             {projectCount} project{projectCount !== 1 ? 's' : ''} found
           </p>
         )}
