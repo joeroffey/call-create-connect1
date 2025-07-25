@@ -237,20 +237,28 @@ export const useProjects = (userId: string, workspaceContext: 'personal' | 'team
 
   const handleStatusChange = async (projectId: string, newStatus: string) => {
     try {
+      console.log('🔄 Changing project status:', { projectId, newStatus });
+      
       const { error } = await supabase
         .from('projects')
-        .update({ status: newStatus })
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', projectId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Supabase error updating status:', error);
+        throw error;
+      }
 
+      console.log('✅ Status updated successfully');
+      
       const statusLabel = newStatus === 'planning' ? 'Set-up' : newStatus.replace('-', ' ');
       toast({
         title: "Status updated",
         description: `Project status changed to ${statusLabel}.`,
       });
 
-      fetchProjects();
+      // Refetch projects to ensure UI updates
+      await fetchProjects();
     } catch (err: any) {
       console.error('Error updating status:', err);
       toast({

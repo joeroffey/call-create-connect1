@@ -228,7 +228,7 @@ const ProjectsPage = ({
                     <div className="bg-gradient-to-br from-card to-card/80 border border-border rounded-xl p-6 hover:shadow-md transition-all duration-200">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-3xl font-bold text-foreground">{filteredProjects.length}</p>
+                          <p className="text-3xl font-bold text-foreground">{projects.length}</p>
                           <p className="text-sm text-muted-foreground font-medium">Total Projects</p>
                         </div>
                         <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
@@ -241,7 +241,7 @@ const ProjectsPage = ({
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-3xl font-bold text-foreground">
-                            {filteredProjects.filter(p => p.status === 'active').length}
+                            {projects.filter(p => p.status === 'active').length}
                           </p>
                           <p className="text-sm text-muted-foreground font-medium">Active</p>
                         </div>
@@ -255,7 +255,7 @@ const ProjectsPage = ({
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-3xl font-bold text-foreground">
-                            {filteredProjects.filter(p => p.status === 'completed').length}
+                            {projects.filter(p => p.status === 'completed').length}
                           </p>
                           <p className="text-sm text-muted-foreground font-medium">Completed</p>
                         </div>
@@ -269,7 +269,7 @@ const ProjectsPage = ({
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-3xl font-bold text-foreground">
-                            {filteredProjects.filter(p => p.pinned).length}
+                            {projects.filter(p => p.pinned).length}
                           </p>
                           <p className="text-sm text-muted-foreground font-medium">Starred</p>
                         </div>
