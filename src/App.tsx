@@ -9,10 +9,11 @@ import NotFound from "./pages/NotFound";
 import NotificationsPage from "./pages/NotificationsPage";
 import TeamInvitePage from "./pages/TeamInvitePage";
 import PasswordResetPage from "./pages/PasswordResetPage";
-import LandingPage from "./pages/LandingPage";
-import AboutPage from "./pages/AboutPage";
-import FeaturesPage from "./pages/FeaturesPage";
-import SubscriptionsPage from "./pages/SubscriptionsPage";
+// Landing pages temporarily removed - archived in src/pages/_archived_landing/
+// import LandingPage from "./pages/LandingPage";
+// import AboutPage from "./pages/AboutPage";
+// import FeaturesPage from "./pages/FeaturesPage";
+// import SubscriptionsPage from "./pages/SubscriptionsPage";
 import { ENVIRONMENT, initializeViewportCSS } from "./utils/environment";
 
 const queryClient = new QueryClient();
@@ -86,12 +87,8 @@ const App = () => {
               </>
             ) : (
               <>
-                {/* Web browsers get the landing page */}
-                <Route path="/" element={<LandingPage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/features" element={<FeaturesPage />} />
-                <Route path="/subscriptions" element={<SubscriptionsPage />} />
-                <Route path="/app" element={<Index />} />
+                {/* Web browsers go directly to the app (landing pages temporarily hidden) */}
+                <Route path="/" element={<Index />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/team-invite" element={<TeamInvitePage />} />
                 <Route path="/password-reset" element={<PasswordResetPage />} />
