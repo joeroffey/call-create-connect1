@@ -739,30 +739,29 @@ const ProjectsPage = ({
       <CreateProjectModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
-        newProject={{
-          name: '',
-          description: '',
-          label: '',
-          customer_name: '',
-          customer_address: '',
-          customer_phone: ''
-        }}
-        setNewProject={() => {}}
-        onCreateProject={() => {}}
-        onProjectCreated={() => {
-          setShowCreateModal(false);
-          refetch();
-        }}
+        onCreateProject={handleCreateProject}
+        workspaceContext={workspaceContext}
+        teamName={teamName}
       />
 
       {editingProject && (
         <EditProjectModal
-          editingProject={editingProject}
+          isOpen={!!editingProject}
           onClose={() => setEditingProject(null)}
-          setEditingProject={setEditingProject}
-          onUpdateProject={() => {
+          project={editingProject}
+          onUpdateProject={async (projectId, updates) => {
+            await updateProject(projectId, updates);
             setEditingProject(null);
-            refetch();
+          }}
+          onDeleteProject={async (projectId, projectName) => {
+            await deleteProject(projectId, projectName);
+            setEditingProject(null);
+          }}
+          onTogglePinProject={async (projectId, currentPinned) => {
+            await togglePinProject(projectId, currentPinned);
+          }}
+          onStatusChange={async (projectId, newStatus) => {
+            await handleStatusChange(projectId, newStatus);
           }}
         />
       )}
